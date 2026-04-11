@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About AgentScore - How We Rate Property Agents",
-  description: "The AgentScore combines Google reviews, listing portals ratings, CEA data and market performance into one objective score. Independent and not influenced by payment.",
+  description: "AgentScore rates Singapore property agents on transaction volume, recency, market diversity, experience, and Google reviews. Independent and data-driven.",
 };
 
 export default function AboutPage() {
@@ -19,7 +19,7 @@ export default function AboutPage() {
           <h2 className="text-xl font-bold text-gray-900">Why AgentScore?</h2>
           <p className="mt-3">
             Choosing a property agent is one of the most important financial decisions you make
-            in Singapore. But comparing agents is difficult - everyone claims to be the best,
+            in Singapore. But comparing agents is difficult -- everyone claims to be the best,
             and reviews on a single platform only tell part of the story.
           </p>
           <p className="mt-2">
@@ -28,8 +28,8 @@ export default function AboutPage() {
             across all agents, making it hard to differentiate.
           </p>
           <p className="mt-2">
-            FairComparisons corrects this by combining reviews from multiple independent platforms
-            and applying statistical corrections based on review volume.
+            FairComparisons solves this by combining government transaction records with Google
+            reviews and applying statistical corrections based on review volume.
           </p>
         </section>
 
@@ -37,11 +37,11 @@ export default function AboutPage() {
           <h2 className="text-xl font-bold text-gray-900">What data do we use?</h2>
           <div className="mt-4 space-y-3">
             {[
-              { name: "Google Reviews", desc: "Client ratings and review texts from Google Maps. The most widely used source, but positively biased." },
-              { name: "listing portals Reviews", desc: "Ratings from Singapore's largest property platform. Includes reviews from actual property transactions." },
-              { name: "CEA Registration", desc: "Verification against the Council for Estate Agencies public register. Confirms active registration status." },
-              { name: "Market Activity", desc: "Listing volume and transaction data per district. Indicates how active an agent is in specific areas." },
-              { name: "Agency Profile", desc: "Agency size, years in operation, and professional certifications." },
+              { name: "CEA Transaction Records", desc: "730,000+ property transactions from the Council for Estate Agencies, linked to individual salesperson registration numbers." },
+              { name: "Google Reviews", desc: "Client ratings from Google Maps for each agency. Bayesian-corrected to account for agencies with few reviews." },
+              { name: "CEA Public Register", desc: "Verification of active registration status, agency membership, and registration history for all 30,000+ agents." },
+              { name: "URA Transaction Data", desc: "Private residential property prices from URA, used for district-level market analysis and development profiles." },
+              { name: "HDB Resale Data", desc: "208,000+ HDB resale transactions from data.gov.sg, used for town-level pricing analysis." },
             ].map((s) => (
               <div key={s.name} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                 <h3 className="font-semibold text-gray-900">{s.name}</h3>
@@ -54,27 +54,29 @@ export default function AboutPage() {
         <section>
           <h2 className="text-xl font-bold text-gray-900">How is the score calculated?</h2>
           <p className="mt-3">
-            The AgentScore combines five dimensions, each weighted by relevance to the consumer.
+            The AgentScore (0-100) combines five dimensions, each weighted by relevance to the consumer:
           </p>
-          <p className="mt-2">
-            <strong>Quality</strong> - A Bayesian-corrected average of reviews from Google, listing portals
-            and other platforms. Sources where negative reviews are more common carry higher weight.
-          </p>
-          <p className="mt-2">
-            <strong>Experience</strong> - Transaction history, years of registration, and specialisations.
-          </p>
-          <p className="mt-2">
-            <strong>Market presence</strong> - Activity per district based on listings and transactions.
-          </p>
-          <p className="mt-2">
-            <strong>Trust</strong> - CEA verification, agency membership, review volume.
-          </p>
-          <p className="mt-2">
-            <strong>Visibility</strong> - Online presence and profile completeness.
-          </p>
-          <p className="mt-3">
-            The exact weighting is proprietary and continuously refined. The score is fully
-            automated and cannot be influenced by payment.
+          <div className="mt-4 space-y-3">
+            {[
+              { name: "Volume", weight: "30 points", desc: "Total number of CEA-recorded transactions. More transactions indicate a more active and experienced agent." },
+              { name: "Recency", weight: "25 points", desc: "How recently the agent has completed transactions. Recent activity is weighted higher than historical volume." },
+              { name: "Diversity", weight: "15 points", desc: "Range of property types (HDB, condo, landed) and transaction types (sale, purchase, rental) handled." },
+              { name: "Experience", weight: "15 points", desc: "Years of CEA registration and consistency of transaction activity over time." },
+              { name: "Reviews", weight: "15 points", desc: "Google review rating of the agent's agency, Bayesian-corrected to account for agencies with few reviews." },
+            ].map((d) => (
+              <div key={d.name} className="flex items-start gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-xs font-bold text-teal-700">{d.weight.split(" ")[0]}</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">{d.name} <span className="text-sm font-normal text-gray-400">({d.weight})</span></h3>
+                  <p className="mt-1 text-sm text-gray-500">{d.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4">
+            The score is fully automated and recalculated weekly as new CEA data is ingested.
+            Payment does not influence ranking position. The only way to improve a score is to
+            complete more transactions and deliver better service.
           </p>
         </section>
 
@@ -84,24 +86,23 @@ export default function AboutPage() {
             <div>
               <h3 className="font-semibold text-gray-900">Can agents influence their score?</h3>
               <p className="mt-1 text-sm text-gray-500">
-                No. The AgentScore is calculated automatically from public data. The only way
-                to improve a score is to actually perform better - better service leads to
-                better reviews.
+                No. The AgentScore is calculated automatically from public government data and
+                Google reviews. Agents cannot pay for a higher position.
               </p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">How often is the score updated?</h3>
               <p className="mt-1 text-sm text-gray-500">
-                Scores are recalculated weekly based on the latest data from all sources.
+                Scores are recalculated weekly based on the latest CEA transaction data and Google reviews.
               </p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">Why does my score differ from my Google rating?</h3>
               <p className="mt-1 text-sm text-gray-500">
-                Google ratings are structurally too positive. FairComparisons corrects for this
-                by also including listing portals reviews and applying Bayesian correction
-                based on review volume. Additionally, experience, market activity and
-                trust factors are weighted in.
+                Google ratings only account for 15% of the AgentScore. The majority (70 points)
+                comes from actual transaction data: volume, recency, and diversity. An agent with
+                a 5.0 Google rating but few transactions will score lower than an agent with a 4.2
+                rating and hundreds of transactions.
               </p>
             </div>
           </div>

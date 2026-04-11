@@ -157,9 +157,21 @@ export default async function AgentPage({ params }: Props) {
     }),
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://fair-comparisons.com" },
+      { "@type": "ListItem", position: 2, name: "Property Agents", item: "https://fair-comparisons.com/property-agents" },
+      ...(agency ? [{ "@type": "ListItem", position: 3, name: agency.name, item: `https://fair-comparisons.com/property-agents/agency/${agency.slug}` }] : []),
+      { "@type": "ListItem", position: agency ? 4 : 3, name: agent.name },
+    ],
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
@@ -9,6 +9,13 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#0A6B5E",
+};
+
 export const metadata: Metadata = {
   title: {
     default: "FairComparisons - Compare Property Agents in Singapore",
@@ -17,8 +24,21 @@ export const metadata: Metadata = {
   description:
     "Compare 30,000+ property agents in Singapore on actual performance. FairComparisons combines Google, listing portals and CEA data into an objective AgentScore.",
   alternates: { canonical: "https://fair-comparisons.com" },
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
-  themeColor: "#0A6B5E",
+  openGraph: {
+    title: "FairComparisons - Compare Property Agents in Singapore",
+    description: "Compare 30,000+ property agents on actual CEA transaction records. Independent ratings, not advertising.",
+    url: "https://fair-comparisons.com",
+    siteName: "FairComparisons",
+    locale: "en_SG",
+    type: "website",
+    images: [{ url: "https://fair-comparisons.com/og-image.png", width: 1200, height: 630, alt: "FairComparisons - Independent Property Agent Ratings" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FairComparisons - Compare Property Agents in Singapore",
+    description: "Compare 30,000+ property agents on actual CEA transaction records.",
+    images: ["https://fair-comparisons.com/og-image.png"],
+  },
 };
 
 function Header() {
@@ -46,7 +66,7 @@ function Header() {
             <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
               <Link href="/property-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Property Agents</Link>
               <Link href="/lawyers" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Lawyers</Link>
-              <Link href="/property-agents/hdb/tampines" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">HDB Prices</Link>
+              <Link href="/property-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Browse Districts</Link>
               <Link href="/about" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">About</Link>
             </div>
           </details>
