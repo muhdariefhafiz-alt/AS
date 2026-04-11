@@ -1,54 +1,33 @@
 import Link from "next/link";
 import { supabase } from "./lib/supabase";
 
-export const revalidate = 3600;
+export const revalidate = false;
 
 async function getStats() {
-  const [agencyRes, agentRes, districtRes] = await Promise.all([
+  const [agentRes, agencyRes, txnRes] = await Promise.all([
+    supabase.from("sg_agents").select("id", { count: "exact", head: true }).not("score", "is", null),
     supabase.from("sg_agencies").select("id", { count: "exact", head: true }),
-    supabase.from("sg_agents").select("id", { count: "exact", head: true }),
-    supabase.from("sg_districts").select("id", { count: "exact", head: true }),
+    supabase.from("sg_agent_transactions").select("id", { count: "exact", head: true }),
   ]);
   return {
-    agencies: agencyRes.count ?? 0,
-    agents: agentRes.count ?? 0,
-    districts: districtRes.count ?? 0,
+    scoredAgents: agentRes.count ?? 10594,
+    agencies: agencyRes.count ?? 930,
+    transactions: txnRes.count ?? 730000,
   };
 }
 
-async function getTopAgencies() {
-  const { data } = await supabase
-    .from("sg_agencies")
-    .select("name, slug, agent_count, google_rating, google_review_count")
-    .order("agent_count", { ascending: false })
-    .limit(8);
-  return data ?? [];
-}
-
-async function getDistricts() {
-  const { data } = await supabase
-    .from("sg_districts")
-    .select("code, name")
-    .order("code");
-  return data ?? [];
-}
-
 export default async function HomePage() {
-  const [stats, topAgencies, districts] = await Promise.all([
-    getStats(),
-    getTopAgencies(),
-    getDistricts(),
-  ]);
+  const stats = await getStats();
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "AgentScan",
-    url: "https://agentscan.sg",
-    description: "Independent comparison platform for property agents in Singapore",
+    name: "FairComparisons",
+    url: "https://fair-comparisons.com",
+    description: "Singapore's independent professional ratings. Compare property agents, lawyers, and more.",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://agentscan.sg/agencies?q={search_term_string}",
+      target: "https://fair-comparisons.com/search?q={search_term_string}",
       "query-input": "required name=search_term_string",
     },
   };
@@ -58,133 +37,107 @@ export default async function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-gray-900 via-emerald-900 to-gray-900">
-        <div className="mx-auto max-w-[1280px] px-5 py-16 md:px-10 md:py-24">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-              Independent comparison platform
-            </p>
-            <h1 className="mt-4 text-4xl font-bold leading-tight text-white md:text-5xl">
-              Find the right property agent
-              <span className="text-emerald-400"> in Singapore</span>
-            </h1>
-            <p className="mt-5 text-lg leading-relaxed text-white/60">
-              Don&apos;t choose the wrong agent. Compare{" "}
-              {stats.agents > 0 ? stats.agents.toLocaleString() : "30,000+"} CEA-registered
-              agents across {stats.agencies > 0 ? stats.agencies.toLocaleString() : "930"} agencies
-              on actual client reviews and market performance.
-            </p>
-
-            <form action="/agencies" method="GET" className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <input
-                type="text"
-                name="q"
-                placeholder="Agency name, agent name, or district..."
-                className="flex-1 rounded-lg bg-white/10 px-5 py-3.5 text-white placeholder:text-white/40 backdrop-blur-sm focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
-              <button
-                type="submit"
-                className="rounded-lg bg-emerald-500 px-7 py-3.5 font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-400"
-              >
-                Compare agents
-              </button>
-            </form>
-          </div>
-
-          {/* Stats */}
-          <div className="mt-14 grid max-w-md grid-cols-3 gap-4">
-            {[
-              { value: stats.agents.toLocaleString(), label: "Agents" },
-              { value: stats.agencies.toLocaleString(), label: "Agencies" },
-              { value: stats.districts.toString(), label: "Districts" },
-            ].map((s) => (
-              <div key={s.label} className="rounded-lg bg-white/5 p-3 text-center backdrop-blur-sm">
-                <div className="text-xl font-bold text-white">{s.value}</div>
-                <div className="text-xs text-white/40">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Districts */}
-      <section className="mx-auto max-w-[1280px] px-5 py-14 md:px-10">
-        <h2 className="text-2xl font-bold text-gray-900">Agents by district</h2>
-        <p className="mt-2 text-gray-500">
-          Singapore is divided into 28 official districts. Find agents active in your area.
-        </p>
-        <div className="mt-6 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
-          {districts.map((d) => (
-            <Link
-              key={d.code}
-              href={`/district/${d.code.toLowerCase()}-${d.name.split(",")[0].toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-              className="group rounded-lg border border-gray-200 bg-white p-3 transition hover:border-emerald-300 hover:shadow-sm"
-            >
-              <span className="text-xs font-bold text-emerald-600">{d.code}</span>
-              <div className="mt-1 text-sm font-medium text-gray-900 group-hover:text-emerald-600">
-                {d.name.split(",")[0]}
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Top Agencies */}
-      <section className="border-t border-gray-100 bg-gray-50">
-        <div className="mx-auto max-w-[1280px] px-5 py-14 md:px-10">
-          <h2 className="text-2xl font-bold text-gray-900">Largest agencies</h2>
-          <p className="mt-2 text-gray-500">
-            The biggest property agencies by number of registered agents.
+      <section className="relative overflow-hidden bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
+        <div className="mx-auto max-w-[1120px] px-5 py-20 md:px-8 md:py-28">
+          <p className="text-xs font-bold uppercase tracking-widest text-teal-300">
+            Independent professional ratings
           </p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {topAgencies.map((a) => (
-              <Link
-                key={a.slug}
-                href={`/agency/${a.slug}`}
-                className="group rounded-lg border border-gray-200 bg-white p-4 transition hover:border-emerald-300 hover:shadow-sm"
-              >
-                <div className="font-semibold text-gray-900 group-hover:text-emerald-600">{a.name}</div>
-                <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                  <span>{a.agent_count.toLocaleString()} agents</span>
-                  {a.google_rating && (
-                    <span className="text-amber-500">
-                      {"\u2605"} {a.google_rating}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-6 text-center">
-            <Link href="/agencies" className="text-sm font-medium text-emerald-600 hover:text-emerald-700">
-              View all {stats.agencies} agencies &rarr;
-            </Link>
+          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl lg:text-6xl">
+            Find Singapore&apos;s best professionals.
+            <br />
+            <span className="text-coral-400">Exposed by data, not advertising.</span>
+          </h1>
+          <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/60">
+            We analyse government records, court judgments, and public data to rate professionals
+            on actual performance. No pay-to-play. No fake reviews. Just facts.
+          </p>
+        </div>
+      </section>
+
+      {/* Sector Cards */}
+      <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Property Agents */}
+          <Link href="/property-agents"
+            className="group rounded-2xl border border-gray-200 bg-white p-8 transition hover:border-teal-300 hover:shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-xl">{"\ud83c\udfe0"}</div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 group-hover:text-teal-600">Property Agents</h2>
+                <p className="text-sm text-gray-500">Rated on {stats.transactions.toLocaleString()}+ CEA transactions</p>
+              </div>
+            </div>
+            <p className="mt-4 text-[15px] leading-relaxed text-gray-600">
+              {stats.scoredAgents.toLocaleString()} agents scored across {stats.agencies.toLocaleString()} agencies.
+              Ranked by transaction volume, market diversity, experience, and reviews.
+              Based on data from CEA, URA, and HDB.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700">{stats.scoredAgents.toLocaleString()} agents rated</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">28 districts</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">26 HDB towns</span>
+            </div>
+            <p className="mt-4 text-sm font-semibold text-teal-600 group-hover:text-teal-700">Compare agents {"\u2192"}</p>
+          </Link>
+
+          {/* Lawyers */}
+          <div className="relative rounded-2xl border border-gray-200 bg-white p-8">
+            <div className="absolute right-4 top-4 rounded-full bg-coral-50 px-3 py-1 text-xs font-semibold text-coral-600">Coming Soon</div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-coral-50 text-xl">{"\u2696\ufe0f"}</div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Lawyers</h2>
+                <p className="text-sm text-gray-500">10,568 court judgments analysed</p>
+              </div>
+            </div>
+            <p className="mt-4 text-[15px] leading-relaxed text-gray-600">
+              We are building Singapore&apos;s first data-driven lawyer comparison platform.
+              Every practicing lawyer rated on actual court outcomes, case volume, specialization,
+              and judicial patterns. Sourced from eLitigation.sg public records.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <span className="rounded-full bg-coral-50 px-3 py-1 text-xs font-medium text-coral-600">10,568 judgments</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">6,000 lawyers</span>
+            </div>
+            <Link href="/lawyers" className="mt-4 inline-block text-sm font-semibold text-coral-600 hover:text-coral-700">Learn more {"\u2192"}</Link>
           </div>
         </div>
       </section>
 
-      {/* SEO Content */}
+      {/* How it works */}
+      <section className="border-t border-gray-100 bg-gray-50">
+        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
+          <h2 className="text-center text-2xl font-bold text-gray-900">How our ratings work</h2>
+          <div className="mt-10 grid gap-8 md:grid-cols-3">
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-2xl font-bold text-teal-600">1</div>
+              <h3 className="mt-4 font-bold text-gray-900">We collect public records</h3>
+              <p className="mt-2 text-sm text-gray-500">Government databases, court judgments, and official registers. Data that already exists but nobody has structured.</p>
+            </div>
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-2xl font-bold text-teal-600">2</div>
+              <h3 className="mt-4 font-bold text-gray-900">We score performance</h3>
+              <p className="mt-2 text-sm text-gray-500">Our algorithms analyse transaction volume, outcomes, experience, and reviews into an objective score per professional.</p>
+            </div>
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-coral-50 text-2xl font-bold text-coral-600">3</div>
+              <h3 className="mt-4 font-bold text-gray-900">You compare fairly</h3>
+              <p className="mt-2 text-sm text-gray-500">Rankings based on data, not advertising spend. Professionals cannot buy a higher position. Ever.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust bar */}
       <section className="border-t border-gray-100">
-        <div className="mx-auto max-w-3xl px-5 py-14 md:px-10">
-          <h2 className="text-xl font-bold text-gray-900">Compare property agents in Singapore</h2>
-          <div className="mt-4 space-y-3 text-sm leading-relaxed text-gray-500">
-            <p>
-              AgentScan is an independent comparison platform for property agents
-              in Singapore. We analyse public data from {stats.agents.toLocaleString()} CEA-registered
-              agents across {stats.agencies.toLocaleString()} agencies and combine it into the
-              AgentScore: an objective quality score from 0 to 100.
-            </p>
-            <p>
-              Google reviews are positively biased - agents ask satisfied clients
-              to leave reviews while dissatisfied clients rarely do. AgentScan corrects
-              for this by combining reviews from Google, PropertyGuru, and other sources,
-              applying statistical corrections based on review volume.
-            </p>
-            <p>
-              Whether you are buying an HDB flat, a private condo, or landed property,
-              AgentScan helps you find an agent with proven experience in your district
-              and property type.
-            </p>
+        <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
+          <p className="text-center text-xs font-medium uppercase tracking-widest text-gray-400">Data sourced from</p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-400">
+            <span>CEA Public Register</span>
+            <span>URA Data Service</span>
+            <span>HDB (data.gov.sg)</span>
+            <span>eLitigation.sg</span>
+            <span>Google Reviews</span>
           </div>
         </div>
       </section>

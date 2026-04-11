@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "ClaudeBot", allow: "/" },
       { userAgent: "PerplexityBot", allow: "/" },
     ],
-    sitemap: "https://agentscan.sg/sitemap.xml",
+    sitemap: "https://fair-comparisons.com/sitemap.xml",
   };
 }

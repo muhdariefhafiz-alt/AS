@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Property Agencies in Singapore - Compare 930+ Licensed Agencies",
-  description: "Compare all CEA-licensed property agencies in Singapore. Search by name, view agent counts, Google ratings and AgentScore rankings.",
+  title: "Property Agencies in Singapore - Full CEA Directory | FairComparisons",
+  description:
+    "Browse all CEA-licensed property agencies in Singapore. Compare by agent count, Google ratings, and AgentScore. Search by name or license number.",
+  alternates: { canonical: "https://fair-comparisons.com/property-agents" },
 };
 
 export default function AgenciesLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return children;
 }

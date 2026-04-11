@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About AgentScore - How We Rate Property Agents",
-  description: "The AgentScore combines Google reviews, PropertyGuru ratings, CEA data and market performance into one objective score. Independent and not influenced by payment.",
+  description: "The AgentScore combines Google reviews, listing portals ratings, CEA data and market performance into one objective score. Independent and not influenced by payment.",
 };
 
 export default function AboutPage() {
@@ -28,7 +28,7 @@ export default function AboutPage() {
             across all agents, making it hard to differentiate.
           </p>
           <p className="mt-2">
-            AgentScan corrects this by combining reviews from multiple independent platforms
+            FairComparisons corrects this by combining reviews from multiple independent platforms
             and applying statistical corrections based on review volume.
           </p>
         </section>
@@ -38,7 +38,7 @@ export default function AboutPage() {
           <div className="mt-4 space-y-3">
             {[
               { name: "Google Reviews", desc: "Client ratings and review texts from Google Maps. The most widely used source, but positively biased." },
-              { name: "PropertyGuru Reviews", desc: "Ratings from Singapore's largest property platform. Includes reviews from actual property transactions." },
+              { name: "listing portals Reviews", desc: "Ratings from Singapore's largest property platform. Includes reviews from actual property transactions." },
               { name: "CEA Registration", desc: "Verification against the Council for Estate Agencies public register. Confirms active registration status." },
               { name: "Market Activity", desc: "Listing volume and transaction data per district. Indicates how active an agent is in specific areas." },
               { name: "Agency Profile", desc: "Agency size, years in operation, and professional certifications." },
@@ -57,7 +57,7 @@ export default function AboutPage() {
             The AgentScore combines five dimensions, each weighted by relevance to the consumer.
           </p>
           <p className="mt-2">
-            <strong>Quality</strong> - A Bayesian-corrected average of reviews from Google, PropertyGuru
+            <strong>Quality</strong> - A Bayesian-corrected average of reviews from Google, listing portals
             and other platforms. Sources where negative reviews are more common carry higher weight.
           </p>
           <p className="mt-2">
@@ -98,8 +98,8 @@ export default function AboutPage() {
             <div>
               <h3 className="font-semibold text-gray-900">Why does my score differ from my Google rating?</h3>
               <p className="mt-1 text-sm text-gray-500">
-                Google ratings are structurally too positive. AgentScan corrects for this
-                by also including PropertyGuru reviews and applying Bayesian correction
+                Google ratings are structurally too positive. FairComparisons corrects for this
+                by also including listing portals reviews and applying Bayesian correction
                 based on review volume. Additionally, experience, market activity and
                 trust factors are weighted in.
               </p>
