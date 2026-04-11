@@ -12,6 +12,18 @@ export const revalidate = false;
 export const dynamicParams = false;
 type Props = { params: Promise<{ code: string }> };
 
+const DISTRICT_TO_BEST: Record<string, string> = {
+  D01: "raffles-place-marina", D02: "chinatown-tanjong-pagar", D03: "queenstown-tiong-bahru",
+  D04: "harbourfront-telok-blangah", D05: "clementi-west-coast", D06: "high-street",
+  D07: "beach-road-golden-mile", D08: "little-india", D09: "orchard-river-valley",
+  D10: "bukit-timah-holland", D11: "novena-thomson", D12: "balestier-toa-payoh",
+  D13: "macpherson-braddell", D14: "geylang-eunos", D15: "katong-joo-chiat",
+  D16: "bedok-east-coast", D17: "changi-loyang", D18: "tampines-pasir-ris",
+  D19: "serangoon-hougang-punggol", D20: "bishan-ang-mo-kio", D21: "upper-bukit-timah",
+  D22: "jurong", D23: "bukit-panjang-choa-chu-kang", D24: "lim-chu-kang",
+  D25: "kranji-woodlands", D26: "upper-thomson", D27: "yishun-sembawang", D28: "seletar",
+};
+
 function pct(a: number, b: number) {
   if (!b) return { v: 0, d: "neutral" as const };
   const p = Math.round(((a - b) / b) * 100);
@@ -440,6 +452,19 @@ export default async function DistrictPage({ params }: Props) {
             {/* 9. FAQ */}
             <DistrictFAQ areaName={area} districtCode={district.code} data={data} />
 
+            {/* Best agents CTA */}
+            {DISTRICT_TO_BEST[district.code] && (
+              <div className="mt-8 rounded-xl border border-teal-200 bg-teal-50 p-6">
+                <h3 className="text-lg font-bold text-gray-900">Looking for a property agent in {area}?</h3>
+                <p className="mt-2 text-[15px] text-gray-600">
+                  We ranked the top-performing agents in {district.code} based on transaction records, area expertise, and client reviews.
+                </p>
+                <Link href={`/property-agents/best/${DISTRICT_TO_BEST[district.code]}`} className="mt-4 inline-block rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700">
+                  View best agents in {area} &rarr;
+                </Link>
+              </div>
+            )}
+
             <p className="text-[11px] text-gray-400">Source: URA Private Residential Property Transactions, URA Median Rental Data. Analysis by FairComparisons.</p>
           </div>
 
@@ -478,7 +503,7 @@ export default async function DistrictPage({ params }: Props) {
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other Districts</h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 {(allDistricts.data ?? []).filter(d => d.code !== district.code).slice(0, 10).map(d => (
-                  <Link key={d.code} href={`/district/${d.slug}`}
+                  <Link key={d.code} href={`/property-agents/district/${d.slug}`}
                     className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 transition hover:border-teal-300 hover:text-teal-600">
                     {d.code}
                   </Link>

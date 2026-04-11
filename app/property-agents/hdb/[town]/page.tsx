@@ -474,6 +474,17 @@ export default async function HdbTownPage({ params }: Props) {
               </div>
               <p className="mt-4 text-[11px] text-gray-400">Source: HDB Resale Flat Prices via data.gov.sg. Analysis by FairComparisons.</p>
             </section>
+
+            {/* Best agents CTA */}
+            <div className="mt-8 rounded-xl border border-teal-200 bg-teal-50 p-6">
+              <h3 className="text-lg font-bold text-gray-900">Looking for an HDB agent in {display}?</h3>
+              <p className="mt-2 text-[15px] text-gray-600">
+                We ranked the top-performing agents for HDB resale transactions in {display} based on actual transaction records.
+              </p>
+              <Link href={`/property-agents/best/hdb/${slug}`} className="mt-4 inline-block rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700">
+                View best HDB agents in {display} &rarr;
+              </Link>
+            </div>
           </div>
 
           {/* Sidebar */}
@@ -512,7 +523,7 @@ export default async function HdbTownPage({ params }: Props) {
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Compare Other Towns</h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 {HDB_TOWNS.filter((t) => t.slug !== slug).slice(0, 12).map((t) => (
-                  <Link key={t.slug} href={`/hdb/${t.slug}`}
+                  <Link key={t.slug} href={`/property-agents/hdb/${t.slug}`}
                     className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 transition hover:border-teal-300 hover:text-teal-600">
                     {townDisplayName(t.name)}
                   </Link>
