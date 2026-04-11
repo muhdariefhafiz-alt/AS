@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
-import Script from "next/script";
 import "./globals.css";
 import PageTracker from "./components/PageTracker";
 
@@ -101,8 +100,10 @@ function Footer() {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} antialiased`}>
-      <Script src="https://www.googletagmanager.com/gtag/js?id=G-K4D8EQ6D9G" strategy="beforeInteractive" />
-      <Script id="gtag-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-K4D8EQ6D9G');` }} />
+      <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-K4D8EQ6D9G"></script>
+        <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-K4D8EQ6D9G');` }} />
+      </head>
       <body className="min-h-screen bg-white font-[family-name:var(--font-geist-sans)] text-gray-900">
         <Header />
         <main>{children}</main>
