@@ -132,7 +132,7 @@ export default async function BestHdbAgentsPage({ params }: Props) {
                 {topAgents.map((a, i) => (
                   <Link
                     key={a.cea_reg}
-                    href={`/agent/${a.agent_slug}`}
+                    href={`/property-agents/agent/${a.agent_slug}`}
                     className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm"
                   >
                     <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white ${
@@ -169,7 +169,7 @@ export default async function BestHdbAgentsPage({ params }: Props) {
                     {medianPrice > 0
                       ? `The median 4-room HDB resale price in ${display} is ${formatPrice(medianPrice)}, based on ${totalTxns.toLocaleString()} transactions.`
                       : `Visit our ${display} HDB price analysis for detailed pricing data.`}
-                    {" "}<Link href={`/hdb/${slug}`} className="text-teal-600 hover:underline">View full price analysis</Link>
+                    {" "}<Link href={`/property-agents/hdb/${slug}`} className="text-teal-600 hover:underline">View full price analysis</Link>
                   </p>
                 </div>
               </div>
@@ -181,7 +181,7 @@ export default async function BestHdbAgentsPage({ params }: Props) {
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">{display} HDB Market</h3>
               {medianPrice > 0 && <p className="mt-2 text-sm text-gray-600">4-room median: <strong>{formatPrice(medianPrice)}</strong></p>}
               {totalTxns > 0 && <p className="text-sm text-gray-500">{totalTxns.toLocaleString()} transactions</p>}
-              <Link href={`/hdb/${slug}`} className="mt-3 inline-block text-sm font-medium text-teal-600 hover:text-teal-700">
+              <Link href={`/property-agents/hdb/${slug}`} className="mt-3 inline-block text-sm font-medium text-teal-600 hover:text-teal-700">
                 View price analysis
               </Link>
             </div>
@@ -190,7 +190,7 @@ export default async function BestHdbAgentsPage({ params }: Props) {
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other Towns</h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 {HDB_TOWNS.filter(t => t.slug !== slug).slice(0, 10).map(t => (
-                  <Link key={t.slug} href={`/best-agents/hdb/${t.slug}`}
+                  <Link key={t.slug} href={`/property-agents/best/hdb/${t.slug}`}
                     className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 transition hover:border-teal-300 hover:text-teal-600">
                     {townDisplayName(t.name)}
                   </Link>

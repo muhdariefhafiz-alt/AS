@@ -66,7 +66,7 @@ export default function SearchPage() {
         type: "district",
         title: `${d.code} ${d.name.split(",")[0]}`,
         subtitle: `Private property market analysis with URA transaction data`,
-        href: `/district/${d.slug}`,
+        href: `/property-agents/district/${d.slug}`,
         badge: "District",
       }));
 
@@ -77,7 +77,7 @@ export default function SearchPage() {
         type: "hdb_town",
         title: `${townDisplayName(t.name)} HDB`,
         subtitle: `HDB resale prices, trends, and flat type analysis`,
-        href: `/hdb/${t.slug}`,
+        href: `/property-agents/hdb/${t.slug}`,
         badge: "HDB Town",
       }));
 
@@ -99,7 +99,7 @@ export default function SearchPage() {
         type: "agency" as const,
         title: a.name,
         subtitle: `${a.agent_count.toLocaleString()} agents${a.google_rating ? ` · ★ ${Number(a.google_rating).toFixed(1)}` : ""}`,
-        href: `/agency/${a.slug}`,
+        href: `/property-agents/agency/${a.slug}`,
         badge: "Agency",
         rating: a.google_rating ? Number(a.google_rating) : undefined,
       }));
@@ -108,7 +108,7 @@ export default function SearchPage() {
         type: "agent" as const,
         title: a.name,
         subtitle: `${a.agency_name} · CEA ${a.cea_registration}`,
-        href: `/agent/${a.slug}`,
+        href: `/property-agents/agent/${a.slug}`,
         badge: "Agent",
       }));
 
@@ -219,12 +219,12 @@ export default function SearchPage() {
               <h2 className="text-sm font-bold uppercase tracking-widest text-teal-600">Popular Market Reports</h2>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {[
-                  { title: "Tampines HDB", desc: "13,000+ transactions analysed", href: "/hdb/tampines" },
-                  { title: "D09 Orchard", desc: "Prime condo market, freehold analysis", href: "/district/d09-orchard" },
-                  { title: "Bishan HDB", desc: "Premium HDB town, million-dollar flats", href: "/hdb/bishan" },
-                  { title: "D15 East Coast", desc: "Katong property prices and trends", href: "/district/d15-katong" },
-                  { title: "Sengkang HDB", desc: "Most traded HDB town in Singapore", href: "/hdb/sengkang" },
-                  { title: "D10 Bukit Timah", desc: "Landed and condo market analysis", href: "/district/d10-ardmore" },
+                  { title: "Tampines HDB", desc: "13,000+ transactions analysed", href: "/property-agents/hdb/tampines" },
+                  { title: "D09 Orchard", desc: "Prime condo market, freehold analysis", href: "/property-agents/district/d09-orchard" },
+                  { title: "Bishan HDB", desc: "Premium HDB town, million-dollar flats", href: "/property-agents/hdb/bishan" },
+                  { title: "D15 East Coast", desc: "Katong property prices and trends", href: "/property-agents/district/d15-katong" },
+                  { title: "Sengkang HDB", desc: "Most traded HDB town in Singapore", href: "/property-agents/hdb/sengkang" },
+                  { title: "D10 Bukit Timah", desc: "Landed and condo market analysis", href: "/property-agents/district/d10-ardmore" },
                 ].map(p => (
                   <Link key={p.href} href={p.href}
                     className="group rounded-xl border border-gray-100 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm">

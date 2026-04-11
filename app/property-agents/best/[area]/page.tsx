@@ -218,7 +218,7 @@ export default async function BestAgentsPage({ params }: Props) {
                         }`}>{i + 1}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <Link href={`/agent/${a.agent_slug}`} className="font-semibold text-gray-900 hover:text-teal-600">
+                            <Link href={`/property-agents/agent/${a.agent_slug}`} className="font-semibold text-gray-900 hover:text-teal-600">
                               {a.agent_name}
                             </Link>
                             <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1">
@@ -333,7 +333,7 @@ export default async function BestAgentsPage({ params }: Props) {
                 </p>
                 <div className="mt-2 space-y-1">
                   {specialists.slice(0, 5).map(a => (
-                    <Link key={a.cea_reg} href={`/agent/${a.agent_slug}`}
+                    <Link key={a.cea_reg} href={`/property-agents/agent/${a.agent_slug}`}
                       className="block text-sm text-teal-700 hover:text-teal-900">
                       {a.agent_name} ({a.area_focus_pct}% focus)
                     </Link>
@@ -346,7 +346,7 @@ export default async function BestAgentsPage({ params }: Props) {
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other Areas</h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 {AREAS.filter(a => a.slug !== slug).slice(0, 10).map(a => (
-                  <Link key={a.slug} href={`/best-agents/${a.slug}`}
+                  <Link key={a.slug} href={`/property-agents/best/${a.slug}`}
                     className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 transition hover:border-teal-300 hover:text-teal-600">
                     {shortName(a.name)}
                   </Link>

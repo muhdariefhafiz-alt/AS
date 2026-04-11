@@ -89,7 +89,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t border-gray-200 pt-6 text-center text-xs text-gray-400">
-          FairComparisons is a product of FairComparisons.
+          Independent comparison platform. Not affiliated with any agency.
           Data sourced from CEA, Google, and public records.
         </div>
       </div>

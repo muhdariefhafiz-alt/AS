@@ -130,7 +130,7 @@ export default function ComparePage() {
                   <th className="pb-3 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Metric</th>
                   {selected.map((a) => (
                     <th key={a.id} className="pb-3 px-4 text-center">
-                      <Link href={`/agent/${a.slug}`} className="text-teal-600 hover:underline font-semibold text-sm">{a.name}</Link>
+                      <Link href={`/property-agents/agent/${a.slug}`} className="text-teal-600 hover:underline font-semibold text-sm">{a.name}</Link>
                       <p className="text-xs text-gray-400 font-normal mt-0.5">{a.agency_name}</p>
                     </th>
                   ))}

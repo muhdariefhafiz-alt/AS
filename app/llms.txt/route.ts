@@ -41,11 +41,14 @@ Scores are recalculated weekly as new CEA data is ingested.
 
 ## Main Sections
 
-- /agencies - Search and compare all 930 property agencies
-- /agency/[slug] - Agency profiles with Google rating, agent list, market data
-- /district/[code] - 28 district pages with URA transaction analysis, freehold vs leasehold, floor premiums, rental data, top developments
-- /hdb/[town] - 26 HDB town pages with resale prices, flat type analysis, storey premiums, lease age analysis, street rankings
-- /agent/[slug] - Agent profiles with CEA transaction history, specialization, area expertise, AgentScore breakdown
+- /property-agents - Search and compare all 930 property agencies
+- /property-agents/agency/[slug] - Agency profiles with Google rating, agent list, market data
+- /property-agents/district/[code] - 28 district pages with URA transaction analysis, freehold vs leasehold, floor premiums, rental data, top developments
+- /property-agents/hdb/[town] - 26 HDB town pages with resale prices, flat type analysis, storey premiums, lease age analysis, street rankings
+- /property-agents/agent/[slug] - Agent profiles with CEA transaction history, specialization, area expertise, AgentScore breakdown
+- /property-agents/best/[area] - Top-ranked agents per district, sorted by AgentScore
+- /property-agents/best/hdb/[town] - Top-ranked HDB agents per town
+- /property-agents/development/[slug] - Development price history and floor analysis
 - /search - Smart search across districts, HDB towns, agencies, and agents
 
 ## Unique Data Combinations

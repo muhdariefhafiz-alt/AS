@@ -189,7 +189,7 @@ export default async function AgencyPage({ params }: Props) {
                   {agentList.map((agent) => (
                     <Link
                       key={agent.slug}
-                      href={`/agent/${agent.slug}`}
+                      href={`/property-agents/agent/${agent.slug}`}
                       className="group flex items-center gap-3 rounded-lg bg-gray-50 p-3 transition hover:bg-teal-50"
                     >
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-100 text-sm font-bold text-teal-700">

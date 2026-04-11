@@ -167,7 +167,7 @@ export default async function AgentPage({ params }: Props) {
           {agency && (
             <>
               <span className="mx-1.5">/</span>
-              <Link href={`/agency/${agency.slug}`} className="hover:text-gray-600">{agency.name}</Link>
+              <Link href={`/property-agents/agency/${agency.slug}`} className="hover:text-gray-600">{agency.name}</Link>
             </>
           )}
           <span className="mx-1.5">/</span>
@@ -186,7 +186,7 @@ export default async function AgentPage({ params }: Props) {
               <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">{agent.name}</h1>
               <p className="mt-1 text-sm text-gray-500">
                 CEA {agent.cea_registration}
-                {agency && <> at <Link href={`/agency/${agency.slug}`} className="text-teal-600 hover:underline">{agency.name}</Link></>}
+                {agency && <> at <Link href={`/property-agents/agency/${agency.slug}`} className="text-teal-600 hover:underline">{agency.name}</Link></>}
               </p>
             </div>
             {agent.score && (
@@ -369,7 +369,7 @@ export default async function AgentPage({ params }: Props) {
                 <div className="mt-4 text-[15px] leading-[1.75] text-gray-600">
                   <p>
                     {agent.name} is registered under{" "}
-                    <Link href={`/agency/${agency.slug}`} className="text-teal-600 hover:underline">{agency.name}</Link>,
+                    <Link href={`/property-agents/agency/${agency.slug}`} className="text-teal-600 hover:underline">{agency.name}</Link>,
                     which has {agency.agent_count.toLocaleString()} registered agents.
                     {agency.google_rating && (
                       <> The agency holds a {Number(agency.google_rating).toFixed(1)}/5 rating based on {agency.google_review_count} Google reviews.</>
@@ -454,7 +454,7 @@ export default async function AgentPage({ params }: Props) {
                 {agency && (
                   <div className="flex justify-between">
                     <dt className="text-gray-500">Agency</dt>
-                    <dd><Link href={`/agency/${agency.slug}`} className="font-medium text-teal-600">{agency.name}</Link></dd>
+                    <dd><Link href={`/property-agents/agency/${agency.slug}`} className="font-medium text-teal-600">{agency.name}</Link></dd>
                   </div>
                 )}
                 {hasTxns && (
@@ -499,7 +499,7 @@ export default async function AgentPage({ params }: Props) {
                 <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Colleagues at {agency?.name}</h3>
                 <div className="mt-3 space-y-2">
                   {colleagues.map((c) => (
-                    <Link key={c.slug} href={`/agent/${c.slug}`}
+                    <Link key={c.slug} href={`/property-agents/agent/${c.slug}`}
                       className="group flex items-center gap-2 rounded-lg bg-gray-50 p-2 transition hover:bg-teal-50">
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-700">
                         {c.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}

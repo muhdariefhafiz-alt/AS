@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     .replace("_", " ");
   const area = agent.primary_area || "";
   const txns = agent.transaction_count || 0;
-  const profileUrl = `https://fair-comparisons.com/agent/${agent.slug}`;
+  const profileUrl = `https://fair-comparisons.com/property-agents/agent/${agent.slug}`;
 
   const scoreColor = score && score >= 70 ? "#0A6B5E" : score && score >= 50 ? "#0D8B78" : "#94a3b8";
   const scoreBg = score && score >= 70 ? "#f0f9ff" : score && score >= 50 ? "#f0f9ff" : "#f8fafc";

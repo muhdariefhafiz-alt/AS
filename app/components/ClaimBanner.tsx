@@ -67,7 +67,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
         <div>
           <p className="font-semibold text-amber-800">Is this your profile?</p>
           <p className="mt-1 text-sm text-amber-700">
-            Claim it to add your photo, contact details, and appear higher in rankings.
+            Claim it to add your photo, contact details, and practice focus description.
           </p>
         </div>
         {!open && (
