@@ -220,7 +220,15 @@ export default async function AgentPage({ params }: Props) {
               <StatCard label="Specialization" value={
                 Object.entries(track.property_types).sort((a, b) => b[1] - a[1])[0]?.[0]?.replace("_", " ").replace("CONDOMINIUM APARTMENTS", "Condo").replace("LANDED PROPERTIES", "Landed") ?? "Mixed"
               } subtext={`${Math.round((Object.entries(track.property_types).sort((a, b) => b[1] - a[1])[0]?.[1] ?? 0) / track.total_txns * 100)}% of deals`} />
-              <StatCard label="Primary Area" value={track.top_towns?.[0]?.town ?? track.top_districts?.[0]?.district?.split("/")[0]?.trim() ?? "Various"} subtext={`${track.top_towns?.[0]?.count ?? track.top_districts?.[0]?.count ?? 0} transactions`} />
+              <StatCard label="Primary Area" value={(() => {
+                const townCov = track.top_towns?.reduce((s, t) => s + t.count, 0) ?? 0;
+                if (track.top_towns?.[0] && townCov >= track.total_txns * 0.5) return track.top_towns[0].town;
+                return track.top_districts?.[0]?.district?.split("/")[0]?.trim() ?? "Various";
+              })()} subtext={(() => {
+                const townCov = track.top_towns?.reduce((s, t) => s + t.count, 0) ?? 0;
+                if (track.top_towns?.[0] && townCov >= track.total_txns * 0.5) return `${track.top_towns[0].count} transactions`;
+                return `${track.top_districts?.[0]?.count ?? 0} transactions`;
+              })()} />
             </div>
           )}
         </div>
@@ -305,54 +313,51 @@ export default async function AgentPage({ params }: Props) {
             )}
 
             {/* Area Expertise */}
-            {hasTxns && (track.top_towns?.length ?? 0) > 0 && (
+            {hasTxns && ((track.top_towns?.length ?? 0) > 0 || (track.top_districts?.length ?? 0) > 0) && (() => {
+              // Use towns if they cover >= 50% of transactions, otherwise fall back to districts
+              const townCoverage = track.top_towns?.reduce((s, t) => s + t.count, 0) ?? 0;
+              const useTowns = track.top_towns && track.top_towns.length > 0 && townCoverage >= track.total_txns * 0.5;
+              const areas = useTowns
+                ? track.top_towns!.map(t => ({ name: t.town, count: t.count }))
+                : (track.top_districts ?? []).map(d => ({ name: d.district, count: d.count }));
+              if (areas.length === 0) return null;
+              return (
               <section>
                 <h2 className="text-xl font-bold text-gray-900">Area Expertise</h2>
                 <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
-                  {track.top_towns && track.top_towns.length > 0 && (
-                    <p>
-                      {agent.name}&apos;s transactions are concentrated in{" "}
-                      {track.top_towns.slice(0, 3).map((t, i) => {
-                        const pct = Math.round((t.count / track.total_txns) * 100);
-                        return `${t.town} (${t.count} deals, ${pct}%)`;
-                      }).join(", ")}
-                      {track.top_towns.length > 3 && `, and ${track.top_towns.length - 3} other areas`}.
-                      {track.top_towns[0].count > track.total_txns * 0.3 && (
-                        <> The concentration in {track.top_towns[0].town} suggests deep local knowledge of pricing, block premiums, and buyer preferences in that area.</>
-                      )}
-                    </p>
-                  )}
-                  {track.top_districts && track.top_districts.length > 0 && !track.top_towns?.[0]?.town && (
-                    <p>
-                      Primary areas of activity: {track.top_districts.slice(0, 3).map(d =>
-                        `${d.district} (${d.count} transactions)`
-                      ).join(", ")}.
-                    </p>
-                  )}
+                  <p>
+                    {agent.name}&apos;s transactions are concentrated in{" "}
+                    {areas.slice(0, 3).map((a) => {
+                      const pct = Math.round((a.count / track.total_txns) * 100);
+                      return `${a.name} (${a.count} deals, ${pct}%)`;
+                    }).join(", ")}
+                    {areas.length > 3 && `, and ${areas.length - 3} other areas`}.
+                    {areas[0].count > track.total_txns * 0.3 && (
+                      <> The concentration in {areas[0].name} suggests deep local knowledge of pricing and buyer preferences in that area.</>
+                    )}
+                  </p>
                 </div>
-                {track.top_towns && track.top_towns.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {track.top_towns.map((t, i) => {
-                      const w = Math.max(20, Math.round((t.count / track.top_towns![0].count) * 100));
-                      return (
-                        <div key={t.town} className="rounded-lg border border-gray-100 bg-white px-4 py-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-teal-600" : "bg-gray-400"}`}>{i + 1}</span>
-                              <span className="text-sm font-medium text-gray-900">{t.town}</span>
-                            </div>
-                            <span className="text-sm text-gray-500">{t.count} transactions</span>
+                <div className="mt-4 space-y-2">
+                  {areas.map((a, i) => {
+                    const w = Math.max(20, Math.round((a.count / areas[0].count) * 100));
+                    return (
+                      <div key={a.name} className="rounded-lg border border-gray-100 bg-white px-4 py-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-teal-600" : "bg-gray-400"}`}>{i + 1}</span>
+                            <span className="text-sm font-medium text-gray-900">{a.name}</span>
                           </div>
-                          <div className="mt-2 h-1.5 rounded-full bg-gray-100">
-                            <div className="h-1.5 rounded-full bg-teal-200" style={{ width: `${w}%` }} />
-                          </div>
+                          <span className="text-sm text-gray-500">{a.count} transactions</span>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        <div className="mt-2 h-1.5 rounded-full bg-gray-100">
+                          <div className="h-1.5 rounded-full bg-teal-200" style={{ width: `${w}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </section>
-            )}
+            ); })()}
 
             {/* Active Listings */}
             {hasListings && (
@@ -425,7 +430,12 @@ export default async function AgentPage({ params }: Props) {
                 <p className="mt-3 text-[15px] leading-relaxed text-gray-600">
                   {agent.name} has {track.total_txns} recorded transactions over {yearsActive(track.earliest_txn, track.latest_txn)},
                   and {specialization(track.property_types)}.
-                  {track.top_towns?.[0] && ` Most active in ${track.top_towns[0].town}.`}
+                  {(() => {
+                    const townCov = track.top_towns?.reduce((s, t) => s + t.count, 0) ?? 0;
+                    if (track.top_towns?.[0] && townCov >= track.total_txns * 0.5) return ` Most active in ${track.top_towns[0].town}.`;
+                    if (track.top_districts?.[0]) return ` Most active in ${track.top_districts[0].district}.`;
+                    return "";
+                  })()}
                 </p>
               </div>
             )}
