@@ -384,10 +384,10 @@ export default function PrivacyPage() {
             <p className="text-gray-500">
               Email:{" "}
               <a
-                href="mailto:privacy@fair-comparisons.com"
+                href="mailto:hello@fair-comparisons.com"
                 className="text-blue-600 hover:underline"
               >
-                privacy@fair-comparisons.com
+                hello@fair-comparisons.com
               </a>
             </p>
           </div>

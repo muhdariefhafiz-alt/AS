@@ -308,10 +308,10 @@ export default function TermsPage() {
             If you are a property agent and believe that information on your
             profile is inaccurate, you may contact us at{" "}
             <a
-              href="mailto:info@fair-comparisons.com"
+              href="mailto:hello@fair-comparisons.com"
               className="text-blue-600 hover:underline"
             >
-              info@fair-comparisons.com
+              hello@fair-comparisons.com
             </a>{" "}
             with specific details of the alleged inaccuracy. We will investigate
             and correct verified errors within a reasonable timeframe.
@@ -407,10 +407,10 @@ export default function TermsPage() {
             <p className="text-gray-500">
               Email:{" "}
               <a
-                href="mailto:info@fair-comparisons.com"
+                href="mailto:hello@fair-comparisons.com"
                 className="text-blue-600 hover:underline"
               >
-                info@fair-comparisons.com
+                hello@fair-comparisons.com
               </a>
             </p>
           </div>

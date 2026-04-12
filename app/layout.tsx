@@ -89,6 +89,7 @@ function Footer() {
             <p className="mt-3 text-sm text-gray-500">
               Independent comparison platform for property agents in Singapore.
             </p>
+            <a href="mailto:hello@fair-comparisons.com" className="mt-2 block text-sm text-teal-600 hover:text-teal-700">hello@fair-comparisons.com</a>
           </div>
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">Platform</h4>

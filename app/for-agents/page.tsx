@@ -151,6 +151,9 @@ export default function ForAgentsPage() {
           <Link href="/search" className="mt-6 inline-block rounded-lg bg-coral-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-coral-400">
             Find and claim your profile
           </Link>
+          <p className="mt-4 text-sm text-white/40">
+            Questions? <a href="mailto:hello@fair-comparisons.com" className="text-white/60 underline hover:text-white">hello@fair-comparisons.com</a>
+          </p>
         </div>
       </section>
     </>

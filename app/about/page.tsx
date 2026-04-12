@@ -108,8 +108,18 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* Contact */}
+        <div className="mt-12 rounded-xl border border-gray-200 bg-gray-50 p-6">
+          <h2 className="text-lg font-bold text-gray-900">Questions or feedback?</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Reach us at{" "}
+            <a href="mailto:hello@fair-comparisons.com" className="text-teal-600 hover:underline">hello@fair-comparisons.com</a>.
+            We respond within 24 hours.
+          </p>
+        </div>
+
         {/* CTA */}
-        <div className="mt-12 rounded-xl border border-teal-200 bg-teal-50 p-6 text-center">
+        <div className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-6 text-center">
           <h2 className="text-xl font-bold text-gray-900">Ready to compare agents?</h2>
           <p className="mt-2 text-gray-600">Search 30,000+ agents rated on actual government data.</p>
           <a href="/property-agents" className="mt-4 inline-block rounded-lg bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700">
