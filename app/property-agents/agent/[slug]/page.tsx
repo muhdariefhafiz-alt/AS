@@ -534,6 +534,18 @@ export default async function AgentPage({ params }: Props) {
               </details>
             )}
 
+            {/* Sidebar Claim CTA */}
+            {!agent.claimed && (
+              <div className="rounded-xl border-2 border-teal-300 bg-gradient-to-b from-teal-50 to-white p-5">
+                <p className="text-sm font-bold text-gray-900">Are you {agent.name.split(" ")[0]}?</p>
+                <p className="mt-1.5 text-xs text-gray-500">Claim this profile to add your photo, contact details, and connect with buyers.</p>
+                <a href="#claim" className="mt-3 block rounded-lg bg-teal-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-teal-700">
+                  Claim this profile
+                </a>
+                <Link href="/for-agents" className="mt-2 block text-center text-[11px] text-gray-400 hover:text-teal-600">Learn more about claiming</Link>
+              </div>
+            )}
+
             {/* Colleagues */}
             {colleagues.length > 0 && (
               <div className="rounded-xl border border-gray-200 bg-white p-5">

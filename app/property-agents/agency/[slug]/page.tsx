@@ -108,10 +108,33 @@ export default async function AgencyPage({ params }: Props) {
     ],
   };
 
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `How many agents does ${agency.name} have?`,
+        acceptedAnswer: { "@type": "Answer", text: `${agency.name} has ${agency.agent_count.toLocaleString()} CEA-registered property agents in Singapore.` },
+      },
+      ...(agency.google_rating ? [{
+        "@type": "Question",
+        name: `What is ${agency.name}'s Google rating?`,
+        acceptedAnswer: { "@type": "Answer", text: `${agency.name} has a ${Number(agency.google_rating).toFixed(1)}/5 rating based on ${agency.google_review_count} Google reviews.` },
+      }] : []),
+      {
+        "@type": "Question",
+        name: `Is ${agency.name} a licensed property agency?`,
+        acceptedAnswer: { "@type": "Answer", text: `Yes, ${agency.name} is licensed by the Council for Estate Agencies (CEA) with license number ${agency.license_number}.` },
+      },
+    ],
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
 
       <nav className="border-b border-gray-200 bg-gray-50">
         <div className="mx-auto max-w-[1280px] px-5 py-2.5 text-xs text-gray-400 md:px-10">

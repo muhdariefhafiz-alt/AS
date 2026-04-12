@@ -128,6 +128,24 @@ export default async function BestAgentsPage({ params }: Props) {
   const generalists = topAgents.filter(a => a.area_focus_pct < 20);
   const avgAreaTxns = topAgents.length > 0 ? Math.round(topAgents.reduce((s, a) => s + a.area_txns, 0) / topAgents.length) : 0;
 
+  const faqItems = [
+    ...(topAgents.length > 0 ? [{
+      "@type": "Question",
+      name: `Who is the best property agent in ${short}?`,
+      acceptedAnswer: { "@type": "Answer", text: `Based on AgentScore, the highest-ranked agent in ${area.name} is ${topAgents[0].agent_name} from ${topAgents[0].agency_name}, with ${topAgents[0].area_txns} transactions in this area and a score of ${Math.round(topAgents[0].score)}.` },
+    }] : []),
+    {
+      "@type": "Question",
+      name: `How many active agents are there in ${short}?`,
+      acceptedAnswer: { "@type": "Answer", text: `${topAgents.length} agents have CEA-recorded transactions and an AgentScore for ${area.name}. The average agent in this ranking has completed ${avgAreaTxns} transactions in the area.` },
+    },
+    {
+      "@type": "Question",
+      name: "Can agents pay for a higher ranking?",
+      acceptedAnswer: { "@type": "Answer", text: "No. AgentScore is calculated algorithmically from CEA public data. Payment does not influence ranking position." },
+    },
+  ];
+
   const schemas = [
     { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://fair-comparisons.com" },
@@ -139,6 +157,7 @@ export default async function BestAgentsPage({ params }: Props) {
         item: { "@type": "RealEstateAgent", name: a.agent_name, url: `https://fair-comparisons.com/property-agents/agent/${a.agent_slug}` },
       })),
     }] : []),
+    { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqItems },
   ];
 
   return (
@@ -342,6 +361,14 @@ export default async function BestAgentsPage({ params }: Props) {
                 </div>
               </div>
             )}
+
+            <div className="rounded-xl border-2 border-teal-300 bg-gradient-to-b from-teal-50 to-white p-5">
+              <h3 className="text-sm font-bold text-gray-900">Are you ranked here?</h3>
+              <p className="mt-1.5 text-xs text-gray-500">Claim your profile to add your photo, bio, and connect with buyers in {short}.</p>
+              <Link href="/for-agents" className="mt-3 block rounded-lg bg-teal-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-teal-700">
+                Claim your profile
+              </Link>
+            </div>
 
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other Areas</h3>

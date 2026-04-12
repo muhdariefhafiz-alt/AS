@@ -104,7 +104,7 @@ export default async function PracticeAreaPage({ params }: Props) {
         </div>
       </nav>
 
-      <section className="bg-gradient-to-br from-coral-900 via-coral-800 to-coral-900">
+      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
           <h1 className="text-3xl font-extrabold text-white md:text-4xl">{area.name}</h1>
           <p className="mt-3 max-w-xl text-lg text-white/60">
@@ -131,19 +131,19 @@ export default async function PracticeAreaPage({ params }: Props) {
                   <Link
                     key={l.slug}
                     href={`/lawyers/${l.slug}`}
-                    className="group flex items-center gap-4 rounded-lg border border-gray-100 bg-white p-4 transition hover:border-coral-200 hover:shadow-sm"
+                    className="group flex items-center gap-4 rounded-lg border border-gray-100 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm"
                   >
                     <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
-                      i < 3 ? "bg-coral-500" : "bg-gray-400"
+                      i < 3 ? "bg-teal-500" : "bg-gray-400"
                     }`}>{i + 1}</div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 group-hover:text-coral-600">{l.name}</p>
+                      <p className="font-semibold text-gray-900 group-hover:text-teal-600">{l.name}</p>
                       <p className="text-xs text-gray-400 truncate">
                         {l.primary_firm} - {l.first_case_year}-{l.last_case_year}
                       </p>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg border border-coral-100 bg-coral-50 px-3 py-1.5">
-                      <span className="text-lg font-extrabold text-coral-600">{l.case_count}</span>
+                    <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1.5">
+                      <span className="text-lg font-extrabold text-teal-600">{l.case_count}</span>
                       <span className="text-[8px] uppercase tracking-widest text-gray-400">Cases</span>
                     </div>
                   </Link>
@@ -187,7 +187,7 @@ export default async function PracticeAreaPage({ params }: Props) {
               <div className="mt-3 space-y-1">
                 {(allAreas ?? []).filter(a => a.slug !== slug).slice(0, 15).map(a => (
                   <Link key={a.slug} href={`/lawyers/practice/${a.slug}`}
-                    className="block text-sm text-gray-600 hover:text-coral-600 truncate">
+                    className="block text-sm text-gray-600 hover:text-teal-600 truncate">
                     {a.name.split(' — ')[0]} ({a.case_count})
                   </Link>
                 ))}

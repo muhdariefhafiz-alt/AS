@@ -54,7 +54,7 @@ export default async function HomePage() {
           </p>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl lg:text-6xl">
             Compare property agents<br />
-            <span className="text-coral-400">in Singapore.</span>
+            <span className="text-teal-300">in Singapore.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/60">
             We combine CEA transaction records, URA data, and Google reviews to score every agent in Singapore. Rankings are calculated, not bought.
@@ -62,7 +62,7 @@ export default async function HomePage() {
 
           {/* Hero CTA */}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link href="/property-agents" className="inline-flex items-center justify-center rounded-lg bg-coral-500 px-7 py-3.5 font-semibold text-white shadow-lg transition hover:bg-coral-400">
+            <Link href="/property-agents" className="inline-flex items-center justify-center rounded-lg bg-teal-600 px-7 py-3.5 font-semibold text-white shadow-lg transition hover:bg-teal-500">
               Compare property agents
             </Link>
             <Link href="/about" className="inline-flex items-center justify-center rounded-lg border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white">
@@ -123,26 +123,26 @@ export default async function HomePage() {
           </Link>
 
           {/* Lawyers */}
-          <div className="relative rounded-2xl border border-gray-200 bg-white p-8">
-            <div className="absolute right-4 top-4 rounded-full bg-coral-50 px-3 py-1 text-xs font-semibold text-coral-600">Coming Soon</div>
+          <Link href="/lawyers"
+            className="group rounded-2xl border border-gray-200 bg-white p-8 transition hover:border-slate-300 hover:shadow-lg">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-coral-50 text-xl">{"\u2696\ufe0f"}</div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-xl">{"\u2696\ufe0f"}</div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Lawyers</h2>
+                <h2 className="text-xl font-bold text-gray-900 group-hover:text-slate-600">Lawyers</h2>
                 <p className="text-sm text-gray-500">5,204 court judgments analysed</p>
               </div>
             </div>
             <p className="mt-4 text-[15px] leading-relaxed text-gray-600">
-              We are building Singapore&apos;s first data-driven lawyer comparison platform.
-              8,000+ lawyers tracked across Supreme Court, District Court, and Family Court.
-              Sourced from eLitigation.sg public records.
+              Singapore&apos;s first data-driven lawyer directory. 7,000+ lawyers tracked across
+              Supreme Court, District Court, and Family Court. Sourced from eLitigation.sg public records.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-coral-50 px-3 py-1 text-xs font-medium text-coral-600">5,204 judgments</span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">8,021 lawyers</span>
+              <span className="rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">5,204 judgments</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">7,072 lawyers</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">1,253 firms</span>
             </div>
-            <Link href="/lawyers" className="mt-4 inline-block text-sm font-semibold text-coral-600 hover:text-coral-700">Browse lawyers {"\u2192"}</Link>
-          </div>
+            <p className="mt-4 text-sm font-semibold text-slate-600 group-hover:text-slate-700">Browse lawyers {"\u2192"}</p>
+          </Link>
 
           {/* Financial Advisors */}
           <Link href="/financial-advisors"
@@ -167,6 +167,45 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Featured Content */}
+      <section className="border-t border-gray-100">
+        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
+          <h2 className="text-2xl font-bold text-gray-900">Explore the data</h2>
+          <p className="mt-2 text-[15px] text-gray-500">Data-driven analysis you won't find anywhere else in Singapore.</p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Link href="/insights/million-dollar-hdb" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-green-200 hover:shadow-md">
+              <span className="text-xs font-semibold text-green-600">HDB</span>
+              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-green-600">Million-Dollar HDB Tracker</h3>
+              <p className="mt-1 text-xs text-gray-500">Every S$1M+ resale flat by town</p>
+            </Link>
+            <Link href="/insights/freehold-premium" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md">
+              <span className="text-xs font-semibold text-teal-600">Private</span>
+              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-teal-600">Freehold Premium by District</h3>
+              <p className="mt-1 text-xs text-gray-500">How much more does freehold cost?</p>
+            </Link>
+            <Link href="/insights/court-case-statistics" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-slate-200 hover:shadow-md">
+              <span className="text-xs font-semibold text-slate-600">Legal</span>
+              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-slate-600">Court Case Statistics</h3>
+              <p className="mt-1 text-xs text-gray-500">5,200+ judgments analyzed</p>
+            </Link>
+            <Link href="/property-agents/market/2025" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md">
+              <span className="text-xs font-semibold text-teal-600">Market</span>
+              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-teal-600">2025 Market Overview</h3>
+              <p className="mt-1 text-xs text-gray-500">Transactions, top agents, trends</p>
+            </Link>
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <Link href="/property-agents/district/d09-orchard" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">D09 Orchard Market Analysis</Link>
+            <Link href="/property-agents/district/d10-ardmore" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">D10 Bukit Timah Market Analysis</Link>
+            <Link href="/property-agents/district/d15-katong" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">D15 Katong Market Analysis</Link>
+            <Link href="/property-agents/hdb/ang-mo-kio" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">Ang Mo Kio HDB Prices</Link>
+            <Link href="/property-agents/hdb/tampines" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">Tampines HDB Prices</Link>
+            <Link href="/property-agents/hdb/bedok" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">Bedok HDB Prices</Link>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="border-t border-gray-100 bg-gray-50">
         <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
@@ -183,7 +222,7 @@ export default async function HomePage() {
               <p className="mt-2 text-sm text-gray-500">Volume (30pts), recency (25pts), diversity (15pts), experience (15pts), and reviews (15pts) into one objective AgentScore.</p>
             </div>
             <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-coral-50 text-2xl font-bold text-coral-600">3</div>
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-2xl font-bold text-slate-600">3</div>
               <h3 className="mt-4 font-bold text-gray-900">You compare fairly</h3>
               <p className="mt-2 text-sm text-gray-500">Rankings based on data, not advertising spend. Professionals cannot buy a higher position. Ever.</p>
             </div>

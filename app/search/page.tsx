@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { HDB_TOWNS, townDisplayName } from "../lib/hdbData";
+import { trackEvent } from "../lib/analytics";
 
 type Agency = {
   name: string;
@@ -113,8 +114,10 @@ export default function SearchPage() {
       }));
 
       // Combine: districts and HDB first (our unique value), then agencies, then agents
-      setResults([...districtMatches, ...hdbMatches, ...agencyMatches, ...agentMatches]);
+      const all = [...districtMatches, ...hdbMatches, ...agencyMatches, ...agentMatches];
+      setResults(all);
       setLoading(false);
+      if (all.length > 0) trackEvent("search", { search_term: q, result_count: all.length });
     });
   }, [query, districts]);
 

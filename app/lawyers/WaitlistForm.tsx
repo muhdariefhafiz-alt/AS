@@ -36,7 +36,7 @@ export default function WaitlistForm({ lawyerMode }: { lawyerMode?: boolean }) {
         type="submit"
         disabled={status === "loading"}
         className={`shrink-0 rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50 ${
-          lawyerMode ? "bg-teal-600 hover:bg-teal-700" : "bg-coral-500 hover:bg-coral-400"
+          lawyerMode ? "bg-teal-600 hover:bg-teal-700" : "bg-slate-800 hover:bg-slate-700"
         }`}
       >
         {status === "loading" ? "..." : lawyerMode ? "Claim early access" : "Join waitlist"}

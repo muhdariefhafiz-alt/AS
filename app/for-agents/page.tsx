@@ -1,5 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { supabase } from "../lib/supabase";
+
+export const revalidate = false;
 
 export const metadata: Metadata = {
   title: "For Property Agents - Claim Your Profile",
@@ -7,7 +10,21 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://fair-comparisons.com/for-agents" },
 };
 
-export default function ForAgentsPage() {
+async function getStats() {
+  const [scored, agencies, pages] = await Promise.all([
+    supabase.from("sg_agents").select("id", { count: "exact", head: true }).not("score", "is", null),
+    supabase.from("sg_agencies").select("id", { count: "exact", head: true }),
+    supabase.from("sg_agents").select("id", { count: "exact", head: true }),
+  ]);
+  return {
+    scored: scored.count ?? 10594,
+    agencies: agencies.count ?? 930,
+    total: pages.count ?? 30000,
+  };
+}
+
+export default async function ForAgentsPage() {
+  const stats = await getStats();
   return (
     <>
       <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
@@ -17,11 +34,16 @@ export default function ForAgentsPage() {
             Your profile is already live.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">
-            FairComparisons has scored 10,000+ Singapore property agents based on CEA transaction records.
+            FairComparisons has scored {stats.scored.toLocaleString()} Singapore property agents across {stats.agencies.toLocaleString()} agencies based on CEA transaction records.
             If you are a CEA-registered agent, your profile and score are already public. Claim it to take control.
           </p>
+          <div className="mt-6 flex justify-center gap-6">
+            <div className="text-center"><span className="text-2xl font-extrabold text-white">{stats.total.toLocaleString()}</span><p className="text-[10px] text-white/40">agents profiled</p></div>
+            <div className="text-center"><span className="text-2xl font-extrabold text-white">{stats.scored.toLocaleString()}</span><p className="text-[10px] text-white/40">agents scored</p></div>
+            <div className="text-center"><span className="text-2xl font-extrabold text-white">28</span><p className="text-[10px] text-white/40">districts</p></div>
+          </div>
           <div className="mt-8">
-            <Link href="/search" className="inline-block rounded-lg bg-coral-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-coral-400">
+            <Link href="/search" className="inline-block rounded-lg bg-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-teal-400">
               Find your profile
             </Link>
           </div>
@@ -148,7 +170,7 @@ export default function ForAgentsPage() {
         <div className="mx-auto max-w-[600px] px-5 py-16 text-center md:px-8">
           <h2 className="text-2xl font-bold text-white">Your profile is already being viewed by buyers.</h2>
           <p className="mt-3 text-white/60">Claim it to control what they see.</p>
-          <Link href="/search" className="mt-6 inline-block rounded-lg bg-coral-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-coral-400">
+          <Link href="/search" className="mt-6 inline-block rounded-lg bg-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-teal-400">
             Find and claim your profile
           </Link>
           <p className="mt-4 text-sm text-white/40">

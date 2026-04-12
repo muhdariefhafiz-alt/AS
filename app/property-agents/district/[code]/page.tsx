@@ -518,6 +518,19 @@ export default async function DistrictPage({ params }: Props) {
               </p>
             </div>
 
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Property Lawyers</h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Buying or selling in {area}? Find lawyers experienced in property transactions.
+              </p>
+              <div className="mt-3 space-y-1.5">
+                <Link href="/lawyers/practice/land-strata-titles-collective-sales" className="block text-sm text-teal-600 hover:underline">Collective Sale Lawyers</Link>
+                <Link href="/lawyers/practice/land-sale-of-land-sale-under-court-order" className="block text-sm text-teal-600 hover:underline">Property Sale Lawyers</Link>
+                <Link href="/lawyers/practice/land-interest-in-land" className="block text-sm text-teal-600 hover:underline">Land Interest Lawyers</Link>
+              </div>
+              <Link href="/lawyers" className="mt-3 block text-xs font-semibold text-slate-600 hover:text-slate-800">Browse all lawyers &rarr;</Link>
+            </div>
+
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other Districts</h3>
               <div className="mt-3 flex flex-wrap gap-2">

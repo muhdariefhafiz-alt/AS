@@ -93,15 +93,15 @@ export default async function FirmPage({ params }: Props) {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-coral-50/40 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-slate-50/40 to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-8 pt-8 md:px-8">
           <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">{firm.name}</h1>
           <p className="mt-2 text-sm text-gray-500">
             {firm.lawyer_count} lawyers - {totalCases} court appearances {yearRange && `(${yearRange})`}
           </p>
           <div className="mt-4 flex flex-wrap gap-4">
-            <div className="rounded-lg border border-coral-200 bg-coral-50 px-4 py-2 text-center">
-              <span className="text-xl font-extrabold text-coral-600">{firm.lawyer_count}</span>
+            <div className="rounded-lg border border-teal-200 bg-teal-50 px-4 py-2 text-center">
+              <span className="text-xl font-extrabold text-teal-600">{firm.lawyer_count}</span>
               <p className="text-[10px] text-gray-400">Lawyers</p>
             </div>
             <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-center">
@@ -136,17 +136,17 @@ export default async function FirmPage({ params }: Props) {
                   <Link
                     key={l.slug}
                     href={`/lawyers/${l.slug}`}
-                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 transition hover:border-coral-200 hover:shadow-sm"
+                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 group-hover:text-coral-600">{l.name}</p>
+                      <p className="font-semibold text-gray-900 group-hover:text-teal-600">{l.name}</p>
                       <p className="mt-0.5 text-xs text-gray-400 truncate">
                         {(l.practice_areas ?? []).slice(0, 2).map((a: string) => a.split(' — ')[0]).join(", ")}
                         {l.first_case_year && l.last_case_year ? ` - ${l.first_case_year}-${l.last_case_year}` : ""}
                       </p>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg border border-coral-100 bg-coral-50 px-3 py-1.5">
-                      <span className="text-lg font-extrabold text-coral-600">{l.case_count}</span>
+                    <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1.5">
+                      <span className="text-lg font-extrabold text-teal-600">{l.case_count}</span>
                       <span className="text-[8px] uppercase tracking-widest text-gray-400">Cases</span>
                     </div>
                   </Link>
@@ -181,7 +181,7 @@ export default async function FirmPage({ params }: Props) {
               </div>
             )}
 
-            <div className="rounded-xl border border-coral-200 bg-coral-50 p-5">
+            <div className="rounded-xl border border-teal-200 bg-teal-50 p-5">
               <p className="text-xs text-gray-500">
                 Data from eLitigation.sg court records. Does not represent all lawyers at this firm,
                 only those appearing in published court judgments.

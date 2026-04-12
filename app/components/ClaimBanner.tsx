@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { trackEvent } from "../lib/analytics";
 
 type Props = {
   agentId: number;
@@ -38,6 +39,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
       });
       const data = await res.json();
       if (res.ok) {
+        trackEvent("claim_submit", { agent_id: agentId, agent_name: agentName });
         setStatus("success");
       } else {
         setStatus("error");
@@ -91,7 +93,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
           </div>
           {!open && (
             <button
-              onClick={() => setOpen(true)}
+              onClick={() => { trackEvent("claim_click", { agent_id: agentId, agent_name: agentName }); setOpen(true); }}
               className="flex-shrink-0 rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 hover:shadow-md"
             >
               Claim profile
