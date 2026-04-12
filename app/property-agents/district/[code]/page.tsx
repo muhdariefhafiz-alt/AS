@@ -24,6 +24,10 @@ const DISTRICT_TO_BEST: Record<string, string> = {
   D25: "kranji-woodlands", D26: "upper-thomson", D27: "yishun-sembawang", D28: "seletar",
 };
 
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
 function pct(a: number, b: number) {
   if (!b) return { v: 0, d: "neutral" as const };
   const p = Math.round(((a - b) / b) * 100);
@@ -155,6 +159,21 @@ export default async function DistrictPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* Definition Block - optimized for featured snippets and AI extraction */}
+      <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
+        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-900">What are property prices in {area} ({district.code})?</h2>
+          <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
+            The median private residential property price in {area} ({district.code}) is <strong>{formatPrice(data.medianPrice)}</strong>,
+            based on {data.totalTxns.toLocaleString()} URA-recorded transactions from 2022 to 2025.
+            {freehold && leasehold && ` Freehold properties trade at ${formatPrice(freehold.median_price)} while 99-year leasehold units cost ${formatPrice(leasehold.median_price)}, a ${tenurePremium?.v ?? 0}% tenure premium.`}
+            {data.avgRentPsf && ` Average monthly rent in ${area} is ${formatPsf(data.avgRentPsf)} per square foot.`}
+            {` ${area} is ${priceVsSgAverage(data.medianPrice)} of ${formatPrice(data.sgMedianPrice)}.`}
+            {data.topProjects[0] && ` The most actively traded development is ${data.topProjects[0].project} with ${data.topProjects[0].txns} transactions.`}
+          </p>
+        </div>
+      </div>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         <div className="grid gap-10 lg:grid-cols-5">
@@ -295,10 +314,10 @@ export default async function DistrictPage({ params }: Props) {
                   )}
                   <div className="mt-3 space-y-2">
                     {data.rentalData.slice(0, 6).map(r => (
-                      <div key={r.project} className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-4 py-2.5">
+                      <Link key={r.project} href={`/property-agents/development/${slugify(r.project)}`} className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-4 py-2.5 transition hover:border-teal-200">
                         <span className="text-sm font-medium text-gray-900">{r.project}</span>
                         <span className="text-sm font-bold text-teal-600">{formatPsf(r.avg_rent_psf)}</span>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -331,7 +350,7 @@ export default async function DistrictPage({ params }: Props) {
                   {data.topProjects.map((p, i) => {
                     const w = Math.max(20, Math.round((p.txns / data.topProjects[0].txns) * 100));
                     return (
-                      <div key={p.project} className="rounded-lg border border-gray-100 bg-white px-4 py-3">
+                      <Link key={p.project} href={`/property-agents/development/${slugify(p.project)}`} className="block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-teal-200 hover:shadow-sm">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-teal-600" : "bg-gray-400"}`}>{i + 1}</span>
@@ -348,7 +367,7 @@ export default async function DistrictPage({ params }: Props) {
                         <div className="mt-2 h-1.5 w-full rounded-full bg-gray-100">
                           <div className="h-1.5 rounded-full bg-teal-200" style={{ width: `${w}%` }} />
                         </div>
-                      </div>
+                      </Link>
                     );
                   })}
                 </div>

@@ -67,6 +67,9 @@ export default async function DevelopmentPage({ params }: Props) {
   const { data: project } = await supabase.from("sg_projects").select("*").eq("slug", slug).single();
   if (!project) notFound();
 
+  const { data: districtRow } = await supabase.from("sg_districts").select("slug").eq("code", `D${project.district}`).single();
+  const districtSlug = districtRow?.slug ?? `d${project.district}`;
+
   const [trendRes, floorRes, sizeRes, tenureRes, rentalRes, listingsRes] = await Promise.all([
     supabase.rpc("get_project_price_trend", { p_name: project.name }),
     supabase.rpc("get_project_floor_analysis", { p_name: project.name }),
@@ -118,7 +121,8 @@ export default async function DevelopmentPage({ params }: Props) {
   const schemas = [
     { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://fair-comparisons.com" },
-      { "@type": "ListItem", position: 2, name: project.name, item: `https://fair-comparisons.com/property-agents/development/${slug}` },
+      { "@type": "ListItem", position: 2, name: `D${project.district} ${distName}`, item: `https://fair-comparisons.com/property-agents/district/${districtSlug}` },
+      { "@type": "ListItem", position: 3, name: project.name, item: `https://fair-comparisons.com/property-agents/development/${slug}` },
     ]},
     ...(faqItems.length > 0 ? [{
       "@context": "https://schema.org", "@type": "FAQPage",
@@ -133,6 +137,8 @@ export default async function DevelopmentPage({ params }: Props) {
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
           <Link href="/" className="hover:text-gray-600">Home</Link>
+          <span className="mx-1.5">/</span>
+          <Link href={`/property-agents/district/${districtSlug}`} className="hover:text-gray-600">D{project.district} {distName}</Link>
           <span className="mx-1.5">/</span>
           <span className="text-gray-600">{project.name}</span>
         </div>
@@ -154,6 +160,20 @@ export default async function DevelopmentPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* Definition Block - optimized for featured snippets and AI extraction */}
+      <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
+        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-900">What is the price of {project.name}?</h2>
+          <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
+            The median transaction price at {project.name} is <strong>{formatPriceFull(project.median_price)}</strong>,
+            based on {project.txn_count} URA-recorded transactions. Prices range from {formatPrice(project.min_price)} to {formatPrice(project.max_price)}.
+            {` ${project.name} is a ${isFreehold ? "freehold" : "leasehold"} development on ${project.street} in District ${project.district} (${distName}).`}
+            {floorPremPct && floorPremPct > 5 && ` High-floor units cost ${floorPremPct}% more than low-floor units.`}
+            {avgRent && ` Average rent is S$${avgRent.toFixed(2)} per square foot per month.`}
+          </p>
+        </div>
+      </div>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         <div className="grid gap-10 lg:grid-cols-5">
@@ -321,7 +341,7 @@ export default async function DevelopmentPage({ params }: Props) {
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Development Details</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-gray-500">Street</dt><dd className="font-medium text-gray-900 text-right">{project.street}</dd></div>
-                <div className="flex justify-between"><dt className="text-gray-500">District</dt><dd className="font-medium text-gray-900">D{project.district} {distName}</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-500">District</dt><dd className="font-medium text-gray-900"><Link href={`/property-agents/district/${districtSlug}`} className="text-teal-600 hover:text-teal-700">D{project.district} {distName}</Link></dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Tenure</dt><dd className="font-medium text-gray-900">{isFreehold ? "Freehold" : "Leasehold"}</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Transactions</dt><dd className="font-medium text-gray-900">{project.txn_count}</dd></div>
               </dl>

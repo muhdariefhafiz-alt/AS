@@ -155,6 +155,22 @@ export default async function HdbTownPage({ params }: Props) {
         </div>
       </section>
 
+      {/* Definition Block - optimized for featured snippets and AI extraction */}
+      <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
+        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-900">How much does an HDB flat cost in {display}?</h2>
+          <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
+            The median HDB resale price in {display} is <strong>{formatPrice(data.medianPrice)}</strong>,
+            based on {data.totalTxns.toLocaleString()} transactions recorded since July 2017.
+            {fourRoom && ` A 4-room flat costs ${formatPrice(fourRoom.median_price)}.`}
+            {fiveRoom && ` A 5-room flat costs ${formatPrice(fiveRoom.median_price)}.`}
+            {` This is ${vsSg.dir === "up" ? `${vsSg.pct}% above` : vsSg.dir === "down" ? `${vsSg.pct}% below` : "in line with"} the national HDB median of ${formatPrice(data.sgMedianHdb)}.`}
+            {yoy.dir === "up" ? ` Prices have risen ${yoy.pct}% year-on-year.` : yoy.dir === "down" ? ` Prices have dropped ${yoy.pct}% year-on-year.` : " Prices have been stable over the past year."}
+            {hasMillionDollar && ` ${display} has million-dollar HDB flats, with the highest recorded price at ${formatPrice(data.maxPrice)}.`}
+          </p>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         <div className="grid gap-10 lg:grid-cols-5">
           <div className="space-y-10 lg:col-span-3">
@@ -406,6 +422,19 @@ export default async function HdbTownPage({ params }: Props) {
                       {formatPrice(pricierTown.median_price)}.</>
                     )}
                   </p>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {nearbyTowns.map((t) => {
+                    const otherSlug = HDB_TOWNS.find((h) => h.name === t.town)?.slug;
+                    if (!otherSlug) return null;
+                    const pair = slug < otherSlug ? `${slug}-vs-${otherSlug}` : `${otherSlug}-vs-${slug}`;
+                    return (
+                      <Link key={t.town} href={`/property-agents/hdb-compare/${pair}`}
+                        className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-medium text-teal-700 transition hover:bg-teal-100">
+                        {display} vs {townDisplayName(t.town)}
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
             )}
