@@ -15,11 +15,14 @@ const BEST_AGENT_AREAS = [
 const BASE = "https://fair-comparisons.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [districtsRes, agenciesRes, agentsRes, projectsRes] = await Promise.all([
+  const [districtsRes, agenciesRes, agentsRes, projectsRes, lawyersRes, firmsRes, areasRes] = await Promise.all([
     supabase.from("sg_districts").select("slug").not("slug", "is", null),
     supabase.from("sg_agencies").select("slug, agent_count, google_review_count, score").order("agent_count", { ascending: false }).limit(5000),
     supabase.from("sg_agents").select("slug, score, transaction_count, google_review_count").order("score", { ascending: false, nullsFirst: false }).limit(10000),
     supabase.from("sg_projects").select("slug, txn_count").order("txn_count", { ascending: false }).limit(5000),
+    supabase.from("sg_lawyers").select("slug, case_count").gte("case_count", 3).order("case_count", { ascending: false }).limit(5000),
+    supabase.from("sg_law_firms").select("slug, case_count").gte("case_count", 5).order("case_count", { ascending: false }).limit(1000),
+    supabase.from("sg_practice_areas").select("slug, case_count").gte("case_count", 10).order("case_count", { ascending: false }).limit(200),
   ]);
 
   const districts = districtsRes.data ?? [];
@@ -30,7 +33,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: BASE, changeFrequency: "daily", priority: 1.0 },
     { url: `${BASE}/property-agents`, changeFrequency: "weekly", priority: 0.95 },
-    // lawyers coming-soon page: noindex, excluded from sitemap until launch
+    { url: `${BASE}/lawyers`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${BASE}/for-agents`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/privacy`, changeFrequency: "monthly", priority: 0.3 },
   ];
@@ -102,5 +106,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/terms`, changeFrequency: "monthly" as const, priority: 0.3 },
   ];
 
-  return [...staticPages, ...forAgentsPages, ...districtPages, ...hdbPages, ...bestAgentDistrictPages, ...bestAgentHdbPages, ...budgetPages, ...bestTypePages, ...agencyPages, ...agentPages, ...projectPages];
+  // Lawyer pages
+  const lawyerPages: MetadataRoute.Sitemap = (lawyersRes.data ?? []).map(l => ({
+    url: `${BASE}/lawyers/${l.slug}`,
+    changeFrequency: "monthly" as const,
+    priority: (l.case_count ?? 0) >= 20 ? 0.7 : 0.6,
+  }));
+
+  const firmPages: MetadataRoute.Sitemap = (firmsRes.data ?? []).map(f => ({
+    url: `${BASE}/lawyers/firm/${f.slug}`,
+    changeFrequency: "monthly" as const,
+    priority: (f.case_count ?? 0) >= 50 ? 0.7 : 0.6,
+  }));
+
+  const practiceAreaPages: MetadataRoute.Sitemap = (areasRes.data ?? []).map(a => ({
+    url: `${BASE}/lawyers/practice/${a.slug}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...forAgentsPages, ...districtPages, ...hdbPages, ...bestAgentDistrictPages, ...bestAgentHdbPages, ...budgetPages, ...bestTypePages, ...agencyPages, ...agentPages, ...projectPages, ...lawyerPages, ...firmPages, ...practiceAreaPages];
 }
