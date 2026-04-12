@@ -8,6 +8,7 @@ export const revalidate = false;
 export const dynamicParams = false;
 type Props = { params: Promise<{ area: string }> };
 
+// Names MUST match sg_area_top_agents.area_name exactly
 const AREAS = [
   { name: "Serangoon Garden/ Hougang/ Punggol", slug: "serangoon-hougang-punggol", district: "D19" },
   { name: "Katong/ Joo Chiat/ Amber Road", slug: "katong-joo-chiat", district: "D15" },
@@ -28,15 +29,15 @@ const AREAS = [
   { name: "Upper Thomson/ Springleaf", slug: "upper-thomson", district: "D26" },
   { name: "Seletar", slug: "seletar", district: "D28" },
   { name: "Kranji/ Woodgrove", slug: "kranji-woodlands", district: "D25" },
-  { name: "Boat Quay/ Raffles Place/ Marina", slug: "raffles-place-marina", district: "D01" },
-  { name: "Chinatown/ Tanjong Pagar", slug: "chinatown-tanjong-pagar", district: "D02" },
-  { name: "Harbourfront/ Telok Blangah", slug: "harbourfront-telok-blangah", district: "D04" },
-  { name: "Beach Road/ Middle Road", slug: "beach-road-golden-mile", district: "D07" },
+  { name: "Raffles Place/ Cecil/ Marina/ People's Park", slug: "raffles-place-marina", district: "D01" },
+  { name: "Anson/ Tanjong Pagar", slug: "chinatown-tanjong-pagar", district: "D02" },
+  { name: "Telok Blangah/ Harbourfront", slug: "harbourfront-telok-blangah", district: "D04" },
+  { name: "Middle Road/ Golden Mile", slug: "beach-road-golden-mile", district: "D07" },
   { name: "Little India", slug: "little-india", district: "D08" },
   { name: "Macpherson/ Braddell", slug: "macpherson-braddell", district: "D13" },
   { name: "Loyang/ Changi", slug: "changi-loyang", district: "D17" },
   { name: "Lim Chu Kang/ Tengah", slug: "lim-chu-kang", district: "D24" },
-  { name: "High Street/ Beach Road", slug: "high-street", district: "D06" },
+  { name: "High Street/ Beach Road (part)", slug: "high-street", district: "D06" },
 ];
 
 function areaFromSlug(slug: string) { return AREAS.find(a => a.slug === slug); }
