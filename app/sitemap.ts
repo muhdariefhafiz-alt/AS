@@ -106,6 +106,63 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/terms`, changeFrequency: "monthly" as const, priority: 0.3 },
   ];
 
+  // District comparison pages
+  const districtCodes = districts.map(d => {
+    const m = d.slug.match(/^d(\d{2})/);
+    return m ? `D${m[1]}` : null;
+  }).filter(Boolean) as string[];
+  const districtComparePairs: string[] = [];
+  // Adjacent pairs
+  for (let i = 0; i < districtCodes.length - 1; i++) {
+    districtComparePairs.push(`${districtCodes[i].toLowerCase()}-vs-${districtCodes[i + 1].toLowerCase()}`);
+  }
+  // Popular cross-pairs
+  const popularDists = ["d01", "d09", "d10", "d15", "d05", "d03", "d19", "d20", "d11", "d21"];
+  for (let i = 0; i < popularDists.length; i++) {
+    for (let j = i + 1; j < popularDists.length; j++) {
+      const pair = `${popularDists[i]}-vs-${popularDists[j]}`;
+      if (!districtComparePairs.includes(pair)) districtComparePairs.push(pair);
+    }
+  }
+  const districtComparePages: MetadataRoute.Sitemap = districtComparePairs.map(p => ({
+    url: `${BASE}/property-agents/district-compare/${p}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.75,
+  }));
+
+  // HDB town comparison pages
+  const hdbComparePairs: string[] = [];
+  for (let i = 0; i < HDB_TOWNS.length - 1; i++) {
+    hdbComparePairs.push(`${HDB_TOWNS[i].slug}-vs-${HDB_TOWNS[i + 1].slug}`);
+  }
+  const popularTowns = ["ang-mo-kio", "bedok", "tampines", "woodlands", "punggol", "sengkang", "bishan", "queenstown", "bukit-merah", "toa-payoh"];
+  for (let i = 0; i < popularTowns.length; i++) {
+    for (let j = i + 1; j < popularTowns.length; j++) {
+      const pair = `${popularTowns[i]}-vs-${popularTowns[j]}`;
+      if (!hdbComparePairs.includes(pair)) hdbComparePairs.push(pair);
+    }
+  }
+  const hdbComparePages: MetadataRoute.Sitemap = hdbComparePairs.map(p => ({
+    url: `${BASE}/property-agents/hdb-compare/${p}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.75,
+  }));
+
+  // Insights articles
+  const insightsPages: MetadataRoute.Sitemap = [
+    { url: `${BASE}/insights`, changeFrequency: "weekly" as const, priority: 0.85 },
+    { url: `${BASE}/insights/million-dollar-hdb`, changeFrequency: "monthly" as const, priority: 0.85 },
+    { url: `${BASE}/insights/freehold-premium`, changeFrequency: "monthly" as const, priority: 0.85 },
+    { url: `${BASE}/insights/court-case-statistics`, changeFrequency: "monthly" as const, priority: 0.8 },
+  ];
+
+  // Market year pages
+  const marketYearPages: MetadataRoute.Sitemap = [2020, 2021, 2022, 2023, 2024, 2025].map(y => ({
+    url: `${BASE}/property-agents/market/${y}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
   // Lawyer pages
   const lawyerPages: MetadataRoute.Sitemap = (lawyersRes.data ?? []).map(l => ({
     url: `${BASE}/lawyers/${l.slug}`,
@@ -125,5 +182,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...forAgentsPages, ...districtPages, ...hdbPages, ...bestAgentDistrictPages, ...bestAgentHdbPages, ...budgetPages, ...bestTypePages, ...agencyPages, ...agentPages, ...projectPages, ...lawyerPages, ...firmPages, ...practiceAreaPages];
+  return [...staticPages, ...forAgentsPages, ...insightsPages, ...districtPages, ...hdbPages, ...bestAgentDistrictPages, ...bestAgentHdbPages, ...budgetPages, ...bestTypePages, ...districtComparePages, ...hdbComparePages, ...marketYearPages, ...agencyPages, ...agentPages, ...projectPages, ...lawyerPages, ...firmPages, ...practiceAreaPages];
 }
