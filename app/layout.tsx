@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import Script from "next/script";
 import Link from "next/link";
 import "./globals.css";
 import PageTracker from "./components/PageTracker";
@@ -54,6 +55,7 @@ function Header() {
           <Link href="/property-agents" className="transition hover:text-gray-900">Property Agents</Link>
           <Link href="/lawyers" className="transition hover:text-gray-900">Lawyers</Link>
           <Link href="/financial-advisors" className="transition hover:text-gray-900">Financial Advisors</Link>
+          <Link href="/insights" className="transition hover:text-gray-900">Insights</Link>
           <Link href="/search" className="rounded-lg bg-teal-600 px-4 py-2 text-white transition hover:bg-teal-700">Search</Link>
         </nav>
         {/* Mobile nav */}
@@ -67,6 +69,7 @@ function Header() {
               <Link href="/property-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Property Agents</Link>
               <Link href="/lawyers" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Lawyers</Link>
               <Link href="/financial-advisors" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Financial Advisors</Link>
+              <Link href="/insights" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Insights</Link>
               <Link href="/for-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">For Agents</Link>
             </div>
           </details>
@@ -95,6 +98,8 @@ function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">Platform</h4>
             <div className="mt-3 space-y-2 text-sm text-gray-500">
               <Link href="/property-agents" className="block hover:text-gray-900">Property Agents</Link>
+              <Link href="/lawyers" className="block hover:text-gray-900">Lawyers</Link>
+              <Link href="/insights" className="block hover:text-gray-900">Insights</Link>
               <Link href="/for-agents" className="block hover:text-gray-900">For Agents</Link>
               <Link href="/about" className="block hover:text-gray-900">How We Score</Link>
               <Link href="/privacy" className="block hover:text-gray-900">Privacy Policy</Link>
@@ -122,10 +127,9 @@ function Footer() {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} antialiased`}>
-      <head>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-K4D8EQ6D9G"></script>
-        <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-K4D8EQ6D9G');` }} />
-      </head>
+      <head />
+      <Script src="https://www.googletagmanager.com/gtag/js?id=G-K4D8EQ6D9G" strategy="afterInteractive" />
+      <Script id="gtag-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-K4D8EQ6D9G');` }} />
       <body className="min-h-screen bg-white font-[family-name:var(--font-geist-sans)] text-gray-900">
         <Header />
         <main>{children}</main>

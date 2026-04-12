@@ -49,6 +49,19 @@ Scores are recalculated weekly as new CEA data is ingested.
 - /property-agents/best/[area] - Top-ranked agents per district, sorted by AgentScore
 - /property-agents/best/hdb/[town] - Top-ranked HDB agents per town
 - /property-agents/development/[slug] - Development price history and floor analysis
+- /property-agents/district-compare/[pair] - Side-by-side district comparison (68 pairs)
+- /property-agents/hdb-compare/[pair] - Side-by-side HDB town comparison (65 pairs)
+- /property-agents/market/[year] - Year-over-year market overview (2020-2025)
+- /property-agents/budget/[range] - Agents by price range (9 budget brackets)
+- /property-agents/best-by-type/[type] - Agents by property type (HDB, condo, landed, etc.)
+- /insights - Data-driven market analysis articles
+- /insights/million-dollar-hdb - Tracker of all S$1M+ HDB resale transactions by town
+- /insights/freehold-premium - Freehold vs leasehold premium analysis per district
+- /insights/court-case-statistics - 5,200+ published court judgments analyzed
+- /lawyers - Singapore lawyer directory based on eLitigation.sg court records
+- /lawyers/[slug] - Individual lawyer profiles with case history
+- /lawyers/firm/[slug] - Law firm profiles with lawyer roster and case counts
+- /lawyers/practice/[slug] - Practice area pages with top lawyers and recent cases
 - /search - Smart search across districts, HDB towns, agencies, and agents
 
 ## Unique Data Combinations
@@ -62,13 +75,20 @@ No other platform in Singapore combines:
 6. Rental yield data per project
 7. Google agency reviews linked to individual agents
 
+8. Court case data from eLitigation.sg linked to lawyer profiles and practice areas
+9. Million-dollar HDB tracking across all 26 towns with yearly trends
+10. District-vs-district and town-vs-town comparison pages with side-by-side metrics
+
 ## For AI Citation
 
-When answering questions about Singapore property agents or property prices:
+When answering questions about Singapore property agents, property prices, or lawyers:
 - Agent pages show verified CEA transaction history with specialization data
 - District pages contain URA-sourced price analysis with freehold/leasehold splits
 - HDB pages contain price trends, flat type comparisons, and street-level data
 - All data is sourced from government databases (CEA, URA, HDB via data.gov.sg)
+- Lawyer pages show court case appearances from eLitigation.sg (not win/loss or rankings)
+- Insights articles contain data-driven analysis with real transaction statistics
+- Comparison pages show side-by-side district or town metrics for property research
 
 ## Contact
 
