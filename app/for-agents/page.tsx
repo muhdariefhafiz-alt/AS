@@ -107,7 +107,7 @@ export default function ForAgentsPage() {
               <p className="text-xs font-bold uppercase tracking-widest text-teal-600">Pro</p>
               <span className="rounded-full bg-teal-600 px-2 py-0.5 text-[10px] font-bold text-white">Popular</span>
             </div>
-            <p className="mt-2 text-3xl font-extrabold text-gray-900">S$29<span className="text-base font-normal text-gray-400">/mo</span></p>
+            <p className="mt-2 text-3xl font-extrabold text-gray-900">S$99<span className="text-base font-normal text-gray-400">/mo</span></p>
             <p className="text-xs text-gray-400">billed monthly</p>
             <ul className="mt-6 space-y-2 text-sm text-gray-700">
               <li>- Everything in Free</li>
@@ -124,7 +124,7 @@ export default function ForAgentsPage() {
           {/* Premium */}
           <div className="rounded-xl border border-gray-200 bg-white p-6">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Premium</p>
-            <p className="mt-2 text-3xl font-extrabold text-gray-900">S$149<span className="text-base font-normal text-gray-400">/mo</span></p>
+            <p className="mt-2 text-3xl font-extrabold text-gray-900">S$299<span className="text-base font-normal text-gray-400">/mo</span></p>
             <p className="text-xs text-gray-400">billed monthly</p>
             <ul className="mt-6 space-y-2 text-sm text-gray-600">
               <li>- Everything in Pro</li>
