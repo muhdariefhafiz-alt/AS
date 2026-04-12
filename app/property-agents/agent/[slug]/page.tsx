@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { formatPrice } from "../../../lib/narrativeHelpers";
 import ClaimBanner from "../../../components/ClaimBanner";
+import AgentReviews from "../../../components/AgentReviews";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -375,6 +376,9 @@ export default async function AgentPage({ params }: Props) {
                 </div>
               </section>
             )}
+
+            {/* ---- REVIEWS ---- */}
+            <AgentReviews agentId={agent.id} agentName={agent.name} />
 
             {/* ---- LISTINGS ---- */}
             {hasListings && (
