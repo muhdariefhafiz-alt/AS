@@ -98,7 +98,7 @@ export default async function HomePage() {
 
       {/* Sector Cards */}
       <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-3">
           {/* Property Agents */}
           <Link href="/property-agents"
             className="group rounded-2xl border border-gray-200 bg-white p-8 transition hover:border-teal-300 hover:shadow-lg">
@@ -141,8 +141,29 @@ export default async function HomePage() {
               <span className="rounded-full bg-coral-50 px-3 py-1 text-xs font-medium text-coral-600">5,204 judgments</span>
               <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">8,021 lawyers</span>
             </div>
-            <Link href="/lawyers" className="mt-4 inline-block text-sm font-semibold text-coral-600 hover:text-coral-700">Join the waitlist {"\u2192"}</Link>
+            <Link href="/lawyers" className="mt-4 inline-block text-sm font-semibold text-coral-600 hover:text-coral-700">Browse lawyers {"\u2192"}</Link>
           </div>
+
+          {/* Financial Advisors */}
+          <Link href="/financial-advisors"
+            className="group rounded-2xl border border-gray-200 bg-white p-8 transition hover:border-blue-300 hover:shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-xl">{"\ud83d\udcb0"}</div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600">Financial Advisors</h2>
+                <p className="text-sm text-gray-500">MAS-regulated institutions</p>
+              </div>
+            </div>
+            <p className="mt-4 text-[15px] leading-relaxed text-gray-600">
+              Every MAS-licensed financial institution in Singapore. Banks, insurers, financial advisors,
+              capital markets firms, and payment providers. Verified against the MAS register.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">MAS Licensed</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">5 sectors</span>
+            </div>
+            <p className="mt-4 text-sm font-semibold text-blue-600 group-hover:text-blue-700">Browse institutions {"\u2192"}</p>
+          </Link>
         </div>
       </section>
 
