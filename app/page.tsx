@@ -24,7 +24,7 @@ export default async function HomePage() {
     "@type": "WebSite",
     name: "FairComparisons",
     url: "https://fair-comparisons.com",
-    description: "Singapore's independent professional ratings. Compare property agents, lawyers, and more.",
+    description: "Compare property agents in Singapore on actual government transaction records. Independent ratings based on CEA, URA, and HDB data.",
     potentialAction: {
       "@type": "SearchAction",
       target: "https://fair-comparisons.com/search?q={search_term_string}",
@@ -32,9 +32,19 @@ export default async function HomePage() {
     },
   };
 
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "FairComparisons",
+    url: "https://fair-comparisons.com",
+    logo: "https://fair-comparisons.com/logo.svg",
+    description: "Independent professional comparison platform for Singapore. Rankings based on government data, not advertising.",
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
@@ -43,14 +53,46 @@ export default async function HomePage() {
             Independent professional ratings
           </p>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl lg:text-6xl">
-            Find Singapore&apos;s best professionals.
-            <br />
-            <span className="text-coral-400">Exposed by data, not advertising.</span>
+            Compare property agents<br />
+            <span className="text-coral-400">in Singapore.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/60">
-            We analyse government records, court judgments, and public data to rate professionals
-            on actual performance. No pay-to-play. No fake reviews. Just facts.
+            We combine CEA transaction records, URA data, and Google reviews to score every agent in Singapore. Rankings are calculated, not bought.
           </p>
+
+          {/* Hero CTA */}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link href="/property-agents" className="inline-flex items-center justify-center rounded-lg bg-coral-500 px-7 py-3.5 font-semibold text-white shadow-lg transition hover:bg-coral-400">
+              Compare property agents
+            </Link>
+            <Link href="/about" className="inline-flex items-center justify-center rounded-lg border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white">
+              How we score agents
+            </Link>
+          </div>
+
+          {/* Stats bar */}
+          <div className="mt-12 flex flex-wrap items-center gap-8 border-t border-white/10 pt-8">
+            <div className="text-center">
+              <span className="text-2xl font-extrabold text-white">{stats.scoredAgents.toLocaleString()}</span>
+              <p className="text-xs text-white/40">agents scored</p>
+            </div>
+            <div className="text-center">
+              <span className="text-2xl font-extrabold text-white">{stats.transactions.toLocaleString()}+</span>
+              <p className="text-xs text-white/40">transactions analysed</p>
+            </div>
+            <div className="text-center">
+              <span className="text-2xl font-extrabold text-white">28</span>
+              <p className="text-xs text-white/40">districts covered</p>
+            </div>
+          </div>
+
+          {/* Trust badges */}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/40">CEA Public Register</span>
+            <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/40">URA Data Service</span>
+            <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/40">HDB (data.gov.sg)</span>
+            <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/40">Google Reviews</span>
+          </div>
         </div>
       </section>
 
@@ -87,19 +129,19 @@ export default async function HomePage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-coral-50 text-xl">{"\u2696\ufe0f"}</div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Lawyers</h2>
-                <p className="text-sm text-gray-500">10,568 court judgments analysed</p>
+                <p className="text-sm text-gray-500">5,204 court judgments analysed</p>
               </div>
             </div>
             <p className="mt-4 text-[15px] leading-relaxed text-gray-600">
               We are building Singapore&apos;s first data-driven lawyer comparison platform.
-              Every practicing lawyer rated on actual court outcomes, case volume, specialization,
-              and judicial patterns. Sourced from eLitigation.sg public records.
+              8,000+ lawyers tracked across Supreme Court, District Court, and Family Court.
+              Sourced from eLitigation.sg public records.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-coral-50 px-3 py-1 text-xs font-medium text-coral-600">10,568 judgments</span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">6,000 lawyers</span>
+              <span className="rounded-full bg-coral-50 px-3 py-1 text-xs font-medium text-coral-600">5,204 judgments</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">8,021 lawyers</span>
             </div>
-            <Link href="/lawyers" className="mt-4 inline-block text-sm font-semibold text-coral-600 hover:text-coral-700">Learn more {"\u2192"}</Link>
+            <Link href="/lawyers" className="mt-4 inline-block text-sm font-semibold text-coral-600 hover:text-coral-700">Join the waitlist {"\u2192"}</Link>
           </div>
         </div>
       </section>
@@ -112,32 +154,18 @@ export default async function HomePage() {
             <div className="text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-2xl font-bold text-teal-600">1</div>
               <h3 className="mt-4 font-bold text-gray-900">We collect public records</h3>
-              <p className="mt-2 text-sm text-gray-500">Government databases, court judgments, and official registers. Data that already exists but nobody has structured.</p>
+              <p className="mt-2 text-sm text-gray-500">CEA transaction records, URA prices, HDB resale data, and Google reviews. Data that already exists but nobody has structured.</p>
             </div>
             <div className="text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-2xl font-bold text-teal-600">2</div>
               <h3 className="mt-4 font-bold text-gray-900">We score performance</h3>
-              <p className="mt-2 text-sm text-gray-500">Our algorithms analyse transaction volume, outcomes, experience, and reviews into an objective score per professional.</p>
+              <p className="mt-2 text-sm text-gray-500">Volume (30pts), recency (25pts), diversity (15pts), experience (15pts), and reviews (15pts) into one objective AgentScore.</p>
             </div>
             <div className="text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-coral-50 text-2xl font-bold text-coral-600">3</div>
               <h3 className="mt-4 font-bold text-gray-900">You compare fairly</h3>
               <p className="mt-2 text-sm text-gray-500">Rankings based on data, not advertising spend. Professionals cannot buy a higher position. Ever.</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust bar */}
-      <section className="border-t border-gray-100">
-        <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
-          <p className="text-center text-xs font-medium uppercase tracking-widest text-gray-400">Data sourced from</p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-400">
-            <span>CEA Public Register</span>
-            <span>URA Data Service</span>
-            <span>HDB (data.gov.sg)</span>
-            <span>eLitigation.sg</span>
-            <span>Google Reviews</span>
           </div>
         </div>
       </section>

@@ -205,6 +205,10 @@ export default async function AgentPage({ params }: Props) {
               <div className="flex flex-col items-center rounded-xl border border-teal-200 bg-white px-4 py-3 shadow-sm">
                 <span className="text-3xl font-extrabold text-teal-600">{Math.round(Number(agent.score))}</span>
                 <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">AgentScore</span>
+                {agent.percentile && agent.percentile <= 25 && (
+                  <span className="mt-1 text-[10px] text-teal-600">Top {agent.percentile}% in SG</span>
+                )}
+                <Link href="/about" className="mt-0.5 text-[9px] text-gray-400 hover:text-teal-600">How is this calculated?</Link>
               </div>
             )}
           </div>

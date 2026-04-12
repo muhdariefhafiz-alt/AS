@@ -80,5 +80,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  return [...staticPages, ...districtPages, ...hdbPages, ...bestAgentDistrictPages, ...bestAgentHdbPages, ...agencyPages, ...agentPages, ...projectPages];
+  // Budget / price range pages
+  const budgetSlugs = ["under-500k", "500k-to-800k", "800k-to-1m", "1m-to-1-5m", "1-5m-to-2m", "2m-to-3m", "3m-to-5m", "5m-to-10m", "above-10m"];
+  const budgetPages: MetadataRoute.Sitemap = budgetSlugs.map(slug => ({
+    url: `${BASE}/property-agents/budget/${slug}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
+  // Best agents by property type
+  const typeSlugs = ["hdb", "condo", "landed", "executive-condo", "apartment", "rental"];
+  const bestTypePages: MetadataRoute.Sitemap = typeSlugs.map(slug => ({
+    url: `${BASE}/property-agents/best-by-type/${slug}`,
+    changeFrequency: "weekly" as const,
+    priority: 0.85,
+  }));
+
+  // For-agents landing page
+  const forAgentsPages: MetadataRoute.Sitemap = [
+    { url: `${BASE}/for-agents`, changeFrequency: "monthly" as const, priority: 0.7 },
+    { url: `${BASE}/terms`, changeFrequency: "monthly" as const, priority: 0.3 },
+  ];
+
+  return [...staticPages, ...forAgentsPages, ...districtPages, ...hdbPages, ...bestAgentDistrictPages, ...bestAgentHdbPages, ...budgetPages, ...bestTypePages, ...agencyPages, ...agentPages, ...projectPages];
 }

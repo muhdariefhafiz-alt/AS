@@ -107,6 +107,15 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
+
+        {/* CTA */}
+        <div className="mt-12 rounded-xl border border-teal-200 bg-teal-50 p-6 text-center">
+          <h2 className="text-xl font-bold text-gray-900">Ready to compare agents?</h2>
+          <p className="mt-2 text-gray-600">Search 30,000+ agents rated on actual government data.</p>
+          <a href="/property-agents" className="mt-4 inline-block rounded-lg bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700">
+            Compare agents now
+          </a>
+        </div>
       </div>
     </article>
   );

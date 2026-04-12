@@ -53,7 +53,7 @@ function Header() {
         <nav className="hidden items-center gap-7 text-sm font-medium text-gray-500 sm:flex">
           <Link href="/property-agents" className="transition hover:text-gray-900">Property Agents</Link>
           <Link href="/lawyers" className="transition hover:text-gray-900">Lawyers</Link>
-          <Link href="/about" className="transition hover:text-gray-900">About</Link>
+          <Link href="/for-agents" className="transition hover:text-gray-900">For Agents</Link>
           <Link href="/search" className="rounded-lg bg-teal-600 px-4 py-2 text-white transition hover:bg-teal-700">Search</Link>
         </nav>
         {/* Mobile nav */}
@@ -66,7 +66,7 @@ function Header() {
             <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
               <Link href="/property-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Property Agents</Link>
               <Link href="/lawyers" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Lawyers</Link>
-              <Link href="/property-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Browse Districts</Link>
+              <Link href="/for-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">For Agents</Link>
               <Link href="/about" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">About</Link>
             </div>
           </details>
@@ -94,7 +94,8 @@ function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">Platform</h4>
             <div className="mt-3 space-y-2 text-sm text-gray-500">
               <Link href="/property-agents" className="block hover:text-gray-900">Property Agents</Link>
-              <Link href="/about" className="block hover:text-gray-900">About AgentScore</Link>
+              <Link href="/for-agents" className="block hover:text-gray-900">For Agents</Link>
+              <Link href="/about" className="block hover:text-gray-900">How We Score</Link>
               <Link href="/privacy" className="block hover:text-gray-900">Privacy Policy</Link>
               <Link href="/terms" className="block hover:text-gray-900">Terms of Service</Link>
             </div>
@@ -109,8 +110,8 @@ function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t border-gray-200 pt-6 text-center text-xs text-gray-400">
-          Independent comparison platform. Not affiliated with any agency.
-          Data sourced from CEA, Google, and public records.
+          Independent. Data-driven. Rankings cannot be bought. Built in Singapore.
+          Data sourced from CEA, URA, HDB, and Google.
         </div>
       </div>
     </footer>

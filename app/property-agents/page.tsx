@@ -27,18 +27,18 @@ export default async function PropertyAgentsHub() {
         <div className="mx-auto max-w-[1120px] px-5 py-16 md:px-8 md:py-20">
           <p className="text-xs font-bold uppercase tracking-widest text-teal-300">Property Agents</p>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl">
-            Find the right property agent<br />
-            <span className="text-coral-400">in Singapore</span>
+            {agentCount.toLocaleString()} agents.<br />
+            <span className="text-coral-400">One independent score.</span>
           </h1>
           <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/60">
-            Compare {agentCount.toLocaleString()} CEA-registered agents on actual transaction records.
-            Not advertising. Not self-reported. Real data from government sources.
+            Every CEA-registered agent in Singapore, ranked on actual transaction records.
+            Not advertising. Not self-reported. Government data only.
           </p>
           <form action="/search" method="GET" className="mt-8 flex flex-col gap-3 sm:flex-row">
             <input type="text" name="q" placeholder="Agent name, district, or HDB town..."
               className="flex-1 rounded-lg bg-white/10 px-5 py-3.5 text-white placeholder:text-white/40 backdrop-blur-sm focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-teal-400" />
             <button type="submit" className="rounded-lg bg-coral-500 px-7 py-3.5 font-semibold text-white shadow-lg transition hover:bg-coral-400">
-              Search
+              Find agent
             </button>
           </form>
         </div>
