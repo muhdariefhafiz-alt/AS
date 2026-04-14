@@ -7,6 +7,7 @@ import AgentReviews from "../../../components/AgentReviews";
 import EmailCapture from "../../../components/EmailCapture";
 import FunnelTracker from "../../../components/FunnelTracker";
 import ShareButtons from "../../../components/ShareButtons";
+import SelfViewCTA from "../../../components/SelfViewCTA";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -337,6 +338,9 @@ export default async function AgentPage({ params }: Props) {
           </div>
         </section>
       )}
+
+      {/* Self-view detection: shows prominent CTA when same profile visited 2+ times */}
+      <SelfViewCTA agentSlug={slug} agentName={agent.name} claimed={agent.claimed ?? false} />
 
       {/* ============================================================
           MAIN CONTENT GRID

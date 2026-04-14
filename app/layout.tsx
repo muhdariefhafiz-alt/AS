@@ -26,7 +26,10 @@ export const metadata: Metadata = {
   },
   description:
     "Compare 30,000+ property agents in Singapore on actual performance. FairComparisons combines Google, listing portals and CEA data into an objective AgentScore.",
-  alternates: { canonical: "https://fair-comparisons.com" },
+  alternates: {
+    canonical: "https://fair-comparisons.com",
+    types: { "application/rss+xml": "https://fair-comparisons.com/api/feed" },
+  },
   openGraph: {
     title: "FairComparisons - Compare Property Agents in Singapore",
     description: "Compare 30,000+ property agents on actual CEA transaction records. Independent ratings, not advertising.",
