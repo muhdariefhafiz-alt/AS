@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../../../lib/supabase";
 import { HDB_TOWNS, townFromSlug, townDisplayName } from "../../../../lib/hdbData";
 import { formatPrice } from "../../../../lib/narrativeHelpers";
+import EmailCapture from "../../../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -96,6 +97,14 @@ export default async function BestHdbAgentsPage({ params }: Props) {
             {medianPrice > 0 && ` Median 4-room HDB price: ${formatPrice(medianPrice)}.`}
             {totalTxns > 0 && ` ${totalTxns.toLocaleString()} HDB resale transactions recorded.`}
           </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-500">
+              Compare agents side by side
+            </Link>
+            <Link href="/search" className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-teal-200 hover:text-teal-600">
+              Search by name
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -151,6 +160,14 @@ export default async function BestHdbAgentsPage({ params }: Props) {
               </div>
               <p className="mt-4 text-[11px] text-gray-400">Source: CEA Public Register via data.gov.sg. AgentScore by FairComparisons.</p>
             </section>
+
+            <EmailCapture
+              variant="inline"
+              source="best-hdb"
+              pagePath={`/property-agents/best/hdb/${slug}`}
+              heading={`Get updates for ${display} HDB`}
+              description={`We'll notify you when HDB agent rankings change in ${display} or new resale data becomes available.`}
+            />
 
             <section>
               <h2 className="text-xl font-bold text-gray-900">FAQ</h2>

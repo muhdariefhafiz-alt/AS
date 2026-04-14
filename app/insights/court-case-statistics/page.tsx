@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
+import EmailCapture from "../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -313,6 +314,14 @@ export default async function CourtCaseStatsPage() {
                 <Link href="/insights/freehold-premium" className="block text-sm text-gray-600 hover:text-teal-600">Freehold Premium by District</Link>
               </div>
             </div>
+
+            <EmailCapture
+              variant="sidebar"
+              source="insight-court-cases"
+              pagePath="/insights/court-case-statistics"
+              heading="Get legal insights"
+              description="New court case analyses and legal market data delivered to your inbox."
+            />
 
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Browse Lawyers</h3>

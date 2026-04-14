@@ -11,7 +11,7 @@ export default function PrivacyPage() {
     <article className="mx-auto max-w-3xl px-5 py-12 md:px-10">
       <h1 className="text-3xl font-bold text-gray-900">Privacy Policy</h1>
       <p className="mt-2 text-sm text-gray-400">
-        Last updated: 9 April 2026
+        Last updated: 13 April 2026
       </p>
 
       <div className="mt-8 space-y-8 text-sm leading-relaxed text-gray-600">
@@ -155,6 +155,10 @@ export default function PrivacyPage() {
               Provide and manage paid subscription services (Verified Profile)
             </li>
             <li>
+              Send email updates to subscribers who have opted in (market
+              data, ranking changes, new features)
+            </li>
+            <li>
               Respond to enquiries, correction requests, and complaints
             </li>
             <li>
@@ -184,6 +188,48 @@ export default function PrivacyPage() {
             consent at any time by emailing us, which will result in the
             removal of your voluntarily provided contact details (but not the
             publicly sourced data on your profile).
+          </p>
+        </section>
+
+        {/* ---- 4B. EMAIL SUBSCRIPTIONS ---- */}
+        <section>
+          <h2 className="text-lg font-bold text-gray-900">
+            4b. Email subscriptions
+          </h2>
+          <p className="mt-2">
+            When you subscribe to our email updates via the forms on our
+            website, you voluntarily provide us with your email address. We
+            collect and use this information to:
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li>Send you property market updates, agent ranking changes, and new data analyses</li>
+            <li>Notify you about new features on our platform</li>
+            <li>Improve our understanding of which content is most useful to our audience</li>
+          </ul>
+          <p className="mt-2">
+            We also store the page you subscribed from and, where applicable,
+            the district or area context. This allows us to send you relevant
+            updates rather than generic emails.
+          </p>
+          <p className="mt-2">
+            <strong>Consent:</strong> By checking the consent box and submitting
+            your email, you consent to receiving emails from FairComparisons.
+          </p>
+          <p className="mt-2">
+            <strong>Unsubscribe:</strong> Every email we send includes an
+            unsubscribe link. You can also email us at{" "}
+            <a href="mailto:hello@fair-comparisons.com" className="text-blue-600 hover:underline">
+              hello@fair-comparisons.com
+            </a>{" "}
+            to request removal. We will process unsubscribe requests within 5
+            business days.
+          </p>
+          <p className="mt-2">
+            <strong>Data retention:</strong> We retain your email address and
+            subscription preferences for as long as your subscription is active.
+            After you unsubscribe, we retain a hashed record of your email for
+            up to 12 months to prevent accidental re-subscription, then delete
+            it permanently.
           </p>
         </section>
 
@@ -268,6 +314,12 @@ export default function PrivacyPage() {
               <strong>Claim and subscription data</strong>: retained for the
               duration of the agent&apos;s active engagement with our platform,
               plus 7 years for accounting records as required by Dutch law.
+            </li>
+            <li>
+              <strong>Email subscription data</strong>: retained for the
+              duration of the active subscription. After unsubscribe, a
+              hashed record is kept for up to 12 months, then permanently
+              deleted.
             </li>
             <li>
               <strong>Analytics data</strong>: aggregated and anonymous; no

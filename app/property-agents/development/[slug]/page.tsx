@@ -4,6 +4,7 @@ import { supabase } from "../../../lib/supabase";
 import { formatPrice, formatPriceFull } from "../../../lib/narrativeHelpers";
 import PriceTrendChart from "../../../components/PriceTrendChart";
 import StatCard from "../../../components/StatCard";
+import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -155,7 +156,7 @@ export default async function DevelopmentPage({ params }: Props) {
           <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard label="Median Price" value={formatPrice(project.median_price)} subtext={`${project.txn_count} transactions`} />
             <StatCard label="Price Range" value={`${formatPrice(project.min_price)} - ${formatPrice(project.max_price)}`} />
-            <StatCard label="Tenure" value={isFreehold ? "Freehold" : "Leasehold"} subtext={isFreehold ? "" : primaryTenure.slice(0, 30)} />
+            <StatCard label="Tenure" value={isFreehold ? "Freehold" : "Leasehold"} subtext={isFreehold ? "" : primaryTenure} />
             {avgRent && <StatCard label="Avg Rent" value={`S$${avgRent.toFixed(2)} psf`} subtext="per month" />}
           </div>
         </div>
@@ -346,6 +347,14 @@ export default async function DevelopmentPage({ params }: Props) {
                 <div className="flex justify-between"><dt className="text-gray-500">Transactions</dt><dd className="font-medium text-gray-900">{project.txn_count}</dd></div>
               </dl>
             </div>
+
+            <EmailCapture
+              variant="sidebar"
+              source="development"
+              pagePath={`/property-agents/development/${slug}`}
+              heading="Price alerts"
+              description="Get notified when new transactions are recorded for this development."
+            />
 
             {sizes.length >= 2 && (
               <div className="rounded-xl border border-gray-200 bg-white p-5">

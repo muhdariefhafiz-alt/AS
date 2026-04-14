@@ -82,13 +82,12 @@ export default async function ForAgentsPage() {
           <p className="mx-auto mt-3 max-w-lg text-center text-sm text-gray-500">
             The AgentScore is fully automated. Payment does not influence your ranking. The only way to improve your score is to close more transactions and deliver better service.
           </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-5">
+          <div className="mt-8 grid gap-4 sm:grid-cols-4">
             {[
               { label: "Volume", pts: 30, desc: "Total CEA transactions" },
               { label: "Recency", pts: 25, desc: "Recent activity weighted higher" },
               { label: "Diversity", pts: 15, desc: "Property types and transaction types" },
               { label: "Experience", pts: 15, desc: "Years registered and consistency" },
-              { label: "Reviews", pts: 15, desc: "Google reviews, Bayesian-corrected" },
             ].map(d => (
               <div key={d.label} className="rounded-xl border border-gray-200 bg-white p-4 text-center">
                 <span className="text-2xl font-extrabold text-teal-600">{d.pts}</span>

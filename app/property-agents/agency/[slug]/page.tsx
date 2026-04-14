@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${agency.name} - Property Agency in Singapore`,
-    description: `${agency.name} has ${agency.agent_count.toLocaleString()} registered agents in Singapore. ${scoreText}${ratingText}Compare with other agencies on FairComparisons.`,
+    description: `${agency.name} has ${agency.agent_count.toLocaleString()} registered ${agency.agent_count === 1 ? "agent" : "agents"} in Singapore. ${scoreText}${ratingText}Compare with other agencies on FairComparisons.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/agency/${slug}` },
     ...(isThin && { robots: { index: false, follow: true } }),
   };
@@ -186,7 +187,7 @@ export default async function AgencyPage({ params }: Props) {
               <h2 className="text-lg font-bold text-gray-900">{agency.name} - overview and data</h2>
               <p className="mt-3 text-sm leading-relaxed text-gray-600">
                 {agency.name} (CEA {agency.license_number}) is a property agency in Singapore
-                with {agency.agent_count.toLocaleString()} registered agents.
+                with {agency.agent_count.toLocaleString()} registered {agency.agent_count === 1 ? "agent" : "agents"}.
                 {agency.google_rating && ` Clients rate this agency ${Number(agency.google_rating).toFixed(1)}/5 based on ${agency.google_review_count} Google reviews.`}
                 {agency.agent_count > 1000
                   ? ` It is one of the largest agencies in Singapore by number of agents.`
@@ -265,9 +266,45 @@ export default async function AgencyPage({ params }: Props) {
             <div className="rounded-lg border border-teal-200 bg-teal-50 p-5">
               <h3 className="text-sm font-bold text-gray-900">Looking for an agent at {agency.name}?</h3>
               <p className="mt-1 text-xs text-gray-600">
-                Browse {agency.agent_count.toLocaleString()} registered agents.
-                Compare on reviews, experience, and district expertise.
+                Browse {agency.agent_count.toLocaleString()} registered {agency.agent_count === 1 ? "agent" : "agents"}.
+                Compare on experience and district expertise.
               </p>
+              <Link href="/property-agents/compare" className="mt-3 inline-block text-sm font-semibold text-teal-600 hover:text-teal-700">
+                Compare agents {"\u2192"}
+              </Link>
+            </div>
+
+            <EmailCapture
+              variant="sidebar"
+              source="agency"
+              pagePath={`/property-agents/agency/${slug}`}
+              heading="Agency updates"
+              description={`Get notified when ${agency.name} data is updated.`}
+            />
+
+            {/* Agency comparisons */}
+            <div className="rounded-lg border border-gray-200 bg-white p-5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Compare with</h3>
+              <div className="mt-3 space-y-2">
+                {[
+                  { slug: "propnex-realty-pte-ltd", short: "PropNex" },
+                  { slug: "era-realty-network-pte-ltd", short: "ERA" },
+                  { slug: "huttons-asia-pte-ltd", short: "Huttons" },
+                  { slug: "orangetee-tie-pte-ltd", short: "OrangeTee" },
+                  { slug: "sri-pte-ltd", short: "SRI" },
+                ].filter((a) => a.slug !== agency.slug).slice(0, 4).map((other) => {
+                  // Always put alphabetically-first slug first for canonical URL
+                  const pair = agency.slug < other.slug
+                    ? `${agency.slug}-vs-${other.slug}`
+                    : `${other.slug}-vs-${agency.slug}`;
+                  return (
+                    <Link key={other.slug} href={`/property-agents/agency-compare/${pair}`}
+                      className="block text-sm text-gray-600 hover:text-teal-600">
+                      vs {other.short}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </aside>
         </div>

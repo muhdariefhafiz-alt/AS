@@ -23,7 +23,6 @@ const DIMS = [
   { key: "recency", label: "Recency", max: 25 },
   { key: "diversity", label: "Diversity", max: 15 },
   { key: "experience", label: "Experience", max: 15 },
-  { key: "reviews", label: "Reviews", max: 15 },
 ];
 
 export default function ComparePage() {

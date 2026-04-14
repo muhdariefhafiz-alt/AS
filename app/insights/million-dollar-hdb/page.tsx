@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { HDB_TOWNS, townDisplayName } from "../../lib/hdbData";
 import { formatPrice, formatPriceFull } from "../../lib/narrativeHelpers";
+import EmailCapture from "../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -315,6 +316,14 @@ export default async function MillionDollarHdbPage() {
                 ))}
               </div>
             </div>
+
+            <EmailCapture
+              variant="sidebar"
+              source="insight-million-hdb"
+              pagePath="/insights/million-dollar-hdb"
+              heading="Get market insights"
+              description="New data analyses and market reports delivered to your inbox."
+            />
 
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>

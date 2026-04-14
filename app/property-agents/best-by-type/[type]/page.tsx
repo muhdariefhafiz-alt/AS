@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -113,14 +114,21 @@ export default async function BestByTypePage({ params }: Props) {
           <p className="mt-3 max-w-xl text-lg text-white/60">
             Ranked by AgentScore based on actual {t.desc}. Not advertising, not self-reported.
           </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-500">
+              Compare agents side by side
+            </Link>
+            <Link href="/search" className="inline-flex items-center rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10">
+              Search by name
+            </Link>
+          </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         <p className="text-[15px] leading-[1.75] text-gray-600">
           The best {t.label.toLowerCase()} agents in Singapore are ranked by AgentScore, a composite of
-          transaction volume (30pts), recency (25pts), market diversity (15pts), experience (15pts),
-          and Google reviews (15pts). This ranking is based on {t.desc} recorded by CEA.
+          transaction volume, recency, market diversity, and years of experience. This ranking is based on {t.desc} recorded by CEA.
         </p>
 
         <div className="mt-8 space-y-3">
@@ -145,6 +153,17 @@ export default async function BestByTypePage({ params }: Props) {
               )}
             </Link>
           ))}
+        </div>
+
+        {/* Email capture */}
+        <div className="mt-10">
+          <EmailCapture
+            variant="inline"
+            source="best-by-type"
+            pagePath={`/property-agents/best-by-type/${type}`}
+            heading={`Get ${t.label} market updates`}
+            description={`We'll notify you when ${t.label.toLowerCase()} agent rankings change or new transaction data is published.`}
+          />
         </div>
 
         {/* Other types sidebar */}

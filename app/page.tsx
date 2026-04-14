@@ -195,7 +195,10 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="mt-6 text-right">
+            <Link href="/insights" className="text-sm font-semibold text-teal-600 hover:text-teal-700">View all insights {"\u2192"}</Link>
+          </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <Link href="/property-agents/district/d09-orchard" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">D09 Orchard Market Analysis</Link>
             <Link href="/property-agents/district/d10-ardmore" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">D10 Bukit Timah Market Analysis</Link>
             <Link href="/property-agents/district/d15-katong" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">D15 Katong Market Analysis</Link>
@@ -219,7 +222,7 @@ export default async function HomePage() {
             <div className="text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-2xl font-bold text-teal-600">2</div>
               <h3 className="mt-4 font-bold text-gray-900">We score performance</h3>
-              <p className="mt-2 text-sm text-gray-500">Volume (30pts), recency (25pts), diversity (15pts), experience (15pts), and reviews (15pts) into one objective AgentScore.</p>
+              <p className="mt-2 text-sm text-gray-500">Transaction volume, recency, market diversity, and years of experience combined into one objective AgentScore out of 100.</p>
             </div>
             <div className="text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-2xl font-bold text-slate-600">3</div>

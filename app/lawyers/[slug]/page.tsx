@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../lib/supabase";
+import EmailCapture from "../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -233,6 +234,14 @@ export default async function LawyerProfilePage({ params }: Props) {
                 </div>
               </div>
             )}
+
+            <EmailCapture
+              variant="sidebar"
+              source="lawyer-profile"
+              pagePath={`/lawyers/${slug}`}
+              heading="Legal insights"
+              description="Get notified when new court case data is published."
+            />
 
             <div className="rounded-xl border border-teal-200 bg-teal-50 p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Disclaimer</h3>

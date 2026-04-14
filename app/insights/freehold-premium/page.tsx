@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { formatPrice, formatPriceFull } from "../../lib/narrativeHelpers";
+import EmailCapture from "../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -249,6 +250,14 @@ export default async function FreeholdPremiumPage() {
                 <div className="flex justify-between"><dt className="text-gray-500">Districts analyzed</dt><dd className="font-bold text-gray-900">{districtData.length}</dd></div>
               </dl>
             </div>
+
+            <EmailCapture
+              variant="sidebar"
+              source="insight-freehold"
+              pagePath="/insights/freehold-premium"
+              heading="Get market insights"
+              description="New data analyses and market reports delivered to your inbox."
+            />
 
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>

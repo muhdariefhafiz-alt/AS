@@ -28,7 +28,7 @@ export default async function PropertyAgentsHub() {
           <p className="text-xs font-bold uppercase tracking-widest text-teal-300">Property Agents</p>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl">
             {agentCount.toLocaleString()} agents.<br />
-            <span className="text-coral-400">One independent score.</span>
+            <span className="text-teal-400">One independent score.</span>
           </h1>
           <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/60">
             Every CEA-registered agent in Singapore, ranked on actual transaction records.
@@ -37,7 +37,7 @@ export default async function PropertyAgentsHub() {
           <form action="/search" method="GET" className="mt-8 flex flex-col gap-3 sm:flex-row">
             <input type="text" name="q" placeholder="Agent name, district, or HDB town..."
               className="flex-1 rounded-lg bg-white/10 px-5 py-3.5 text-white placeholder:text-white/40 backdrop-blur-sm focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-teal-400" />
-            <button type="submit" className="rounded-lg bg-coral-500 px-7 py-3.5 font-semibold text-white shadow-lg transition hover:bg-coral-400">
+            <button type="submit" className="rounded-lg bg-teal-500 px-7 py-3.5 font-semibold text-white shadow-lg transition hover:bg-teal-400">
               Find agent
             </button>
           </form>
@@ -54,6 +54,32 @@ export default async function PropertyAgentsHub() {
               <div className="mt-1 text-sm font-medium text-gray-900 group-hover:text-teal-600">{d.name?.split(",")[0]}</div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section className="border-t border-gray-100">
+        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Market Insights</h2>
+            <Link href="/insights" className="text-sm font-semibold text-teal-600 hover:text-teal-700">View all {"\u2192"}</Link>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <Link href="/insights/million-dollar-hdb" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-green-200 hover:shadow-md">
+              <span className="text-xs font-semibold text-green-600">HDB</span>
+              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-green-600">Million-Dollar HDB Tracker</h3>
+              <p className="mt-1 text-xs text-gray-500">Every S$1M+ resale flat by town</p>
+            </Link>
+            <Link href="/insights/freehold-premium" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md">
+              <span className="text-xs font-semibold text-teal-600">Private</span>
+              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-teal-600">Freehold Premium by District</h3>
+              <p className="mt-1 text-xs text-gray-500">How much more does freehold cost?</p>
+            </Link>
+            <Link href="/property-agents/market/2025" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md">
+              <span className="text-xs font-semibold text-teal-600">Market</span>
+              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-teal-600">2025 Market Overview</h3>
+              <p className="mt-1 text-xs text-gray-500">Transactions, top agents, trends</p>
+            </Link>
+          </div>
         </div>
       </section>
 

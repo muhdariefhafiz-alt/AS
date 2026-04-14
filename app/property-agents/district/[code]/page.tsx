@@ -6,6 +6,7 @@ import { formatPrice, formatPriceFull, formatPsf, pricePosition, pricePositionPh
 import PriceTrendChart from "../../../components/PriceTrendChart";
 import StatCard from "../../../components/StatCard";
 import DistrictFAQ from "../../../components/DistrictFAQ";
+import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -530,6 +531,15 @@ export default async function DistrictPage({ params }: Props) {
               </div>
               <Link href="/lawyers" className="mt-3 block text-xs font-semibold text-slate-600 hover:text-slate-800">Browse all lawyers &rarr;</Link>
             </div>
+
+            <EmailCapture
+              variant="sidebar"
+              source="district"
+              pagePath={`/property-agents/district/${district.slug}`}
+              districtTag={district.code}
+              heading="District price alerts"
+              description={`Get notified when new market data is available for ${area}.`}
+            />
 
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other Districts</h3>

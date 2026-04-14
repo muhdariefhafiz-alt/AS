@@ -4,6 +4,8 @@ import { supabase } from "../../../lib/supabase";
 import { formatPrice } from "../../../lib/narrativeHelpers";
 import ClaimBanner from "../../../components/ClaimBanner";
 import AgentReviews from "../../../components/AgentReviews";
+import EmailCapture from "../../../components/EmailCapture";
+import FunnelTracker from "../../../components/FunnelTracker";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -171,6 +173,7 @@ export default async function AgentPage({ params }: Props) {
 
   return (
     <>
+      <FunnelTracker event="profile_view" agentId={agent.id} agentSlug={slug} pagePath={`/property-agents/agent/${slug}`} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
@@ -198,8 +201,26 @@ export default async function AgentPage({ params }: Props) {
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-10 md:px-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-10">
 
-            {/* Score badge - the visual anchor */}
-            {score ? (
+            {/* Photo or Score badge - the visual anchor */}
+            {agent.claimed && agent.photo_url ? (
+              <div className="relative flex-shrink-0">
+                <img
+                  src={agent.photo_url}
+                  alt={`${agent.name} - Property Agent`}
+                  className="h-32 w-32 rounded-2xl border-2 border-teal-200 object-cover shadow-lg shadow-teal-100/50"
+                />
+                {score && (
+                  <span className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-teal-600 text-sm font-black text-white shadow-md">
+                    {score}
+                  </span>
+                )}
+                {agent.percentile && agent.percentile <= 25 && (
+                  <span className="absolute -right-2 -top-2 rounded-full bg-teal-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-md">
+                    {percentileLabel(agent.percentile)}
+                  </span>
+                )}
+              </div>
+            ) : score ? (
               <div className="relative flex-shrink-0">
                 <div className="flex h-32 w-32 flex-col items-center justify-center rounded-2xl border-2 border-teal-200 bg-white shadow-lg shadow-teal-100/50">
                   <span className="text-5xl font-black tracking-tight text-teal-600">{score}</span>
@@ -230,7 +251,18 @@ export default async function AgentPage({ params }: Props) {
                 <span className="text-gray-400">CEA {agent.cea_registration}</span>
               </p>
 
-              {/* Inline highlight chips */}
+              {/* Conversion CTA - above the fold */}
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link href="/property-agents/compare" className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-500">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                  Compare with other agents
+                </Link>
+                <Link href="/search" className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-teal-200 hover:text-teal-600">
+                  Find agents in my area
+                </Link>
+              </div>
+
+            {/* Inline highlight chips */}
               {hasTxns && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200">
@@ -255,6 +287,36 @@ export default async function AgentPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ============================================================
+          CLAIMED AGENT BIO - Growth loop: claimed content enriches SEO pages
+          ============================================================ */}
+      {agent.claimed && agent.bio && (
+        <section className="border-b border-gray-100 bg-white">
+          <div className="mx-auto max-w-[1120px] px-5 py-6 md:px-8">
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-[11px] text-white">&#10003;</span>
+                  <span className="text-xs font-medium text-green-700">Verified agent</span>
+                </div>
+                <p className="text-[15px] leading-relaxed text-gray-700">{agent.bio}</p>
+              </div>
+              {agent.whatsapp && (
+                <a
+                  href={`https://wa.me/${agent.whatsapp.replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-shrink-0 inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-500"
+                >
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.638l4.67-1.318A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.143 0-4.144-.663-5.804-1.796a.5.5 0 00-.42-.062l-3.082.87.95-3.2a.5.5 0 00-.073-.444A9.957 9.957 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z"/></svg>
+                  WhatsApp
+                </a>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ============================================================
           MAIN CONTENT GRID
@@ -449,7 +511,6 @@ export default async function AgentPage({ params }: Props) {
                     { label: "Recent activity", key: "recency", max: 25 },
                     { label: "Market diversity", key: "diversity", max: 15 },
                     { label: "Years of experience", key: "experience", max: 15 },
-                    { label: "Client reviews", key: "reviews", max: 15 },
                   ] as const).map((dim) => {
                     const val = Number((agent.score_breakdown as Record<string, number>)[dim.key] ?? 0);
                     const pct = Math.round((val / dim.max) * 100);
@@ -515,6 +576,21 @@ export default async function AgentPage({ params }: Props) {
                     <dd className="font-medium text-gray-900">{listings.length}</dd>
                   </div>
                 )}
+                {agent.claimed && agent.whatsapp && (
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">WhatsApp</dt>
+                    <dd>
+                      <a
+                        href={`https://wa.me/${agent.whatsapp.replace(/[^0-9]/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-green-600 hover:underline"
+                      >
+                        Contact
+                      </a>
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
 
@@ -545,6 +621,14 @@ export default async function AgentPage({ params }: Props) {
                 <Link href="/for-agents" className="mt-2 block text-center text-[11px] text-gray-400 hover:text-teal-600">Learn more about claiming</Link>
               </div>
             )}
+
+            <EmailCapture
+              variant="sidebar"
+              source="agent-profile"
+              pagePath={`/property-agents/agent/${slug}`}
+              heading="Get agent updates"
+              description="New transaction data, ranking changes, and market insights."
+            />
 
             {/* Colleagues */}
             {colleagues.length > 0 && (

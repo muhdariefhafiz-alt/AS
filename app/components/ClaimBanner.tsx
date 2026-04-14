@@ -1,7 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { trackEvent } from "../lib/analytics";
+
+/** Fire-and-forget funnel event to /api/funnel */
+function trackFunnel(event: string, agentId: number, metadata?: Record<string, unknown>) {
+  fetch("/api/funnel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event, agentId, metadata }),
+  }).catch(() => {});
+}
 
 type Props = {
   agentId: number;
@@ -15,8 +24,28 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const bannerRef = useRef<HTMLDivElement>(null);
+  const hasTrackedView = useRef(false);
 
   const firstName = agentName.split(" ")[0];
+
+  // Track claim_banner_view when banner enters viewport
+  useEffect(() => {
+    if (claimed || hasTrackedView.current) return;
+    const el = bannerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasTrackedView.current) {
+          hasTrackedView.current = true;
+          trackFunnel("claim_banner_view", agentId);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [claimed, agentId]);
 
   if (claimed) {
     return (
@@ -40,6 +69,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
       const data = await res.json();
       if (res.ok) {
         trackEvent("claim_submit", { agent_id: agentId, agent_name: agentName });
+        trackFunnel("claim_submit", agentId);
         setStatus("success");
       } else {
         setStatus("error");
@@ -66,7 +96,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
   }
 
   return (
-    <div id="claim" className="overflow-hidden rounded-xl border border-teal-200 bg-gradient-to-r from-teal-50 to-white">
+    <div ref={bannerRef} id="claim" className="overflow-hidden rounded-xl border border-teal-200 bg-gradient-to-r from-teal-50 to-white">
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
@@ -93,7 +123,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
           </div>
           {!open && (
             <button
-              onClick={() => { trackEvent("claim_click", { agent_id: agentId, agent_name: agentName }); setOpen(true); }}
+              onClick={() => { trackEvent("claim_click", { agent_id: agentId, agent_name: agentName }); trackFunnel("claim_click", agentId); setOpen(true); }}
               className="flex-shrink-0 rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 hover:shadow-md"
             >
               Claim profile

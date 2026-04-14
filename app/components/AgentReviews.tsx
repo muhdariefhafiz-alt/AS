@@ -66,11 +66,13 @@ export default function AgentReviews({ agentId, agentName }: Props) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch(`/api/reviews?agentId=${agentId}`)
-      .then((r) => r.json())
+    const controller = new AbortController();
+    fetch(`/api/reviews?agentId=${agentId}`, { signal: controller.signal })
+      .then((r) => r.ok ? r.json() : { reviews: [] })
       .then((d) => setReviews(d.reviews ?? []))
-      .catch(() => {})
+      .catch(() => setReviews([]))
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, [agentId]);
 
   async function handleSubmit(e: React.FormEvent) {

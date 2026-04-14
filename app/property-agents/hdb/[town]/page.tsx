@@ -5,6 +5,7 @@ import { formatPrice, formatPriceFull } from "../../../lib/narrativeHelpers";
 import PriceTrendChart from "../../../components/PriceTrendChart";
 import FlatTypeBars from "../../../components/FlatTypeBars";
 import StatCard from "../../../components/StatCard";
+import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -547,6 +548,14 @@ export default async function HdbTownPage({ params }: Props) {
                 {vsSg.dir === "up" ? `${vsSg.pct}% above` : vsSg.dir === "down" ? `${vsSg.pct}% below` : "In line with"} national median of {formatPrice(data.sgMedianHdb)}
               </p>
             </div>
+
+            <EmailCapture
+              variant="sidebar"
+              source="hdb-town"
+              pagePath={`/property-agents/hdb/${slug}`}
+              heading="HDB price alerts"
+              description={`Get notified when new resale data is available for ${display}.`}
+            />
 
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Compare Other Towns</h3>

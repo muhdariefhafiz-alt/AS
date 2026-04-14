@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { formatPrice } from "../../../lib/narrativeHelpers";
+import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -183,6 +184,14 @@ export default async function BestAgentsPage({ params }: Props) {
             {medianPrice > 0 && ` Median condo price: ${formatPrice(medianPrice)}.`}
             {totalTxns > 0 && ` ${totalTxns.toLocaleString()} URA transactions in ${area.district}.`}
           </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-500">
+              Compare agents side by side
+            </Link>
+            <Link href="/search" className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-teal-200 hover:text-teal-600">
+              Search by name
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -303,6 +312,16 @@ export default async function BestAgentsPage({ params }: Props) {
                 </p>
               </div>
             </section>
+
+            {/* Email capture */}
+            <EmailCapture
+              variant="inline"
+              source="best-agent"
+              pagePath={`/property-agents/best/${slug}`}
+              districtTag={area.district}
+              heading={`Get updates for ${short}`}
+              description={`We'll notify you when agent rankings change in ${short} or new market data becomes available.`}
+            />
 
             {/* FAQ */}
             <section>

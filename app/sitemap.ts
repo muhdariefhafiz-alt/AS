@@ -95,6 +95,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // === Comparisons ===
     ...districtComparePairs.map(p => ({ url: `${BASE}/property-agents/district-compare/${p}`, changeFrequency: "monthly" as const, priority: 0.75 })),
     ...hdbComparePairs.map(p => ({ url: `${BASE}/property-agents/hdb-compare/${p}`, changeFrequency: "monthly" as const, priority: 0.75 })),
+    // Agency comparisons (high-intent: "PropNex vs ERA", "Huttons vs OrangeTee")
+    ...(() => {
+      const agencySlugs = ["propnex-realty-pte-ltd", "era-realty-network-pte-ltd", "huttons-asia-pte-ltd", "orangetee-tie-pte-ltd", "sri-pte-ltd", "c-h-properties-pte-ltd", "sn-real-estate-pte-ltd", "century-21-pte-ltd"];
+      const pairs: string[] = [];
+      for (let i = 0; i < agencySlugs.length; i++) {
+        for (let j = i + 1; j < agencySlugs.length; j++) {
+          pairs.push(`${agencySlugs[i]}-vs-${agencySlugs[j]}`);
+        }
+      }
+      return pairs;
+    })().map(p => ({ url: `${BASE}/property-agents/agency-compare/${p}`, changeFrequency: "monthly" as const, priority: 0.8 })),
 
     // === Agencies ===
     ...agencies.map(a => ({ url: `${BASE}/property-agents/agency/${a.slug}`, changeFrequency: "weekly" as const, priority: a.agent_count >= 1000 ? 0.8 : 0.7 })),

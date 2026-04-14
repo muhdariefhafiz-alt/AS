@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -41,10 +42,14 @@ export default async function PracticeAreaPage({ params }: Props) {
   if (!area) notFound();
 
   // Get lawyers with this practice area
+  // Practice areas in sg_lawyers are parent-level ("Criminal Law") while
+  // sg_practice_areas has sub-categories ("Criminal Law — Statutory offences — ...").
+  // Match on the parent category extracted from the area name.
+  const parentCategory = area.name.split(" — ")[0];
   const { data: lawyers } = await supabase
     .from("sg_lawyers")
     .select("name, slug, primary_firm, case_count, courts, first_case_year, last_case_year")
-    .contains("practice_areas", [area.name])
+    .contains("practice_areas", [parentCategory])
     .order("case_count", { ascending: false })
     .limit(50);
 
@@ -181,6 +186,14 @@ export default async function PracticeAreaPage({ params }: Props) {
                 </div>
               </div>
             )}
+
+            <EmailCapture
+              variant="sidebar"
+              source="practice-area"
+              pagePath={`/lawyers/practice/${slug}`}
+              heading="Legal insights"
+              description="Get notified when new court case data is published for this practice area."
+            />
 
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Practice Areas</h3>

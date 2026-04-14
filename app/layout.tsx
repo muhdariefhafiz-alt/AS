@@ -4,6 +4,7 @@ import Script from "next/script";
 import Link from "next/link";
 import "./globals.css";
 import PageTracker from "./components/PageTracker";
+import EmailCapture from "./components/EmailCapture";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -108,12 +109,7 @@ function Footer() {
             </div>
           </div>
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">Popular Districts</h4>
-            <div className="mt-3 space-y-2 text-sm text-gray-500">
-              <Link href="/property-agents/district/d09-orchard" className="block hover:text-gray-900">D09 Orchard</Link>
-              <Link href="/property-agents/district/d10-ardmore" className="block hover:text-gray-900">D10 Bukit Timah</Link>
-              <Link href="/property-agents/district/d15-katong" className="block hover:text-gray-900">D15 Katong</Link>
-            </div>
+            <EmailCapture variant="footer" source="footer" />
           </div>
         </div>
         <div className="mt-8 border-t border-gray-200 pt-6 text-center text-xs text-gray-400">

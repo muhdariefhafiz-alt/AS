@@ -120,7 +120,7 @@ export default async function BudgetPage({ params }: Props) {
           "@type": "Answer",
           text: topDistricts.length > 0
             ? `The most active districts for ${r.label} properties are ${topDistricts.slice(0, 5).map(([d, v]) => `${d} (${v.count} transactions)`).join(", ")}.`
-            : "Transaction data is still being loaded for this price range.",
+            : `No private residential transactions in the ${r.label} range were found in this dataset. This budget may apply primarily to HDB resale flats.`,
         },
       },
     ],
