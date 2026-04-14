@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { formatPrice } from "../../../lib/narrativeHelpers";
 import EmailCapture from "../../../components/EmailCapture";
+import ShareButtons from "../../../components/ShareButtons";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -77,10 +78,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const area = areaFromSlug(slug);
   if (!area) return {};
   const s = shortName(area.name);
+  const title = `Best Property Agents in ${s} (${area.district}) 2026 - Ranked by Data`;
+  const description = `Top property agents in ${area.name}, ranked by AgentScore based on CEA transaction records. See who handles the most deals in ${s} and compare agent performance.`;
+  const url = `https://fair-comparisons.com/property-agents/best/${slug}`;
   return {
-    title: `Best Property Agents in ${s} (${area.district}) - Ranked by Transaction Record`,
-    description: `Top property agents in ${area.name}, ranked by AgentScore. Detailed analysis of each agent's transaction history, specialization, and area focus in ${s}.`,
-    alternates: { canonical: `https://fair-comparisons.com/property-agents/best/${slug}` },
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: `Top Property Agents in ${s} 2026 - Who Handles the Most Deals?`,
+      description,
+      url,
+      siteName: "FairComparisons",
+      locale: "en_SG",
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Top Property Agents in ${s} 2026`,
+      description: `Data-driven rankings of the best property agents in ${area.name}. Based on actual CEA transaction records.`,
+    },
   };
 }
 
@@ -184,13 +201,14 @@ export default async function BestAgentsPage({ params }: Props) {
             {medianPrice > 0 && ` Median condo price: ${formatPrice(medianPrice)}.`}
             {totalTxns > 0 && ` ${totalTxns.toLocaleString()} URA transactions in ${area.district}.`}
           </p>
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-3">
             <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-500">
               Compare agents side by side
             </Link>
             <Link href="/search" className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-teal-200 hover:text-teal-600">
               Search by name
             </Link>
+            <ShareButtons compact url={`/property-agents/best/${slug}`} title={`Top Property Agents in ${short} 2026 - Ranked by Data`} />
           </div>
         </div>
       </section>

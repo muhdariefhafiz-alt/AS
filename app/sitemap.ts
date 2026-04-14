@@ -76,6 +76,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/insights/million-dollar-hdb`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/insights/freehold-premium`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/insights/court-case-statistics`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${BASE}/insights/top-agents-2026`, changeFrequency: "monthly", priority: 0.95 },
     { url: `${BASE}/for-agents`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/privacy`, changeFrequency: "monthly", priority: 0.3 },
