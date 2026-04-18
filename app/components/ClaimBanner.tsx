@@ -22,6 +22,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [ceaNumber, setCeaNumber] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const bannerRef = useRef<HTMLDivElement>(null);
@@ -64,7 +65,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
       const res = await fetch("/api/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agentId, email, phone }),
+        body: JSON.stringify({ agentId, email, phone, ceaNumber }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -133,7 +134,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
 
         {open && (
           <form onSubmit={handleSubmit} className="mt-5 rounded-lg border border-teal-100 bg-white p-4">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
               <div>
                 <label className="block text-xs font-medium text-gray-700">Email address</label>
                 <input
@@ -141,6 +142,17 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
+                  required
+                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700">CEA Registration Number</label>
+                <input
+                  type="text"
+                  value={ceaNumber}
+                  onChange={(e) => setCeaNumber(e.target.value)}
+                  placeholder="e.g. R012345A"
                   required
                   className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 />

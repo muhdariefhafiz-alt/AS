@@ -7,10 +7,11 @@ import AgentReviews from "../../../components/AgentReviews";
 import EmailCapture from "../../../components/EmailCapture";
 import FunnelTracker from "../../../components/FunnelTracker";
 import ShareButtons from "../../../components/ShareButtons";
+import WhatsAppButton from "../../../components/WhatsAppButton";
 import SelfViewCTA from "../../../components/SelfViewCTA";
 import type { Metadata } from "next";
 
-export const revalidate = false;
+export const revalidate = 43200; // 12h; daily cron also force-revalidates
 export const dynamicParams = true;
 type Props = { params: Promise<{ slug: string }> };
 
@@ -86,18 +87,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { data: agent } = await supabase
     .from("sg_agents")
-    .select("name, agency_name, cea_registration, google_rating, score, transaction_count, claimed")
+    .select("name, agency_name, cea_registration, google_rating, score, transaction_count, claimed, primary_area")
     .eq("slug", slug)
     .single();
   if (!agent) return {};
 
   const hasTxns = (agent.transaction_count ?? 0) > 0;
-  const txnDesc = hasTxns ? ` ${agent.transaction_count} recorded transactions.` : "";
-  const scoreDesc = agent.score ? ` AgentScore: ${Math.round(Number(agent.score))}/100.` : "";
+  const s = agent.score ? Math.round(Number(agent.score)) : null;
   const isThin = !agent.score && !agent.google_rating && !hasTxns && !agent.claimed;
 
-  const title = `${agent.name} - Property Agent at ${agent.agency_name} | Track Record & Profile`;
-  const description = `${agent.name} (CEA ${agent.cea_registration}) at ${agent.agency_name}.${scoreDesc}${txnDesc} View full transaction history, performance data, and profile.`;
+  // Action 1: CTR-optimized title with score + transactions front-loaded
+  // Old: "Name - Property Agent at Agency | Track Record & Profile"
+  // New: "Name - Score 82/100 | 47 Transactions | Agency" (data-rich, stands out in SERP)
+  const titleParts = [agent.name];
+  if (s) titleParts.push(`Score ${s}/100`);
+  if (hasTxns) titleParts.push(`${agent.transaction_count} Transactions`);
+  titleParts.push(agent.agency_name);
+  const title = titleParts.join(" | ");
+
+  // Richer description: lead with unique data, end with action
+  const areaPart = agent.primary_area ? ` Active in ${agent.primary_area}.` : "";
+  const description = s
+    ? `${agent.name} (${agent.agency_name}) has an AgentScore of ${s}/100 based on ${agent.transaction_count ?? 0} CEA-recorded transactions.${areaPart} View full track record, property types, and areas of expertise.`
+    : `${agent.name} (CEA ${agent.cea_registration}) at ${agent.agency_name}.${hasTxns ? ` ${agent.transaction_count} recorded transactions.` : ""}${areaPart} View transaction history and profile.`;
+
   const url = `https://fair-comparisons.com/property-agents/agent/${slug}`;
 
   return {
@@ -106,7 +119,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: { canonical: url },
     ...(isThin && { robots: { index: false, follow: true } }),
     openGraph: {
-      title: `${agent.name} - AgentScore${agent.score ? ` ${Math.round(Number(agent.score))}/100` : ""} | ${agent.agency_name}`,
+      title: `${agent.name}${s ? ` - AgentScore ${s}/100` : ""} | ${agent.agency_name}`,
       description,
       url,
       siteName: "FairComparisons",
@@ -115,8 +128,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${agent.name}${agent.score ? ` (Score: ${Math.round(Number(agent.score))})` : ""} - ${agent.agency_name}`,
-      description: `${hasTxns ? `${agent.transaction_count} transactions.` : ""}${scoreDesc} Compare agents on FairComparisons.`,
+      title: `${agent.name}${s ? ` (Score: ${s})` : ""} | ${agent.agency_name}`,
+      description,
     },
   };
 }
@@ -191,11 +204,52 @@ export default async function AgentPage({ params }: Props) {
     ],
   };
 
+  // Action 2: FAQ structured data for rich results
+  const firstName = agent.name.split(" ")[0];
+  const faqItems: Array<{ q: string; a: string }> = [];
+
+  if (hasTxns) {
+    faqItems.push({
+      q: `How many transactions has ${agent.name} completed?`,
+      a: `${agent.name} has ${track.total_txns} transactions recorded by CEA, spanning from ${track.earliest_txn} to ${track.latest_txn}. ${propEntries.length > 0 ? `Primary property type: ${propTypeLabel(propEntries[0][0])} (${Math.round((propEntries[0][1] / track.total_txns) * 100)}% of deals).` : ""}`,
+    });
+  }
+
+  if (score) {
+    faqItems.push({
+      q: `What is ${agent.name}'s AgentScore?`,
+      a: `${agent.name} has an AgentScore of ${score} out of 100. AgentScore is calculated from public CEA transaction records and measures an agent's track record across volume, consistency, and market coverage.${agent.percentile && agent.percentile <= 25 ? ` This places ${firstName} in the top ${agent.percentile}% of agents.` : ""}`,
+    });
+  }
+
+  if (primaryArea) {
+    faqItems.push({
+      q: `What areas does ${agent.name} specialize in?`,
+      a: `${agent.name} is most active in ${primaryArea}${areas.length > 1 ? `, followed by ${areas.slice(1, 3).map(a => a.name).join(" and ")}` : ""}. ${hasTxns ? `Based on ${track.total_txns} recorded transactions.` : ""}`,
+    });
+  }
+
+  faqItems.push({
+    q: `Which agency does ${agent.name} work for?`,
+    a: `${agent.name} is a registered property agent at ${agent.agency_name} (CEA registration: ${agent.cea_registration}).${agency?.google_rating ? ` ${agency.name} has a ${agency.google_rating}/5 Google rating.` : ""}`,
+  });
+
+  const faqLd = faqItems.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map(f => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  } : null;
+
   return (
     <>
       <FunnelTracker event="profile_view" agentId={agent.id} agentSlug={slug} pagePath={`/property-agents/agent/${slug}`} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      {faqLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />}
 
       {/* Breadcrumb */}
       <nav className="border-b border-gray-100">
@@ -260,7 +314,11 @@ export default async function AgentPage({ params }: Props) {
 
             {/* Name + key facts */}
             <div className="flex-1">
-              <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">{agent.name}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">{agent.name}</h1>
+                {agent.subscription_tier === "premium" && <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Premium</span>}
+                {agent.subscription_tier === "pro" && <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-xs font-semibold text-teal-700">Pro</span>}
+              </div>
               <p className="mt-2 text-base text-gray-500">
                 {agency ? (
                   <>Property agent at <Link href={`/property-agents/agency/${agency.slug}`} className="font-medium text-teal-600 hover:underline">{agency.name}</Link></>
@@ -310,6 +368,27 @@ export default async function AgentPage({ params }: Props) {
       </section>
 
       {/* ============================================================
+          MESSAGE FROM AGENT - personal message above bio
+          ============================================================ */}
+      {agent.claimed && agent.message && (
+        <section className="border-b border-gray-100 bg-gradient-to-r from-teal-50/50 to-white">
+          <div className="mx-auto max-w-[1120px] px-5 py-8 md:px-8">
+            <div className="flex items-start gap-4">
+              {agent.photo_url && (
+                <img src={agent.photo_url} alt={agent.name} className="h-12 w-12 rounded-full border-2 border-teal-200 object-cover flex-shrink-0" />
+              )}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-teal-600 mb-2">Message from {agent.name.split(" ")[0]}</p>
+                <blockquote className="text-[15px] leading-relaxed text-gray-800 italic">
+                  &ldquo;{agent.message}&rdquo;
+                </blockquote>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================
           CLAIMED AGENT BIO - Growth loop: claimed content enriches SEO pages
           ============================================================ */}
       {agent.claimed && agent.bio && (
@@ -324,15 +403,7 @@ export default async function AgentPage({ params }: Props) {
                 <p className="text-[15px] leading-relaxed text-gray-700">{agent.bio}</p>
               </div>
               {agent.whatsapp && (
-                <a
-                  href={`https://wa.me/${agent.whatsapp.replace(/[^0-9]/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0 inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-500"
-                >
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.638l4.67-1.318A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.143 0-4.144-.663-5.804-1.796a.5.5 0 00-.42-.062l-3.082.87.95-3.2a.5.5 0 00-.073-.444A9.957 9.957 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z"/></svg>
-                  WhatsApp
-                </a>
+                <WhatsAppButton whatsapp={agent.whatsapp} agentId={agent.id} agentSlug={slug} />
               )}
             </div>
           </div>
@@ -520,6 +591,21 @@ export default async function AgentPage({ params }: Props) {
             <p className="text-[11px] text-gray-400">
               Source: Council for Estate Agencies (CEA) Public Register, listing portals. Analysis by FairComparisons.
             </p>
+
+            {/* ---- FAQ (visible, matches schema) ---- */}
+            {faqItems.length > 0 && (
+              <section>
+                <h2 className="text-lg font-bold text-gray-900">Frequently asked questions</h2>
+                <div className="mt-4 space-y-4">
+                  {faqItems.map((f, i) => (
+                    <div key={i}>
+                      <h3 className="font-semibold text-gray-900">{f.q}</h3>
+                      <p className="mt-1 text-[15px] leading-[1.75] text-gray-600">{f.a}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
 
           {/* --- SIDEBAR (1/3) --- */}

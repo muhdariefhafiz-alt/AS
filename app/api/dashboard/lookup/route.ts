@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
     const { data: agent } = await supabase
       .from("sg_agents")
-      .select("id, name, slug, bio, photo_url, whatsapp, score, agency_name, claimed, claimed_email")
+      .select("id, name, slug, bio, photo_url, whatsapp, message, score, agency_name, claimed, claimed_email, subscription_tier, claimed_at")
       .eq("claimed", true)
       .eq("claimed_email", normalized)
       .single();
@@ -30,6 +30,24 @@ export async function POST(req: Request) {
     if (!agent) {
       return NextResponse.json({ error: "No claimed profile found" }, { status: 404 });
     }
+
+    // Count profile views in the last 7 days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const [viewsResult, clicksResult] = await Promise.all([
+      supabase
+        .from("sg_funnel_events")
+        .select("id", { count: "exact", head: true })
+        .eq("event", "profile_view")
+        .eq("agent_id", agent.id)
+        .gte("created_at", sevenDaysAgo),
+      supabase
+        .from("sg_funnel_events")
+        .select("id", { count: "exact", head: true })
+        .eq("event", "whatsapp_click")
+        .eq("agent_id", agent.id)
+        .gte("created_at", sevenDaysAgo),
+    ]);
 
     return NextResponse.json({
       agent: {
@@ -39,8 +57,13 @@ export async function POST(req: Request) {
         bio: agent.bio,
         photo_url: agent.photo_url,
         whatsapp: agent.whatsapp,
+        message: agent.message || null,
         score: agent.score,
         agency_name: agent.agency_name,
+        subscription_tier: agent.subscription_tier || "free",
+        claimed_at: agent.claimed_at || null,
+        views_this_week: viewsResult.count ?? 0,
+        whatsapp_clicks_this_week: clicksResult.count ?? 0,
       },
     });
   } catch {

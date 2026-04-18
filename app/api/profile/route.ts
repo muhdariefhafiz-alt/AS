@@ -12,7 +12,7 @@ const supabase = createClient(
  */
 export async function POST(req: Request) {
   try {
-    const { agentId, email, bio, photoUrl, whatsapp } = await req.json();
+    const { agentId, email, bio, photoUrl, whatsapp, message } = await req.json();
 
     if (!agentId || !email) {
       return NextResponse.json({ error: "Agent ID and email required" }, { status: 400 });
@@ -43,12 +43,16 @@ export async function POST(req: Request) {
     if (whatsapp && typeof whatsapp === "string" && whatsapp.length > 20) {
       return NextResponse.json({ error: "Invalid WhatsApp number" }, { status: 400 });
     }
+    if (message && typeof message === "string" && message.length > 500) {
+      return NextResponse.json({ error: "Message must be under 500 characters" }, { status: 400 });
+    }
 
     // Update profile
     const updates: Record<string, string | null> = {};
     if (bio !== undefined) updates.bio = bio || null;
     if (photoUrl !== undefined) updates.photo_url = photoUrl || null;
     if (whatsapp !== undefined) updates.whatsapp = whatsapp || null;
+    if (message !== undefined) updates.message = message || null;
 
     const { error } = await supabase
       .from("sg_agents")

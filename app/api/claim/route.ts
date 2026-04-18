@@ -18,21 +18,32 @@ function generateToken(): string {
 
 export async function POST(req: Request) {
   try {
-    const { agentId, email, phone } = await req.json();
+    const { agentId, email, phone, ceaNumber } = await req.json();
 
-    if (!agentId || !email) {
-      return NextResponse.json({ error: "Agent ID and email required" }, { status: 400 });
+    if (!agentId || !email || !ceaNumber) {
+      return NextResponse.json({ error: "Agent ID, email, and CEA registration number are required" }, { status: 400 });
     }
 
     // Check agent exists
     const { data: agent } = await supabase
       .from("sg_agents")
-      .select("id, name, claimed")
+      .select("id, name, claimed, cea_registration")
       .eq("id", agentId)
       .single();
 
     if (!agent) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+    }
+
+    // Verify CEA registration number matches
+    if (
+      !agent.cea_registration ||
+      ceaNumber.trim().toLowerCase() !== agent.cea_registration.trim().toLowerCase()
+    ) {
+      return NextResponse.json(
+        { error: "CEA registration number does not match this profile" },
+        { status: 403 }
+      );
     }
 
     if (agent.claimed) {
