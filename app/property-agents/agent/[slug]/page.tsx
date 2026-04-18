@@ -246,7 +246,7 @@ export default async function AgentPage({ params }: Props) {
 
   return (
     <>
-      <FunnelTracker event="profile_view" agentId={agent.id} agentSlug={slug} pagePath={`/property-agents/agent/${slug}`} />
+      <FunnelTracker event="profile_view" agentId={agent.id} agentSlug={slug} pagePath={`/property-agents/agent/${slug}`} metadata={{ primary_area: agent.primary_area || null, specialization: agent.specialization || null, agency_name: agent.agency_name || null, claimed: !!agent.claimed, subscription_tier: agent.subscription_tier || "free" }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       {faqLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />}

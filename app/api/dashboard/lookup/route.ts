@@ -49,6 +49,17 @@ export async function POST(req: Request) {
         .gte("created_at", sevenDaysAgo),
     ]);
 
+    // Fire-and-forget dashboard_login funnel event
+    supabase
+      .from("sg_funnel_events")
+      .insert({
+        event: "dashboard_login",
+        agent_id: agent.id,
+        agent_slug: agent.slug,
+        metadata: { tier: agent.subscription_tier || "free" },
+      })
+      .then(() => {});
+
     return NextResponse.json({
       agent: {
         id: agent.id,

@@ -117,7 +117,25 @@ export default function SearchPage() {
       const all = [...districtMatches, ...hdbMatches, ...agencyMatches, ...agentMatches];
       setResults(all);
       setLoading(false);
-      if (all.length > 0) trackEvent("search", { search_term: q, result_count: all.length });
+      if (all.length > 0) {
+        trackEvent("search", { search_term: q, result_count: all.length });
+        // Fire funnel event for admin analytics (tipping point / liquidity)
+        fetch("/api/funnel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            event: "search_performed",
+            metadata: {
+              query: q,
+              result_count: all.length,
+              has_district: districtMatches.length > 0,
+              has_hdb: hdbMatches.length > 0,
+              has_agency: agencyMatches.length > 0,
+              has_agent: agentMatches.length > 0,
+            },
+          }),
+        }).catch(() => {});
+      }
     });
   }, [query, districts]);
 
