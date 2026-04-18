@@ -61,6 +61,11 @@ export type AdminData = {
     topQueries: Array<{ query: string; clicks: number; impressions: number; position: number; ctr: number }>;
     topPages: Array<{ page: string; clicks: number; impressions: number; position: number }>;
     rankTracking: Array<{ keyword: string; rank: number | null; checked_at: string }>;
+    ga4Sessions: number;
+    ga4Users: number;
+    ga4Pageviews: number;
+    ga4EngagementRate: number;
+    trafficSources: Array<{ source_medium: string; sessions: number; active_users: number }>;
   };
   ops: {
     pendingClaims: number;
@@ -200,7 +205,13 @@ function OverzichtTab({ d }: { d: AdminData }) {
       <Block>
         <SectionHeader title="Outcome metrics" subtitle="Per growth model pillar (acquisition, retention, monetization)" />
         <div className="grid gap-3 md:grid-cols-3">
-          <Card label="Consumer sessions (7d)" value={fmt(d.outcomes.views7)} sub="Profile views" delta={d.outcomes.viewsDelta} size="lg" />
+          <Card
+            label="Consumer sessions (7d)"
+            value={fmt(d.seo.ga4Sessions || d.outcomes.views7)}
+            sub={d.seo.ga4Sessions > 0 ? "GA4 sessions" : "Profile views (GA4 not yet synced)"}
+            delta={d.outcomes.viewsDelta}
+            size="lg"
+          />
           <Card label="WAU claimed agents" value={fmt(d.outcomes.wauAgents)} sub={`${d.outcomes.profileEdit7} edits this week`} size="lg" />
           <Card label="Paying agents" value={fmt(d.outcomes.payingCount)} sub={`${currency(d.outcomes.mrr)} MRR`} size="lg" />
         </div>
@@ -486,8 +497,61 @@ function SEOTab({ d }: { d: AdminData }) {
   const clicksDelta = d.seo.totalClicksPrev > 0
     ? Math.round(((d.seo.totalClicks7 - d.seo.totalClicksPrev) / d.seo.totalClicksPrev) * 100)
     : 0;
+  const hasGa4 = d.seo.ga4Sessions > 0;
+  const hasGsc = d.seo.totalClicks7 > 0 || d.seo.totalImpressions7 > 0;
   return (
     <>
+      {!hasGa4 && !hasGsc && (
+        <Block>
+          <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-5">
+            <p className="text-sm font-bold text-amber-900">Windsor not yet configured for fair-comparisons.com</p>
+            <p className="mt-2 text-sm text-amber-800 leading-relaxed">
+              The admin dashboard reads FC SEO data from <code className="rounded bg-amber-100 px-1 py-0.5 text-xs">fc_gsc_daily_stats</code>,{" "}
+              <code className="rounded bg-amber-100 px-1 py-0.5 text-xs">fc_gsc_indexation_log</code>,{" "}
+              <code className="rounded bg-amber-100 px-1 py-0.5 text-xs">fc_ga4_daily_stats</code>, and{" "}
+              <code className="rounded bg-amber-100 px-1 py-0.5 text-xs">fc_ga4_traffic_sources</code>. Tables exist but are empty.
+              Point your Windsor destinations for fair-comparisons.com GSC + GA4 properties to write there. Schema matches the NL tables (gsc_daily_stats etc).
+            </p>
+          </div>
+        </Block>
+      )}
+
+      {hasGa4 && (
+        <Block>
+          <SectionHeader title="GA4 traffic" subtitle="Actual sessions from Google Analytics (not profile_view proxy)" />
+          <div className="grid gap-3 md:grid-cols-4">
+            <Card label="Sessions (7d)" value={fmt(d.seo.ga4Sessions)} />
+            <Card label="Active users (7d)" value={fmt(d.seo.ga4Users)} />
+            <Card label="Pageviews (7d)" value={fmt(d.seo.ga4Pageviews)} />
+            <Card label="Engagement rate" value={pct(d.seo.ga4EngagementRate, 1)} sub="Engaged / total sessions" />
+          </div>
+        </Block>
+      )}
+
+      {d.seo.trafficSources.length > 0 && (
+        <Block>
+          <SectionHeader title="Top traffic sources (7d)" />
+          <Table>
+            <thead>
+              <tr>
+                <Th>Source / medium</Th>
+                <Th right>Sessions</Th>
+                <Th right>Users</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {d.seo.trafficSources.map((s) => (
+                <tr key={s.source_medium}>
+                  <Td mono>{s.source_medium}</Td>
+                  <Td right><strong>{fmt(s.sessions)}</strong></Td>
+                  <Td right>{fmt(s.active_users)}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Block>
+      )}
+
       <Block>
         <SectionHeader title="Search performance" subtitle="Google Search Console, synced daily via Windsor." />
         <div className="grid gap-3 md:grid-cols-4">

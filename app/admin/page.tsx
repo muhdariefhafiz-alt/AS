@@ -101,6 +101,8 @@ async function loadData(): Promise<Omit<AdminData, "session">> {
     dashLogin7,
     profileEdit7,
     subscribers,
+    ga4Daily7,
+    ga4Sources7,
   ] = await Promise.all([
     eventCount("profile_view", d7),
     eventCount("profile_view", d14, d7),
@@ -142,35 +144,35 @@ async function loadData(): Promise<Omit<AdminData, "session">> {
       .from("sg_outreach")
       .select("email_sent, opened, clicked, claimed_after"),
     supabase
-      .from("gsc_daily_stats")
+      .from("fc_gsc_daily_stats")
       .select("clicks, impressions")
       .gte("date", d7.toISOString().slice(0, 10)),
     supabase
-      .from("gsc_daily_stats")
+      .from("fc_gsc_daily_stats")
       .select("clicks")
       .gte("date", d14.toISOString().slice(0, 10))
       .lt("date", d7.toISOString().slice(0, 10)),
     supabase
-      .from("gsc_daily_stats")
+      .from("fc_gsc_daily_stats")
       .select("dimension_value, clicks, impressions, ctr, position")
       .eq("dimension", "query")
       .gte("date", d7.toISOString().slice(0, 10))
       .order("clicks", { ascending: false })
       .limit(15),
     supabase
-      .from("gsc_daily_stats")
+      .from("fc_gsc_daily_stats")
       .select("dimension_value, clicks, impressions, position")
       .eq("dimension", "page")
       .gte("date", d7.toISOString().slice(0, 10))
       .order("clicks", { ascending: false })
       .limit(15),
     supabase
-      .from("rank_tracking")
+      .from("fc_rank_tracking")
       .select("keyword, our_rank, checked_at")
       .order("checked_at", { ascending: false })
       .limit(20),
     supabase
-      .from("gsc_indexation_log")
+      .from("fc_gsc_indexation_log")
       .select("verdict, coverage_state"),
     count("email_unsubscribes", [], { col: "created_at", date: d30 }),
     supabase.from("email_queue").select("id", { count: "exact", head: true }),
@@ -201,7 +203,36 @@ async function loadData(): Promise<Omit<AdminData, "session">> {
     eventCount("dashboard_login", d7),
     eventCount("profile_edit", d7),
     supabase.from("sg_email_subscribers").select("id", { count: "exact", head: true }),
+    supabase
+      .from("fc_ga4_daily_stats")
+      .select("active_users, sessions, page_views, bounce_rate, engaged_sessions")
+      .gte("date", d7.toISOString().slice(0, 10)),
+    supabase
+      .from("fc_ga4_traffic_sources")
+      .select("source_medium, sessions, active_users")
+      .gte("date", d7.toISOString().slice(0, 10))
+      .order("sessions", { ascending: false })
+      .limit(10),
   ]);
+
+  // GA4 rollup
+  const ga4 = ((ga4Daily7.data ?? []) as Array<{
+    active_users: number;
+    sessions: number;
+    page_views: number;
+    bounce_rate: number;
+    engaged_sessions: number;
+  }>);
+  const ga4Sessions7 = ga4.reduce((s, r) => s + (r.sessions || 0), 0);
+  const ga4Users7 = ga4.reduce((s, r) => s + (r.active_users || 0), 0);
+  const ga4Pageviews7 = ga4.reduce((s, r) => s + (r.page_views || 0), 0);
+  const ga4Engaged7 = ga4.reduce((s, r) => s + (r.engaged_sessions || 0), 0);
+  const ga4EngagementRate = ga4Sessions7 > 0 ? (ga4Engaged7 / ga4Sessions7) * 100 : 0;
+  const trafficSources = ((ga4Sources7.data ?? []) as Array<{
+    source_medium: string;
+    sessions: number;
+    active_users: number;
+  }>);
 
   const agents = (agentsRaw.data ?? []) as Array<{
     id: number;
@@ -369,7 +400,7 @@ async function loadData(): Promise<Omit<AdminData, "session">> {
 
   const positionSampleData = (
     await supabase
-      .from("gsc_daily_stats")
+      .from("fc_gsc_daily_stats")
       .select("position, impressions")
       .gte("date", d7.toISOString().slice(0, 10))
       .eq("dimension", "query")
@@ -494,6 +525,11 @@ async function loadData(): Promise<Omit<AdminData, "session">> {
       topQueries,
       topPages,
       rankTracking: rankData,
+      ga4Sessions: ga4Sessions7,
+      ga4Users: ga4Users7,
+      ga4Pageviews: ga4Pageviews7,
+      ga4EngagementRate,
+      trafficSources,
     },
     ops: {
       pendingClaims,
