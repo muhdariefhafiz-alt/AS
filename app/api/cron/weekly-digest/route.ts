@@ -103,23 +103,23 @@ export async function GET(req: Request) {
 <table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
 
   <!-- Header -->
-  <tr><td style="background:linear-gradient(135deg,#0f766e,#0d9488);padding:24px 32px">
+  <tr><td style="background:#0f766e;padding:24px 32px">
     <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-    <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.7)">Weekly Agent Rankings Digest</p>
+    <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.7)">Singapore Property Agent Rankings</p>
   </td></tr>
 
   <!-- Body -->
   <tr><td style="padding:24px 32px">
     <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6">
-      Here are this week's top-performing property agents in Singapore, ranked by AgentScore based on CEA transaction records.
+      This week's highest-scoring property agents in Singapore, ranked on CEA transaction data. No paid placements.
     </p>
 
-    ${weeklyViews ? `<p style="margin:0 0 20px;font-size:13px;color:#6b7280;background:#f0fdfa;padding:10px 14px;border-radius:8px">
-      ${weeklyViews.toLocaleString()} agent profiles viewed this week on FairComparisons.
+    ${weeklyViews ? `<p style="margin:0 0 20px;font-size:13px;color:#0f766e;background:#f0fdfa;padding:10px 14px;border-radius:8px">
+      <strong>${weeklyViews.toLocaleString()}</strong> agent profiles researched this week by Singapore buyers.
     </p>` : ""}
 
     <!-- Top 5 -->
-    <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em">TOP 5 AGENTS THIS WEEK</p>
+    <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em">THIS WEEK'S TOP 5</p>
     <table cellpadding="0" cellspacing="0" border="0" width="100%">
       ${agentRows}
     </table>
@@ -129,15 +129,15 @@ export async function GET(req: Request) {
     <!-- CTA -->
     <tr><td style="padding:24px 0">
       <a href="https://fair-comparisons.com/insights/top-agents-2026?utm_source=digest&utm_medium=email" style="display:inline-block;background:#0d9488;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        View full 2026 rankings
+        See full rankings
       </a>
     </td></tr>
 
     <!-- Agent CTA -->
     <tr><td style="padding:16px 0 0;border-top:1px solid #f3f4f6">
-      <p style="margin:0 0 8px;font-size:14px;font-weight:600;color:#111827">Are you a property agent?</p>
+      <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#111827">Are you a property agent?</p>
       <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.5">
-        Your profile and score are already live. <a href="https://fair-comparisons.com/for-agents?utm_source=digest&utm_medium=email" style="color:#0d9488;text-decoration:none;font-weight:500">Claim your profile for free</a> to add your photo, bio, and WhatsApp number.
+        Your profile is already public. <a href="https://fair-comparisons.com/for-agents?utm_source=digest&utm_medium=email" style="color:#0d9488;text-decoration:none;font-weight:500">Claim it</a> to add your photo, WhatsApp, and bio. Free.
       </p>
     </td></tr>
 
@@ -146,8 +146,8 @@ export async function GET(req: Request) {
   <!-- Footer -->
   <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
     <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5">
-      You received this because you subscribed on fair-comparisons.com.
-      <a href="https://fair-comparisons.com/unsubscribe?email=${encodeURIComponent(sub.email)}" style="color:#9ca3af">Unsubscribe</a>
+      You subscribed on fair-comparisons.com. Rankings based on CEA data, not ads.
+      <a href="https://fair-comparisons.com/unsubscribe?email=${encodeURIComponent(sub.email)}" style="color:#9ca3af;text-decoration:underline">Unsubscribe</a>
     </p>
   </td></tr>
 
@@ -158,8 +158,9 @@ export async function GET(req: Request) {
 
     return {
       to: sub.email,
-      subject: `Top Property Agents This Week - Singapore Rankings`,
+      subject: `Singapore's top 5 agents this week (CEA data)`,
       html,
+      metric: "Weekly Digest",
     };
   });
 

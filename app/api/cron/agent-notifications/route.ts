@@ -67,30 +67,25 @@ export async function GET(req: Request) {
   </td></tr>
 
   <tr><td style="padding:32px">
-    <p style="margin:0 0 8px;font-size:14px;color:#6b7280">Weekly Profile Report</p>
     <p style="margin:0 0 24px;font-size:22px;font-weight:800;color:#111827">
-      Your profile was viewed <span style="color:#0d9488">${views} time${views === 1 ? "" : "s"}</span> this week
+      <span style="color:#0d9488">${views}</span> buyer${views === 1 ? "" : "s"} viewed your profile this week
     </p>
 
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f0fdfa;border-radius:8px;padding:16px">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f0fdfa;border-radius:8px">
     <tr>
-      <td style="padding:16px" width="33%" align="center">
-        <p style="margin:0;font-size:24px;font-weight:800;color:#0d9488">${views}</p>
-        <p style="margin:4px 0 0;font-size:11px;color:#6b7280">Profile Views</p>
+      <td style="padding:16px" width="50%" align="center">
+        <p style="margin:0;font-size:28px;font-weight:800;color:#0d9488">${views}</p>
+        <p style="margin:4px 0 0;font-size:11px;color:#6b7280">Profile views</p>
       </td>
-      <td style="padding:16px" width="33%" align="center">
-        <p style="margin:0;font-size:24px;font-weight:800;color:#111827">${agent.score ? Math.round(Number(agent.score)) : "-"}</p>
-        <p style="margin:4px 0 0;font-size:11px;color:#6b7280">AgentScore</p>
-      </td>
-      <td style="padding:16px" width="33%" align="center">
-        <p style="margin:0;font-size:24px;font-weight:800;color:#111827">Top</p>
-        <p style="margin:4px 0 0;font-size:11px;color:#6b7280">Claimed Profile</p>
+      <td style="padding:16px" width="50%" align="center">
+        <p style="margin:0;font-size:28px;font-weight:800;color:#111827">${agent.score ? Math.round(Number(agent.score)) : "-"}</p>
+        <p style="margin:4px 0 0;font-size:11px;color:#6b7280">Your AgentScore</p>
       </td>
     </tr>
     </table>
 
     <p style="margin:24px 0 16px;font-size:14px;color:#374151;line-height:1.6">
-      Buyers in Singapore are actively researching agents on FairComparisons. Make sure your profile stands out with a professional photo, bio, and WhatsApp number.
+      These are real buyers researching agents in your area. Profiles with a photo, bio, and WhatsApp number get contacted. Incomplete profiles get skipped.
     </p>
 
     <table cellpadding="0" cellspacing="0" border="0"><tr>
@@ -121,8 +116,10 @@ export async function GET(req: Request) {
 
       return {
         to: agent.claimed_email,
-        subject: `Your profile was viewed ${views} time${views === 1 ? "" : "s"} this week`,
+        subject: `${views} buyer${views === 1 ? "" : "s"} viewed your profile this week`,
         html,
+        metric: "Agent Notification",
+        properties: { views, agent_slug: agent.slug },
       };
     });
 
