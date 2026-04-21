@@ -21,6 +21,9 @@ export async function OpsTab() {
     recentErrors,
     staleScrapes,
     rejectedClaims30,
+    modMessages,
+    modPhotos,
+    modBios,
   ] = await Promise.all([
     supabase.from("sg_claim_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("dashboard_feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
@@ -49,10 +52,43 @@ export async function OpsTab() {
       .select("id", { count: "exact", head: true })
       .eq("status", "rejected")
       .gte("created_at", cutoff30),
+    supabase
+      .from("sg_agents")
+      .select("id", { count: "exact", head: true })
+      .eq("message_status", "pending")
+      .not("message", "is", null),
+    supabase
+      .from("sg_agents")
+      .select("id", { count: "exact", head: true })
+      .eq("photo_status", "pending")
+      .not("photo_url", "is", null),
+    supabase
+      .from("sg_agents")
+      .select("id", { count: "exact", head: true })
+      .eq("bio_status", "pending")
+      .not("bio", "is", null),
   ]);
+
+  const modTotal = (modMessages.count ?? 0) + (modPhotos.count ?? 0) + (modBios.count ?? 0);
 
   return (
     <div className="space-y-8">
+      <div>
+        <SectionHeading title="UGC moderation" hint="Agent-gegenereerde content awaiting review." />
+        <div className="grid gap-3 md:grid-cols-4">
+          <StatCard
+            title="UGC total pending"
+            value={modTotal}
+            sub="message + photo + bio"
+            danger={modTotal > 10}
+            href="/admin/moderation"
+          />
+          <StatCard title="Messages pending" value={modMessages.count ?? 0} />
+          <StatCard title="Photos pending" value={modPhotos.count ?? 0} />
+          <StatCard title="Bios pending" value={modBios.count ?? 0} />
+        </div>
+      </div>
+
       <div>
         <SectionHeading title="Moderation queues" hint="Zaken die op actie wachten." />
         <div className="grid gap-3 md:grid-cols-4">

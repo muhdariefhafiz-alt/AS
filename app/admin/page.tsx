@@ -33,11 +33,28 @@ export default async function AdminPage({ searchParams }: Props) {
   const active = TABS.find((t) => t.id === tab)?.id || "overzicht";
 
   // Sidebar badge counts (cheap queries)
-  const [pendingClaims, feedbackNew, emailFailed] = await Promise.all([
+  const [pendingClaims, feedbackNew, emailFailed, pendingMessages, pendingPhotos, pendingBios] = await Promise.all([
     supabase.from("sg_claim_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("dashboard_feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
     supabase.from("email_queue").select("id", { count: "exact", head: true }).eq("status", "failed"),
+    supabase
+      .from("sg_agents")
+      .select("id", { count: "exact", head: true })
+      .eq("message_status", "pending")
+      .not("message", "is", null),
+    supabase
+      .from("sg_agents")
+      .select("id", { count: "exact", head: true })
+      .eq("photo_status", "pending")
+      .not("photo_url", "is", null),
+    supabase
+      .from("sg_agents")
+      .select("id", { count: "exact", head: true })
+      .eq("bio_status", "pending")
+      .not("bio", "is", null),
   ]);
+
+  const modTotal = (pendingMessages.count ?? 0) + (pendingPhotos.count ?? 0) + (pendingBios.count ?? 0);
 
   const badges: Record<string, number> = {
     overzicht: pendingClaims.count ?? 0,
@@ -47,6 +64,7 @@ export default async function AdminPage({ searchParams }: Props) {
     funnel: 0,
     supply: 0,
     seo: 0,
+    moderation: modTotal,
   };
 
   const activeTab = TABS.find((t) => t.id === active)!;

@@ -60,6 +60,19 @@ export function AdminSidebar({
       </nav>
 
       <div className="mt-6 border-t border-gray-200 pt-4">
+        <div className="mb-3 flex flex-col gap-2">
+          <Link
+            href="/admin/moderation"
+            className="flex items-center justify-between rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+          >
+            <span>Moderation</span>
+            {badges.moderation > 0 && (
+              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">
+                {badges.moderation}
+              </span>
+            )}
+          </Link>
+        </div>
         <form action="/api/admin/logout" method="POST">
           <button
             type="submit"

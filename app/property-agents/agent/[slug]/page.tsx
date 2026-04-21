@@ -276,7 +276,7 @@ export default async function AgentPage({ params }: Props) {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-10">
 
             {/* Photo or Score badge - the visual anchor */}
-            {agent.claimed && agent.photo_url ? (
+            {agent.claimed && agent.photo_url && agent.photo_status !== "pending" && agent.photo_status !== "rejected" ? (
               <div className="relative flex-shrink-0">
                 <img
                   src={agent.photo_url}
@@ -370,11 +370,11 @@ export default async function AgentPage({ params }: Props) {
       {/* ============================================================
           MESSAGE FROM AGENT - personal message above bio
           ============================================================ */}
-      {agent.claimed && agent.message && (
+      {agent.claimed && agent.message && agent.message_status !== "pending" && agent.message_status !== "rejected" && (
         <section className="border-b border-gray-100 bg-gradient-to-r from-teal-50/50 to-white">
           <div className="mx-auto max-w-[1120px] px-5 py-8 md:px-8">
             <div className="flex items-start gap-4">
-              {agent.photo_url && (
+              {agent.photo_url && agent.photo_status !== "pending" && agent.photo_status !== "rejected" && (
                 <img src={agent.photo_url} alt={agent.name} className="h-12 w-12 rounded-full border-2 border-teal-200 object-cover flex-shrink-0" />
               )}
               <div>
@@ -391,7 +391,7 @@ export default async function AgentPage({ params }: Props) {
       {/* ============================================================
           CLAIMED AGENT BIO - Growth loop: claimed content enriches SEO pages
           ============================================================ */}
-      {agent.claimed && agent.bio && (
+      {agent.claimed && agent.bio && agent.bio_status !== "pending" && agent.bio_status !== "rejected" && (
         <section className="border-b border-gray-100 bg-white">
           <div className="mx-auto max-w-[1120px] px-5 py-6 md:px-8">
             <div className="flex items-start gap-4">
