@@ -5,7 +5,7 @@ import { formatPrice, formatPriceFull } from "../../lib/narrativeHelpers";
 import EmailCapture from "../../components/EmailCapture";
 import type { Metadata } from "next";
 
-export const revalidate = false;
+export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
 export const metadata: Metadata = {
   title: "Million-Dollar HDB Tracker - Every S$1M+ Resale Transaction in Singapore",
@@ -81,9 +81,9 @@ export default async function MillionDollarHdbPage() {
     .sort((a, b) => a.year - b.year);
 
   const totalMillionFlats = towns.reduce((s, t) => s + t.count, 0);
-  const overallMax = Math.max(...towns.map((t) => t.maxPrice));
+  const overallMax = towns.length > 0 ? Math.max(...towns.map((t) => t.maxPrice)) : 0;
   const maxTown = towns.find((t) => t.maxPrice === overallMax);
-  const topTown = towns[0];
+  const topTown = towns[0] ?? { town: "Singapore", count: 0, maxPrice: 0, avgPrice: 0, latestYear: 0, topStreet: "", topStreetCount: 0 };
 
   function townSlug(name: string): string {
     return HDB_TOWNS.find((t) => t.name === name)?.slug ?? name.toLowerCase().replace(/[^a-z0-9]+/g, "-");

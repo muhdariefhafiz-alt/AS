@@ -6,7 +6,7 @@ import { formatPrice } from "../../../../lib/narrativeHelpers";
 import EmailCapture from "../../../../components/EmailCapture";
 import type { Metadata } from "next";
 
-export const revalidate = false;
+export const revalidate = 43200; // 12h; daily cron also force-revalidates
 export const dynamicParams = false;
 type Props = { params: Promise<{ town: string }> };
 
@@ -18,6 +18,7 @@ type TopAgent = {
   score: number;
   txn_count: number;
   primary_type: string;
+  subscription_tier: string;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -49,11 +50,25 @@ export default async function BestHdbAgentsPage({ params }: Props) {
     .eq("area_name", town.name)
     .order("rank", { ascending: true })
     .limit(20);
+
+  // Fetch subscription tiers for these agents
+  const agentSlugs = (agents ?? []).map(a => a.agent_slug);
+  const { data: tierData } = agentSlugs.length > 0
+    ? await supabase.from("sg_agents").select("slug, subscription_tier").in("slug", agentSlugs)
+    : { data: [] };
+  const tierMap: Record<string, string> = {};
+  (tierData ?? []).forEach((t: { slug: string; subscription_tier: string | null }) => {
+    tierMap[t.slug] = t.subscription_tier ?? "free";
+  });
+
+  const tierPriority: Record<string, number> = { premium: 0, pro: 1, free: 2 };
+
   const topAgents = (agents ?? []).map((a): TopAgent => ({
     agent_name: a.agent_name, agent_slug: a.agent_slug, cea_reg: a.cea_reg,
     agency_name: a.agency_name, score: Number(a.score), txn_count: a.area_txns,
     primary_type: a.area_property_types || "",
-  }));
+    subscription_tier: tierMap[a.agent_slug] ?? "free",
+  })).sort((a, b) => (tierPriority[a.subscription_tier] ?? 2) - (tierPriority[b.subscription_tier] ?? 2));
 
   // HDB market context
   const { data: hdbStats } = await supabase.rpc("get_hdb_town_stats", { t_name: town.name });
@@ -88,7 +103,12 @@ export default async function BestHdbAgentsPage({ params }: Props) {
 
       <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-8 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">HDB</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">HDB</span>
+            <span className="inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-500">
+              Updated {new Date().toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}
+            </span>
+          </div>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
             Best HDB Agents in {display}
           </h1>
@@ -130,7 +150,7 @@ export default async function BestHdbAgentsPage({ params }: Props) {
                 )}
                 <p>
                   These rankings are based on the Council for Estate Agencies (CEA) public register, which records
-                  every completed property transaction by registered agents. Agents cannot pay for a higher position.
+                  every completed property transaction by registered agents. AgentScore is calculated from public data only. Sponsored agents pay for priority placement at the top of listings, but their score is never influenced by payment. Sponsored listings are clearly labelled.
                 </p>
               </div>
             </section>
@@ -138,25 +158,34 @@ export default async function BestHdbAgentsPage({ params }: Props) {
             <section>
               <h2 className="text-xl font-bold text-gray-900">Top {Math.min(20, topAgents.length)} HDB Agents in {display}</h2>
               <div className="mt-4 space-y-3">
-                {topAgents.map((a, i) => (
-                  <Link
-                    key={a.cea_reg}
-                    href={`/property-agents/agent/${a.agent_slug}`}
-                    className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm"
-                  >
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white ${
-                      i === 0 ? "bg-amber-500" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-amber-700" : "bg-teal-600"
-                    }`}>{i + 1}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 group-hover:text-teal-600">{a.agent_name}</p>
-                      <p className="text-xs text-gray-500 truncate">{a.agency_name} · {a.txn_count} HDB transactions in {display}</p>
-                    </div>
-                    <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1.5">
-                      <span className="text-lg font-extrabold text-teal-600">{Math.round(a.score)}</span>
-                      <span className="text-[8px] uppercase tracking-widest text-gray-400">Score</span>
-                    </div>
-                  </Link>
-                ))}
+                {topAgents.map((a, i) => {
+                  const isPremium = a.subscription_tier === "premium";
+                  const isPro = a.subscription_tier === "pro";
+                  const borderClass = isPremium ? "border-l-4 border-l-amber-400 border border-gray-100" : isPro ? "border-l-4 border-l-teal-400 border border-gray-100" : "border border-gray-100";
+                  return (
+                    <Link
+                      key={a.cea_reg}
+                      href={`/property-agents/agent/${a.agent_slug}`}
+                      className={`group flex items-center gap-4 rounded-xl bg-white p-4 transition hover:border-teal-200 hover:shadow-sm ${borderClass}`}
+                    >
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white ${
+                        i === 0 ? "bg-amber-500" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-amber-700" : "bg-teal-600"
+                      }`}>{i + 1}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-gray-900 group-hover:text-teal-600">{a.agent_name}</p>
+                          {isPremium && <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Sponsored</span>}
+                          {isPro && <span className="inline-flex items-center rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold text-teal-700">Sponsored</span>}
+                        </div>
+                        <p className="text-xs text-gray-500 truncate">{a.agency_name} · {a.txn_count} HDB transactions in {display}</p>
+                      </div>
+                      <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1.5">
+                        <span className="text-lg font-extrabold text-teal-600">{Math.round(a.score)}</span>
+                        <span className="text-[8px] uppercase tracking-widest text-gray-400">Score</span>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
               <p className="mt-4 text-[11px] text-gray-400">Source: CEA Public Register via data.gov.sg. AgentScore by FairComparisons.</p>
             </section>
@@ -212,6 +241,15 @@ export default async function BestHdbAgentsPage({ params }: Props) {
                     {townDisplayName(t.name)}
                   </Link>
                 ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Guides</h3>
+              <div className="mt-3 space-y-2 text-sm">
+                <Link href="/guides/how-to-choose-property-agent" className="block text-gray-600 hover:text-teal-600">How to choose a property agent</Link>
+                <Link href="/guides/hdb-resale-process" className="block text-gray-600 hover:text-teal-600">HDB resale process explained</Link>
+                <Link href="/guides/property-agent-commission" className="block text-gray-600 hover:text-teal-600">Property agent commission rates</Link>
               </div>
             </div>
           </aside>

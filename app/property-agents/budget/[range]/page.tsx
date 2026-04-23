@@ -4,7 +4,7 @@ import { supabase } from "../../../lib/supabase";
 import { formatPrice, formatPriceFull } from "../../../lib/narrativeHelpers";
 import type { Metadata } from "next";
 
-export const revalidate = false;
+export const revalidate = 43200; // 12h; daily cron also force-revalidates
 export const dynamicParams = false;
 
 type Props = { params: Promise<{ range: string }> };

@@ -4,7 +4,7 @@ import { formatPrice, formatPriceFull } from "../../lib/narrativeHelpers";
 import EmailCapture from "../../components/EmailCapture";
 import type { Metadata } from "next";
 
-export const revalidate = false;
+export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
 export const metadata: Metadata = {
   title: "Singapore Freehold Premium by District - How Much More Does Freehold Cost?",

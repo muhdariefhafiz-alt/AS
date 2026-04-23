@@ -4,7 +4,7 @@ import ShareButtons from "../../components/ShareButtons";
 import EmailCapture from "../../components/EmailCapture";
 import type { Metadata } from "next";
 
-export const revalidate = false;
+export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
 export const metadata: Metadata = {
   title: "Top Property Agents in Singapore 2026 - Data-Driven Rankings",
@@ -96,6 +96,8 @@ async function getData() {
 export default async function TopAgents2026Page() {
   const { topAgents, districtLeaders, scoredCount, totalTxns } = await getData();
 
+  const todayISO = new Date().toISOString().slice(0, 10);
+
   const schemas = [
     {
       "@context": "https://schema.org",
@@ -103,7 +105,7 @@ export default async function TopAgents2026Page() {
       headline: "Top Property Agents in Singapore 2026",
       description: "Data-driven rankings of Singapore's top property agents based on CEA transaction records.",
       datePublished: "2026-04-14",
-      dateModified: "2026-04-14",
+      dateModified: todayISO,
       publisher: { "@type": "Organization", name: "FairComparisons", url: "https://fair-comparisons.com" },
     },
     {
@@ -134,9 +136,14 @@ export default async function TopAgents2026Page() {
       {/* Hero */}
       <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
         <div className="mx-auto max-w-[900px] px-5 pb-10 pt-10 md:px-8">
-          <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
-            2026 Rankings
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
+              2026 Rankings
+            </span>
+            <span className="inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-500">
+              Updated {new Date().toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}
+            </span>
+          </div>
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
             Top Property Agents in Singapore 2026
           </h1>

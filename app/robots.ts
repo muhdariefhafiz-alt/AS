@@ -5,8 +5,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/property-agents/", "/lawyers/", "/insights/", "/financial-advisors/"],
-        disallow: ["/api/", "/admin", "/search", "/claim"],
+        allow: ["/", "/property-agents/", "/insights/", "/guides/", "/for-agents/"],
+        disallow: ["/api/", "/admin", "/search", "/claim", "/lawyers", "/financial-advisors", "/insights/court-case-statistics"],
       },
       { userAgent: "GPTBot", allow: "/" },
       { userAgent: "ClaudeBot", allow: "/" },

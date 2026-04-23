@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { supabase } from "./lib/supabase";
 
-export const revalidate = false;
+export const revalidate = 43200; // 12h fallback; daily cron also force-revalidates
 
 async function getStats() {
   const [agentRes, agencyRes, txnRes] = await Promise.all([
@@ -98,7 +98,7 @@ export default async function HomePage() {
 
       {/* Sector Cards */}
       <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="mx-auto grid max-w-[640px] gap-6">
           {/* Property Agents */}
           <Link href="/property-agents"
             className="group rounded-2xl border border-gray-200 bg-white p-8 transition hover:border-teal-300 hover:shadow-lg">
@@ -120,49 +120,6 @@ export default async function HomePage() {
               <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">26 HDB towns</span>
             </div>
             <p className="mt-4 text-sm font-semibold text-teal-600 group-hover:text-teal-700">Compare agents {"\u2192"}</p>
-          </Link>
-
-          {/* Lawyers */}
-          <Link href="/lawyers"
-            className="group rounded-2xl border border-gray-200 bg-white p-8 transition hover:border-slate-300 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-xl">{"\u2696\ufe0f"}</div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 group-hover:text-slate-600">Lawyers</h2>
-                <p className="text-sm text-gray-500">5,204 court judgments analysed</p>
-              </div>
-            </div>
-            <p className="mt-4 text-[15px] leading-relaxed text-gray-600">
-              Singapore&apos;s first data-driven lawyer directory. 7,000+ lawyers tracked across
-              Supreme Court, District Court, and Family Court. Sourced from eLitigation.sg public records.
-            </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">5,204 judgments</span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">7,072 lawyers</span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">1,253 firms</span>
-            </div>
-            <p className="mt-4 text-sm font-semibold text-slate-600 group-hover:text-slate-700">Browse lawyers {"\u2192"}</p>
-          </Link>
-
-          {/* Financial Advisors */}
-          <Link href="/financial-advisors"
-            className="group rounded-2xl border border-gray-200 bg-white p-8 transition hover:border-blue-300 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-xl">{"\ud83d\udcb0"}</div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600">Financial Advisors</h2>
-                <p className="text-sm text-gray-500">MAS-regulated institutions</p>
-              </div>
-            </div>
-            <p className="mt-4 text-[15px] leading-relaxed text-gray-600">
-              Every MAS-licensed financial institution in Singapore. Banks, insurers, financial advisors,
-              capital markets firms, and payment providers. Verified against the MAS register.
-            </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">MAS Licensed</span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">5 sectors</span>
-            </div>
-            <p className="mt-4 text-sm font-semibold text-blue-600 group-hover:text-blue-700">Browse institutions {"\u2192"}</p>
           </Link>
         </div>
       </section>

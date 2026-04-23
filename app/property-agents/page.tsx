@@ -2,7 +2,7 @@ import Link from "next/link";
 import { supabase } from "../lib/supabase";
 import type { Metadata } from "next";
 
-export const revalidate = false;
+export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
 export const metadata: Metadata = {
   title: "Property Agents in Singapore - Compare 30,000+ CEA Agents",

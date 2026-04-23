@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "../lib/supabase";
+import PricingCards from "../components/PricingCards";
 
 export const revalidate = false;
 
@@ -105,63 +106,26 @@ export default async function ForAgentsPage() {
         <p className="mx-auto mt-3 max-w-lg text-center text-sm text-gray-500">
           Claiming your profile is free. Upgrade when you want more visibility.
         </p>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {/* Free */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Free</p>
-            <p className="mt-2 text-3xl font-extrabold text-gray-900">S$0</p>
-            <p className="text-xs text-gray-400">forever</p>
-            <ul className="mt-6 space-y-2 text-sm text-gray-600">
-              <li>- Photo and contact details</li>
-              <li>- Practice description</li>
-              <li>- Embed AgentScore widget</li>
-              <li>- Profile view notifications</li>
-            </ul>
-            <Link href="/search" className="mt-6 block rounded-lg border border-teal-600 px-4 py-2.5 text-center text-sm font-semibold text-teal-600 transition hover:bg-teal-50">
-              Claim your profile
-            </Link>
-          </div>
+        <PricingCards />
+      </section>
 
-          {/* Pro */}
-          <div className="rounded-xl border-2 border-teal-400 bg-teal-50 p-6">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-bold uppercase tracking-widest text-teal-600">Pro</p>
-              <span className="rounded-full bg-teal-600 px-2 py-0.5 text-[10px] font-bold text-white">Popular</span>
-            </div>
-            <p className="mt-2 text-3xl font-extrabold text-gray-900">S$99<span className="text-base font-normal text-gray-400">/mo</span></p>
-            <p className="text-xs text-gray-400">billed monthly</p>
-            <ul className="mt-6 space-y-2 text-sm text-gray-700">
-              <li>- Everything in Free</li>
-              <li>- Featured badge on profile</li>
-              <li>- Lead enquiry notifications</li>
-              <li>- Monthly performance report</li>
-              <li>- Priority in area listings</li>
-            </ul>
-            <Link href="/search" className="mt-6 block rounded-lg bg-teal-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-teal-700">
-              Start with Pro
+      {/* Related pages for agents */}
+      <section className="border-t border-gray-100 bg-white">
+        <div className="mx-auto max-w-[900px] px-5 py-14 md:px-8">
+          <h2 className="text-center text-2xl font-bold text-gray-900">Resources for agents</h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            <Link href="/for-agents/propertyguru-alternative" className="group rounded-xl border border-gray-200 bg-white p-6 transition hover:border-teal-300 hover:shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-widest text-teal-600">Compare</p>
+              <p className="mt-2 text-lg font-bold text-gray-900 group-hover:text-teal-600">PropertyGuru Alternative</p>
+              <p className="mt-2 text-sm text-gray-500">How FairComparisons compares to PropertyGuru on pricing, features, and visibility. See the side-by-side breakdown.</p>
             </Link>
-          </div>
-
-          {/* Premium */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Premium</p>
-            <p className="mt-2 text-3xl font-extrabold text-gray-900">S$299<span className="text-base font-normal text-gray-400">/mo</span></p>
-            <p className="text-xs text-gray-400">billed monthly</p>
-            <ul className="mt-6 space-y-2 text-sm text-gray-600">
-              <li>- Everything in Pro</li>
-              <li>- Highlighted in best-agent rankings</li>
-              <li>- Direct buyer enquiry form</li>
-              <li>- Competitor comparison analytics</li>
-              <li>- Custom profile URL</li>
-            </ul>
-            <Link href="/search" className="mt-6 block rounded-lg border border-gray-300 px-4 py-2.5 text-center text-sm font-semibold text-gray-600 transition hover:bg-gray-50">
-              Start with Premium
+            <Link href="/for-agents/lead-generation" className="group rounded-xl border border-gray-200 bg-white p-6 transition hover:border-teal-300 hover:shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-widest text-teal-600">Lead Generation</p>
+              <p className="mt-2 text-lg font-bold text-gray-900 group-hover:text-teal-600">How Agents Get Leads on FairComparisons</p>
+              <p className="mt-2 text-sm text-gray-500">Buyers search Google for agents in their area. Your track record does the selling. See how it works.</p>
             </Link>
           </div>
         </div>
-        <p className="mt-6 text-center text-xs text-gray-400">
-          Payment never influences ranking position. Your AgentScore is calculated from public data only.
-        </p>
       </section>
 
       {/* Final CTA */}

@@ -6,7 +6,7 @@ import EmailCapture from "../../../components/EmailCapture";
 import ShareButtons from "../../../components/ShareButtons";
 import type { Metadata } from "next";
 
-export const revalidate = false;
+export const revalidate = 43200; // 12h; daily cron also force-revalidates
 export const dynamicParams = false;
 type Props = { params: Promise<{ area: string }> };
 
@@ -57,6 +57,7 @@ type RichAgent = {
   area_property_types: string;
   area_roles: string;
   area_txn_types: string;
+  subscription_tier: string;
 };
 
 function formatTypes(types: string): string {
@@ -119,13 +120,27 @@ export default async function BestAgentsPage({ params }: Props) {
     .eq("area_name", area.name)
     .order("rank", { ascending: true })
     .limit(20);
+
+  // Fetch subscription tiers for these agents
+  const agentSlugs = (agents ?? []).map(a => a.agent_slug);
+  const { data: tierData } = agentSlugs.length > 0
+    ? await supabase.from("sg_agents").select("slug, subscription_tier").in("slug", agentSlugs)
+    : { data: [] };
+  const tierMap: Record<string, string> = {};
+  (tierData ?? []).forEach((t: { slug: string; subscription_tier: string | null }) => {
+    tierMap[t.slug] = t.subscription_tier ?? "free";
+  });
+
+  const tierPriority: Record<string, number> = { premium: 0, pro: 1, free: 2 };
+
   const topAgents = (agents ?? []).map((a): RichAgent => ({
     agent_name: a.agent_name, agent_slug: a.agent_slug, cea_reg: a.cea_reg,
     agency_name: a.agency_name, score: Number(a.score), total_txns: a.total_txns,
     area_txns: a.area_txns, area_focus_pct: a.area_focus_pct,
     area_property_types: a.area_property_types || "", area_roles: a.area_roles || "",
     area_txn_types: a.area_txn_types || "",
-  }));
+    subscription_tier: tierMap[a.agent_slug] ?? "free",
+  })).sort((a, b) => (tierPriority[a.subscription_tier] ?? 2) - (tierPriority[b.subscription_tier] ?? 2));
 
   const districtNum = area.district.replace("D", "").padStart(2, "0");
   const { data: marketData } = await supabase.rpc("get_district_property_types", { d_code: districtNum });
@@ -160,7 +175,7 @@ export default async function BestAgentsPage({ params }: Props) {
     {
       "@type": "Question",
       name: "Can agents pay for a higher ranking?",
-      acceptedAnswer: { "@type": "Answer", text: "No. AgentScore is calculated algorithmically from CEA public data. Payment does not influence ranking position." },
+      acceptedAnswer: { "@type": "Answer", text: "AgentScore is calculated from public data only. Sponsored agents pay for priority placement at the top of area listings, but their score is never influenced by payment. Sponsored listings are clearly labelled." },
     },
   ];
 
@@ -192,7 +207,12 @@ export default async function BestAgentsPage({ params }: Props) {
 
       <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-8 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">{area.district}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">{area.district}</span>
+            <span className="inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-500">
+              Updated {new Date().toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}
+            </span>
+          </div>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
             Best Property Agents in {short}
           </h1>
@@ -257,17 +277,24 @@ export default async function BestAgentsPage({ params }: Props) {
                 {topAgents.map((a, i) => {
                   const types = formatTypes(a.area_property_types);
                   const focus = focusLabel(a.area_focus_pct);
+                  const isPremium = a.subscription_tier === "premium";
+                  const isPro = a.subscription_tier === "pro";
+                  const borderClass = isPremium ? "border-l-4 border-l-amber-400 border border-gray-100" : isPro ? "border-l-4 border-l-teal-400 border border-gray-100" : "border border-gray-100";
                   return (
-                    <div key={a.cea_reg} className="rounded-xl border border-gray-100 bg-white p-5">
+                    <div key={a.cea_reg} className={`rounded-xl bg-white p-5 ${borderClass}`}>
                       <div className="flex items-start gap-4">
                         <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
                           i === 0 ? "bg-amber-500" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-amber-700" : "bg-teal-600"
                         }`}>{i + 1}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <Link href={`/property-agents/agent/${a.agent_slug}`} className="font-semibold text-gray-900 hover:text-teal-600">
-                              {a.agent_name}
-                            </Link>
+                            <div className="flex items-center gap-2">
+                              <Link href={`/property-agents/agent/${a.agent_slug}`} className="font-semibold text-gray-900 hover:text-teal-600">
+                                {a.agent_name}
+                              </Link>
+                              {isPremium && <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Sponsored</span>}
+                              {isPro && <span className="inline-flex items-center rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold text-teal-700">Sponsored</span>}
+                            </div>
                             <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1">
                               <span className="text-lg font-extrabold text-teal-600">{Math.round(a.score)}</span>
                               <span className="text-[7px] uppercase tracking-widest text-gray-400">Score</span>
@@ -366,7 +393,7 @@ export default async function BestAgentsPage({ params }: Props) {
                 <div>
                   <h3 className="font-semibold text-gray-900">Can agents pay for a higher ranking?</h3>
                   <p className="mt-1 text-[15px] leading-[1.75] text-gray-600">
-                    No. AgentScore is calculated algorithmically from CEA public data. Payment does not influence ranking position.
+                    AgentScore is calculated from public data only. Sponsored agents pay for priority placement at the top of area listings, but their score is never influenced by payment. Sponsored listings are clearly labelled.
                   </p>
                 </div>
               </div>
@@ -416,6 +443,15 @@ export default async function BestAgentsPage({ params }: Props) {
                     {shortName(a.name)}
                   </Link>
                 ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Guides</h3>
+              <div className="mt-3 space-y-2 text-sm">
+                <Link href="/guides/how-to-choose-property-agent" className="block text-gray-600 hover:text-teal-600">How to choose a property agent</Link>
+                <Link href="/guides/property-agent-commission" className="block text-gray-600 hover:text-teal-600">Agent commission rates explained</Link>
+                <Link href="/guides/condo-vs-hdb-investment" className="block text-gray-600 hover:text-teal-600">Condo vs HDB as investment</Link>
               </div>
             </div>
           </aside>

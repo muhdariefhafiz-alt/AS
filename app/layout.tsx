@@ -58,9 +58,9 @@ function Header() {
         {/* Desktop nav */}
         <nav className="hidden items-center gap-7 text-sm font-medium text-gray-500 sm:flex">
           <Link href="/property-agents" className="transition hover:text-gray-900">Property Agents</Link>
-          <Link href="/lawyers" className="transition hover:text-gray-900">Lawyers</Link>
-          <Link href="/financial-advisors" className="transition hover:text-gray-900">Financial Advisors</Link>
           <Link href="/insights" className="transition hover:text-gray-900">Insights</Link>
+          <Link href="/guides" className="transition hover:text-gray-900">Guides</Link>
+          <Link href="/for-agents" className="transition hover:text-gray-900">For Agents</Link>
           <Link href="/search" className="rounded-lg bg-teal-600 px-4 py-2 text-white transition hover:bg-teal-700">Search</Link>
         </nav>
         {/* Mobile nav */}
@@ -72,9 +72,8 @@ function Header() {
             </summary>
             <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
               <Link href="/property-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Property Agents</Link>
-              <Link href="/lawyers" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Lawyers</Link>
-              <Link href="/financial-advisors" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Financial Advisors</Link>
               <Link href="/insights" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Insights</Link>
+              <Link href="/guides" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Guides</Link>
               <Link href="/for-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">For Agents</Link>
             </div>
           </details>
@@ -103,8 +102,8 @@ function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">Platform</h4>
             <div className="mt-3 space-y-2 text-sm text-gray-500">
               <Link href="/property-agents" className="block hover:text-gray-900">Property Agents</Link>
-              <Link href="/lawyers" className="block hover:text-gray-900">Lawyers</Link>
               <Link href="/insights" className="block hover:text-gray-900">Insights</Link>
+              <Link href="/guides" className="block hover:text-gray-900">Guides</Link>
               <Link href="/for-agents" className="block hover:text-gray-900">For Agents</Link>
               <Link href="/about" className="block hover:text-gray-900">How We Score</Link>
               <Link href="/privacy" className="block hover:text-gray-900">Privacy Policy</Link>

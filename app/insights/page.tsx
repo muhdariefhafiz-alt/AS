@@ -22,13 +22,7 @@ const articles = [
     tag: "Private Property",
     tagColor: "bg-teal-50 text-teal-700 border-teal-200",
   },
-  {
-    slug: "court-case-statistics",
-    title: "Singapore Court Case Statistics",
-    description: "5,200+ published judgments analyzed. Which practice areas dominate? Which firms appear most often?",
-    tag: "Legal",
-    tagColor: "bg-slate-50 text-slate-700 border-slate-200",
-  },
+  // Court case statistics hidden while focusing on property agents vertical
 ];
 
 export default function InsightsPage() {
