@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import SellCtaBand from "../../components/SellCtaBand";
 
 export const metadata: Metadata = {
   title: "Property Agent Commission Rates in Singapore (2026 Guide)",
@@ -101,7 +102,7 @@ export default function PropertyAgentCommissionPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -113,7 +114,7 @@ export default function PropertyAgentCommissionPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
           <span className="inline-block rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">Costs</span>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Property Agent Commission Rates in Singapore</h1>
@@ -128,7 +129,7 @@ export default function PropertyAgentCommissionPage() {
           <article className="space-y-10">
 
             {/* Key Point */}
-            <div className="rounded-xl border border-teal-100 bg-teal-50/50 p-6">
+            <div className="rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-6">
               <h2 className="text-lg font-bold text-gray-900">The key thing to know</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 There is no legally fixed property agent commission rate in Singapore. The Council for Estate Agencies (CEA) does not set rates. The percentages below are market norms that have been stable for years, but they are always negotiable between agent and client. Always agree on the rate in writing before signing an agency agreement.
@@ -145,11 +146,11 @@ export default function PropertyAgentCommissionPage() {
                     <div className="mt-3 grid grid-cols-2 gap-3">
                       <div className="rounded-lg bg-gray-50 p-3">
                         <p className="text-xs font-medium text-gray-400">{r.partyA}</p>
-                        <p className="mt-1 text-sm font-bold text-teal-700">{r.rateA}</p>
+                        <p className="mt-1 text-sm font-bold text-[var(--blue-deep)]">{r.rateA}</p>
                       </div>
                       <div className="rounded-lg bg-gray-50 p-3">
                         <p className="text-xs font-medium text-gray-400">{r.partyB}</p>
-                        <p className="mt-1 text-sm font-bold text-teal-700">{r.rateB}</p>
+                        <p className="mt-1 text-sm font-bold text-[var(--blue-deep)]">{r.rateB}</p>
                       </div>
                     </div>
                     <p className="mt-3 text-sm leading-relaxed text-gray-500">{r.note}</p>
@@ -220,7 +221,7 @@ export default function PropertyAgentCommissionPage() {
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
                   <details key={f.q} className="group px-5 py-4">
-                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-teal-700">{f.q}</summary>
+                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-[var(--blue-deep)]">{f.q}</summary>
                     <p className="mt-3 text-sm leading-relaxed text-gray-500">{f.a}</p>
                   </details>
                 ))}
@@ -234,28 +235,31 @@ export default function PropertyAgentCommissionPage() {
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Compare Agents</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">See how agents compare on transaction volume, area specialization, and client reviews.</p>
-              <Link href="/property-agents/compare" className="mt-4 block rounded-lg bg-teal-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-teal-500">
+              <Link href="/property-agents/compare" className="mt-4 block rounded-lg bg-[var(--blue)] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
                 Compare agents
               </Link>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">For Agents</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Your profile and AgentScore are already live. Claim it to add contact details and manage your listing.</p>
-              <Link href="/for-agents" className="mt-4 block rounded-lg border border-teal-200 px-4 py-2.5 text-center text-sm font-semibold text-teal-700 transition hover:bg-teal-50">
+              <Link href="/for-agents" className="mt-4 block rounded-lg border border-[var(--line-2)] px-4 py-2.5 text-center text-sm font-semibold text-[var(--blue-deep)] transition hover:bg-[var(--blue-wash)]">
                 Claim your profile
               </Link>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
-                <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-teal-600 hover:underline">How to choose an agent</Link></li>
-                <li><Link href="/guides/property-agent-vs-diy" className="text-sm text-teal-600 hover:underline">Selling without an agent</Link></li>
-                <li><Link href="/guides/hdb-resale-process" className="text-sm text-teal-600 hover:underline">HDB resale process</Link></li>
+                <li><Link href="/tools/commission-calculator" className="text-sm font-semibold text-[var(--blue)] hover:underline">Commission calculator (free tool)</Link></li>
+                <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-[var(--blue)] hover:underline">How to choose an agent</Link></li>
+                <li><Link href="/guides/property-agent-vs-diy" className="text-sm text-[var(--blue)] hover:underline">Selling without an agent</Link></li>
+                <li><Link href="/guides/hdb-resale-process" className="text-sm text-[var(--blue)] hover:underline">HDB resale process</Link></li>
               </ul>
             </div>
           </aside>
         </div>
       </div>
+
+      <SellCtaBand source="guide_commission" heading="Compare agents on fees, not guesswork" sub="Get a free shortlist of the agents who actually sell homes like yours. Each invited agent quotes their own commission, so you compare real numbers side by side." />
     </>
   );
 }

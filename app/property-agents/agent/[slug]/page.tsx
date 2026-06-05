@@ -2,13 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { formatPrice } from "../../../lib/narrativeHelpers";
-import ClaimBanner from "../../../components/ClaimBanner";
 import AgentReviews from "../../../components/AgentReviews";
-import EmailCapture from "../../../components/EmailCapture";
+import VerifiedReviews from "../../../components/VerifiedReviews";
 import FunnelTracker from "../../../components/FunnelTracker";
-import ShareButtons from "../../../components/ShareButtons";
-import WhatsAppButton from "../../../components/WhatsAppButton";
-import SelfViewCTA from "../../../components/SelfViewCTA";
+import { bandFor } from "../../../components/Brand";
+import { titleName, givenName, cleanAgency, saleShare } from "../../../lib/names";
+import ClaimBanner from "../../../components/ClaimBanner";
+import StickyMobileCta from "../../../components/StickyMobileCta";
+import AgentTransactionRecord from "../../../components/AgentTransactionRecord";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -40,30 +41,31 @@ type Listing = {
 function propTypeLabel(raw: string): string {
   const map: Record<string, string> = {
     HDB: "HDB",
-    CONDOMINIUM_APARTMENTS: "Condo",
+    CONDOMINIUM_APARTMENTS: "Condo & apartment",
     LANDED_PROPERTIES: "Landed",
     EXECUTIVE_CONDOMINIUM: "EC",
   };
-  return map[raw] ?? raw.charAt(0) + raw.slice(1).toLowerCase().replace("_", " ");
+  return map[raw] ?? raw.charAt(0) + raw.slice(1).toLowerCase().replace(/_/g, " ");
 }
 
 function txnTypeLabel(raw: string): string {
-  return raw.charAt(0) + raw.slice(1).toLowerCase().replace("_", " ");
+  return raw.charAt(0) + raw.slice(1).toLowerCase().replace(/_/g, " ");
 }
 
-function yearsActive(earliest: string, latest: string): string {
-  const months: Record<string, number> = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
-  try {
-    const [m1, y1] = earliest.split("-");
-    const [m2, y2] = latest.split("-");
-    const start = new Date(parseInt(y1), months[m1] ?? 0);
-    const end = new Date(parseInt(y2), months[m2] ?? 0);
-    const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-    if (diff < 1) return "< 1 year";
-    return `${Math.round(diff)} years`;
-  } catch {
-    return "";
-  }
+function fmtMonthYear(d: string | null | undefined): string {
+  if (!d) return "";
+  const m = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return "";
+  return `${m[dt.getUTCMonth()]} ${dt.getUTCFullYear()}`;
+}
+
+// "APR-2017" -> "Apr 2017"
+function fmtTxnMonth(s: string | null | undefined): string {
+  if (!s) return "";
+  const map: Record<string, string> = { JAN: "Jan", FEB: "Feb", MAR: "Mar", APR: "Apr", MAY: "May", JUN: "Jun", JUL: "Jul", AUG: "Aug", SEP: "Sep", OCT: "Oct", NOV: "Nov", DEC: "Dec" };
+  const [mo, yr] = s.split("-");
+  return map[mo] ? `${map[mo]} ${yr}` : s;
 }
 
 function getAreas(track: TrackRecord) {
@@ -74,20 +76,12 @@ function getAreas(track: TrackRecord) {
     : (track.top_districts ?? []).map(d => ({ name: d.district, count: d.count }));
 }
 
-function percentileLabel(p: number): string {
-  if (p <= 1) return "Top 1%";
-  if (p <= 5) return `Top ${p}%`;
-  if (p <= 10) return `Top ${p}%`;
-  if (p <= 25) return `Top ${p}%`;
-  return "";
-}
-
 // --- Metadata ---
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { data: agent } = await supabase
     .from("sg_agents")
-    .select("name, agency_name, cea_registration, google_rating, score, transaction_count, claimed, primary_area")
+    .select("name, agency_name, cea_registration, google_rating, score, transaction_count, claimed, primary_area, marketing_name, marketing_name_status")
     .eq("slug", slug)
     .single();
   if (!agent) return {};
@@ -95,21 +89,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const hasTxns = (agent.transaction_count ?? 0) > 0;
   const s = agent.score ? Math.round(Number(agent.score)) : null;
   const isThin = !agent.score && !agent.google_rating && !hasTxns && !agent.claimed;
+  // Agent-supplied marketing name (approved), so the page matches the name
+  // clients actually search for, e.g. "Chew Phek Hong (Cindy Chew)".
+  const marketing = agent.marketing_name_status === "approved" && agent.marketing_name ? agent.marketing_name.trim() : null;
+  const display = marketing ? `${titleName(agent.name)} (${marketing})` : titleName(agent.name);
 
-  // Action 1: CTR-optimized title with score + transactions front-loaded
-  // Old: "Name - Property Agent at Agency | Track Record & Profile"
-  // New: "Name - Score 82/100 | 47 Transactions | Agency" (data-rich, stands out in SERP)
-  const titleParts = [agent.name];
-  if (s) titleParts.push(`Score ${s}/100`);
-  if (hasTxns) titleParts.push(`${agent.transaction_count} Transactions`);
-  titleParts.push(agent.agency_name);
-  const title = titleParts.join(" | ");
+  // Title front-loads the searches that should land here: name (+ marketing
+  // name), agency, "property agent", and area, then the differentiators. No em
+  // dashes. The layout template appends " | FairComparisons".
+  const areaStr = agent.primary_area ? titleName(agent.primary_area) : null;
+  const lead = `${display}, ${cleanAgency(agent.agency_name)} Property Agent${areaStr ? ` in ${areaStr}` : ""}`;
+  const titleTail = [
+    hasTxns ? `${agent.transaction_count} CEA Transactions` : null,
+    s ? `AgentScore ${s}` : null,
+  ].filter(Boolean).join(", ");
+  const title = titleTail ? `${lead} | ${titleTail}` : lead;
 
-  // Richer description: lead with unique data, end with action
-  const areaPart = agent.primary_area ? ` Active in ${agent.primary_area}.` : "";
+  const areaPart = agent.primary_area ? ` Active in ${titleName(agent.primary_area)}.` : "";
   const description = s
-    ? `${agent.name} (${agent.agency_name}) has an AgentScore of ${s}/100 based on ${agent.transaction_count ?? 0} CEA-recorded transactions.${areaPart} View full track record, property types, and areas of expertise.`
-    : `${agent.name} (CEA ${agent.cea_registration}) at ${agent.agency_name}.${hasTxns ? ` ${agent.transaction_count} recorded transactions.` : ""}${areaPart} View transaction history and profile.`;
+    ? `${display} (${cleanAgency(agent.agency_name)}, CEA ${agent.cea_registration}) has an AgentScore of ${s}/100 based on ${agent.transaction_count ?? 0} CEA-recorded transactions.${areaPart} View full track record, property types, and areas of expertise.`
+    : `${display} (CEA ${agent.cea_registration}) at ${cleanAgency(agent.agency_name)}.${hasTxns ? ` ${agent.transaction_count} recorded transactions.` : ""}${areaPart} View transaction history and profile.`;
 
   const url = `https://fair-comparisons.com/property-agents/agent/${slug}`;
 
@@ -119,7 +118,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: { canonical: url },
     ...(isThin && { robots: { index: false, follow: true } }),
     openGraph: {
-      title: `${agent.name}${s ? ` - AgentScore ${s}/100` : ""} | ${agent.agency_name}`,
+      title: `${display}${s ? ` - AgentScore ${s}/100` : ""} | ${cleanAgency(agent.agency_name)}`,
       description,
       url,
       siteName: "FairComparisons",
@@ -128,7 +127,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${agent.name}${s ? ` (Score: ${s})` : ""} | ${agent.agency_name}`,
+      title: `${display}${s ? ` (Score: ${s})` : ""} | ${cleanAgency(agent.agency_name)}`,
       description,
     },
   };
@@ -147,624 +146,402 @@ export async function generateStaticParams() {
 // --- Page ---
 export default async function AgentPage({ params }: Props) {
   const { slug } = await params;
-  const { data: agent } = await supabase.from("sg_agents").select("*").eq("slug", slug).single();
+  const { data: agent } = await supabase
+    .from("sg_agents")
+    .select(
+      "id, name, slug, cea_registration, agency_id, agency_name, google_rating, google_review_count, specializations, created_at, score, score_breakdown, transaction_count, specialization, primary_area, years_active, score_updated_at, claimed, claimed_at, percentile, bio, photo_url, whatsapp, subscription_tier, propertyguru_url, message, message_status, message_updated_at, photo_status, photo_updated_at, bio_status, bio_updated_at, review_aggregate, marketing_name, marketing_name_status"
+    )
+    .eq("slug", slug)
+    .single();
   if (!agent) notFound();
 
-  const [agencyRes, trackRes, listingsRes, colleaguesRes] = await Promise.all([
+  const [agencyRes, trackRes, listingsRes] = await Promise.all([
     agent.agency_id
       ? supabase.from("sg_agencies").select("name, slug, agent_count, google_rating, google_review_count, address, website").eq("id", agent.agency_id).single()
       : Promise.resolve({ data: null }),
     supabase.rpc("get_agent_track_record", { reg_num: agent.cea_registration }),
-    supabase.from("sg_listings").select("title, address, price, property_type, district_code, listing_type").eq("agent_license", agent.cea_registration).limit(10),
-    agent.agency_id
-      ? supabase.from("sg_agents").select("name, slug, cea_registration, score, transaction_count").eq("agency_id", agent.agency_id).neq("slug", slug).order("score", { ascending: false }).limit(6)
-      : Promise.resolve({ data: [] }),
+    supabase.from("sg_listings").select("title, address, price, property_type, district_code, listing_type").eq("agent_license", agent.cea_registration).limit(6),
   ]);
 
   const agency = agencyRes.data;
   const track = (trackRes.data?.[0] as TrackRecord | undefined) ?? null;
   const listings = (listingsRes.data ?? []) as Listing[];
-  const colleagues = colleaguesRes.data ?? [];
-  const hasTxns = track && track.total_txns > 0;
+
+  const { count: verifiedCompletions } = await supabase
+    .from("sg_lead_completions")
+    .select("id", { count: "exact", head: true })
+    .eq("agent_id", agent.id)
+    .eq("fee_status", "paid");
+
+  const hasTxns = !!(track && track.total_txns > 0);
   const hasListings = listings.length > 0;
   const score = agent.score ? Math.round(Number(agent.score)) : null;
-  const areas = hasTxns ? getAreas(track) : [];
+  const band = score != null ? bandFor(score) : null;
+  const areas = hasTxns ? getAreas(track!) : [];
   const primaryArea = areas[0]?.name ?? agent.primary_area ?? null;
 
-  // Prop type entries sorted
-  const propEntries = hasTxns
-    ? Object.entries(track.property_types).sort((a, b) => b[1] - a[1])
-    : [];
-  const txnEntries = hasTxns
-    ? Object.entries(track.transaction_types).sort((a, b) => b[1] - a[1])
-    : [];
-  const roleEntries = hasTxns
-    ? Object.entries(track.represented_roles).sort((a, b) => b[1] - a[1])
-    : [];
+  const display = titleName(agent.name);
+  const given = givenName(agent.name);
+  const agencyName = cleanAgency(agent.agency_name);
+  // Approved agent-supplied marketing name shown in the H1 (and JSON-LD) so the
+  // page ranks for the name clients actually search. Body sentences keep the
+  // formal name (display).
+  const marketing = agent.marketing_name_status === "approved" && agent.marketing_name ? agent.marketing_name.trim() : null;
+  const h1Name = marketing ? `${display} (${marketing})` : display;
+
+  const total = hasTxns ? track!.total_txns : 0;
+  const propEntries = hasTxns ? Object.entries(track!.property_types).sort((a, b) => b[1] - a[1]) : [];
+  const roleEntries = hasTxns ? Object.entries(track!.represented_roles).sort((a, b) => b[1] - a[1]) : [];
+  const roleTotal = roleEntries.reduce((s, [, n]) => s + n, 0) || 1;
+  const areaMax = areas[0]?.count || 1;
+  const areaFocusPct = hasTxns && total ? Math.round((areas[0]?.count ?? 0) / total * 100) : 0;
+  const topProp = propEntries[0] ? { label: propTypeLabel(propEntries[0][0]), pct: Math.round(propEntries[0][1] / total * 100) } : null;
+  const primaryShort = primaryArea ? titleName(primaryArea.split("/")[0].split(",")[0].trim()) : null;
+  const updated = fmtMonthYear(agent.score_updated_at) || fmtMonthYear(agent.created_at);
+
+  // Sale vs rental mix. A "best agent to sell" who mostly leases rentals would
+  // mislead a seller, so flag it honestly when sales are the minority.
+  const salePct = hasTxns ? Math.round(saleShare(track!.transaction_types) * 100) : null;
+  const rentalFocused = salePct != null && salePct < 40 && total >= 10;
+
+  // Real sold-evidence, straight from CEA records. Sales = anything with "SALE"
+  // (resale/new sale/sub-sale), excluding rentals.
+  const saleCount = hasTxns
+    ? Object.entries(track!.transaction_types).reduce(
+        (s, [k, n]) => s + (k.toUpperCase().includes("SALE") && !k.toUpperCase().includes("RENTAL") ? n : 0),
+        0,
+      )
+    : 0;
+  const rentalCount = hasTxns ? Math.max(0, total - saleCount) : 0;
+
+  // Exp 1 claim-hook enrichment: real rank in the agent's primary area, area
+  // size, and recent profile views, for the ego/loss-aversion claim prompt.
+  // A/B by agent id. Only computed for unclaimed profiles.
+  const claimVariant: "A" | "B" = agent.id % 2 === 0 ? "A" : "B";
+  let claimRank: number | null = null;
+  let claimArea: string | null = null;
+  let claimAreaTotal: number | null = null;
+  let claimViews7d = 0;
+  if (!agent.claimed) {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const [rankRes, viewsRes] = await Promise.all([
+      supabase.from("sg_area_top_agents").select("area_name, area_type, rank").eq("agent_slug", slug).order("rank", { ascending: true }).limit(1),
+      supabase.from("sg_funnel_events").select("id", { count: "exact", head: true }).eq("event", "profile_view").eq("agent_id", agent.id).gte("created_at", sevenDaysAgo),
+    ]);
+    claimViews7d = viewsRes.count ?? 0;
+    const rr = rankRes.data?.[0] as { area_name: string; area_type: string; rank: number } | undefined;
+    if (rr) {
+      claimRank = rr.rank;
+      claimArea = titleName(rr.area_name.split("/")[0].split(",")[0].trim());
+      const { count } = await supabase.from("sg_area_top_agents").select("id", { count: "exact", head: true }).eq("area_name", rr.area_name).eq("area_type", rr.area_type);
+      claimAreaTotal = count ?? null;
+    }
+  }
+
+  // Real AgentScore components, normalised to 0-100 against each dimension's max.
+  const SB = (agent.score_breakdown ?? {}) as Record<string, number>;
+  const scoreDims = [
+    { label: "Transaction volume", key: "volume", max: 30 },
+    { label: "Recent activity", key: "recency", max: 25 },
+    { label: "Market diversity", key: "diversity", max: 15 },
+    { label: "Years of experience", key: "experience", max: 15 },
+  ].map((d) => ({ label: d.label, n: Math.round((Number(SB[d.key] ?? 0) / d.max) * 100) }));
+
+  // Agent-supplied content only renders once moderated to "approved"
+  // (set via /admin/moderation). Pending/rejected content stays hidden.
+  const showPhoto = !!agent.photo_url && agent.photo_status === "approved";
+  const showMessage = !!agent.message && agent.message_status === "approved";
+  const showBio = !!agent.bio && agent.bio_status === "approved";
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
-    name: agent.name,
+    name: display,
+    ...(marketing && { alternateName: marketing }),
+    ...(showPhoto && { image: agent.photo_url }),
+    ...(showBio && { description: agent.bio }),
     ...(agency && { worksFor: { "@type": "RealEstateAgent", name: agency.name } }),
     address: { "@type": "PostalAddress", addressLocality: "Singapore", addressCountry: "SG" },
     ...(agent.google_rating && {
       aggregateRating: { "@type": "AggregateRating", ratingValue: agent.google_rating, reviewCount: agent.google_review_count },
     }),
   };
-
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://fair-comparisons.com" },
-      { "@type": "ListItem", position: 2, name: "Property Agents", item: "https://fair-comparisons.com/property-agents" },
+      { "@type": "ListItem", position: 2, name: "Compare agents", item: "https://fair-comparisons.com/property-agents" },
       ...(agency ? [{ "@type": "ListItem", position: 3, name: agency.name, item: `https://fair-comparisons.com/property-agents/agency/${agency.slug}` }] : []),
-      { "@type": "ListItem", position: agency ? 4 : 3, name: agent.name },
+      { "@type": "ListItem", position: agency ? 4 : 3, name: display },
     ],
   };
-
-  // Action 2: FAQ structured data for rich results
-  const firstName = agent.name.split(" ")[0];
-  const faqItems: Array<{ q: string; a: string }> = [];
-
-  if (hasTxns) {
-    faqItems.push({
-      q: `How many transactions has ${agent.name} completed?`,
-      a: `${agent.name} has ${track.total_txns} transactions recorded by CEA, spanning from ${track.earliest_txn} to ${track.latest_txn}. ${propEntries.length > 0 ? `Primary property type: ${propTypeLabel(propEntries[0][0])} (${Math.round((propEntries[0][1] / track.total_txns) * 100)}% of deals).` : ""}`,
-    });
-  }
-
-  if (score) {
-    faqItems.push({
-      q: `What is ${agent.name}'s AgentScore?`,
-      a: `${agent.name} has an AgentScore of ${score} out of 100. AgentScore is calculated from public CEA transaction records and measures an agent's track record across volume, consistency, and market coverage.${agent.percentile && agent.percentile <= 25 ? ` This places ${firstName} in the top ${agent.percentile}% of agents.` : ""}`,
-    });
-  }
-
-  if (primaryArea) {
-    faqItems.push({
-      q: `What areas does ${agent.name} specialize in?`,
-      a: `${agent.name} is most active in ${primaryArea}${areas.length > 1 ? `, followed by ${areas.slice(1, 3).map(a => a.name).join(" and ")}` : ""}. ${hasTxns ? `Based on ${track.total_txns} recorded transactions.` : ""}`,
-    });
-  }
-
-  faqItems.push({
-    q: `Which agency does ${agent.name} work for?`,
-    a: `${agent.name} is a registered property agent at ${agent.agency_name} (CEA registration: ${agent.cea_registration}).${agency?.google_rating ? ` ${agency.name} has a ${agency.google_rating}/5 Google rating.` : ""}`,
-  });
-
-  const faqLd = faqItems.length > 0 ? {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqItems.map(f => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
-  } : null;
 
   return (
     <>
       <FunnelTracker event="profile_view" agentId={agent.id} agentSlug={slug} pagePath={`/property-agents/agent/${slug}`} metadata={{ primary_area: agent.primary_area || null, specialization: agent.specialization || null, agency_name: agent.agency_name || null, claimed: !!agent.claimed, subscription_tier: agent.subscription_tier || "free" }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
-      {faqLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
-      {/* Breadcrumb */}
-      <nav className="border-b border-gray-100">
-        <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
-          <Link href="/" className="hover:text-gray-600">Home</Link>
-          <span className="mx-1.5">/</span>
-          <Link href="/property-agents" className="hover:text-gray-600">Property Agents</Link>
-          {agency && (
-            <>
-              <span className="mx-1.5">/</span>
-              <Link href={`/property-agents/agency/${agency.slug}`} className="hover:text-gray-600">{agency.name}</Link>
-            </>
-          )}
-          <span className="mx-1.5">/</span>
-          <span className="text-gray-600">{agent.name}</span>
+      {/* header */}
+      <header className="fc-wrap" style={{ padding: "22px 40px 0" }}>
+        <div className="sr-crumb">
+          <Link href="/">Home</Link> / <Link href="/property-agents">Compare agents</Link>
+          {agency && <> / <Link href={`/property-agents/agency/${agency.slug}`}>{cleanAgency(agency.name)}</Link></>} / {display}
         </div>
-      </nav>
 
-      {/* ============================================================
-          HERO - Score-led design. The number is the hook.
-          ============================================================ */}
-      <section className="border-b border-gray-100 bg-gradient-to-br from-gray-50 via-white to-teal-50/40">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-10 md:px-8">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-10">
-
-            {/* Photo or Score badge - the visual anchor */}
-            {agent.claimed && agent.photo_url && agent.photo_status !== "pending" && agent.photo_status !== "rejected" ? (
-              <div className="relative flex-shrink-0">
-                <img
-                  src={agent.photo_url}
-                  alt={`${agent.name} - Property Agent`}
-                  className="h-32 w-32 rounded-2xl border-2 border-teal-200 object-cover shadow-lg shadow-teal-100/50"
-                />
-                {score && (
-                  <span className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-teal-600 text-sm font-black text-white shadow-md">
-                    {score}
-                  </span>
-                )}
-                {agent.percentile && agent.percentile <= 25 && (
-                  <span className="absolute -right-2 -top-2 rounded-full bg-teal-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-md">
-                    {percentileLabel(agent.percentile)}
-                  </span>
-                )}
-              </div>
-            ) : score ? (
-              <div className="relative flex-shrink-0">
-                <div className="flex h-32 w-32 flex-col items-center justify-center rounded-2xl border-2 border-teal-200 bg-white shadow-lg shadow-teal-100/50">
-                  <span className="text-5xl font-black tracking-tight text-teal-600">{score}</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">AgentScore</span>
-                </div>
-                {agent.percentile && agent.percentile <= 25 && (
-                  <span className="absolute -right-2 -top-2 rounded-full bg-teal-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-md">
-                    {percentileLabel(agent.percentile)}
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-2xl font-bold text-gray-400">
-                {agent.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+        {/* identity card */}
+        <div className="fc-card" style={{ padding: 26, marginTop: 18 }}>
+          <div style={{ display: "flex", gap: 22, alignItems: "flex-start", flexWrap: "wrap" }}>
+            {showPhoto && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={agent.photo_url!}
+                alt={display}
+                width={92}
+                height={92}
+                style={{ width: 92, height: 92, borderRadius: "var(--r-md)", objectFit: "cover", border: "1px solid var(--line)", flex: "0 0 auto" }}
+              />
+            )}
+            {score != null && band && (
+              <div className="score-box" style={{ width: 104, padding: "14px 10px", borderTopColor: band.color }}>
+                <div className="score-num" style={{ fontSize: 42 }}>{score}</div>
+                <div className="score-cap">AGENTSCORE</div>
+                <div className="score-word" style={{ color: band.color }}>{band.word}</div>
               </div>
             )}
-
-            {/* Name + key facts */}
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">{agent.name}</h1>
-                {agent.subscription_tier === "premium" && <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Premium</span>}
-                {agent.subscription_tier === "pro" && <span className="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-1 text-xs font-semibold text-teal-700">Pro</span>}
+            <div style={{ flex: 1, minWidth: 260 }}>
+              <h1 style={{ margin: 0, fontSize: "clamp(28px,3.4vw,40px)" }}>{h1Name}</h1>
+              <div className="agent-meta">{agencyName} property agent{agent.primary_area ? ` in ${titleName(agent.primary_area)}` : ""} · CEA {agent.cea_registration}</div>
+              <div className="fc-row" style={{ gap: 8, marginTop: 14 }}>
+                {hasTxns && <span className="statchip">{total} transactions</span>}
+                {areaFocusPct > 0 && primaryShort && <span className="statchip">{areaFocusPct}% in {primaryShort}</span>}
+                {topProp && <span className="statchip">{topProp.pct}% {topProp.label.toLowerCase()}</span>}
+                {primaryArea && <span className="statchip">{titleName(primaryArea)}</span>}
               </div>
-              <p className="mt-2 text-base text-gray-500">
-                {agency ? (
-                  <>Property agent at <Link href={`/property-agents/agency/${agency.slug}`} className="font-medium text-teal-600 hover:underline">{agency.name}</Link></>
-                ) : (
-                  <>Registered property agent</>
-                )}
-                <span className="mx-2 text-gray-300">|</span>
-                <span className="text-gray-400">CEA {agent.cea_registration}</span>
-              </p>
-
-              {/* Conversion CTA - above the fold */}
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <Link href="/property-agents/compare" className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-500">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                  Compare with other agents
-                </Link>
-                <Link href="/search" className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-teal-200 hover:text-teal-600">
-                  Find agents in my area
-                </Link>
-                <ShareButtons compact url={`/property-agents/agent/${slug}`} title={`${agent.name} - Property Agent Profile`} />
-              </div>
-
-            {/* Inline highlight chips */}
-              {hasTxns && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200">
-                    <span className="text-teal-600 font-bold">{track.total_txns}</span> transactions
+              <div className="fc-row" style={{ gap: 10, marginTop: 16 }}>
+                <span className="fc-badge fc-badge--ranked"><span className="dot" /> Ranked on CEA data</span>
+                {/* T3: shows once an agent claims + accepts the terms. Dormant
+                    pre-launch (0 claimed today); auto-activates. Identity +
+                    terms, not an endorsement of quality. */}
+                {agent.claimed && (
+                  <span className="fc-badge" title="This agent has claimed their profile and accepted the platform terms" style={{ background: "var(--ok-wash)", color: "var(--ok)" }}>
+                    &#10003; Verified agent
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200">
-                    <span className="text-teal-600 font-bold">{yearsActive(track.earliest_txn, track.latest_txn)}</span> in market
-                  </span>
-                  {propEntries[0] && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200">
-                      <span className="text-teal-600 font-bold">{Math.round((propEntries[0][1] / track.total_txns) * 100)}%</span> {propTypeLabel(propEntries[0][0])}
-                    </span>
-                  )}
-                  {primaryArea && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200">
-                      {primaryArea}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          MESSAGE FROM AGENT - personal message above bio
-          ============================================================ */}
-      {agent.claimed && agent.message && agent.message_status !== "pending" && agent.message_status !== "rejected" && (
-        <section className="border-b border-gray-100 bg-gradient-to-r from-teal-50/50 to-white">
-          <div className="mx-auto max-w-[1120px] px-5 py-8 md:px-8">
-            <div className="flex items-start gap-4">
-              {agent.photo_url && agent.photo_status !== "pending" && agent.photo_status !== "rejected" && (
-                <img src={agent.photo_url} alt={agent.name} className="h-12 w-12 rounded-full border-2 border-teal-200 object-cover flex-shrink-0" />
-              )}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-teal-600 mb-2">Message from {agent.name.split(" ")[0]}</p>
-                <blockquote className="text-[15px] leading-relaxed text-gray-800 italic">
-                  &ldquo;{agent.message}&rdquo;
-                </blockquote>
+                )}
+                {rentalFocused && <span className="fc-badge fc-badge--warn">Mostly rentals · {salePct}% sales</span>}
+                {updated && <span className="fc-badge fc-badge--source">Updated {updated}</span>}
               </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ============================================================
-          CLAIMED AGENT BIO - Growth loop: claimed content enriches SEO pages
-          ============================================================ */}
-      {agent.claimed && agent.bio && agent.bio_status !== "pending" && agent.bio_status !== "rejected" && (
-        <section className="border-b border-gray-100 bg-white">
-          <div className="mx-auto max-w-[1120px] px-5 py-6 md:px-8">
-            <div className="flex items-start gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-[11px] text-white">&#10003;</span>
-                  <span className="text-xs font-medium text-green-700">Verified agent</span>
-                </div>
-                <p className="text-[15px] leading-relaxed text-gray-700">{agent.bio}</p>
-              </div>
-              {agent.whatsapp && (
-                <WhatsAppButton whatsapp={agent.whatsapp} agentId={agent.id} agentSlug={slug} />
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Self-view detection: shows prominent CTA when same profile visited 2+ times */}
-      <SelfViewCTA agentSlug={slug} agentName={agent.name} claimed={agent.claimed ?? false} />
-
-      {/* ============================================================
-          MAIN CONTENT GRID
-          ============================================================ */}
-      <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
-        <div className="grid gap-10 lg:grid-cols-3">
-
-          {/* --- LEFT COLUMN (2/3) --- */}
-          <div className="space-y-10 lg:col-span-2">
-
-            {/* Claim Banner */}
-            <ClaimBanner agentId={agent.id} agentName={agent.name} claimed={agent.claimed ?? false} />
-
-            {/* ---- DATA DASHBOARD ---- */}
-            {hasTxns && (
-              <section>
-                <h2 className="text-lg font-bold text-gray-900">Performance overview</h2>
-                <p className="mt-1 text-sm text-gray-500">Based on {track.total_txns} transactions recorded by CEA since {track.earliest_txn}.</p>
-
-                {/* Property Type Breakdown - horizontal stacked bar */}
-                {propEntries.length > 0 && (
-                  <div className="mt-6">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Property types</h3>
-                    <div className="mt-2 flex h-8 overflow-hidden rounded-lg">
-                      {propEntries.map(([type, count], i) => {
-                        const pct = (count / track.total_txns) * 100;
-                        const colors = ["bg-teal-500", "bg-teal-300", "bg-amber-400", "bg-gray-300", "bg-gray-200"];
-                        return (
-                          <div
-                            key={type}
-                            className={`${colors[i] ?? colors[4]} flex items-center justify-center text-[11px] font-semibold ${i === 0 ? "text-white" : "text-gray-700"}`}
-                            style={{ width: `${Math.max(pct, 4)}%` }}
-                            title={`${propTypeLabel(type)}: ${count} (${Math.round(pct)}%)`}
-                          >
-                            {pct >= 12 && `${propTypeLabel(type)} ${Math.round(pct)}%`}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                      {propEntries.map(([type, count], i) => {
-                        const colors = ["bg-teal-500", "bg-teal-300", "bg-amber-400", "bg-gray-300", "bg-gray-200"];
-                        return (
-                          <span key={type} className="flex items-center gap-1.5 text-xs text-gray-500">
-                            <span className={`inline-block h-2.5 w-2.5 rounded-sm ${colors[i] ?? colors[4]}`} />
-                            {propTypeLabel(type)} ({count})
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Transaction Types */}
-                {txnEntries.length > 0 && (
-                  <div className="mt-6">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Transaction types</h3>
-                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {txnEntries.map(([type, count]) => {
-                        const pct = Math.round((count / track.total_txns) * 100);
-                        return (
-                          <div key={type} className="rounded-lg border border-gray-100 bg-white px-3 py-2.5">
-                            <p className="text-lg font-bold text-gray-900">{pct}%</p>
-                            <p className="text-xs text-gray-500">{txnTypeLabel(type)}</p>
-                            <p className="text-[10px] text-gray-400">{count} deals</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Representation split */}
-                {roleEntries.length > 1 && (
-                  <div className="mt-6">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Representation</h3>
-                    <div className="mt-2 flex gap-2">
-                      {roleEntries.map(([role, count]) => {
-                        const pct = Math.round((count / track.total_txns) * 100);
-                        return (
-                          <div key={role} className="flex-1 rounded-lg border border-gray-100 bg-white px-3 py-2.5 text-center">
-                            <p className="text-lg font-bold text-gray-900">{pct}%</p>
-                            <p className="text-xs text-gray-500">{role.charAt(0) + role.slice(1).toLowerCase()}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </section>
-            )}
-
-            {/* ---- AREA EXPERTISE ---- */}
-            {areas.length > 0 && (
-              <section>
-                <h2 className="text-lg font-bold text-gray-900">Where {agent.name.split(" ")[0]} is most active</h2>
-                <div className="mt-4 space-y-2">
-                  {areas.map((a, i) => {
-                    const pct = Math.round((a.count / track!.total_txns) * 100);
-                    const barW = Math.max(8, Math.round((a.count / areas[0].count) * 100));
-                    return (
-                      <div key={a.name} className="group rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-teal-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${i === 0 ? "bg-teal-600" : i < 3 ? "bg-teal-400" : "bg-gray-300"}`}>{i + 1}</span>
-                            <div>
-                              <span className="text-sm font-semibold text-gray-900">{a.name}</span>
-                              <span className="ml-2 text-xs text-gray-400">{pct}% of deals</span>
-                            </div>
-                          </div>
-                          <span className="text-sm font-bold text-gray-700">{a.count}</span>
-                        </div>
-                        <div className="mt-2 h-1.5 rounded-full bg-gray-100">
-                          <div className={`h-1.5 rounded-full ${i === 0 ? "bg-teal-500" : "bg-teal-200"}`} style={{ width: `${barW}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
-            {/* ---- REVIEWS ---- */}
-            <AgentReviews agentId={agent.id} agentName={agent.name} />
-
-            {/* ---- LISTINGS ---- */}
-            {hasListings && (
-              <section>
-                <h2 className="text-lg font-bold text-gray-900">Current listings</h2>
-                <p className="mt-1 text-sm text-gray-500">{listings.length} active {listings.length === 1 ? "property" : "properties"} on listing portals.</p>
-                <div className="mt-4 space-y-2">
-                  {listings.map((l, idx) => (
-                    <div key={idx} className="rounded-lg border border-gray-100 bg-white px-4 py-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium text-gray-900">{l.title}</p>
-                          <p className="text-xs text-gray-500">{l.address} &middot; {propTypeLabel(l.property_type)} &middot; {txnTypeLabel(l.listing_type)}</p>
-                        </div>
-                        <span className="flex-shrink-0 text-sm font-bold text-gray-900">{formatPrice(l.price)}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* ---- AGENCY ---- */}
-            {agency && (
-              <section className="rounded-xl border border-gray-100 bg-gray-50/50 p-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-sm font-bold text-teal-600 shadow-sm ring-1 ring-gray-200">
-                    {agency.name.split(" ")[0]?.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div>
-                    <Link href={`/property-agents/agency/${agency.slug}`} className="font-semibold text-gray-900 hover:text-teal-600">{agency.name}</Link>
-                    <p className="text-xs text-gray-500">
-                      {agency.agent_count.toLocaleString()} agents
-                      {agency.google_rating && <> &middot; {Number(agency.google_rating).toFixed(1)}/5 ({agency.google_review_count} reviews)</>}
-                    </p>
-                  </div>
-                </div>
-                {agency.address && <p className="mt-2 text-xs text-gray-400">{agency.address}</p>}
-              </section>
-            )}
-
-            {/* ---- NO DATA ---- */}
-            {!hasTxns && !hasListings && (
-              <section className="rounded-xl border border-gray-200 bg-gray-50 p-6">
-                <h2 className="text-lg font-bold text-gray-900">Profile loading</h2>
-                <p className="mt-2 text-[15px] leading-relaxed text-gray-600">
-                  {agent.name} (CEA {agent.cea_registration}) is a registered property agent
-                  {agency ? ` at ${agency.name}` : ""}. Transaction data from CEA&apos;s public register is being loaded. Check back soon for a complete profile.
+              {rentalFocused && (
+                <p className="muted small" style={{ marginTop: 10, maxWidth: "60ch" }}>
+                  Selling a home? Note that {salePct}% of {given}&apos;s recorded deals are sales; the rest are rentals. The record below shows the full mix.
                 </p>
-              </section>
-            )}
-
-            <p className="text-[11px] text-gray-400">
-              Source: Council for Estate Agencies (CEA) Public Register, listing portals. Analysis by FairComparisons.
-            </p>
-
-            {/* ---- FAQ (visible, matches schema) ---- */}
-            {faqItems.length > 0 && (
-              <section>
-                <h2 className="text-lg font-bold text-gray-900">Frequently asked questions</h2>
-                <div className="mt-4 space-y-4">
-                  {faqItems.map((f, i) => (
-                    <div key={i}>
-                      <h3 className="font-semibold text-gray-900">{f.q}</h3>
-                      <p className="mt-1 text-[15px] leading-[1.75] text-gray-600">{f.a}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+              )}
+              {showMessage && (
+                <p className="serif" style={{ marginTop: 14, fontSize: 16.5, lineHeight: 1.6, fontStyle: "italic", color: "var(--ink)", maxWidth: "60ch" }}>
+                  &ldquo;{agent.message}&rdquo;
+                </p>
+              )}
+            </div>
+            <div className="fc-col" style={{ gap: 10 }}>
+              <Link href={`/sell?agent=${slug}&utm_source=agent_profile`} className="fc-btn fc-btn--primary">Request an introduction to {given}</Link>
+              <Link href="/property-agents/compare" className="fc-btn fc-btn--ghost fc-btn--sm">Compare with others</Link>
+            </div>
           </div>
+        </div>
 
-          {/* --- SIDEBAR (1/3) --- */}
-          <aside className="space-y-5">
+        {/* agent-written bio (moderated) */}
+        {showBio && (
+          <div className="fc-card fc-card--pad" style={{ marginTop: 16 }}>
+            <div className="kicker">About {given}</div>
+            <p style={{ marginTop: 8, fontSize: 15, lineHeight: 1.7, whiteSpace: "pre-line", maxWidth: "75ch" }}>{agent.bio}</p>
+          </div>
+        )}
 
-            {/* Score Breakdown */}
-            {score && agent.score_breakdown && (
-              <div className="rounded-xl border border-teal-100 bg-gradient-to-b from-teal-50/80 to-white p-5">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-teal-700">Score breakdown</h3>
-                <div className="mt-4 space-y-3">
-                  {([
-                    { label: "Transaction volume", key: "volume", max: 30 },
-                    { label: "Recent activity", key: "recency", max: 25 },
-                    { label: "Market diversity", key: "diversity", max: 15 },
-                    { label: "Years of experience", key: "experience", max: 15 },
-                  ] as const).map((dim) => {
-                    const val = Number((agent.score_breakdown as Record<string, number>)[dim.key] ?? 0);
-                    const pct = Math.round((val / dim.max) * 100);
+        {/* claim banner — real interactive claim form (email + CEA), id="claim" */}
+        {!agent.claimed && (
+          <div style={{ marginTop: 16 }}>
+            <ClaimBanner
+              agentId={agent.id}
+              agentName={agent.name}
+              claimed={false}
+              variant={claimVariant}
+              rank={claimRank}
+              areaName={claimArea}
+              areaTotal={claimAreaTotal}
+              score={score}
+              profileViews7d={claimViews7d}
+            />
+          </div>
+        )}
+      </header>
+
+      <div className="fc-wrap" style={{ padding: "36px 40px 72px" }}>
+        <div className="ap-layout">
+          {/* MAIN */}
+          <main>
+            {hasTxns ? (
+              <>
+                {/* Verified track record — real CEA sold-evidence + platform
+                    completions, with honest empty states (no fabricated counts). */}
+                <h2 style={{ fontSize: "clamp(22px,2.6vw,30px)" }}>Verified track record</h2>
+                <div className="fc-card fc-card--pad" style={{ marginTop: 16 }}>
+                  <div className="fc-grid-3" style={{ gap: 18 }}>
+                    <div>
+                      <div className="serif" style={{ fontSize: 30, fontWeight: 600 }}>{saleCount.toLocaleString()}</div>
+                      <div className="muted small">Recorded sales</div>
+                    </div>
+                    <div>
+                      <div className="serif" style={{ fontSize: 30, fontWeight: 600 }}>{rentalCount.toLocaleString()}</div>
+                      <div className="muted small">Rental transactions</div>
+                    </div>
+                    <div>
+                      <div className="serif" style={{ fontSize: 30, fontWeight: 600, color: verifiedCompletions ? "var(--ok)" : "var(--slate)" }}>
+                        {verifiedCompletions || 0}
+                      </div>
+                      <div className="muted small">Completions via FairComparisons</div>
+                    </div>
+                  </div>
+                  <p className="muted small" style={{ marginTop: 14 }}>
+                    Sales and rentals are counted from official CEA salesperson records.{" "}
+                    {verifiedCompletions
+                      ? `${verifiedCompletions} sale${verifiedCompletions === 1 ? "" : "s"} closed through a FairComparisons referral and confirmed by payment.`
+                      : "No sales have completed through a FairComparisons referral yet; this fills in as referred deals close."}
+                  </p>
+                </div>
+
+                <h2 style={{ fontSize: "clamp(22px,2.6vw,30px)", marginTop: 40 }}>Performance overview</h2>
+                <p className="muted small" style={{ margin: "6px 0 0" }}>Based on {total} CEA transactions recorded to date.</p>
+                <div className="fc-card fc-card--pad" style={{ marginTop: 16 }}>
+                  <div className="kicker" style={{ marginBottom: 8 }}>Property mix</div>
+                  {propEntries.slice(0, 4).map(([type, n]) => {
+                    const pct = Math.round((n / total) * 100);
                     return (
-                      <div key={dim.key}>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-600">{dim.label}</span>
-                          <span className="font-bold text-gray-900">{val}<span className="font-normal text-gray-400">/{dim.max}</span></span>
-                        </div>
-                        <div className="mt-1 h-2 rounded-full bg-teal-100">
-                          <div
-                            className={`h-2 rounded-full ${pct >= 80 ? "bg-teal-500" : pct >= 50 ? "bg-teal-400" : "bg-teal-300"}`}
-                            style={{ width: `${Math.max(pct, 3)}%` }}
-                          />
-                        </div>
+                      <div className="kpi" key={type}>
+                        <span className="kpi__lab">{propTypeLabel(type)}</span>
+                        <div className="kpi__track"><div className="kpi__fill" style={{ width: `${Math.max(pct, 2)}%` }} /></div>
+                        <span className="kpi__val">{pct}%</span>
                       </div>
                     );
                   })}
+                  {roleEntries.length > 0 && (
+                    <>
+                      <div className="kicker" style={{ margin: "18px 0 8px" }}>Represents</div>
+                      {roleEntries.slice(0, 4).map(([role, n]) => {
+                        const pct = Math.round((n / roleTotal) * 100);
+                        return (
+                          <div className="kpi" key={role}>
+                            <span className="kpi__lab">{txnTypeLabel(role)}</span>
+                            <div className="kpi__track"><div className="kpi__fill" style={{ width: `${Math.max(pct, 2)}%` }} /></div>
+                            <span className="kpi__val">{pct}%</span>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
                 </div>
-                <Link href="/about" className="mt-4 block text-center text-[11px] text-gray-400 hover:text-teal-600">How is AgentScore calculated?</Link>
-              </div>
-            )}
 
-            {/* Agent Details Card */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Details</h3>
-              <dl className="mt-4 space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-gray-500">CEA registration</dt>
-                  <dd className="font-medium text-gray-900">{agent.cea_registration}</dd>
-                </div>
-                {agency && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Agency</dt>
-                    <dd className="text-right"><Link href={`/property-agents/agency/${agency.slug}`} className="font-medium text-teal-600 hover:underline">{agency.name}</Link></dd>
-                  </div>
-                )}
-                {hasTxns && (
+                {areas.length > 0 && (
                   <>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Total transactions</dt>
-                      <dd className="font-medium text-gray-900">{track.total_txns}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Active since</dt>
-                      <dd className="font-medium text-gray-900">{track.earliest_txn}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Last recorded deal</dt>
-                      <dd className="font-medium text-gray-900">{track.latest_txn}</dd>
+                    <h2 style={{ fontSize: "clamp(22px,2.6vw,30px)", marginTop: 44 }}>Where {given} is most active</h2>
+                    <div className="fc-card fc-card--pad" style={{ marginTop: 16, padding: "6px 24px 14px" }}>
+                      {areas.slice(0, 5).map((a, i) => (
+                        <div className="area" key={i}>
+                          <div className="area__name">{titleName(a.name)}</div>
+                          <span className="kpi__val">{a.count}</span>
+                          <div className="area__bar"><div className="area__fill" style={{ width: `${Math.max(Math.round((a.count / areaMax) * 100), 4)}%` }} /></div>
+                        </div>
+                      ))}
                     </div>
                   </>
                 )}
-                {primaryArea && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Primary area</dt>
-                    <dd className="max-w-[160px] truncate text-right font-medium text-gray-900">{primaryArea}</dd>
-                  </div>
-                )}
-                {hasListings && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Active listings</dt>
-                    <dd className="font-medium text-gray-900">{listings.length}</dd>
-                  </div>
-                )}
-                {agent.claimed && agent.whatsapp && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">WhatsApp</dt>
-                    <dd>
-                      <a
-                        href={`https://wa.me/${agent.whatsapp.replace(/[^0-9]/g, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-green-600 hover:underline"
-                      >
-                        Contact
-                      </a>
-                    </dd>
-                  </div>
-                )}
-              </dl>
+              </>
+            ) : (
+              <div className="fc-card fc-card--pad">
+                <h2 style={{ fontSize: 24 }}>Limited transaction record</h2>
+                <p className="muted" style={{ marginTop: 8 }}>
+                  We have limited recent CEA transaction data for {display}. When new transactions are recorded, the performance breakdown will appear here. We never inflate a thin record.
+                </p>
+              </div>
+            )}
+
+            {/* T1: real CEA transaction record — provenance + seller-side split */}
+            {hasTxns && <AgentTransactionRecord cea={agent.cea_registration} given={given} />}
+
+            {/* reviews (component renders its own "Client reviews" heading + form) */}
+            <div style={{ marginTop: 44 }}>
+              <VerifiedReviews agentId={agent.id} />
+              <AgentReviews agentId={agent.id} agentName={display} />
             </div>
 
-            {/* Widget Embed - collapsed by default, only relevant for agents */}
-            {score && (
-              <details className="rounded-xl border border-gray-200 bg-white">
-                <summary className="cursor-pointer px-5 py-3.5 text-xs font-medium text-gray-500 hover:text-teal-600">
-                  Embed your score on your website
-                </summary>
-                <div className="border-t border-gray-100 px-5 py-4 space-y-2">
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <code className="block text-[11px] text-gray-600 break-all select-all">
-                      {`<iframe src="https://fair-comparisons.com/api/widget?reg=${agent.cea_registration}" width="320" height="200" frameborder="0" style="border:none;border-radius:12px"></iframe>`}
-                    </code>
-                  </div>
-                </div>
-              </details>
-            )}
-
-            {/* Sidebar Claim CTA */}
-            {!agent.claimed && (
-              <div className="rounded-xl border-2 border-teal-300 bg-gradient-to-b from-teal-50 to-white p-5">
-                <p className="text-sm font-bold text-gray-900">Are you {agent.name.split(" ")[0]}?</p>
-                <p className="mt-1.5 text-xs text-gray-500">Claim this profile to add your photo, contact details, and connect with buyers.</p>
-                <a href="#claim" className="mt-3 block rounded-lg bg-teal-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-teal-700">
-                  Claim this profile
-                </a>
-                <Link href="/for-agents" className="mt-2 block text-center text-[11px] text-gray-400 hover:text-teal-600">Learn more about claiming</Link>
-              </div>
-            )}
-
-            <EmailCapture
-              variant="sidebar"
-              source="agent-profile"
-              pagePath={`/property-agents/agent/${slug}`}
-              heading="Get agent updates"
-              description="New transaction data, ranking changes, and market insights."
-            />
-
-            {/* Colleagues */}
-            {colleagues.length > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-white p-5">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other agents at {agency?.name}</h3>
-                <div className="mt-3 space-y-1.5">
-                  {colleagues.map((c) => (
-                    <Link key={c.slug} href={`/property-agents/agent/${c.slug}`}
-                      className="group flex items-center justify-between rounded-lg px-2 py-1.5 transition hover:bg-teal-50">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-[9px] font-bold text-gray-500 group-hover:bg-teal-100 group-hover:text-teal-700">
-                          {c.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                        </div>
-                        <span className="truncate text-sm text-gray-700 group-hover:text-teal-700">{c.name}</span>
-                      </div>
-                      {c.score && (
-                        <span className="flex-shrink-0 text-xs font-bold text-gray-400">{Math.round(Number(c.score))}</span>
-                      )}
-                    </Link>
+            {/* listings */}
+            {hasListings && (
+              <>
+                <h2 style={{ fontSize: "clamp(22px,2.6vw,30px)", marginTop: 44 }}>Current listings</h2>
+                <p className="muted small" style={{ margin: "6px 0 0" }}>Active marketing listings. Listings do not affect AgentScore or ranking.</p>
+                <div className="fc-grid-2" style={{ marginTop: 16, gap: 16 }}>
+                  {listings.map((l, i) => (
+                    <div className="fc-card fc-card--pad fc-card--hover" key={i}>
+                      <div className="kicker">{txnTypeLabel(l.listing_type || "For sale")}{l.title ? ` · ${l.title}` : ""}</div>
+                      <div className="serif" style={{ fontWeight: 600, fontSize: 26, marginTop: 6 }}>{l.price ? formatPrice(l.price) : "Price on ask"}</div>
+                      <div className="muted small">{[l.address, l.district_code].filter(Boolean).join(", ")}</div>
+                    </div>
                   ))}
                 </div>
-              </div>
+                <p className="mono small muted" style={{ marginTop: 18 }}>AgentScore and ranking are computed from CEA, URA and HDB records only.</p>
+              </>
             )}
+          </main>
+
+          {/* SIDEBAR */}
+          <aside>
+            <div className="ap-side">
+              {score != null && agent.score_breakdown && (
+                <div className="fc-card fc-card--pad">
+                  <div className="kicker">Score breakdown</div>
+                  <p className="small muted" style={{ margin: "6px 0 12px" }}>What feeds the AgentScore of {score}.</p>
+                  {scoreDims.map((d) => (
+                    <div className="kpi" style={{ gridTemplateColumns: "1fr 36px" }} key={d.label}>
+                      <span className="kpi__lab" style={{ gridColumn: 1 }}>{d.label}</span>
+                      <span className="kpi__val">{d.n}</span>
+                      <div className="kpi__track" style={{ gridColumn: "1 / -1" }}><div className="kpi__fill" style={{ width: `${Math.max(d.n, 3)}%` }} /></div>
+                    </div>
+                  ))}
+                  <div className="kpi" style={{ gridTemplateColumns: "1fr 36px" }}>
+                    <span className="kpi__lab" style={{ gridColumn: 1 }}>Verified reviews</span>
+                    <span className="kpi__val" style={{ fontSize: 11 }}>{verifiedCompletions ? verifiedCompletions : "n/a"}</span>
+                    <div className="kpi__track" style={{ gridColumn: "1 / -1" }}><div className="kpi__fill" style={{ width: "4%", background: "var(--line-2)" }} /></div>
+                  </div>
+                  <p className="mono" style={{ fontSize: 10, color: "var(--slate)", marginTop: 10 }}>No input can be purchased. Thin data is shown as thin, not inflated.</p>
+                  <Link href="/about" className="small" style={{ display: "block", marginTop: 10 }}>How is AgentScore calculated?</Link>
+                </div>
+              )}
+
+              <div className="fc-card fc-card--pad">
+                <div className="kicker">Agency</div>
+                <div style={{ marginTop: 10 }}>
+                  <div className="metarow"><span className="k">CEA registration</span><span className="v tnum">{agent.cea_registration}</span></div>
+                  <div className="metarow"><span className="k">Agency</span><span className="v">{agency ? <Link href={`/property-agents/agency/${agency.slug}`}>{agencyName}</Link> : agencyName}</span></div>
+                  {hasTxns && <div className="metarow"><span className="k">Total transactions</span><span className="v tnum">{total}</span></div>}
+                  {primaryArea && <div className="metarow"><span className="k">Primary area</span><span className="v">{primaryShort}</span></div>}
+                  {hasTxns && <div className="metarow"><span className="k">Active since</span><span className="v">{fmtTxnMonth(track!.earliest_txn)}</span></div>}
+                </div>
+              </div>
+
+              {!agent.claimed && (
+                <div className="fc-card fc-card--pad" style={{ background: "var(--ink)", color: "#fff" }}>
+                  <div className="kicker" style={{ color: "var(--slate-2)" }}>Are you {given}?</div>
+                  <p className="small" style={{ margin: "10px 0 14px", color: "rgba(255,255,255,0.82)" }}>
+                    Claim this profile to respond to seller invitations and track leads. Free to start, pay 0.25% only on a completed sale.
+                  </p>
+                  <Link href="#claim" className="fc-btn fc-btn--primary fc-btn--block">Claim your profile</Link>
+                </div>
+              )}
+            </div>
           </aside>
         </div>
       </div>
+      <StickyMobileCta href={`/sell?agent=${slug}&utm_source=agent_sticky`} label={`Request an introduction to ${given}`} />
     </>
   );
 }

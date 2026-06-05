@@ -49,7 +49,7 @@ const faqItems = [
   {
     question: "Do I need to pay to get contacted by buyers?",
     answer:
-      "No. A free claimed profile includes your photo, WhatsApp number, and full AgentScore. Buyers can contact you at no cost to either party. Paid plans (S$99/mo Pro, S$299/mo Premium) add sponsored placement and analytics, but buyer contact is available on the Free tier.",
+      "No. A free claimed profile includes your photo, WhatsApp number, full AgentScore, and seller leads matched on your transaction record. You pay a 0.25% success fee only when a referred sale completes. Optional paid tiers (S$99/mo Pro, S$299/mo Premium) add analytics and market data, but never placement or ranking position.",
   },
   {
     question: "What types of searches does FairComparisons rank for?",
@@ -83,7 +83,7 @@ export default async function LeadGenerationPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
       />
 
       {/* Breadcrumb */}
@@ -98,15 +98,15 @@ export default async function LeadGenerationPage() {
       </nav>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900 mt-4">
+      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)] mt-4">
         <div className="mx-auto max-w-[900px] px-5 py-16 text-center md:px-8 md:py-24">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-300">
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)]">
             For Property Agents
           </p>
           <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-5xl">
             Buyers are already searching
             <br />
-            <span className="text-teal-300">for agents like you</span>
+            <span className="text-[var(--slate-2)]">for agents like you</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">
             FairComparisons ranks in Google for agent name, area, and district searches. When buyers
@@ -115,7 +115,7 @@ export default async function LeadGenerationPage() {
           <div className="mt-8">
             <Link
               href="/search"
-              className="inline-block rounded-lg bg-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-teal-400"
+              className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
             >
               Find your profile
             </Link>
@@ -194,10 +194,10 @@ export default async function LeadGenerationPage() {
                   <td className="px-4 py-3 text-gray-700">S$1,500 - S$15,000</td>
                   <td className="px-4 py-3 text-gray-500">Pay per lead / retainer</td>
                 </tr>
-                <tr className="bg-teal-50">
-                  <td className="px-4 py-3 font-medium text-teal-700">FairComparisons</td>
-                  <td className="px-4 py-3 font-bold text-teal-600">S$0 - S$299</td>
-                  <td className="px-4 py-3 text-teal-700">Free profile, optional paid visibility</td>
+                <tr className="bg-[var(--blue-wash)]">
+                  <td className="px-4 py-3 font-medium text-[var(--blue-deep)]">FairComparisons</td>
+                  <td className="px-4 py-3 font-bold text-[var(--blue)]">Free + 0.25% on completion</td>
+                  <td className="px-4 py-3 text-[var(--blue-deep)]">Free profile + seller leads, pay only when you close</td>
                 </tr>
               </tbody>
             </table>
@@ -236,7 +236,7 @@ export default async function LeadGenerationPage() {
             },
           ].map((item) => (
             <div key={item.step} className="rounded-xl border border-gray-200 bg-white p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-lg font-extrabold text-teal-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--blue-wash)] text-lg font-extrabold text-[var(--blue)]">
                 {item.step}
               </div>
               <h3 className="mt-4 text-sm font-bold text-gray-900">{item.title}</h3>
@@ -256,19 +256,19 @@ export default async function LeadGenerationPage() {
           </p>
           <div className="mt-8 flex justify-center gap-10">
             <div className="text-center">
-              <span className="text-3xl font-extrabold text-teal-600">
+              <span className="text-3xl font-extrabold text-[var(--blue)]">
                 {stats.total.toLocaleString()}
               </span>
               <p className="mt-1 text-xs text-gray-400">agents profiled</p>
             </div>
             <div className="text-center">
-              <span className="text-3xl font-extrabold text-teal-600">
+              <span className="text-3xl font-extrabold text-[var(--blue)]">
                 {stats.scored.toLocaleString()}
               </span>
               <p className="mt-1 text-xs text-gray-400">agents scored</p>
             </div>
             <div className="text-center">
-              <span className="text-3xl font-extrabold text-teal-600">
+              <span className="text-3xl font-extrabold text-[var(--blue)]">
                 {stats.agencies.toLocaleString()}
               </span>
               <p className="mt-1 text-xs text-gray-400">agencies</p>
@@ -332,7 +332,7 @@ export default async function LeadGenerationPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
+      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)]">
         <div className="mx-auto max-w-[600px] px-5 py-16 text-center md:px-8">
           <h2 className="text-2xl font-bold text-white">
             Your profile is already being viewed by buyers.
@@ -343,7 +343,7 @@ export default async function LeadGenerationPage() {
           <div className="mt-8">
             <Link
               href="/search"
-              className="inline-block rounded-lg bg-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-teal-400"
+              className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
             >
               Find and claim your profile
             </Link>

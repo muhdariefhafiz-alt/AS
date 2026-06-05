@@ -82,7 +82,7 @@ export default function ComparePage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search agent by name..."
-              className="w-full rounded-xl border border-gray-200 px-5 py-4 text-[15px] shadow-sm focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100"
+              className="w-full rounded-xl border border-gray-200 px-5 py-4 text-[15px] shadow-sm focus:border-[var(--blue)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-wash)]"
             />
             {results.length > 0 && (
               <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-xl border border-gray-200 bg-white shadow-lg">
@@ -90,9 +90,9 @@ export default function ComparePage() {
                   <button
                     key={a.id}
                     onClick={() => addAgent(a)}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-teal-50 first:rounded-t-xl last:rounded-b-xl"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-[var(--blue-wash)] first:rounded-t-xl last:rounded-b-xl"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--blue-wash)] text-xs font-bold text-[var(--blue-deep)]">
                       {a.score ? Math.round(Number(a.score)) : "--"}
                     </div>
                     <div className="flex-1">
@@ -111,9 +111,9 @@ export default function ComparePage() {
         {selected.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {selected.map((a) => (
-              <span key={a.id} className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-sm">
-                <span className="font-medium text-teal-700">{a.name}</span>
-                <button onClick={() => removeAgent(a.id)} className="text-teal-400 hover:text-teal-600">&times;</button>
+              <span key={a.id} className="inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1.5 text-sm">
+                <span className="font-medium text-[var(--blue-deep)]">{a.name}</span>
+                <button onClick={() => removeAgent(a.id)} className="text-[var(--blue)] hover:text-[var(--blue)]">&times;</button>
               </span>
             ))}
             {selected.length < 3 && <span className="text-xs text-gray-400 self-center">Add up to {3 - selected.length} more</span>}
@@ -129,7 +129,7 @@ export default function ComparePage() {
                   <th className="pb-3 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Metric</th>
                   {selected.map((a) => (
                     <th key={a.id} className="pb-3 px-4 text-center">
-                      <Link href={`/property-agents/agent/${a.slug}`} className="text-teal-600 hover:underline font-semibold text-sm">{a.name}</Link>
+                      <Link href={`/property-agents/agent/${a.slug}`} className="text-[var(--blue)] hover:underline font-semibold text-sm">{a.name}</Link>
                       <p className="text-xs text-gray-400 font-normal mt-0.5">{a.agency_name}</p>
                     </th>
                   ))}
@@ -144,7 +144,7 @@ export default function ComparePage() {
                     const isBest = Number(a.score) === best;
                     return (
                       <td key={a.id} className="py-4 px-4 text-center">
-                        <span className={`text-2xl font-extrabold ${isBest ? "text-teal-600" : "text-gray-400"}`}>
+                        <span className={`text-2xl font-extrabold ${isBest ? "text-[var(--blue)]" : "text-gray-400"}`}>
                           {a.score ? Math.round(Number(a.score)) : "--"}
                         </span>
                       </td>
@@ -164,9 +164,9 @@ export default function ComparePage() {
                         <td key={a.id} className="py-3 px-4">
                           <div className="flex items-center justify-center gap-2">
                             <div className="w-16 h-1.5 rounded-full bg-gray-100">
-                              <div className={`h-1.5 rounded-full ${isBest ? "bg-teal-500" : "bg-gray-300"}`} style={{ width: `${pct}%` }} />
+                              <div className={`h-1.5 rounded-full ${isBest ? "bg-[var(--blue)]" : "bg-gray-300"}`} style={{ width: `${pct}%` }} />
                             </div>
-                            <span className={`text-xs font-medium ${isBest ? "text-teal-600" : "text-gray-500"}`}>{val}</span>
+                            <span className={`text-xs font-medium ${isBest ? "text-[var(--blue)]" : "text-gray-500"}`}>{val}</span>
                           </div>
                         </td>
                       );
@@ -180,7 +180,7 @@ export default function ComparePage() {
                     const best = Math.max(...selected.map((s) => s.transaction_count ?? 0));
                     const isBest = a.transaction_count === best;
                     return (
-                      <td key={a.id} className={`py-3 px-4 text-center font-medium ${isBest ? "text-teal-600" : "text-gray-600"}`}>
+                      <td key={a.id} className={`py-3 px-4 text-center font-medium ${isBest ? "text-[var(--blue)]" : "text-gray-600"}`}>
                         {a.transaction_count?.toLocaleString() ?? 0}
                       </td>
                     );

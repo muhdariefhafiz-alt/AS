@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import LeadsInbox from "./LeadsInbox";
+import { titleName, cleanAgency } from "../lib/names";
 
 type Tier = "free" | "pro" | "premium";
 
@@ -9,12 +11,6 @@ const TIER_LABELS: Record<Tier, string> = {
   free: "Free",
   pro: "Pro",
   premium: "Premium",
-};
-
-const TIER_COLORS: Record<Tier, string> = {
-  free: "bg-gray-100 text-gray-600",
-  pro: "bg-teal-100 text-teal-700",
-  premium: "bg-amber-100 text-amber-700",
 };
 
 export default function DashboardPage() {
@@ -28,8 +24,10 @@ export default function DashboardPage() {
     photo_url: string | null;
     whatsapp: string | null;
     message: string | null;
+    marketing_name: string | null;
     score: number | null;
     agency_name: string | null;
+    cea_registration: string | null;
     subscription_tier: Tier;
     claimed_at: string | null;
     views_this_week: number;
@@ -41,6 +39,7 @@ export default function DashboardPage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [message, setMessage] = useState("");
+  const [marketingName, setMarketingName] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveMsg, setSaveMsg] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
@@ -73,6 +72,7 @@ export default function DashboardPage() {
         setPhotoUrl(data.agent.photo_url || "");
         setWhatsapp(data.agent.whatsapp || "");
         setMessage(data.agent.message || "");
+        setMarketingName(data.agent.marketing_name || "");
         setLookupStatus("found");
       } else if (res.status === 404) {
         setLookupStatus("not_found");
@@ -132,6 +132,7 @@ export default function DashboardPage() {
           photoUrl: photoUrl || null,
           whatsapp: whatsapp || null,
           message: message || null,
+          marketingName: marketingName || null,
         }),
       });
       const data = await res.json();
@@ -174,235 +175,250 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[640px] px-5 py-12 md:px-8">
-      <h1 className="text-2xl font-bold text-gray-900">Agent Dashboard</h1>
-      <p className="mt-2 text-sm text-gray-500">
-        Manage your profile, view your plan, and upgrade for more visibility.
+    <div style={{ maxWidth: 660, margin: "0 auto", padding: "56px 22px 80px" }}>
+      <div className="eyebrow">Agent dashboard</div>
+      <h1 style={{ fontSize: "var(--t-h2)", margin: "10px 0 0" }}>Your FairComparisons account</h1>
+      <p className="muted" style={{ marginTop: 8, fontSize: 15 }}>
+        Manage your profile, respond to seller leads, and track completions through to payment.
       </p>
 
       {/* Upgrade success banner */}
       {upgraded && (
-        <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-          <p className="text-sm font-medium text-green-800">
-            Welcome to {TIER_LABELS[upgraded as Tier] || upgraded}! Your profile has been upgraded.
-          </p>
+        <div className="fc-alert fc-alert--ok" style={{ marginTop: 20 }}>
+          Welcome to {TIER_LABELS[upgraded as Tier] || upgraded}. Your tools are now active.
         </div>
       )}
 
       {/* Step 1: Email lookup */}
       {lookupStatus !== "found" && (
-        <form onSubmit={handleLookup} className="mt-8">
-          <label className="block text-sm font-medium text-gray-700">
-            Enter the email you used to claim your profile
-          </label>
-          <div className="mt-2 flex gap-2">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setLookupStatus("idle"); }}
-              placeholder="you@example.com"
-              required
-              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-            />
-            <button
-              type="submit"
-              disabled={lookupStatus === "loading"}
-              className="shrink-0 rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50"
-            >
-              {lookupStatus === "loading" ? "..." : "Find profile"}
-            </button>
+        <form onSubmit={handleLookup} className="lp-panel" style={{ marginTop: 28, padding: "26px 26px" }}>
+          <div className="form-step">Sign in</div>
+          <div className="fc-field" style={{ marginTop: 14 }}>
+            <label className="fc-label">Enter the email you used to claim your profile</label>
+            <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setLookupStatus("idle"); }}
+                placeholder="you@example.com"
+                required
+                className="fc-input"
+                style={{ flex: 1 }}
+              />
+              <button
+                type="submit"
+                disabled={lookupStatus === "loading"}
+                className="fc-btn fc-btn--primary"
+                style={{ flexShrink: 0 }}
+              >
+                {lookupStatus === "loading" ? "…" : "Find profile"}
+              </button>
+            </div>
           </div>
 
           {lookupStatus === "not_found" && (
-            <p className="mt-3 text-sm text-gray-500">
+            <p className="muted small" style={{ marginTop: 12 }}>
               No claimed profile found for this email.{" "}
-              <Link href="/for-agents" className="text-teal-600 hover:underline">
+              <Link href="/for-agents" style={{ color: "var(--blue)", fontWeight: 600 }}>
                 Claim your profile first
               </Link>
             </p>
           )}
 
           {lookupStatus === "error" && (
-            <p className="mt-3 text-sm text-red-500">Something went wrong. Please try again.</p>
+            <p className="small" style={{ marginTop: 12, color: "var(--danger)" }}>Something went wrong. Please try again.</p>
           )}
         </form>
       )}
 
       {/* Step 2: Dashboard */}
       {lookupStatus === "found" && agent && (
-        <div className="mt-8 space-y-6">
+        <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 22 }}>
           {/* Agent header with tier badge */}
-          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3">
-            <div className="flex items-center gap-3">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-[11px] text-white">&#10003;</span>
+          <div className="fc-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px" }}>
+            <div className="fc-row" style={{ gap: 12 }}>
+              <span className="tick" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 999, background: "var(--ok)", color: "#fff", fontSize: 12 }}>&#10003;</span>
               <div>
-                <p className="text-sm font-medium text-gray-900">{agent.name}</p>
-                <p className="text-xs text-gray-500">{agent.agency_name || "Independent agent"}</p>
+                <p style={{ fontWeight: 700, fontSize: 15 }}>{titleName(agent.name)}</p>
+                <p className="muted small">{agent.agency_name ? cleanAgency(agent.agency_name) : "Independent agent"}</p>
               </div>
             </div>
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${TIER_COLORS[agent.subscription_tier]}`}>
-              {TIER_LABELS[agent.subscription_tier]}
+            <span className="fc-badge" style={{ background: "var(--cloud)", color: "var(--ink)" }}>
+              {TIER_LABELS[agent.subscription_tier]} plan
             </span>
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-              <p className="text-2xl font-extrabold text-teal-600">{agent.score ? Math.round(Number(agent.score)) : "-"}</p>
-              <p className="mt-1 text-[10px] text-gray-400">AgentScore</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+            <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
+              <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.score ? Math.round(Number(agent.score)) : "—"}</p>
+              <p className="kicker" style={{ marginTop: 4 }}>AgentScore</p>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-              <p className="text-2xl font-extrabold text-gray-900">{TIER_LABELS[agent.subscription_tier]}</p>
-              <p className="mt-1 text-[10px] text-gray-400">Current Plan</p>
+            <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
+              <p className="serif" style={{ fontSize: 30, fontWeight: 600 }}>{TIER_LABELS[agent.subscription_tier]}</p>
+              <p className="kicker" style={{ marginTop: 4 }}>Current plan</p>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-              <Link href={`/property-agents/agent/${agent.slug}`} className="text-sm font-medium text-teal-600 hover:underline">
-                View profile
+            <div className="fc-card" style={{ padding: 18, textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <Link href={`/property-agents/agent/${agent.slug}`} style={{ color: "var(--blue)", fontWeight: 600, fontSize: 15 }}>
+                View profile ›
               </Link>
-              <p className="mt-1 text-[10px] text-gray-400">Public Page</p>
+              <p className="kicker" style={{ marginTop: 4 }}>Public page</p>
             </div>
           </div>
 
+          {/* Seller leads inbox */}
+          {agent.cea_registration && (
+            <div>
+              <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
+                <h2 style={{ fontSize: 18, margin: 0 }}>Seller leads</h2>
+                <Link href="/sell" className="small" style={{ color: "var(--blue)", fontWeight: 600 }}>
+                  How matching works →
+                </Link>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <LeadsInbox
+                  agentEmail={email.toLowerCase().trim()}
+                  ceaRegistration={agent.cea_registration}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Profile activity */}
           <div>
-            <h2 className="text-sm font-bold text-gray-900">Profile activity</h2>
+            <h2 style={{ fontSize: 18, margin: 0 }}>Profile activity</h2>
             {agent.views_this_week > 0 || agent.whatsapp_clicks_this_week > 0 ? (
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-                  <p className="text-2xl font-extrabold text-teal-600">{agent.views_this_week}</p>
-                  <p className="mt-1 text-[10px] text-gray-400">Profile views this week</p>
+              <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
+                  <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.views_this_week}</p>
+                  <p className="kicker" style={{ marginTop: 4 }}>Profile views this week</p>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-                  <p className="text-2xl font-extrabold text-teal-600">{agent.whatsapp_clicks_this_week}</p>
-                  <p className="mt-1 text-[10px] text-gray-400">WhatsApp clicks this week</p>
+                <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
+                  <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week}</p>
+                  <p className="kicker" style={{ marginTop: 4 }}>Lead-button clicks this week</p>
                 </div>
               </div>
             ) : (
-              <p className="mt-3 text-sm text-gray-400">
-                Views tracking starts after your profile is set up
+              <p className="muted small" style={{ marginTop: 12 }}>
+                View tracking starts after your profile is set up.
               </p>
             )}
           </div>
 
-          {/* Upgrade cards -- gated behind "aha moment" (7 days since claim) */}
-          {agent.subscription_tier !== "premium" && (() => {
+          {/* How you earn — success-fee model (GetAgent-style: free listing,
+              ranked purely on record, pay only on completion). Replaces the
+              old paid-placement upsell, which contradicted "rankings cannot
+              be bought". */}
+          <div className="fc-card" style={{ background: "var(--blue-wash)", borderColor: "transparent", padding: "20px 22px" }}>
+            <h2 style={{ fontSize: 16, margin: 0, color: "var(--ink)" }}>How you earn through FairComparisons</h2>
+            <ul style={{ marginTop: 10, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 14.5, color: "var(--ink-2)" }}>
+              <li>You&apos;re listed free, ranked purely on your CEA transaction record.</li>
+              <li>Sellers in your area can invite you to quote on their sale.</li>
+              <li>You pay a 0.25% success fee + GST <strong>only when a referred sale completes</strong>. No upfront cost, no monthly fee.</li>
+            </ul>
+            <p className="small" style={{ marginTop: 12, color: "var(--blue-deep)" }}>
+              Your ranking is always earned, never bought. There is no paid placement on FairComparisons.
+            </p>
+          </div>
+
+          {/* Exp 3: embeddable AgentScore badge */}
+          <BadgeCard slug={agent.slug} />
+
+          {/* Optional tools tier — NON-ranking only (analytics + market data).
+              Gated behind the 7-day "aha moment". */}
+          {agent.subscription_tier === "free" && (() => {
             const claimedDaysAgo = agent.claimed_at
               ? (Date.now() - new Date(agent.claimed_at).getTime()) / (1000 * 60 * 60 * 24)
               : null;
             const hasReachedAha = claimedDaysAgo !== null && claimedDaysAgo >= 7;
-
-            if (!hasReachedAha) {
-              return (
-                <div className="rounded-xl border border-teal-200 bg-teal-50 px-5 py-4">
-                  <p className="text-sm font-medium text-teal-800">
-                    Your profile is live! Over the next week, buyers in your area will see your listing. We will send you a report of how many people viewed your profile. After that, you can upgrade for more visibility.
-                  </p>
-                </div>
-              );
-            }
+            if (!hasReachedAha) return null;
 
             return (
-              <div className="space-y-3">
-                <h2 className="text-sm font-bold text-gray-900">Upgrade your visibility</h2>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {agent.subscription_tier === "free" && (
-                    <div className="rounded-xl border-2 border-teal-300 bg-teal-50 p-5">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-bold uppercase tracking-widest text-teal-600">Pro</p>
-                        <span className="rounded-full bg-teal-600 px-2 py-0.5 text-[10px] font-bold text-white">Popular</span>
-                      </div>
-                      <p className="mt-2 text-2xl font-extrabold text-gray-900">S$99<span className="text-sm font-normal text-gray-400">/mo</span></p>
-                      <ul className="mt-3 space-y-1.5 text-xs text-gray-600">
-                        <li>+ Sponsored badge on profile</li>
-                        <li>+ Weekly profile view report</li>
-                        <li>+ Sponsored placement in area listings</li>
-                      </ul>
-                      <button
-                        onClick={() => handleUpgrade("pro")}
-                        disabled={checkoutLoading !== null}
-                        className="mt-4 w-full rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50"
-                      >
-                        {checkoutLoading === "pro" ? "Redirecting to checkout..." : "Upgrade to Pro"}
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="rounded-xl border border-gray-200 bg-white p-5">
-                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Premium</p>
-                    <p className="mt-2 text-2xl font-extrabold text-gray-900">S$299<span className="text-sm font-normal text-gray-400">/mo</span></p>
-                    <ul className="mt-3 space-y-1.5 text-xs text-gray-600">
-                      <li>+ Everything in Pro</li>
-                      <li>+ Highlighted sponsored placement in rankings</li>
-                      <li>+ Dedicated account support</li>
-                      <li>+ Monthly market insights for your area</li>
-                    </ul>
-                    <button
-                      onClick={() => handleUpgrade("premium")}
-                      disabled={checkoutLoading !== null}
-                      className="mt-4 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      {checkoutLoading === "premium" ? "Redirecting to checkout..." : "Upgrade to Premium"}
-                    </button>
-                  </div>
+              <div className="fc-card" style={{ padding: 22 }}>
+                <div className="fc-row" style={{ justifyContent: "space-between" }}>
+                  <p className="kicker">Pro tools (optional)</p>
+                  <span className="serif" style={{ fontSize: 22, fontWeight: 600 }}>S$99<span className="muted" style={{ fontSize: 13, fontWeight: 400 }}>/mo</span></span>
                 </div>
+                <ul style={{ marginTop: 12, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5 }} className="muted">
+                  <li>Weekly profile view + lead report</li>
+                  <li>Comparable-transaction data for pricing conversations</li>
+                  <li>Monthly market insights for your area</li>
+                </ul>
+                <p className="small muted" style={{ marginTop: 8 }}>Tools only. Does not affect your ranking.</p>
+                <button
+                  onClick={() => handleUpgrade("pro")}
+                  disabled={checkoutLoading !== null}
+                  className="fc-btn fc-btn--ghost fc-btn--block"
+                  style={{ marginTop: 16 }}
+                >
+                  {checkoutLoading === "pro" ? "Redirecting to checkout…" : "Add Pro tools"}
+                </button>
               </div>
             );
           })()}
 
-          {/* Premium badge */}
-          {agent.subscription_tier === "premium" && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-              <p className="text-sm font-medium text-amber-800">
-                You are on the Premium plan. To manage your subscription or cancel, email{" "}
-                <a href="mailto:hello@fair-comparisons.com" className="underline">hello@fair-comparisons.com</a>.
+          {/* Existing paid tier holders — manage/cancel */}
+          {(agent.subscription_tier === "pro" || agent.subscription_tier === "premium") && (
+            <div className="fc-card fc-card--fill" style={{ padding: "14px 16px" }}>
+              <p className="muted small">
+                You have {TIER_LABELS[agent.subscription_tier]} tools. To manage or cancel, email{" "}
+                <a href="mailto:hello@fair-comparisons.com" style={{ color: "var(--blue)" }}>hello@fair-comparisons.com</a>.
               </p>
             </div>
           )}
 
           {/* Profile edit form */}
-          <div className="border-t border-gray-100 pt-6">
-            <h2 className="text-sm font-bold text-gray-900">Edit your profile</h2>
-            <form onSubmit={handleSave} className="mt-4 space-y-5">
+          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 24 }}>
+            <h2 style={{ fontSize: 18, margin: 0 }}>Edit your profile</h2>
+            <form onSubmit={handleSave} style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 20 }}>
+              {/* Marketing / preferred name */}
+              <div className="fc-field">
+                <label className="fc-label">Marketing name <span className="muted" style={{ fontWeight: 400 }}>(optional)</span></label>
+                <p className="muted small">The name clients know you by, if different from your CEA name. Shown alongside your registered name so people searching for you can find this page. Example: Cindy Chew.</p>
+                <input
+                  type="text"
+                  value={marketingName}
+                  onChange={(e) => { setMarketingName(e.target.value); setSaveStatus("idle"); }}
+                  maxLength={60}
+                  placeholder="e.g. Cindy Chew"
+                  className="fc-input"
+                />
+              </div>
+
               {/* Message to buyers */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Message to buyers
-                </label>
-                <p className="mt-0.5 text-xs text-gray-400">This appears at the top of your profile. Tell buyers why they should work with you.</p>
+              <div className="fc-field">
+                <label className="fc-label">Message to sellers</label>
+                <p className="muted small">This appears at the top of your public profile. Tell sellers why they should pick you.</p>
                 <textarea
                   value={message}
                   onChange={(e) => { setMessage(e.target.value); setSaveStatus("idle"); }}
                   maxLength={500}
                   rows={3}
-                  placeholder="Looking for a trusted agent in your area? I have 10+ years of experience helping buyers find their dream home."
-                  className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  placeholder="Looking for a trusted agent in your area? I have 10+ years helping owners sell for the best price."
+                  className="fc-textarea"
                 />
-                <p className="mt-1 text-right text-xs text-gray-400">{message.length}/500</p>
+                <p className="muted small" style={{ textAlign: "right" }}>{message.length}/500</p>
               </div>
 
               {/* Bio */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Bio / practice description
-                </label>
-                <p className="mt-0.5 text-xs text-gray-400">Tell buyers about your specialization and experience. Max 1,000 characters.</p>
+              <div className="fc-field">
+                <label className="fc-label">Bio / practice description</label>
+                <p className="muted small">Tell sellers about your specialization and experience. Max 1,000 characters.</p>
                 <textarea
                   value={bio}
                   onChange={(e) => { setBio(e.target.value); setSaveStatus("idle"); }}
                   maxLength={1000}
                   rows={4}
-                  placeholder="I specialize in HDB resale transactions in Tampines and Bedok..."
-                  className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  placeholder="I specialize in HDB resale transactions in Tampines and Bedok…"
+                  className="fc-textarea"
                 />
-                <p className="mt-1 text-right text-xs text-gray-400">{bio.length}/1000</p>
+                <p className="muted small" style={{ textAlign: "right" }}>{bio.length}/1000</p>
               </div>
 
               {/* Photo upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Profile photo
-                </label>
-                <p className="mt-0.5 text-xs text-gray-400">Upload a professional headshot. JPEG, PNG, or WebP.</p>
+              <div className="fc-field">
+                <label className="fc-label">Profile photo</label>
+                <p className="muted small">Upload a professional headshot. JPEG, PNG, or WebP.</p>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -410,77 +426,117 @@ export default function DashboardPage() {
                     const file = e.target.files?.[0];
                     if (file) handlePhotoUpload(file);
                   }}
-                  className="mt-2 block w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-teal-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-teal-700 hover:file:bg-teal-100"
+                  className="fc-input"
+                  style={{ padding: 10, fontSize: 13.5 }}
                 />
                 {uploadStatus === "uploading" && (
-                  <p className="mt-2 text-xs text-teal-600">Uploading...</p>
+                  <p className="small" style={{ color: "var(--blue)" }}>Uploading…</p>
                 )}
                 {uploadStatus === "done" && (
-                  <p className="mt-2 text-xs text-green-600">{uploadMsg}</p>
+                  <p className="small" style={{ color: "var(--ok)" }}>{uploadMsg}</p>
                 )}
                 {uploadStatus === "error" && (
-                  <p className="mt-2 text-xs text-red-500">{uploadMsg}</p>
+                  <p className="small" style={{ color: "var(--danger)" }}>{uploadMsg}</p>
                 )}
                 {photoUrl && (
-                  <div className="mt-3">
+                  <div style={{ marginTop: 6 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={photoUrl}
                       alt="Preview"
-                      className="h-20 w-20 rounded-xl border border-gray-200 object-cover"
+                      style={{ height: 80, width: 80, borderRadius: "var(--r-md)", border: "1px solid var(--line)", objectFit: "cover" }}
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                     />
-                    <p className="mt-1.5 truncate text-xs text-gray-400">{photoUrl}</p>
+                    <p className="muted small" style={{ marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{photoUrl}</p>
                   </div>
                 )}
               </div>
 
               {/* WhatsApp */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  WhatsApp number
-                </label>
-                <p className="mt-0.5 text-xs text-gray-400">Include country code (e.g. +6591234567). Shown as a contact button on your profile.</p>
+              <div className="fc-field">
+                <label className="fc-label">WhatsApp number</label>
+                <p className="muted small">Include country code (e.g. +6591234567). We use this to alert you the moment a seller invites you to quote.</p>
                 <input
                   type="tel"
                   value={whatsapp}
                   onChange={(e) => { setWhatsapp(e.target.value); setSaveStatus("idle"); }}
                   maxLength={20}
                   placeholder="+65 9XXX XXXX"
-                  className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="fc-input"
                 />
               </div>
 
               {/* Submit */}
-              <div className="flex items-center gap-3">
+              <div className="fc-row" style={{ gap: 12 }}>
                 <button
                   type="submit"
                   disabled={saveStatus === "saving"}
-                  className="rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50"
+                  className="fc-btn fc-btn--primary"
                 >
-                  {saveStatus === "saving" ? "Saving..." : "Save changes"}
+                  {saveStatus === "saving" ? "Saving…" : "Save changes"}
                 </button>
 
                 {saveStatus === "saved" && (
-                  <span className="text-sm text-green-600">{saveMsg}</span>
+                  <span className="small" style={{ color: "var(--ok)" }}>{saveMsg}</span>
                 )}
                 {saveStatus === "error" && (
-                  <span className="text-sm text-red-500">{saveMsg}</span>
+                  <span className="small" style={{ color: "var(--danger)" }}>{saveMsg}</span>
                 )}
               </div>
 
-              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                <p className="text-xs text-gray-500">
-                  Your changes will appear on your{" "}
-                  <Link href={`/property-agents/agent/${agent.slug}`} className="text-teal-600 hover:underline">
+              <div className="fc-card fc-card--fill" style={{ padding: 16 }}>
+                <p className="muted small">
+                  Your changes appear on your{" "}
+                  <Link href={`/property-agents/agent/${agent.slug}`} style={{ color: "var(--blue)" }}>
                     public profile page
                   </Link>{" "}
-                  after the next page refresh. Photos, bio text, and WhatsApp number are visible to all visitors.
+                  after the next refresh. Photo, bio, and message are visible to all visitors.
                 </p>
               </div>
             </form>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Exp 3: embeddable AgentScore badge. Live preview + copy-paste embed code.
+function BadgeCard({ slug }: { slug: string }) {
+  const [copied, setCopied] = useState(false);
+  const base = "https://fair-comparisons.com";
+  const embed = `<a href="${base}/property-agents/agent/${slug}?ref=badge"><img src="${base}/badge/${slug}.svg" alt="My AgentScore on FairComparisons" width="320" height="96"></a>`;
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(embed);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
+  return (
+    <div className="fc-card" style={{ padding: 22 }}>
+      <div className="kicker">Your verified badge</div>
+      <p className="muted small" style={{ marginTop: 6 }}>
+        Add your AgentScore badge to your email signature, website, or social profiles. It links back to your profile so sellers can see your full record.
+      </p>
+      <div style={{ marginTop: 14 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`/badge/${slug}.svg`} alt="Your AgentScore badge" width={320} height={96} style={{ maxWidth: "100%", border: "1px solid var(--line)", borderRadius: "var(--r-md)" }} />
+      </div>
+      <textarea
+        readOnly
+        value={embed}
+        onFocus={(e) => e.currentTarget.select()}
+        className="fc-textarea"
+        style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 12, height: 84 }}
+      />
+      <button onClick={copy} className="fc-btn fc-btn--ink fc-btn--sm" style={{ marginTop: 10 }}>
+        {copied ? "Copied" : "Copy embed code"}
+      </button>
     </div>
   );
 }

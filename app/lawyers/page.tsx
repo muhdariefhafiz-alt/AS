@@ -55,10 +55,10 @@ export default async function LawyersHub() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="mx-auto max-w-[1120px] px-5 py-16 md:px-8 md:py-24">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-400">Lawyer Comparison</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue)]">Lawyer Comparison</p>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl">
             {lawyerCount.toLocaleString()} lawyers.<br />
-            <span className="text-teal-300">{caseCount.toLocaleString()} court cases.</span>
+            <span className="text-[var(--slate-2)]">{caseCount.toLocaleString()} court cases.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-400">
             Singapore&apos;s first platform to track lawyers on actual court appearances.
@@ -90,13 +90,13 @@ export default async function LawyersHub() {
             <Link
               key={l.slug}
               href={`/lawyers/${l.slug}`}
-              className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm"
+              className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-[var(--line-2)] hover:shadow-sm"
             >
               <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
                 i === 0 ? "bg-amber-500" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-amber-700" : "bg-slate-700"
               }`}>{i + 1}</div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 group-hover:text-teal-600">{l.name}</p>
+                <p className="font-semibold text-gray-900 group-hover:text-[var(--blue)]">{l.name}</p>
                 <p className="text-xs text-gray-500 truncate">{l.primary_firm}</p>
               </div>
               <div className="flex flex-col items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
@@ -117,8 +117,8 @@ export default async function LawyersHub() {
               const displayName = a.name.split(/\s[—-]\s/)[0].trim();
               return (
                 <Link key={a.slug} href={`/lawyers/practice/${a.slug}`}
-                  className="group rounded-lg border border-gray-200 bg-white p-3 transition hover:border-teal-300 hover:shadow-sm">
-                  <div className="text-sm font-medium text-gray-900 group-hover:text-teal-600 truncate">{displayName}</div>
+                  className="group rounded-lg border border-gray-200 bg-white p-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
+                  <div className="text-sm font-medium text-gray-900 group-hover:text-[var(--blue)] truncate">{displayName}</div>
                   <p className="mt-1 text-xs text-gray-400">{a.case_count} cases</p>
                 </Link>
               );
@@ -133,8 +133,8 @@ export default async function LawyersHub() {
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {uniqueFirms.map(f => (
             <Link key={f.slug} href={`/lawyers/firm/${f.slug}`}
-              className="group rounded-lg border border-gray-200 bg-white p-4 transition hover:border-teal-300 hover:shadow-sm">
-              <div className="font-semibold text-gray-900 group-hover:text-teal-600">{f.name}</div>
+              className="group rounded-lg border border-gray-200 bg-white p-4 transition hover:border-[var(--line-2)] hover:shadow-sm">
+              <div className="font-semibold text-gray-900 group-hover:text-[var(--blue)]">{f.name}</div>
               <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
                 <span>{f.lawyer_count} lawyers</span>
                 <span>{f.case_count} cases</span>
@@ -155,7 +155,7 @@ export default async function LawyersHub() {
             <WaitlistForm />
           </div>
 
-          <div className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-6 text-center">
+          <div className="mt-6 rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6 text-center">
             <p className="font-semibold text-gray-900">Are you a lawyer?</p>
             <p className="mt-1 text-sm text-gray-500">
               Your court appearances are in our database. Claim your profile to add contact details and practice description.

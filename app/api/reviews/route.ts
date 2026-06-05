@@ -1,71 +1,244 @@
 import { NextResponse } from "next/server";
-import { supabase } from "../../lib/supabase";
+import { createHash } from "crypto";
+import { supabase, supabaseAdmin } from "../../lib/supabase";
+import { checkRateLimit, clientIp } from "../../lib/rateLimit";
+import { sendEmail } from "../../lib/email";
+
+// Open (community) agent reviews with anti-spam:
+//   1. Honeypot field (bots fill it; humans don't).
+//   2. Per-IP rate limit (3 review submissions / hour).
+//   3. Email double-opt-in — review stays status='pending' (hidden by RLS)
+//      until the reviewer clicks the verification link.
+//   4. One review per email per agent (DB unique index).
+//   5. Min comment length + length caps.
+// Verified-completion reviews (from the seller funnel) are separate and carry
+// the gold badge; these open reviews are verified_completion=false.
+
+const TX_TYPES = new Set([
+  "Bought a property",
+  "Sold a property",
+  "Rented a property",
+  "Other",
+]);
+
+function isValidEmail(e: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && e.length <= 254;
+}
+
+function hashIp(ip: string): string {
+  const salt = process.env.IP_HASH_SALT || "fc-sg-default-salt";
+  return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
+}
+
+function makeToken(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function initialsOf(name: string): string {
+  return (
+    name
+      .split(/\s+/)
+      .map((s) => s.charAt(0).toUpperCase())
+      .join("")
+      .slice(0, 4) || "Anonymous"
+  );
+}
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const { agentId, reviewerName, rating, transactionType, comment } = body;
+  try {
+    const ip = clientIp(request);
+    const { limited } = await checkRateLimit(`review:${ip}`, 3, 60 * 60 * 1000);
+    if (limited) {
+      return NextResponse.json(
+        { error: "Too many review submissions. Try again later." },
+        { status: 429 }
+      );
+    }
 
-  if (!agentId || !reviewerName || !rating) {
-    return NextResponse.json({ error: "Name and rating are required" }, { status: 400 });
+    const body = await request.json();
+    const {
+      agentId,
+      reviewerName,
+      reviewerEmail,
+      rating,
+      transactionType,
+      comment,
+      website, // honeypot — must be empty
+    } = body ?? {};
+
+    // Honeypot: a real user never fills this hidden field.
+    if (typeof website === "string" && website.trim().length > 0) {
+      // Pretend success so bots don't learn.
+      return NextResponse.json({ success: true, message: "Thanks!" });
+    }
+
+    if (!agentId || !reviewerName || !rating) {
+      return NextResponse.json(
+        { error: "Name, rating, and email are required." },
+        { status: 400 }
+      );
+    }
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return NextResponse.json({ error: "Rating must be 1-5." }, { status: 400 });
+    }
+    if (String(reviewerName).trim().length < 2 || String(reviewerName).length > 100) {
+      return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
+    }
+    if (!reviewerEmail || !isValidEmail(String(reviewerEmail))) {
+      return NextResponse.json(
+        { error: "A valid email is required (we send a one-click confirmation)." },
+        { status: 400 }
+      );
+    }
+    if (!comment || String(comment).trim().length < 15) {
+      return NextResponse.json(
+        { error: "Please write at least 15 characters about your experience." },
+        { status: 400 }
+      );
+    }
+    if (String(comment).length > 2000) {
+      return NextResponse.json(
+        { error: "Review too long (max 2000 characters)." },
+        { status: 400 }
+      );
+    }
+    if (transactionType && !TX_TYPES.has(transactionType)) {
+      return NextResponse.json({ error: "Invalid transaction type." }, { status: 400 });
+    }
+
+    const sb = supabaseAdmin();
+    const emailLc = String(reviewerEmail).toLowerCase().trim();
+
+    // Confirm the agent exists.
+    const { data: agent } = await sb
+      .from("sg_agents")
+      .select("id, name, slug")
+      .eq("id", agentId)
+      .single();
+    if (!agent) {
+      return NextResponse.json({ error: "Agent not found." }, { status: 404 });
+    }
+
+    // One review per email per agent (covers pending + published).
+    const { data: existing } = await sb
+      .from("sg_agent_reviews")
+      .select("id, status")
+      .eq("agent_id", agentId)
+      .eq("reviewer_email", emailLc)
+      .maybeSingle();
+    if (existing) {
+      return NextResponse.json(
+        { error: "You have already submitted a review for this agent." },
+        { status: 409 }
+      );
+    }
+
+    const token = makeToken();
+    const { error: insErr } = await sb.from("sg_agent_reviews").insert({
+      agent_id: agentId,
+      reviewer_name: String(reviewerName).trim(),
+      reviewer_email: emailLc,
+      rating,
+      rating_overall: rating,
+      transaction_type: transactionType || null,
+      comment: String(comment).trim(),
+      seller_initials: initialsOf(String(reviewerName)),
+      verified_completion: false,
+      status: "pending", // hidden by RLS until email confirmed
+      approved: false,
+      verify_token: token,
+      verify_expires: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+      ip_hash: hashIp(ip),
+    });
+    if (insErr) {
+      console.error("[reviews] insert failed", insErr);
+      return NextResponse.json(
+        { error: "Could not submit review." },
+        { status: 500 }
+      );
+    }
+
+    // Send the one-click confirmation.
+    const site =
+      process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
+    const link = `${site}/api/reviews/verify?token=${token}`;
+    sendEmail({
+      to: emailLc,
+      subject: `Confirm your review of ${agent.name}`,
+      html: confirmHtml({ agentName: agent.name ?? "", link }),
+      metric: "Review Confirmation",
+      properties: { agent_id: agent.id },
+    }).catch((e) => console.error("[reviews] confirm email failed", e));
+
+    return NextResponse.json({
+      success: true,
+      message:
+        "Almost done — check your email and click the confirmation link to publish your review.",
+    });
+  } catch (err) {
+    console.error("[reviews] unexpected", err);
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
-
-  if (rating < 1 || rating > 5) {
-    return NextResponse.json({ error: "Rating must be 1-5" }, { status: 400 });
-  }
-
-  if (reviewerName.length > 100) {
-    return NextResponse.json({ error: "Name too long" }, { status: 400 });
-  }
-
-  if (comment && comment.length > 2000) {
-    return NextResponse.json({ error: "Review too long (max 2000 characters)" }, { status: 400 });
-  }
-
-  // Rate limit: max 3 reviews per agent per day (by agent, not by user - simple approach)
-  const { count } = await supabase
-    .from("sg_agent_reviews")
-    .select("*", { count: "exact", head: true })
-    .eq("agent_id", agentId)
-    .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-
-  if ((count ?? 0) >= 3) {
-    return NextResponse.json({ error: "Too many reviews for this agent today. Try again tomorrow." }, { status: 429 });
-  }
-
-  const { error } = await supabase.from("sg_agent_reviews").insert({
-    agent_id: agentId,
-    reviewer_name: reviewerName.trim(),
-    rating,
-    transaction_type: transactionType || null,
-    comment: comment?.trim() || null,
-  });
-
-  if (error) {
-    return NextResponse.json({ error: "Could not submit review" }, { status: 500 });
-  }
-
-  return NextResponse.json({ success: true, message: "Review submitted. It will appear after moderation." });
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const agentId = searchParams.get("agentId");
-
   if (!agentId) {
     return NextResponse.json({ error: "agentId required" }, { status: 400 });
   }
 
+  // Public read: only published, non-completion (open) reviews. RLS also
+  // enforces status='published'.
   const { data, error } = await supabase
     .from("sg_agent_reviews")
     .select("id, reviewer_name, rating, transaction_type, comment, created_at")
     .eq("agent_id", agentId)
-    .eq("approved", true)
+    .eq("status", "published")
+    .eq("verified_completion", false)
     .order("created_at", { ascending: false })
     .limit(20);
-
   if (error) {
     return NextResponse.json({ error: "Could not fetch reviews" }, { status: 500 });
   }
-
   return NextResponse.json({ reviews: data ?? [] });
+}
+
+function confirmHtml({
+  agentName,
+  link,
+}: {
+  agentName: string;
+  link: string;
+}): string {
+  return `
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
+<tr><td align="center" style="padding:24px 16px">
+<table cellpadding="0" cellspacing="0" border="0" width="520" style="background:#ffffff;border-radius:12px;overflow:hidden">
+  <tr><td style="background:#0a1733;padding:24px 32px">
+    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
+  </td></tr>
+  <tr><td style="padding:32px">
+    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827">Confirm your review of ${agentName}</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#374151;line-height:1.6">
+      One click and your review goes live. This stops fake reviews — only people with a real email can publish.
+    </p>
+    <p style="margin:0 0 16px">
+      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+        Confirm and publish my review
+      </a>
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:#9ca3af">
+      Didn't write this review? Ignore this email and nothing will be published.
+    </p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
 }

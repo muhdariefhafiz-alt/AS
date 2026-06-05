@@ -133,7 +133,7 @@ export default async function DevelopmentPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -145,7 +145,7 @@ export default async function DevelopmentPage({ params }: Props) {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
           <span className="inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600">
             D{project.district} {distName}
@@ -248,8 +248,8 @@ export default async function DevelopmentPage({ params }: Props) {
                         <span className="w-16 text-xs text-gray-500">{f.floor_range}</span>
                         <div className="flex-1">
                           <div className="h-5 rounded bg-gray-100">
-                            <div className="h-5 rounded bg-teal-200 flex items-center px-2" style={{ width: `${w}%` }}>
-                              <span className="text-xs font-medium text-teal-800">{formatPrice(f.median_price)}</span>
+                            <div className="h-5 rounded bg-[var(--blue-wash)] flex items-center px-2" style={{ width: `${w}%` }}>
+                              <span className="text-xs font-medium text-[var(--blue-deep)]">{formatPrice(f.median_price)}</span>
                             </div>
                           </div>
                         </div>
@@ -342,7 +342,7 @@ export default async function DevelopmentPage({ params }: Props) {
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Development Details</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-gray-500">Street</dt><dd className="font-medium text-gray-900 text-right">{project.street}</dd></div>
-                <div className="flex justify-between"><dt className="text-gray-500">District</dt><dd className="font-medium text-gray-900"><Link href={`/property-agents/district/${districtSlug}`} className="text-teal-600 hover:text-teal-700">D{project.district} {distName}</Link></dd></div>
+                <div className="flex justify-between"><dt className="text-gray-500">District</dt><dd className="font-medium text-gray-900"><Link href={`/property-agents/district/${districtSlug}`} className="text-[var(--blue)] hover:text-[var(--blue-deep)]">D{project.district} {distName}</Link></dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Tenure</dt><dd className="font-medium text-gray-900">{isFreehold ? "Freehold" : "Leasehold"}</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Transactions</dt><dd className="font-medium text-gray-900">{project.txn_count}</dd></div>
               </dl>

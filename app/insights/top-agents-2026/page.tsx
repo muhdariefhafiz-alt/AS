@@ -123,7 +123,7 @@ export default async function TopAgents2026Page() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[900px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -134,10 +134,10 @@ export default async function TopAgents2026Page() {
       </nav>
 
       {/* Hero */}
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[900px] px-5 pb-10 pt-10 md:px-8">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
+            <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">
               2026 Rankings
             </span>
             <span className="inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-500">
@@ -154,9 +154,9 @@ export default async function TopAgents2026Page() {
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-4">
             <div className="flex gap-6">
-              <div><span className="text-2xl font-extrabold text-teal-600">{scoredCount.toLocaleString()}</span><p className="text-[10px] text-gray-400">agents scored</p></div>
-              <div><span className="text-2xl font-extrabold text-teal-600">{totalTxns.toLocaleString()}</span><p className="text-[10px] text-gray-400">transactions analyzed</p></div>
-              <div><span className="text-2xl font-extrabold text-teal-600">28</span><p className="text-[10px] text-gray-400">districts covered</p></div>
+              <div><span className="text-2xl font-extrabold text-[var(--blue)]">{scoredCount.toLocaleString()}</span><p className="text-[10px] text-gray-400">agents scored</p></div>
+              <div><span className="text-2xl font-extrabold text-[var(--blue)]">{totalTxns.toLocaleString()}</span><p className="text-[10px] text-gray-400">transactions analyzed</p></div>
+              <div><span className="text-2xl font-extrabold text-[var(--blue)]">28</span><p className="text-[10px] text-gray-400">districts covered</p></div>
             </div>
           </div>
           <div className="mt-5">
@@ -189,16 +189,16 @@ export default async function TopAgents2026Page() {
               <Link
                 key={agent.slug}
                 href={`/property-agents/agent/${agent.slug}`}
-                className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm"
+                className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-[var(--line-2)] hover:shadow-sm"
               >
-                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${i < 3 ? "bg-teal-600" : i < 10 ? "bg-teal-400" : "bg-gray-300"}`}>
+                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${i < 3 ? "bg-[var(--blue)]" : i < 10 ? "bg-[var(--blue)]" : "bg-gray-300"}`}>
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-gray-900 group-hover:text-teal-600 truncate">{agent.name}</p>
+                    <p className="font-semibold text-gray-900 group-hover:text-[var(--blue)] truncate">{agent.name}</p>
                     {agent.percentile && agent.percentile <= 5 && (
-                      <span className="shrink-0 rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-700">
+                      <span className="shrink-0 rounded-full bg-[var(--blue-wash)] px-2 py-0.5 text-[10px] font-bold text-[var(--blue-deep)]">
                         Top {agent.percentile}%
                       </span>
                     )}
@@ -210,7 +210,7 @@ export default async function TopAgents2026Page() {
                   </p>
                 </div>
                 <div className="flex-shrink-0 text-right">
-                  <span className="text-xl font-black text-teal-600">{Math.round(agent.score)}</span>
+                  <span className="text-xl font-black text-[var(--blue)]">{Math.round(agent.score)}</span>
                   <p className="text-[10px] text-gray-400">AgentScore</p>
                 </div>
               </Link>
@@ -230,20 +230,20 @@ export default async function TopAgents2026Page() {
               return (
                 <div key={d.slug} className="rounded-xl border border-gray-100 bg-white p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-teal-600">{d.code}</span>
+                    <span className="text-xs font-bold text-[var(--blue)]">{d.code}</span>
                     <span className="text-xs text-gray-400">{leader.area_txns} area txns</span>
                   </div>
                   <p className="mt-1 text-sm font-bold text-gray-900">{d.short}</p>
                   <div className="mt-3 flex items-center justify-between">
                     <div className="min-w-0">
-                      <Link href={`/property-agents/agent/${leader.agent_slug}`} className="text-sm font-medium text-teal-600 hover:underline truncate block">
+                      <Link href={`/property-agents/agent/${leader.agent_slug}`} className="text-sm font-medium text-[var(--blue)] hover:underline truncate block">
                         {leader.agent_name}
                       </Link>
                       <p className="text-[11px] text-gray-400 truncate">{leader.agency_name}</p>
                     </div>
                     <span className="flex-shrink-0 text-lg font-black text-gray-900">{Math.round(leader.score)}</span>
                   </div>
-                  <Link href={`/property-agents/best/${d.slug}`} className="mt-3 block text-center text-[11px] text-gray-400 hover:text-teal-600">
+                  <Link href={`/property-agents/best/${d.slug}`} className="mt-3 block text-center text-[11px] text-gray-400 hover:text-[var(--blue)]">
                     View full {d.short} ranking
                   </Link>
                 </div>
@@ -253,42 +253,42 @@ export default async function TopAgents2026Page() {
         </section>
 
         {/* Key findings */}
-        <section className="mb-12 rounded-xl border border-teal-100 bg-teal-50/50 p-6">
+        <section className="mb-12 rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-6">
           <h2 className="text-lg font-bold text-gray-900">Key Findings</h2>
           <ul className="mt-4 space-y-3 text-[15px] leading-relaxed text-gray-700">
             {topAgents.length > 0 && (
               <li className="flex gap-2">
-                <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-teal-200 text-[10px] font-bold text-teal-800">1</span>
-                <span>The highest-scoring agent in Singapore is <Link href={`/property-agents/agent/${topAgents[0].slug}`} className="font-medium text-teal-700 hover:underline">{topAgents[0].name}</Link> from {topAgents[0].agency_name} with a score of {Math.round(topAgents[0].score)} and {topAgents[0].transaction_count} recorded transactions.</span>
+                <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">1</span>
+                <span>The highest-scoring agent in Singapore is <Link href={`/property-agents/agent/${topAgents[0].slug}`} className="font-medium text-[var(--blue-deep)] hover:underline">{topAgents[0].name}</Link> from {topAgents[0].agency_name} with a score of {Math.round(topAgents[0].score)} and {topAgents[0].transaction_count} recorded transactions.</span>
               </li>
             )}
             <li className="flex gap-2">
-              <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-teal-200 text-[10px] font-bold text-teal-800">2</span>
+              <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">2</span>
               <span>Of the {scoredCount.toLocaleString()} scored agents, only the top 1% (roughly {Math.round(scoredCount * 0.01)} agents) score above 80. The median agent scores in the 30-40 range.</span>
             </li>
             <li className="flex gap-2">
-              <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-teal-200 text-[10px] font-bold text-teal-800">3</span>
+              <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">3</span>
               <span>District 10 (Bukit Timah/Holland) and District 9 (Orchard) have the highest concentration of top-scoring agents, reflecting the higher transaction values in these prime areas.</span>
             </li>
             <li className="flex gap-2">
-              <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-teal-200 text-[10px] font-bold text-teal-800">4</span>
+              <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">4</span>
               <span>Transaction volume alone does not guarantee a high score. Agents who are active across multiple property types and maintain consistent activity over years score significantly higher.</span>
             </li>
           </ul>
         </section>
 
         {/* CTA: Are you on this list? */}
-        <section className="mb-12 rounded-xl border-2 border-teal-300 bg-gradient-to-r from-teal-50 to-white p-6">
+        <section className="mb-12 rounded-xl border-2 border-[var(--line-2)] bg-gradient-to-r from-[var(--blue-wash)] to-white p-6">
           <h2 className="text-lg font-bold text-gray-900">Are you on this list?</h2>
           <p className="mt-2 text-sm text-gray-600">
             If you are a CEA-registered agent, your profile and score are already live on FairComparisons.
             Claim your profile for free to add your photo, bio, and WhatsApp number so buyers can reach you directly.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/search" className="inline-flex items-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-500">
+            <Link href="/search" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue-deep)]">
               Find your profile
             </Link>
-            <Link href="/for-agents" className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-teal-200 hover:text-teal-600">
+            <Link href="/for-agents" className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-[var(--line-2)] hover:text-[var(--blue)]">
               How claiming works
             </Link>
           </div>
@@ -302,7 +302,7 @@ export default async function TopAgents2026Page() {
               <Link
                 key={d.slug}
                 href={`/property-agents/best/${d.slug}`}
-                className="flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 text-sm transition hover:border-teal-200 hover:text-teal-600"
+                className="flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 text-sm transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
               >
                 <span className="font-medium text-gray-900">{d.short}</span>
                 <span className="text-xs text-gray-400">{d.code}</span>

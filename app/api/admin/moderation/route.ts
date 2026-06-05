@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { getAdminSession } from "../../../lib/admin-auth";
 
@@ -32,7 +33,10 @@ export async function POST(req: Request) {
     }
 
     const statusField =
-      type === "message" ? "message_status" : type === "photo" ? "photo_status" : "bio_status";
+      type === "message" ? "message_status"
+      : type === "photo" ? "photo_status"
+      : type === "marketing_name" ? "marketing_name_status"
+      : "bio_status";
     const contentField = type === "photo" ? "photo_url" : type;
     const newStatus = decision === "approve" ? "approved" : "rejected";
 
@@ -43,10 +47,25 @@ export async function POST(req: Request) {
       updates[contentField] = null;
     }
 
-    const { error } = await supabase.from("sg_agents").update(updates).eq("id", agentId);
+    const { data: updated, error } = await supabase
+      .from("sg_agents")
+      .update(updates)
+      .eq("id", agentId)
+      .select("slug")
+      .single();
     if (error) {
       console.error("[admin/moderation] update error:", error);
       return NextResponse.json({ ok: false, error: "Update failed" }, { status: 500 });
+    }
+
+    // Purge the agent's public profile so an approve/reject shows immediately,
+    // instead of waiting up to 12h for ISR revalidation.
+    if (updated?.slug) {
+      try {
+        revalidatePath(`/property-agents/agent/${updated.slug}`);
+      } catch (err) {
+        console.error("[admin/moderation] revalidate failed:", err);
+      }
     }
 
     await supabase.from("admin_audit_log").insert({

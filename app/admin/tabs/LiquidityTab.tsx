@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { SectionHeading, StatCard, EmptyState, Pill, MS_DAY } from "../shared";
 
@@ -18,7 +17,7 @@ const MIN_DEMAND = 5; // min profile_views per district for viable demand
 export async function LiquidityTab() {
   const cutoff30 = new Date(Date.now() - 30 * MS_DAY).toISOString();
 
-  const [agentsRes, viewsRes, waRes] = await Promise.all([
+  const [agentsRes, viewsRes, waRes, leadsRes] = await Promise.all([
     supabase.from("sg_agents").select("id, primary_area, claimed, subscription_tier"),
     supabase
       .from("sg_funnel_events")
@@ -32,7 +31,28 @@ export async function LiquidityTab() {
       .eq("event", "whatsapp_click")
       .gte("created_at", cutoff30)
       .limit(50000),
+    supabase
+      .from("sg_leads")
+      .select("town, district_code, property_type")
+      .gte("created_at", cutoff30)
+      .limit(50000),
   ]);
+
+  // Seller demand per area (last 30d).
+  const leadRows = (leadsRes.data ?? []) as Array<{
+    town: string | null;
+    district_code: string | null;
+    property_type: string;
+  }>;
+  const sellerDemand = new Map<string, number>();
+  for (const l of leadRows) {
+    const area = l.town ?? l.district_code ?? "Unknown";
+    sellerDemand.set(area, (sellerDemand.get(area) ?? 0) + 1);
+  }
+  const topSellerAreas = [...sellerDemand.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+  const totalSellerLeads = leadRows.length;
 
   const agents = (agentsRes.data ?? []) as Array<{
     id: number;
@@ -111,6 +131,36 @@ export async function LiquidityTab() {
 
   return (
     <div className="space-y-8">
+      <div>
+        <SectionHeading
+          title="Seller demand by area (30d)"
+          hint={`${totalSellerLeads} seller leads via /sell, MOP + AVM tools. Where demand concentrates tells you where to deepen agent supply.`}
+        />
+        {topSellerAreas.length === 0 ? (
+          <EmptyState
+            title="No seller leads yet"
+            hint="Populates as /sell, MOP, and AVM leads come in."
+          />
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-5">
+            {topSellerAreas.map(([area, count]) => (
+              <div
+                key={area}
+                className="rounded-md border border-gray-200 bg-white p-3"
+              >
+                <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                  {area}
+                </div>
+                <div className="mt-1 text-xl font-bold text-teal-700">
+                  {count}
+                </div>
+                <div className="text-[10px] text-gray-400">leads</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div>
         <SectionHeading
           title="Liquidity per district"

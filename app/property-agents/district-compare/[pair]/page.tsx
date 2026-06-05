@@ -197,8 +197,8 @@ export default async function DistrictComparePage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -213,7 +213,7 @@ export default async function DistrictComparePage({ params }: Props) {
       {/* Hero */}
       <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-400">District Comparison</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue)]">District Comparison</p>
           <h1 className="mt-3 text-3xl font-extrabold text-white md:text-4xl">
             {nameA} ({distA.code}) vs {nameB} ({distB.code})
           </h1>
@@ -232,7 +232,7 @@ export default async function DistrictComparePage({ params }: Props) {
               <p className="mt-1 text-xs text-slate-500">{distB.code} median</p>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-teal-300">{pctDiff(dataA.medianPrice, dataB.medianPrice)}</p>
+              <p className="text-2xl font-extrabold text-[var(--slate-2)]">{pctDiff(dataA.medianPrice, dataB.medianPrice)}</p>
               <p className="mt-1 text-xs text-slate-500">price difference</p>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
@@ -263,10 +263,10 @@ export default async function DistrictComparePage({ params }: Props) {
                 <tr className="border-b border-gray-200">
                   <th className="py-3 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Metric</th>
                   <th className="px-4 py-3 text-center">
-                    <Link href={`/property-agents/district/${slugA}`} className="font-semibold text-teal-600 hover:underline">{distA.code} {nameA}</Link>
+                    <Link href={`/property-agents/district/${slugA}`} className="font-semibold text-[var(--blue)] hover:underline">{distA.code} {nameA}</Link>
                   </th>
                   <th className="px-4 py-3 text-center">
-                    <Link href={`/property-agents/district/${slugB}`} className="font-semibold text-teal-600 hover:underline">{distB.code} {nameB}</Link>
+                    <Link href={`/property-agents/district/${slugB}`} className="font-semibold text-[var(--blue)] hover:underline">{distB.code} {nameB}</Link>
                   </th>
                   <th className="pl-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-400">Diff</th>
                 </tr>
@@ -277,10 +277,10 @@ export default async function DistrictComparePage({ params }: Props) {
                   return (
                     <tr key={m.label}>
                       <td className="py-3.5 pr-4 text-gray-700">{m.label}</td>
-                      <td className={`px-4 py-3.5 text-center font-medium ${w === "a" ? "text-teal-600" : "text-gray-600"}`}>
+                      <td className={`px-4 py-3.5 text-center font-medium ${w === "a" ? "text-[var(--blue)]" : "text-gray-600"}`}>
                         {m.fmt(m.a)}
                       </td>
-                      <td className={`px-4 py-3.5 text-center font-medium ${w === "b" ? "text-teal-600" : "text-gray-600"}`}>
+                      <td className={`px-4 py-3.5 text-center font-medium ${w === "b" ? "text-[var(--blue)]" : "text-gray-600"}`}>
                         {m.fmt(m.b)}
                       </td>
                       <td className="pl-4 py-3.5 text-center text-xs text-gray-400">
@@ -388,8 +388,8 @@ export default async function DistrictComparePage({ params }: Props) {
               <div className="mt-3 space-y-2">
                 {dataA.activeAgents.slice(0, 5).map((a) => (
                   <Link key={a.agent_license} href={`/property-agents/agent/${a.agent_license.toLowerCase()}`}
-                    className="group block rounded-lg border border-gray-100 bg-white p-3 transition hover:border-teal-200">
-                    <p className="text-sm font-medium text-gray-900 group-hover:text-teal-600">{a.agent_name}</p>
+                    className="group block rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)]">
+                    <p className="text-sm font-medium text-gray-900 group-hover:text-[var(--blue)]">{a.agent_name}</p>
                     <p className="text-xs text-gray-400">{a.agency_name} - {a.listings} listings</p>
                   </Link>
                 ))}
@@ -400,8 +400,8 @@ export default async function DistrictComparePage({ params }: Props) {
               <div className="mt-3 space-y-2">
                 {dataB.activeAgents.slice(0, 5).map((a) => (
                   <Link key={a.agent_license} href={`/property-agents/agent/${a.agent_license.toLowerCase()}`}
-                    className="group block rounded-lg border border-gray-100 bg-white p-3 transition hover:border-teal-200">
-                    <p className="text-sm font-medium text-gray-900 group-hover:text-teal-600">{a.agent_name}</p>
+                    className="group block rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)]">
+                    <p className="text-sm font-medium text-gray-900 group-hover:text-[var(--blue)]">{a.agent_name}</p>
                     <p className="text-xs text-gray-400">{a.agency_name} - {a.listings} listings</p>
                   </Link>
                 ))}
@@ -420,7 +420,7 @@ export default async function DistrictComparePage({ params }: Props) {
                 <Link
                   key={d.code}
                   href={`/property-agents/district-compare/${distA.code.toLowerCase()}-vs-${d.code.toLowerCase()}`}
-                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-teal-300 hover:text-teal-600"
+                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
                 >
                   {distA.code} vs {d.code} {d.short}
                 </Link>

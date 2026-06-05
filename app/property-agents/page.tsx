@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { supabase } from "../lib/supabase";
+import { titleName, cleanAgency } from "../lib/names";
+import SellCtaBand from "../components/SellCtaBand";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -9,6 +11,12 @@ export const metadata: Metadata = {
   description: "Compare property agents in Singapore on actual CEA transaction records. AgentScore rates 10,000+ agents on volume, recency, diversity, and reviews.",
   alternates: { canonical: "https://fair-comparisons.com/property-agents" },
 };
+
+const INSIGHTS: [string, string, string][] = [
+  ["/insights/million-dollar-hdb", "Million-Dollar HDB Tracker", "Every S$1M+ resale flat by town"],
+  ["/insights/freehold-premium", "Freehold Premium by District", "How much more does freehold cost?"],
+  ["/property-agents/market/2025", "2025 Market Overview", "Transactions, top agents, trends"],
+];
 
 export default async function PropertyAgentsHub() {
   const [statsRes, agenciesRes, districtsRes] = await Promise.all([
@@ -23,83 +31,99 @@ export default async function PropertyAgentsHub() {
 
   return (
     <>
-      <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
-        <div className="mx-auto max-w-[1120px] px-5 py-16 md:px-8 md:py-20">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-300">Property Agents</p>
-          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl">
-            {agentCount.toLocaleString()} agents.<br />
-            <span className="text-teal-400">One independent score.</span>
+      {/* ---------- HERO ---------- */}
+      <section style={{ background: "var(--ink)", color: "#fff" }}>
+        <div className="fc-wrap" style={{ padding: "64px 40px 56px" }}>
+          <div className="eyebrow" style={{ color: "var(--slate-2)", marginBottom: 18 }}>
+            Property agents
+          </div>
+          <h1 style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0, maxWidth: "16ch" }}>
+            {agentCount.toLocaleString()} agents. <span className="italic-serif">One independent score.</span>
           </h1>
-          <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/60">
-            Every CEA-registered agent in Singapore, ranked on actual transaction records.
-            Not advertising. Not self-reported. Government data only.
+          <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16, maxWidth: "60ch" }}>
+            Every CEA-registered agent in Singapore, ranked on actual transaction records. Not advertising, not self-reported. Government data only.
           </p>
-          <form action="/search" method="GET" className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <input type="text" name="q" placeholder="Agent name, district, or HDB town..."
-              className="flex-1 rounded-lg bg-white/10 px-5 py-3.5 text-white placeholder:text-white/40 backdrop-blur-sm focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-teal-400" />
-            <button type="submit" className="rounded-lg bg-teal-500 px-7 py-3.5 font-semibold text-white shadow-lg transition hover:bg-teal-400">
-              Find agent
-            </button>
+
+          <form action="/search" method="GET" className="fc-search" style={{ marginTop: 26 }}>
+            <input name="q" placeholder="Agent name, district, or HDB town" aria-label="Search agents, districts or towns" />
+            <button type="submit" className="fc-btn fc-btn--primary">Find agent</button>
           </form>
+
+          <div className="fc-row" style={{ marginTop: 16, gap: 18 }}>
+            <span className="mono" style={{ color: "rgba(255,255,255,0.82)", fontSize: 13 }}>
+              Ranked on CEA, URA and HDB data
+            </span>
+            <Link href="/property-agents/check" className="mono" style={{ color: "var(--blue-wash)", fontSize: 13 }}>
+              Check a specific agent &rarr;
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-        <h2 className="text-2xl font-bold text-gray-900">Browse by district</h2>
-        <div className="mt-6 grid gap-2 sm:grid-cols-2 md:grid-cols-4">
+      {/* ---------- BROWSE BY DISTRICT ---------- */}
+      <section className="fc-wrap" style={{ padding: "56px 40px" }}>
+        <div className="eyebrow">Browse by district</div>
+        <h2 style={{ marginTop: 12 }}>All 28 Singapore districts.</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, marginTop: 24 }}>
           {districts.map((d) => (
-            <Link key={d.code} href={`/property-agents/district/${d.slug}`}
-              className="group rounded-lg border border-gray-200 bg-white p-3 transition hover:border-teal-300 hover:shadow-sm">
-              <span className="text-xs font-bold text-teal-600">{d.code}</span>
-              <div className="mt-1 text-sm font-medium text-gray-900 group-hover:text-teal-600">{d.name?.split(",")[0]}</div>
+            <Link
+              key={d.code}
+              href={`/property-agents/district/${d.slug}`}
+              className="fc-card fc-card--hover"
+              style={{ padding: "12px 14px", display: "block", textDecoration: "none", color: "inherit" }}
+            >
+              <span className="mono" style={{ color: "var(--blue)", fontSize: 12, fontWeight: 600 }}>{d.code}</span>
+              <div style={{ marginTop: 2, fontSize: 14, fontWeight: 600 }}>{d.name?.split(",")[0]}</div>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="border-t border-gray-100">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">Market Insights</h2>
-            <Link href="/insights" className="text-sm font-semibold text-teal-600 hover:text-teal-700">View all {"\u2192"}</Link>
+      {/* ---------- MARKET INSIGHTS ---------- */}
+      <section style={{ background: "var(--cloud)" }}>
+        <div className="fc-wrap" style={{ padding: "56px 40px" }}>
+          <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
+            <div>
+              <div className="eyebrow">Market insights</div>
+              <h2 style={{ marginTop: 12 }}>Data, not opinion.</h2>
+            </div>
+            <Link href="/insights" className="fc-btn fc-btn--quiet fc-btn--sm">View all</Link>
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <Link href="/insights/million-dollar-hdb" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-green-200 hover:shadow-md">
-              <span className="text-xs font-semibold text-green-600">HDB</span>
-              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-green-600">Million-Dollar HDB Tracker</h3>
-              <p className="mt-1 text-xs text-gray-500">Every S$1M+ resale flat by town</p>
-            </Link>
-            <Link href="/insights/freehold-premium" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md">
-              <span className="text-xs font-semibold text-teal-600">Private</span>
-              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-teal-600">Freehold Premium by District</h3>
-              <p className="mt-1 text-xs text-gray-500">How much more does freehold cost?</p>
-            </Link>
-            <Link href="/property-agents/market/2025" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md">
-              <span className="text-xs font-semibold text-teal-600">Market</span>
-              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-teal-600">2025 Market Overview</h3>
-              <p className="mt-1 text-xs text-gray-500">Transactions, top agents, trends</p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-gray-100 bg-gray-50">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">Largest agencies</h2>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {agencies.map((a) => (
-              <Link key={a.slug} href={`/property-agents/agency/${a.slug}`}
-                className="group rounded-lg border border-gray-200 bg-white p-4 transition hover:border-teal-300 hover:shadow-sm">
-                <div className="font-semibold text-gray-900 group-hover:text-teal-600">{a.name}</div>
-                <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                  <span>{a.agent_count?.toLocaleString()} agents</span>
-                  {a.google_rating && <span className="text-amber-500">{"\u2605"} {a.google_rating}</span>}
-                </div>
+          <div className="fc-grid-3" style={{ marginTop: 24 }}>
+            {INSIGHTS.map(([href, title, sub]) => (
+              <Link key={href} href={href} className="fc-card fc-card--pad fc-card--hover" style={{ background: "#fff", textDecoration: "none", color: "inherit" }}>
+                <div className="serif" style={{ fontWeight: 600, fontSize: 19 }}>{title}</div>
+                <p className="muted" style={{ margin: "8px 0 0", fontSize: 14 }}>{sub}</p>
+                <div className="mono" style={{ color: "var(--blue)", fontSize: 12.5, marginTop: 14 }}>Read &rarr;</div>
               </Link>
             ))}
           </div>
         </div>
       </section>
+
+      {/* ---------- LARGEST AGENCIES ---------- */}
+      <section className="fc-wrap" style={{ padding: "56px 40px" }}>
+        <div className="eyebrow">Largest agencies</div>
+        <h2 style={{ marginTop: 12 }}>Browse by agency.</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12, marginTop: 24 }}>
+          {agencies.map((a) => (
+            <Link
+              key={a.slug}
+              href={`/property-agents/agency/${a.slug}`}
+              className="fc-card fc-card--pad fc-card--hover"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <div style={{ fontWeight: 700, fontSize: 15 }}>{cleanAgency(a.name)}</div>
+              <div className="fc-row muted" style={{ marginTop: 8, gap: 12, fontSize: 12.5 }}>
+                <span>{a.agent_count?.toLocaleString()} agents</span>
+                {a.google_rating && <span style={{ color: "var(--ink)" }}>{"★"} {a.google_rating}</span>}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <SellCtaBand source="agents_hub" heading="Selling your home?" sub="Skip the browsing. Get a free shortlist of the agents who actually sell properties like yours, ranked on the same government data." />
     </>
   );
 }

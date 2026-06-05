@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import SellCtaBand from "../components/SellCtaBand";
 
 export const metadata: Metadata = {
   title: "Property Guides - Singapore Buyer & Seller Resources",
@@ -13,7 +14,7 @@ const guides = [
     title: "How to Choose a Property Agent in Singapore",
     description: "What to look for in an agent, red flags to avoid, questions to ask, and how CEA registration works.",
     tag: "Agent Selection",
-    tagColor: "bg-teal-50 text-teal-700 border-teal-200",
+    tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
   },
   {
     slug: "hdb-resale-process",
@@ -56,7 +57,7 @@ export default function GuidesPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--cloud)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Property Guides</h1>
           <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
@@ -71,16 +72,18 @@ export default function GuidesPage() {
             <Link
               key={g.slug}
               href={`/guides/${g.slug}`}
-              className="group rounded-xl border border-gray-100 bg-white p-6 transition hover:border-teal-200 hover:shadow-md"
+              className="group rounded-xl border border-gray-100 bg-white p-6 transition hover:border-[var(--line-2)] hover:shadow-md"
             >
               <span className={`inline-block rounded-full border px-3 py-1 text-xs font-semibold ${g.tagColor}`}>{g.tag}</span>
-              <h2 className="mt-3 text-lg font-bold text-gray-900 group-hover:text-teal-600">{g.title}</h2>
+              <h2 className="mt-3 text-lg font-bold text-gray-900 group-hover:text-[var(--blue)]">{g.title}</h2>
               <p className="mt-2 text-sm leading-relaxed text-gray-500">{g.description}</p>
-              <span className="mt-4 inline-block text-sm font-medium text-teal-600">Read guide &rarr;</span>
+              <span className="mt-4 inline-block text-sm font-medium text-[var(--blue)]">Read guide &rarr;</span>
             </Link>
           ))}
         </div>
       </div>
+
+      <SellCtaBand source="guides" heading="Reading up before you sell?" sub="When you're ready, get a free shortlist of the agents who actually sell homes like yours, ranked on real transaction data." />
     </>
   );
 }

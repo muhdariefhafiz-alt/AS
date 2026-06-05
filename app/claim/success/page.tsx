@@ -8,18 +8,16 @@ export default function ClaimSuccessPage() {
       </div>
       <h1 className="mt-6 text-2xl font-extrabold text-gray-900">Profile claimed</h1>
       <p className="mt-3 text-gray-600">
-        Your profile is verified. Complete it now to start receiving buyer enquiries.
+        Your profile is verified. Complete it now to start receiving seller leads.
       </p>
       <div className="mt-8 space-y-3">
-        <Link
-          href="/dashboard"
-          className="block rounded-lg bg-teal-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-teal-700"
-        >
+        <Link href="/dashboard" className="fc-btn fc-btn--primary fc-btn--block">
           Complete your profile
         </Link>
         <Link
           href="/search"
-          className="block text-sm text-teal-600 hover:underline"
+          className="block text-sm hover:underline"
+          style={{ color: "var(--blue)" }}
         >
           Find your profile
         </Link>

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../lib/email";
+import { checkRateLimit, clientIp } from "../../lib/rateLimit";
+import { escapeHtml } from "../../lib/escapeHtml";
 
 // Use service role key for server-side API route (bypasses RLS)
 const supabase = createClient(
@@ -8,31 +10,16 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Simple in-memory rate limiting (per-process, resets on deploy)
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 3; // max 3 subscribes per IP per hour
-const RATE_WINDOW = 60 * 60 * 1000; // 1 hour
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW });
-    return false;
-  }
-  entry.count++;
-  return entry.count > RATE_LIMIT;
-}
-
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
 }
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const ip = clientIp(req);
 
-    if (isRateLimited(ip)) {
+    const { limited } = await checkRateLimit(`subscribe:${ip}`, 3, 60 * 60 * 1000);
+    if (limited) {
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
         { status: 429 }
@@ -95,20 +82,24 @@ export async function POST(req: Request) {
     // Fire Klaviyo welcome event with full HTML.
     // PDPA: consent=true verified above.
     const welcomeHtml = buildWelcomeEmail(districtTag || null);
-    sendEmail({
-      to: email.toLowerCase().trim(),
-      subject: "Welcome. Here's how we rank agents differently.",
-      html: welcomeHtml,
-      metric: "Consumer Welcome",
-      properties: {
-        source: source || "footer",
-        page_path: pagePath || null,
-        district_tag: districtTag || null,
-        signup_date: new Date().toISOString(),
-      },
-    }).catch((err) => {
+    // Await: a fire-and-forget promise is dropped when the Vercel lambda freezes
+    // after responding, so the Klaviyo event never lands.
+    try {
+      await sendEmail({
+        to: email.toLowerCase().trim(),
+        subject: "Welcome. Here's how we rank agents differently.",
+        html: welcomeHtml,
+        metric: "Consumer Welcome",
+        properties: {
+          source: source || "footer",
+          page_path: pagePath || null,
+          district_tag: districtTag || null,
+          signup_date: new Date().toISOString(),
+        },
+      });
+    } catch (err) {
       console.error("[subscribe] Klaviyo welcome event failed:", err);
-    });
+    }
 
     return NextResponse.json({
       success: true,
@@ -124,7 +115,7 @@ export async function POST(req: Request) {
 
 function buildWelcomeEmail(districtTag: string | null): string {
   const districtLine = districtTag
-    ? `<li>District updates for <strong>${districtTag}</strong></li>`
+    ? `<li>District updates for <strong>${escapeHtml(districtTag)}</strong></li>`
     : "";
 
   return `
@@ -135,7 +126,7 @@ function buildWelcomeEmail(districtTag: string | null): string {
 <tr><td align="center" style="padding:24px 16px">
 <table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
 
-  <tr><td style="background:#0f766e;padding:24px 32px">
+  <tr><td style="background:#0a1733;padding:24px 32px">
     <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
   </td></tr>
 
@@ -153,8 +144,8 @@ function buildWelcomeEmail(districtTag: string | null): string {
       <li>Nothing else. No spam.</li>
     </ul>
 
-    <a href="https://fair-comparisons.com/property-agents?utm_source=welcome&utm_medium=email" style="display:inline-block;background:#0d9488;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-      Browse top agents
+    <a href="https://fair-comparisons.com/sell?utm_source=welcome&utm_medium=email" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+      Get matched with a top agent
     </a>
   </td></tr>
 

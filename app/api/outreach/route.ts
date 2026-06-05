@@ -1,15 +1,36 @@
 import { NextResponse } from "next/server";
-import { supabase } from "../../lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../lib/email";
+import { getAdminSession } from "../../lib/admin-auth";
 import {
   TEMPLATES,
   type TemplateName,
 } from "../../lib/outreach-templates";
 
+// Service role: reads agent email PII + writes sg_outreach. The email column
+// is REVOKEd from the anon role.
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 const VALID_TEMPLATES = Object.keys(TEMPLATES) as TemplateName[];
 
 export async function POST(request: Request) {
   try {
+    // This endpoint sends agent-facing emails and reads agent PII. It must
+    // never be public: gate it behind an admin session (manual use from the
+    // admin UI) OR a valid CRON_SECRET bearer (automated runs). Previously
+    // unauthenticated — anyone could enumerate agentId and email-bomb agents.
+    const session = await getAdminSession();
+    const authHeader = request.headers.get("authorization");
+    const cronOk =
+      !!process.env.CRON_SECRET &&
+      authHeader === `Bearer ${process.env.CRON_SECRET}`;
+    if (!session && !cronOk) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { agentId, template, views, rank, townOrArea } = body as {
       agentId: string;

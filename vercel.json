@@ -27,6 +27,34 @@
     {
       "path": "/api/cron/scrape-contacts",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/mop-alerts",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/review-requests",
+      "schedule": "15 2 * * *"
+    },
+    {
+      "path": "/api/cron/invoice-reminders",
+      "schedule": "15 3 * * *"
+    },
+    {
+      "path": "/api/cron/verify-completions",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/expire-leads",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/avm-updates",
+      "schedule": "0 1 * * 1"
+    },
+    {
+      "path": "/api/cron/gsc-sync",
+      "schedule": "30 5 * * *"
     }
   ]
 }

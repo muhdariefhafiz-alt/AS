@@ -14,7 +14,7 @@ const supabase = createClient(
  */
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -62,19 +62,19 @@ export async function GET(req: Request) {
 <tr><td align="center" style="padding:24px 16px">
 <table cellpadding="0" cellspacing="0" border="0" width="520" style="background:#ffffff;border-radius:12px;overflow:hidden">
 
-  <tr><td style="background:#0f766e;padding:24px 32px">
+  <tr><td style="background:#0a1733;padding:24px 32px">
     <p style="margin:0;font-size:18px;font-weight:700;color:#fff">FairComparisons</p>
   </td></tr>
 
   <tr><td style="padding:32px">
     <p style="margin:0 0 24px;font-size:22px;font-weight:800;color:#111827">
-      <span style="color:#0d9488">${views}</span> buyer${views === 1 ? "" : "s"} viewed your profile this week
+      <span style="color:#1f44ff">${views}</span> buyer${views === 1 ? "" : "s"} viewed your profile this week
     </p>
 
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f0fdfa;border-radius:8px">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eef1ff;border-radius:8px">
     <tr>
       <td style="padding:16px" width="50%" align="center">
-        <p style="margin:0;font-size:28px;font-weight:800;color:#0d9488">${views}</p>
+        <p style="margin:0;font-size:28px;font-weight:800;color:#1f44ff">${views}</p>
         <p style="margin:4px 0 0;font-size:11px;color:#6b7280">Profile views</p>
       </td>
       <td style="padding:16px" width="50%" align="center">
@@ -90,7 +90,7 @@ export async function GET(req: Request) {
 
     <table cellpadding="0" cellspacing="0" border="0"><tr>
       <td style="padding-right:8px">
-        <a href="${dashboardUrl}" style="display:inline-block;background:#0d9488;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+        <a href="${dashboardUrl}" style="display:inline-block;background:#1f44ff;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
           Edit your profile
         </a>
       </td>

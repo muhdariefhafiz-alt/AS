@@ -91,8 +91,8 @@ export default async function LawyerProfilePage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -108,22 +108,22 @@ export default async function LawyerProfilePage({ params }: Props) {
       <section className="border-b border-gray-100 bg-gradient-to-b from-slate-50/40 to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-8 pt-8 md:px-8">
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal-100 text-xl font-bold text-teal-700">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--blue-wash)] text-xl font-bold text-[var(--blue-deep)]">
               {lawyer.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
             </div>
             <div className="flex-1">
               <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">{lawyer.name}</h1>
               <p className="mt-1 text-sm text-gray-500">
                 {lawyer.primary_firm && (
-                  <Link href={`/lawyers/firm/${firms.length > 0 ? slugify(lawyer.primary_firm) : ''}`} className="text-teal-600 hover:underline">
+                  <Link href={`/lawyers/firm/${firms.length > 0 ? slugify(lawyer.primary_firm) : ''}`} className="text-[var(--blue)] hover:underline">
                     {lawyer.primary_firm}
                   </Link>
                 )}
                 {yearRange && <span className="ml-2 text-gray-400">Active {yearRange}</span>}
               </p>
             </div>
-            <div className="flex flex-col items-center rounded-xl border border-teal-200 bg-white px-4 py-3 shadow-sm">
-              <span className="text-3xl font-extrabold text-teal-600">{lawyer.case_count}</span>
+            <div className="flex flex-col items-center rounded-xl border border-[var(--line-2)] bg-white px-4 py-3 shadow-sm">
+              <span className="text-3xl font-extrabold text-[var(--blue)]">{lawyer.case_count}</span>
               <span className="text-[10px] font-medium uppercase tracking-widest text-gray-400">Court Cases</span>
             </div>
           </div>
@@ -150,7 +150,7 @@ export default async function LawyerProfilePage({ params }: Props) {
                 <div className="mt-4 space-y-2">
                   {topAreas.map(area => (
                     <Link key={area.name} href={`/lawyers/practice/${slugify(area.name)}`}
-                      className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 transition hover:border-teal-200 hover:bg-teal-50/30">
+                      className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)] hover:bg-[var(--blue-wash)]">
                       <span className="text-sm text-gray-700">{area.name}</span>
                       <span className="text-sm text-gray-400">{area.count} cases</span>
                     </Link>
@@ -189,12 +189,12 @@ export default async function LawyerProfilePage({ params }: Props) {
                         {c.case_types && c.case_types.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1">
                             {c.case_types.filter((t: string) => !t.match(/^\d/) && t.length > 3).slice(0, 3).map((t: string) => (
-                              <Link key={t} href={`/lawyers/practice/${slugify(t)}`} className="rounded bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500 hover:bg-teal-50 hover:text-teal-600">{t.split(' — ')[0]}</Link>
+                              <Link key={t} href={`/lawyers/practice/${slugify(t)}`} className="rounded bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500 hover:bg-[var(--blue-wash)] hover:text-[var(--blue)]">{t.split(' — ')[0]}</Link>
                             ))}
                           </div>
                         )}
                       </div>
-                      <span className="shrink-0 rounded bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-600">{c.year}</span>
+                      <span className="shrink-0 rounded bg-[var(--blue-wash)] px-2 py-0.5 text-xs font-medium text-[var(--blue)]">{c.year}</span>
                     </div>
                   </div>
                 ))}
@@ -243,7 +243,7 @@ export default async function LawyerProfilePage({ params }: Props) {
               description="Get notified when new court case data is published."
             />
 
-            <div className="rounded-xl border border-teal-200 bg-teal-50 p-5">
+            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Disclaimer</h3>
               <p className="mt-2 text-xs text-gray-500">
                 This profile is compiled from publicly available court records on eLitigation.sg.

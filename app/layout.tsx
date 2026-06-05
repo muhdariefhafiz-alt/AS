@@ -1,21 +1,38 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Newsreader, Hanken_Grotesk, Spline_Sans_Mono } from "next/font/google";
 import Script from "next/script";
 import Link from "next/link";
 import "./globals.css";
 import PageTracker from "./components/PageTracker";
 import EmailCapture from "./components/EmailCapture";
+import ChromeGate from "./components/ChromeGate";
+import { Lockup } from "./components/Brand";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+const spline = Spline_Sans_Mono({
+  variable: "--font-spline",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#0A6B5E",
+  themeColor: "#0a1733",
 };
 
 export const metadata: Metadata = {
@@ -25,98 +42,153 @@ export const metadata: Metadata = {
     template: "%s | FairComparisons",
   },
   description:
-    "Compare 30,000+ property agents in Singapore on actual performance. FairComparisons combines Google, listing portals and CEA data into an objective AgentScore.",
+    "Choose your property agent on evidence, not advertising. FairComparisons ranks every Singapore agent on real CEA, URA and HDB transaction data. Free for sellers, rankings cannot be bought.",
   alternates: {
     canonical: "https://fair-comparisons.com",
     types: { "application/rss+xml": "https://fair-comparisons.com/api/feed" },
   },
   openGraph: {
     title: "FairComparisons - Compare Property Agents in Singapore",
-    description: "Compare 30,000+ property agents on actual CEA transaction records. Independent ratings, not advertising.",
+    description:
+      "Ranked on real CEA transaction records, not advertising. Independent, free for sellers, rankings cannot be bought.",
     url: "https://fair-comparisons.com",
     siteName: "FairComparisons",
     locale: "en_SG",
     type: "website",
-    images: [{ url: "https://fair-comparisons.com/og-image.png", width: 1200, height: 630, alt: "FairComparisons - Independent Property Agent Ratings" }],
+    images: [
+      {
+        url: "https://fair-comparisons.com/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "FairComparisons - Independent Property Agent Ratings",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "FairComparisons - Compare Property Agents in Singapore",
-    description: "Compare 30,000+ property agents on actual CEA transaction records.",
+    description: "Ranked on real CEA transaction records, not advertising.",
     images: ["https://fair-comparisons.com/og-image.png"],
   },
 };
 
+const NAV: [string, string][] = [
+  ["/property-agents", "Compare agents"],
+  ["/tools/valuation", "Online valuation"],
+  ["/tools/mop-tracker", "MOP tracker"],
+  ["/for-agents", "For agents"],
+];
+
 function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-[1280px] items-center justify-between px-5 py-3 md:px-10 md:py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-sm font-bold text-white">FC</div>
-          <span className="text-lg font-bold text-gray-900">Fair<span className="text-teal-600">Comparisons</span></span>
-        </Link>
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-7 text-sm font-medium text-gray-500 sm:flex">
-          <Link href="/property-agents" className="transition hover:text-gray-900">Property Agents</Link>
-          <Link href="/insights" className="transition hover:text-gray-900">Insights</Link>
-          <Link href="/guides" className="transition hover:text-gray-900">Guides</Link>
-          <Link href="/for-agents" className="transition hover:text-gray-900">For Agents</Link>
-          <Link href="/search" className="rounded-lg bg-teal-600 px-4 py-2 text-white transition hover:bg-teal-700">Search</Link>
-        </nav>
-        {/* Mobile nav */}
-        <div className="flex items-center gap-3 sm:hidden">
-          <Link href="/search" className="rounded-lg bg-teal-600 px-3 py-1.5 text-sm font-medium text-white">Search</Link>
-          <details className="relative">
-            <summary className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 text-gray-500 list-none">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+    <nav className="fc-nav">
+      <div className="fc-wrap fc-nav__inner">
+        <Lockup size={20} />
+        <div className="fc-nav__links">
+          <div className="hidden items-center gap-6 md:flex">
+            {NAV.map(([href, label]) => (
+              <Link key={href} href={href}>
+                {label}
+              </Link>
+            ))}
+          </div>
+          <Link href="/sell" className="fc-btn fc-btn--primary fc-btn--sm">
+            <span className="md:hidden">Sell</span>
+            <span className="hidden md:inline">Sell your property</span>
+          </Link>
+          {/* Mobile menu */}
+          <details className="relative md:hidden">
+            <summary
+              className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-[8px] border"
+              style={{ borderColor: "var(--line-2)", color: "var(--ink)" }}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </summary>
-            <div className="absolute right-0 top-10 z-50 w-48 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
-              <Link href="/property-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Property Agents</Link>
-              <Link href="/insights" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Insights</Link>
-              <Link href="/guides" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Guides</Link>
-              <Link href="/for-agents" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">For Agents</Link>
+            <div
+              className="absolute right-0 top-11 z-50 w-52 rounded-[14px] border bg-white p-2"
+              style={{ borderColor: "var(--line)", boxShadow: "var(--sh-2)" }}
+            >
+              {NAV.map(([href, label]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="block rounded-[8px] px-3 py-2 text-sm font-semibold"
+                  style={{ color: "var(--ink)" }}
+                >
+                  {label}
+                </Link>
+              ))}
             </div>
           </details>
         </div>
       </div>
-    </header>
+    </nav>
   );
 }
 
 function Footer() {
   return (
-    <footer className="border-t border-gray-200 bg-gray-50">
-      <div className="mx-auto max-w-[1280px] px-5 py-10 md:px-10">
-        <div className="grid gap-8 sm:grid-cols-3">
+    <footer style={{ background: "var(--ink)", color: "#fff" }}>
+      <div className="fc-wrap" style={{ padding: "56px 40px 40px" }}>
+        <div className="fc-grid-3" style={{ gap: "var(--s7)" }}>
           <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-teal-600 text-xs font-bold text-white">FC</div>
-              <span className="font-bold text-gray-900">Fair<span className="text-teal-600">Comparisons</span></span>
-            </div>
-            <p className="mt-3 text-sm text-gray-500">
-              Independent comparison platform for property agents in Singapore.
+            <Lockup size={20} light href="/" />
+            <p
+              className="muted"
+              style={{ marginTop: 14, color: "rgba(255,255,255,0.7)", fontSize: 14, maxWidth: "34ch" }}
+            >
+              The independent way to choose a Singapore property agent. Ranked on real government data, never advertising.
             </p>
-            <a href="mailto:hello@fair-comparisons.com" className="mt-2 block text-sm text-teal-600 hover:text-teal-700">hello@fair-comparisons.com</a>
+            <a
+              href="mailto:hello@fair-comparisons.com"
+              style={{ marginTop: 10, display: "block", fontSize: 14, color: "var(--slate-2)" }}
+            >
+              hello@fair-comparisons.com
+            </a>
           </div>
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">Platform</h4>
-            <div className="mt-3 space-y-2 text-sm text-gray-500">
-              <Link href="/property-agents" className="block hover:text-gray-900">Property Agents</Link>
-              <Link href="/insights" className="block hover:text-gray-900">Insights</Link>
-              <Link href="/guides" className="block hover:text-gray-900">Guides</Link>
-              <Link href="/for-agents" className="block hover:text-gray-900">For Agents</Link>
-              <Link href="/about" className="block hover:text-gray-900">How We Score</Link>
-              <Link href="/privacy" className="block hover:text-gray-900">Privacy Policy</Link>
-              <Link href="/terms" className="block hover:text-gray-900">Terms of Service</Link>
+            <div className="eyebrow" style={{ color: "var(--slate-2)" }}>
+              Platform
+            </div>
+            <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8, fontSize: 14 }}>
+              {[
+                ["/property-agents", "Compare agents"],
+                ["/sell", "Sell your property"],
+                ["/tools/valuation", "Online valuation"],
+                ["/tools/mop-tracker", "MOP tracker"],
+                ["/for-agents", "For agents"],
+                ["/guides/property-agent-commission", "Agent commission guide"],
+                ["/guides", "Property guides"],
+                ["/about", "How we score"],
+                ["/trust", "Trust & data"],
+                ["/contact", "Contact"],
+                ["/privacy", "Privacy"],
+                ["/terms", "Terms"],
+              ].map(([href, label]) => (
+                <Link key={href} href={href} style={{ color: "rgba(255,255,255,0.78)" }}>
+                  {label}
+                </Link>
+              ))}
             </div>
           </div>
           <div>
             <EmailCapture variant="footer" source="footer" />
           </div>
         </div>
-        <div className="mt-8 border-t border-gray-200 pt-6 text-center text-xs text-gray-400">
-          Independent. Data-driven. Rankings cannot be bought. Built in Singapore.
-          Data sourced from CEA, URA, HDB, and Google.
+        <div
+          className="mono"
+          style={{
+            marginTop: 40,
+            paddingTop: 22,
+            borderTop: "1px solid var(--line-dk)",
+            fontSize: 12,
+            letterSpacing: "0.04em",
+            color: "var(--slate-2)",
+          }}
+        >
+          Free for sellers · Ranked on CEA, URA and HDB data · No paid placement · Built in Singapore
         </div>
       </div>
     </footer>
@@ -125,14 +197,20 @@ function Footer() {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} antialiased`}>
+    <html lang="en-SG" className={`${newsreader.variable} ${hanken.variable} ${spline.variable} antialiased`}>
       <head />
       <Script src="https://www.googletagmanager.com/gtag/js?id=G-K4D8EQ6D9G" strategy="afterInteractive" />
-      <Script id="gtag-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-K4D8EQ6D9G');` }} />
-      <body className="min-h-screen bg-white font-[family-name:var(--font-geist-sans)] text-gray-900">
-        <Header />
+      <Script
+        id="gtag-init"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-K4D8EQ6D9G');`,
+        }}
+      />
+      <body className="min-h-screen">
+        <ChromeGate><Header /></ChromeGate>
         <main>{children}</main>
-        <Footer />
+        <ChromeGate><Footer /></ChromeGate>
         <PageTracker />
       </body>
     </html>

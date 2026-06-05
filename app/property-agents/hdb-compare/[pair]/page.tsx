@@ -130,8 +130,8 @@ export default async function HdbComparePage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -146,7 +146,7 @@ export default async function HdbComparePage({ params }: Props) {
       {/* Hero */}
       <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-400">HDB Resale Comparison</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue)]">HDB Resale Comparison</p>
           <h1 className="mt-3 text-3xl font-extrabold text-white md:text-4xl">
             {nameA} vs {nameB}
           </h1>
@@ -164,7 +164,7 @@ export default async function HdbComparePage({ params }: Props) {
               <p className="mt-1 text-xs text-slate-500">{nameB} median</p>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-teal-300">{pctDiff(dataA.medianPrice, dataB.medianPrice)}</p>
+              <p className="text-2xl font-extrabold text-[var(--slate-2)]">{pctDiff(dataA.medianPrice, dataB.medianPrice)}</p>
               <p className="mt-1 text-xs text-slate-500">price difference</p>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
@@ -198,10 +198,10 @@ export default async function HdbComparePage({ params }: Props) {
                 <tr className="border-b border-gray-200">
                   <th className="py-3 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Flat Type</th>
                   <th className="px-4 py-3 text-center">
-                    <Link href={`/property-agents/hdb/${slugA}`} className="font-semibold text-teal-600 hover:underline">{nameA}</Link>
+                    <Link href={`/property-agents/hdb/${slugA}`} className="font-semibold text-[var(--blue)] hover:underline">{nameA}</Link>
                   </th>
                   <th className="px-4 py-3 text-center">
-                    <Link href={`/property-agents/hdb/${slugB}`} className="font-semibold text-teal-600 hover:underline">{nameB}</Link>
+                    <Link href={`/property-agents/hdb/${slugB}`} className="font-semibold text-[var(--blue)] hover:underline">{nameB}</Link>
                   </th>
                   <th className="pl-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-400">Diff</th>
                 </tr>
@@ -209,10 +209,10 @@ export default async function HdbComparePage({ params }: Props) {
               <tbody className="divide-y divide-gray-100">
                 <tr>
                   <td className="py-3.5 pr-4 font-medium text-gray-900">Overall median</td>
-                  <td className={`px-4 py-3.5 text-center font-medium ${dataA.medianPrice >= dataB.medianPrice ? "text-teal-600" : "text-gray-600"}`}>
+                  <td className={`px-4 py-3.5 text-center font-medium ${dataA.medianPrice >= dataB.medianPrice ? "text-[var(--blue)]" : "text-gray-600"}`}>
                     {formatPrice(dataA.medianPrice)}
                   </td>
-                  <td className={`px-4 py-3.5 text-center font-medium ${dataB.medianPrice >= dataA.medianPrice ? "text-teal-600" : "text-gray-600"}`}>
+                  <td className={`px-4 py-3.5 text-center font-medium ${dataB.medianPrice >= dataA.medianPrice ? "text-[var(--blue)]" : "text-gray-600"}`}>
                     {formatPrice(dataB.medianPrice)}
                   </td>
                   <td className="pl-4 py-3.5 text-center text-xs text-gray-400">{pctDiff(dataA.medianPrice, dataB.medianPrice)}</td>
@@ -242,10 +242,10 @@ export default async function HdbComparePage({ params }: Props) {
                 })}
                 <tr>
                   <td className="py-3.5 pr-4 font-medium text-gray-900">Total transactions</td>
-                  <td className={`px-4 py-3.5 text-center font-medium ${dataA.totalTxns >= dataB.totalTxns ? "text-teal-600" : "text-gray-600"}`}>
+                  <td className={`px-4 py-3.5 text-center font-medium ${dataA.totalTxns >= dataB.totalTxns ? "text-[var(--blue)]" : "text-gray-600"}`}>
                     {dataA.totalTxns.toLocaleString()}
                   </td>
-                  <td className={`px-4 py-3.5 text-center font-medium ${dataB.totalTxns >= dataA.totalTxns ? "text-teal-600" : "text-gray-600"}`}>
+                  <td className={`px-4 py-3.5 text-center font-medium ${dataB.totalTxns >= dataA.totalTxns ? "text-[var(--blue)]" : "text-gray-600"}`}>
                     {dataB.totalTxns.toLocaleString()}
                   </td>
                   <td className="pl-4 py-3.5 text-center text-xs text-gray-400">{pctDiff(dataA.totalTxns, dataB.totalTxns)}</td>
@@ -319,7 +319,7 @@ export default async function HdbComparePage({ params }: Props) {
                 <Link
                   key={t.slug}
                   href={`/property-agents/hdb-compare/${slugA}-vs-${t.slug}`}
-                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-teal-300 hover:text-teal-600"
+                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
                 >
                   {nameA} vs {townDisplayName(t.name)}
                 </Link>

@@ -11,7 +11,7 @@ import { revalidatePath } from "next/cache";
  */
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -24,7 +24,6 @@ export async function GET(req: Request) {
     // Homepage + hub pages
     "/",
     "/property-agents",
-    "/lawyers",
     "/insights",
     "/insights/top-agents-2026",
     "/insights/million-dollar-hdb",

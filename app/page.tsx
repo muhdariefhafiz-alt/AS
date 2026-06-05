@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { supabase } from "./lib/supabase";
+import { Seal, Gauge, RankRow, RankedBadge, SourceBadge } from "./components/Brand";
+import { titleName, cleanAgency } from "./lib/names";
 
 export const revalidate = 43200; // 12h fallback; daily cron also force-revalidates
 
@@ -16,176 +18,204 @@ async function getStats() {
   };
 }
 
+async function getTopAgents() {
+  const { data } = await supabase
+    .from("sg_agents")
+    .select("name, slug, score, agency_name, primary_area, claimed")
+    .not("score", "is", null)
+    .order("score", { ascending: false })
+    .limit(5);
+  return data ?? [];
+}
+
+const STEPS: [string, string][] = [
+  ["Tell us your home", "Postal code, property type, size. Thirty seconds, no account."],
+  ["See ranked agents", "We rank everyone active near you on real transaction data."],
+  ["Invite and compare", "Invite your shortlist. Compare their plans and fees side by side."],
+  ["Choose on evidence", "Pick the agent whose record fits your home. Free to you."],
+];
+
+const TRUST: [string, string][] = [
+  ["Independent", "Rankings are computed from the CEA register, URA and HDB data. There is no paid placement, ever."],
+  ["Evidence-based", "Every score traces to real government transaction records. We never invent a number."],
+  ["Free and on your side", "Sellers pay nothing. Agents pay a success fee only when a referred sale completes."],
+];
+
 export default async function HomePage() {
-  const stats = await getStats();
+  const [stats, topAgents] = await Promise.all([getStats(), getTopAgents()]);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "FairComparisons",
     url: "https://fair-comparisons.com",
-    description: "Compare property agents in Singapore on actual government transaction records. Independent ratings based on CEA, URA, and HDB data.",
+    description:
+      "Compare property agents in Singapore on actual government transaction records. Independent ratings based on CEA, URA, and HDB data.",
     potentialAction: {
       "@type": "SearchAction",
       target: "https://fair-comparisons.com/search?q={search_term_string}",
       "query-input": "required name=search_term_string",
     },
   };
-
   const orgLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "FairComparisons",
     url: "https://fair-comparisons.com",
     logo: "https://fair-comparisons.com/logo.svg",
-    description: "Independent professional comparison platform for Singapore. Rankings based on government data, not advertising.",
+    description:
+      "Independent professional comparison platform for Singapore. Rankings based on government data, not advertising.",
   };
+
+  const topScore = topAgents[0]?.score ? Math.round(topAgents[0].score) : 94;
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd).replace(/</g, "\\u003c") }} />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
-        <div className="mx-auto max-w-[1120px] px-5 py-20 md:px-8 md:py-28">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-300">
-            Independent professional ratings
-          </p>
-          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl lg:text-6xl">
-            Compare property agents<br />
-            <span className="text-teal-300">in Singapore.</span>
-          </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/60">
-            We combine CEA transaction records, URA data, and Google reviews to score every agent in Singapore. Rankings are calculated, not bought.
-          </p>
+      {/* ---------- HERO ---------- */}
+      <section style={{ background: "var(--ink)", color: "#fff" }}>
+        <div className="fc-wrap" style={{ padding: "64px 40px 56px" }}>
+          <div style={{ display: "flex", gap: 48, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 320 }}>
+              <div className="eyebrow" style={{ color: "var(--slate-2)", marginBottom: 18 }}>
+                Singapore property agents
+              </div>
+              <h1 style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0 }}>
+                Choose your agent <span className="italic-serif">on evidence,</span> not on advertising.
+              </h1>
+              <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16 }}>
+                See which agents actually sell homes like yours in your area, ranked on{" "}
+                {stats.transactions.toLocaleString()}+ real government transaction records.
+              </p>
 
-          {/* Hero CTA */}
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link href="/property-agents" className="inline-flex items-center justify-center rounded-lg bg-teal-600 px-7 py-3.5 font-semibold text-white shadow-lg transition hover:bg-teal-500">
-              Compare property agents
-            </Link>
-            <Link href="/about" className="inline-flex items-center justify-center rounded-lg border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white">
-              How we score agents
-            </Link>
-          </div>
+              <form
+                action="/search"
+                method="GET"
+                className="fc-search"
+                style={{ marginTop: 26 }}
+              >
+                <input name="q" placeholder="Enter your postal code" aria-label="Postal code" />
+                <button type="submit" className="fc-btn fc-btn--primary">
+                  See agents
+                </button>
+              </form>
 
-          {/* Stats bar */}
-          <div className="mt-12 flex flex-wrap items-center gap-8 border-t border-white/10 pt-8">
-            <div className="text-center">
-              <span className="text-2xl font-extrabold text-white">{stats.scoredAgents.toLocaleString()}</span>
-              <p className="text-xs text-white/40">agents scored</p>
-            </div>
-            <div className="text-center">
-              <span className="text-2xl font-extrabold text-white">{stats.transactions.toLocaleString()}+</span>
-              <p className="text-xs text-white/40">transactions analysed</p>
-            </div>
-            <div className="text-center">
-              <span className="text-2xl font-extrabold text-white">28</span>
-              <p className="text-xs text-white/40">districts covered</p>
-            </div>
-          </div>
-
-          {/* Trust badges */}
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/40">CEA Public Register</span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/40">URA Data Service</span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/40">HDB (data.gov.sg)</span>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/40">Google Reviews</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Sector Cards */}
-      <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-        <div className="mx-auto grid max-w-[640px] gap-6">
-          {/* Property Agents */}
-          <Link href="/property-agents"
-            className="group rounded-2xl border border-gray-200 bg-white p-8 transition hover:border-teal-300 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-xl">{"\ud83c\udfe0"}</div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 group-hover:text-teal-600">Property Agents</h2>
-                <p className="text-sm text-gray-500">Rated on {stats.transactions.toLocaleString()}+ CEA transactions</p>
+              <div className="fc-row" style={{ marginTop: 16, gap: 18 }}>
+                <span
+                  className="mono"
+                  style={{ color: "rgba(255,255,255,0.82)", fontSize: 13, display: "flex", gap: 7, alignItems: "center" }}
+                >
+                  <Seal size={15} variant="light" /> Free for sellers
+                </span>
+                <span
+                  className="mono"
+                  style={{ color: "rgba(255,255,255,0.82)", fontSize: 13, display: "flex", gap: 7, alignItems: "center" }}
+                >
+                  <Seal size={15} variant="light" /> Rankings cannot be bought
+                </span>
               </div>
             </div>
-            <p className="mt-4 text-[15px] leading-relaxed text-gray-600">
-              {stats.scoredAgents.toLocaleString()} agents scored across {stats.agencies.toLocaleString()} agencies.
-              Ranked by transaction volume, market diversity, experience, and reviews.
-              Based on data from CEA, URA, and HDB.
-            </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700">{stats.scoredAgents.toLocaleString()} agents rated</span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">28 districts</span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">26 HDB towns</span>
+
+            <div className="fc-card" style={{ background: "#fff", padding: 22, width: 240, flex: "0 0 auto" }}>
+              <div className="mono muted" style={{ fontSize: 12, letterSpacing: "0.12em" }}>
+                AGENTSCORE
+              </div>
+              <Gauge score={topScore} width={196} numSize={52} />
+              <div style={{ textAlign: "center", fontWeight: 700, marginTop: 2 }}>Top performer</div>
+              <div className="muted" style={{ textAlign: "center", fontSize: 13 }}>
+                {stats.scoredAgents.toLocaleString()} agents scored
+              </div>
             </div>
-            <p className="mt-4 text-sm font-semibold text-teal-600 group-hover:text-teal-700">Compare agents {"\u2192"}</p>
-          </Link>
-        </div>
-      </section>
-
-      {/* Featured Content */}
-      <section className="border-t border-gray-100">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">Explore the data</h2>
-          <p className="mt-2 text-[15px] text-gray-500">Data-driven analysis you won't find anywhere else in Singapore.</p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Link href="/insights/million-dollar-hdb" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-green-200 hover:shadow-md">
-              <span className="text-xs font-semibold text-green-600">HDB</span>
-              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-green-600">Million-Dollar HDB Tracker</h3>
-              <p className="mt-1 text-xs text-gray-500">Every S$1M+ resale flat by town</p>
-            </Link>
-            <Link href="/insights/freehold-premium" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md">
-              <span className="text-xs font-semibold text-teal-600">Private</span>
-              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-teal-600">Freehold Premium by District</h3>
-              <p className="mt-1 text-xs text-gray-500">How much more does freehold cost?</p>
-            </Link>
-            <Link href="/insights/court-case-statistics" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-slate-200 hover:shadow-md">
-              <span className="text-xs font-semibold text-slate-600">Legal</span>
-              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-slate-600">Court Case Statistics</h3>
-              <p className="mt-1 text-xs text-gray-500">5,200+ judgments analyzed</p>
-            </Link>
-            <Link href="/property-agents/market/2025" className="group rounded-xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md">
-              <span className="text-xs font-semibold text-teal-600">Market</span>
-              <h3 className="mt-1 font-bold text-gray-900 group-hover:text-teal-600">2025 Market Overview</h3>
-              <p className="mt-1 text-xs text-gray-500">Transactions, top agents, trends</p>
-            </Link>
-          </div>
-
-          <div className="mt-6 text-right">
-            <Link href="/insights" className="text-sm font-semibold text-teal-600 hover:text-teal-700">View all insights {"\u2192"}</Link>
-          </div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <Link href="/property-agents/district/d09-orchard" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">D09 Orchard Market Analysis</Link>
-            <Link href="/property-agents/district/d10-ardmore" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">D10 Bukit Timah Market Analysis</Link>
-            <Link href="/property-agents/district/d15-katong" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">D15 Katong Market Analysis</Link>
-            <Link href="/property-agents/hdb/ang-mo-kio" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">Ang Mo Kio HDB Prices</Link>
-            <Link href="/property-agents/hdb/tampines" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">Tampines HDB Prices</Link>
-            <Link href="/property-agents/hdb/bedok" className="rounded-lg border border-gray-100 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">Bedok HDB Prices</Link>
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="border-t border-gray-100 bg-gray-50">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-          <h2 className="text-center text-2xl font-bold text-gray-900">How our ratings work</h2>
-          <div className="mt-10 grid gap-8 md:grid-cols-3">
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-2xl font-bold text-teal-600">1</div>
-              <h3 className="mt-4 font-bold text-gray-900">We collect public records</h3>
-              <p className="mt-2 text-sm text-gray-500">CEA transaction records, URA prices, HDB resale data, and Google reviews. Data that already exists but nobody has structured.</p>
+      {/* ---------- HOW IT WORKS ---------- */}
+      <section className="fc-wrap" style={{ padding: "64px 40px" }}>
+        <div className="eyebrow">How it works</div>
+        <h2 style={{ marginTop: 12 }}>Four steps, no obligation.</h2>
+        <div className="fc-grid-4" style={{ marginTop: 28 }}>
+          {STEPS.map(([t, d], i) => (
+            <div key={t} className="fc-card fc-card--pad">
+              <div className="mono" style={{ color: "var(--blue)", fontSize: 13 }}>
+                {String(i + 1).padStart(2, "0")}
+              </div>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 19, margin: "8px 0 6px" }}>
+                {t}
+              </div>
+              <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+                {d}
+              </p>
             </div>
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-2xl font-bold text-teal-600">2</div>
-              <h3 className="mt-4 font-bold text-gray-900">We score performance</h3>
-              <p className="mt-2 text-sm text-gray-500">Transaction volume, recency, market diversity, and years of experience combined into one objective AgentScore out of 100.</p>
-            </div>
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-2xl font-bold text-slate-600">3</div>
-              <h3 className="mt-4 font-bold text-gray-900">You compare fairly</h3>
-              <p className="mt-2 text-sm text-gray-500">Rankings based on data, not advertising spend. Professionals cannot buy a higher position. Ever.</p>
-            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- WHY TRUST ---------- */}
+      <section style={{ background: "var(--cloud)" }}>
+        <div className="fc-wrap" style={{ padding: "64px 40px" }}>
+          <h2>Why you can trust the ranking</h2>
+          <div className="fc-grid-3" style={{ marginTop: 28 }}>
+            {TRUST.map(([t, d]) => (
+              <div key={t} className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+                <Seal size={24} variant="blue" />
+                <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "12px 0 6px" }}>
+                  {t}
+                </div>
+                <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+                  {d}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- RANKED PREVIEW ---------- */}
+      {topAgents.length > 0 && (
+        <section className="fc-wrap" style={{ padding: "64px 40px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 10 }}>
+            <h2 style={{ margin: 0 }}>Top-ranked agents in Singapore</h2>
+            <RankedBadge />
+          </div>
+          <div className="fc-card" style={{ padding: "4px 22px 8px", marginTop: 18 }}>
+            {topAgents.map((a, i) => (
+              <RankRow
+                key={a.slug ?? i}
+                pos={i + 1}
+                name={titleName(a.name)}
+                sub={[a.agency_name ? cleanAgency(a.agency_name) : null, a.primary_area ? titleName(a.primary_area) : null].filter(Boolean).join(" · ") || "CEA-registered agent"}
+                score={a.score}
+                verified={!!a.claimed}
+                href={a.slug ? `/property-agents/agent/${a.slug}` : undefined}
+              />
+            ))}
+          </div>
+          <div className="fc-row" style={{ justifyContent: "space-between", marginTop: 18 }}>
+            <SourceBadge />
+            <Link href="/property-agents" className="fc-btn fc-btn--quiet fc-btn--sm">
+              Browse all agents
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* ---------- CLOSING CTA ---------- */}
+      <section className="fc-section fc-section--dark">
+        <div className="fc-wrap" style={{ textAlign: "center" }}>
+          <h2 style={{ color: "#fff" }}>Ready to choose on evidence?</h2>
+          <p className="lede" style={{ margin: "14px auto 28px", textAlign: "center" }}>
+            Tell us about your home and see the agents who actually sell properties like yours nearby.
+          </p>
+          <div className="fc-row" style={{ justifyContent: "center", gap: 12 }}>
+            <Link href="/sell" className="fc-btn fc-btn--primary fc-btn--lg">
+              Sell your property
+            </Link>
+            <Link href="/tools/valuation" className="fc-btn fc-btn--ghost-light fc-btn--lg">
+              What is my home worth?
+            </Link>
           </div>
         </div>
       </section>

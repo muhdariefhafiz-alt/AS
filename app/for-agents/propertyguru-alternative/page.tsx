@@ -83,7 +83,7 @@ export default async function PropertyGuruAlternativePage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
       />
 
       {/* Breadcrumb */}
@@ -98,15 +98,15 @@ export default async function PropertyGuruAlternativePage() {
       </nav>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900 mt-4">
+      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)] mt-4">
         <div className="mx-auto max-w-[900px] px-5 py-16 text-center md:px-8 md:py-24">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-300">
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)]">
             For Property Agents
           </p>
           <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-5xl">
             Spending S$2,000+/mo on PropertyGuru?
             <br />
-            <span className="text-teal-300">There&apos;s a smarter way.</span>
+            <span className="text-[var(--slate-2)]">There&apos;s a smarter way.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">
             FairComparisons profiles {stats.scored.toLocaleString()} scored property agents across
@@ -116,7 +116,7 @@ export default async function PropertyGuruAlternativePage() {
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/search"
-              className="inline-block rounded-lg bg-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-teal-400"
+              className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
             >
               Find your profile
             </Link>
@@ -181,30 +181,30 @@ export default async function PropertyGuruAlternativePage() {
                 <td className="px-4 py-3 text-gray-500">Maximum visibility, all features</td>
               </tr>
 
-              <tr className="bg-teal-50">
-                <td colSpan={3} className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-teal-600">
+              <tr className="bg-[var(--blue-wash)]">
+                <td colSpan={3} className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-[var(--blue)]">
                   FairComparisons
                 </td>
               </tr>
-              <tr className="bg-teal-50/50">
+              <tr className="bg-[var(--blue-wash)]">
                 <td className="px-4 py-3 font-medium text-gray-900">Free</td>
-                <td className="px-4 py-3 font-bold text-teal-600">S$0</td>
+                <td className="px-4 py-3 font-bold text-[var(--blue)]">S$0</td>
                 <td className="px-4 py-3 text-gray-700">
                   Full profile, AgentScore, photo, WhatsApp, transaction history
                 </td>
               </tr>
-              <tr className="bg-teal-50/50">
-                <td className="px-4 py-3 font-medium text-gray-900">Pro</td>
-                <td className="px-4 py-3 font-bold text-teal-600">S$99</td>
+              <tr className="bg-[var(--blue-wash)]">
+                <td className="px-4 py-3 font-medium text-gray-900">Pro tools</td>
+                <td className="px-4 py-3 font-bold text-[var(--blue)]">S$99</td>
                 <td className="px-4 py-3 text-gray-700">
-                  Sponsored badge, area placement, weekly view reports
+                  Lead + view analytics, comparable-transaction data (no placement)
                 </td>
               </tr>
-              <tr className="bg-teal-50/50">
-                <td className="px-4 py-3 font-medium text-gray-900">Premium</td>
-                <td className="px-4 py-3 font-bold text-teal-600">S$299</td>
+              <tr className="bg-[var(--blue-wash)]">
+                <td className="px-4 py-3 font-medium text-gray-900">Premium tools</td>
+                <td className="px-4 py-3 font-bold text-[var(--blue)]">S$299</td>
                 <td className="px-4 py-3 text-gray-700">
-                  Highlighted placement, dedicated support, monthly market insights
+                  District analytics, dedicated support, market insights (no placement)
                 </td>
               </tr>
             </tbody>
@@ -242,12 +242,12 @@ export default async function PropertyGuruAlternativePage() {
                 pg: "PropertyGuru prices rose 72% since 2019.",
                 fc: "Our Free tier stays free forever.",
                 detail:
-                  "A full claimed profile with photo, contact details, and AgentScore costs nothing. Paid plans add visibility features, not basic functionality.",
+                  "A full claimed profile with photo, contact details, AgentScore, and seller leads costs nothing. You pay a 0.25% success fee only when a referred sale completes. Optional paid tiers add analytics, never visibility or ranking.",
               },
             ].map((item, i) => (
               <div key={i} className="rounded-xl border border-gray-200 bg-white p-6">
                 <p className="text-sm text-gray-400 line-through">{item.pg}</p>
-                <p className="mt-1 text-base font-bold text-teal-600">{item.fc}</p>
+                <p className="mt-1 text-base font-bold text-[var(--blue)]">{item.fc}</p>
                 <p className="mt-3 text-sm text-gray-500">{item.detail}</p>
               </div>
             ))}
@@ -263,28 +263,28 @@ export default async function PropertyGuruAlternativePage() {
         </p>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <div className="rounded-xl border-2 border-teal-300 bg-teal-50 p-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-teal-600">
+          <div className="rounded-xl border-2 border-[var(--line-2)] bg-[var(--blue-wash)] p-6">
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue)]">
               Free claimed profile
             </p>
             <ul className="mt-4 space-y-3 text-sm text-gray-700">
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Your photo and WhatsApp number on your profile
+                <span className="text-[var(--blue)]">+</span> Your photo and WhatsApp number on your profile
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> AgentScore based on CEA transaction records
+                <span className="text-[var(--blue)]">+</span> AgentScore based on CEA transaction records
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Full transaction history visible to buyers
+                <span className="text-[var(--blue)]">+</span> Full transaction history visible to buyers
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Practice area description in your own words
+                <span className="text-[var(--blue)]">+</span> Practice area description in your own words
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Notifications when buyers view your profile
+                <span className="text-[var(--blue)]">+</span> Notifications when buyers view your profile
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Embeddable AgentScore widget for your website
+                <span className="text-[var(--blue)]">+</span> Embeddable AgentScore widget for your website
               </li>
             </ul>
           </div>
@@ -295,22 +295,22 @@ export default async function PropertyGuruAlternativePage() {
             </p>
             <ul className="mt-4 space-y-3 text-sm text-gray-600">
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Sponsored badge on your profile (Pro)
+                <span className="text-[var(--blue)]">+</span> Seller leads in your area, matched on your record (Free)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Sponsored placement in area listings (Pro)
+                <span className="text-[var(--blue)]">+</span> Weekly profile view + lead analytics (Pro)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Weekly profile view analytics (Pro)
+                <span className="text-[var(--blue)]">+</span> Comparable-transaction data for pricing (Pro)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Highlighted sponsored placement in rankings (Premium)
+                <span className="text-[var(--blue)]">+</span> Full district analytics dashboard (Premium)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Dedicated account support (Premium)
+                <span className="text-[var(--blue)]">+</span> Dedicated account support (Premium)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-teal-500">+</span> Monthly market insights for your area (Premium)
+                <span className="text-[var(--blue)]">+</span> Monthly market insights for your area (Premium)
               </li>
             </ul>
           </div>
@@ -323,19 +323,19 @@ export default async function PropertyGuruAlternativePage() {
           <h2 className="text-2xl font-bold text-gray-900">Already live on FairComparisons</h2>
           <div className="mt-8 flex justify-center gap-10">
             <div className="text-center">
-              <span className="text-3xl font-extrabold text-teal-600">
+              <span className="text-3xl font-extrabold text-[var(--blue)]">
                 {stats.total.toLocaleString()}
               </span>
               <p className="mt-1 text-xs text-gray-400">agents profiled</p>
             </div>
             <div className="text-center">
-              <span className="text-3xl font-extrabold text-teal-600">
+              <span className="text-3xl font-extrabold text-[var(--blue)]">
                 {stats.scored.toLocaleString()}
               </span>
               <p className="mt-1 text-xs text-gray-400">agents scored</p>
             </div>
             <div className="text-center">
-              <span className="text-3xl font-extrabold text-teal-600">
+              <span className="text-3xl font-extrabold text-[var(--blue)]">
                 {stats.agencies.toLocaleString()}
               </span>
               <p className="mt-1 text-xs text-gray-400">agencies</p>
@@ -366,7 +366,7 @@ export default async function PropertyGuruAlternativePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="border-t border-gray-100 bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
+      <section className="border-t border-gray-100 bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)]">
         <div className="mx-auto max-w-[600px] px-5 py-16 text-center md:px-8">
           <h2 className="text-2xl font-bold text-white">
             Your profile is already live. Claim it for free.
@@ -377,7 +377,7 @@ export default async function PropertyGuruAlternativePage() {
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/search"
-              className="inline-block rounded-lg bg-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-teal-400"
+              className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
             >
               Find your profile
             </Link>

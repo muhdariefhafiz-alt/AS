@@ -3,11 +3,14 @@ import { cookies } from "next/headers";
 
 /**
  * Minimal magic-link auth for the admin dashboard.
- * Single allowed email (ADMIN_EMAIL). HMAC-signed tokens.
+ * Allowlist of emails (ADMIN_EMAILS, comma-separated). HMAC-signed tokens.
  *
  * Required env:
  *   ADMIN_SECRET  - 32+ char random string (HMAC key)
- *   ADMIN_EMAIL   - the single email allowed to sign in
+ *   ADMIN_EMAILS  - comma-separated allowlist (e.g.
+ *                   "lex@coachup.sg,hello@fair-comparisons.com")
+ *
+ * Back-compat: if ADMIN_EMAILS is unset, falls back to ADMIN_EMAIL (single).
  */
 
 export const COOKIE_NAME = "fc_admin";
@@ -20,8 +23,24 @@ function getSecret(): string {
   return s;
 }
 
+export function getAdminEmails(): Set<string> {
+  const list = process.env.ADMIN_EMAILS ?? process.env.ADMIN_EMAIL ?? "";
+  const set = new Set<string>();
+  for (const raw of list.split(",")) {
+    const e = raw.toLowerCase().trim();
+    if (e) set.add(e);
+  }
+  return set;
+}
+
+export function isAdminEmail(email: string): boolean {
+  return getAdminEmails().has(email.toLowerCase().trim());
+}
+
+/** @deprecated Use isAdminEmail / getAdminEmails. Kept for back-compat. */
 export function getAdminEmail(): string {
-  return (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
+  const first = [...getAdminEmails()][0];
+  return first ?? "";
 }
 
 function b64url(input: Buffer | string): string {
@@ -72,8 +91,7 @@ export async function getAdminSession(): Promise<{ email: string } | null> {
     const token = store.get(COOKIE_NAME)?.value;
     const session = verifyToken(token);
     if (!session) return null;
-    const allowed = getAdminEmail();
-    if (!allowed || session.email !== allowed) return null;
+    if (!isAdminEmail(session.email)) return null;
     return session;
   } catch {
     return null;

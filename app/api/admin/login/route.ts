@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
-import { issueMagicLink, getAdminEmail } from "../../../lib/admin-auth";
+import { issueMagicLink, isAdminEmail, getAdminEmails } from "../../../lib/admin-auth";
 import { sendEmail } from "../../../lib/email";
 
 /**
  * POST /api/admin/login
  * Body: { email }
  * Always returns success (to avoid email enumeration).
- * If email matches ADMIN_EMAIL, a magic link is sent.
+ * If email is in the ADMIN_EMAILS allowlist, a magic link is issued and
+ * (a) emailed, and (b) logged to the server console so an operator can
+ * paste it manually if email delivery is down.
  */
 export async function POST(req: Request) {
   try {
@@ -16,20 +18,25 @@ export async function POST(req: Request) {
     }
 
     const normalized = email.toLowerCase().trim();
-    const allowed = getAdminEmail();
 
-    if (!allowed) {
-      console.error("[admin/login] ADMIN_EMAIL not configured");
+    if (getAdminEmails().size === 0) {
+      console.error("[admin/login] ADMIN_EMAILS not configured");
       return NextResponse.json({ success: true });
     }
 
-    if (normalized !== allowed) {
-      // Silent failure
+    if (!isAdminEmail(normalized)) {
+      // Silent failure — anti-enumeration.
       return NextResponse.json({ success: true });
     }
 
     const token = issueMagicLink(normalized);
-    const link = `https://fair-comparisons.com/api/admin/verify?token=${token}`;
+    const base =
+      process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
+    const link = `${base}/api/admin/verify?token=${token}`;
+    // Log the link so an operator can paste it manually when Klaviyo or the
+    // mail provider does not deliver. The login endpoint is already
+    // allowlist-gated, so this leaks nothing beyond the admin's own ability.
+    console.log(`[admin/login] magic link issued for ${normalized}: ${link}`);
 
     const html = `
 <!DOCTYPE html>
@@ -38,7 +45,7 @@ export async function POST(req: Request) {
 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
 <tr><td align="center" style="padding:24px 16px">
 <table cellpadding="0" cellspacing="0" border="0" width="520" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0f766e;padding:24px 32px">
+  <tr><td style="background:#0a1733;padding:24px 32px">
     <p style="margin:0;font-size:18px;font-weight:700;color:#fff">FairComparisons Admin</p>
   </td></tr>
   <tr><td style="padding:32px">
@@ -47,7 +54,7 @@ export async function POST(req: Request) {
       Click the button below to sign in. This link expires in 24 hours and can only be used once.
     </p>
     <div style="text-align:center;margin:24px 0">
-      <a href="${link}" style="display:inline-block;background:#0d9488;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
         Open dashboard
       </a>
     </div>

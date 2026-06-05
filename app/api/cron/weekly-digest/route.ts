@@ -16,7 +16,7 @@ const supabase = createClient(
 export async function GET(req: Request) {
   // Verify cron secret
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -70,7 +70,7 @@ export async function GET(req: Request) {
         <tr><td style="padding:20px 0 0">
           <p style="margin:0 0 8px;font-size:13px;color:#6b7280">TOP AGENT IN YOUR AREA</p>
           <p style="margin:0;font-size:15px">
-            <a href="https://fair-comparisons.com/property-agents/agent/${districtLeaders[sub.district_tag].slug}?utm_source=digest&utm_medium=email" style="color:#0d9488;text-decoration:none;font-weight:600">${districtLeaders[sub.district_tag].name}</a>
+            <a href="https://fair-comparisons.com/property-agents/agent/${districtLeaders[sub.district_tag].slug}?utm_source=digest&utm_medium=email" style="color:#1f44ff;text-decoration:none;font-weight:600">${districtLeaders[sub.district_tag].name}</a>
             <span style="color:#9ca3af"> - Score: ${Math.round(districtLeaders[sub.district_tag].score)}</span>
           </p>
         </td></tr>`
@@ -82,12 +82,12 @@ export async function GET(req: Request) {
         <tr>
           <td style="padding:8px 0;border-bottom:1px solid #f3f4f6">
             <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-              <td width="30" style="font-size:14px;font-weight:700;color:${i < 3 ? "#0d9488" : "#9ca3af"}">${i + 1}</td>
+              <td width="30" style="font-size:14px;font-weight:700;color:${i < 3 ? "#1f44ff" : "#9ca3af"}">${i + 1}</td>
               <td>
                 <a href="https://fair-comparisons.com/property-agents/agent/${a.slug}?utm_source=digest&utm_medium=email" style="color:#111827;text-decoration:none;font-weight:600;font-size:14px">${a.name}</a>
                 <br><span style="font-size:12px;color:#6b7280">${a.agency_name} - ${a.transaction_count} transactions</span>
               </td>
-              <td width="50" align="right" style="font-size:18px;font-weight:800;color:#0d9488">${Math.round(Number(a.score))}</td>
+              <td width="50" align="right" style="font-size:18px;font-weight:800;color:#1f44ff">${Math.round(Number(a.score))}</td>
             </tr></table>
           </td>
         </tr>`
@@ -103,7 +103,7 @@ export async function GET(req: Request) {
 <table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
 
   <!-- Header -->
-  <tr><td style="background:#0f766e;padding:24px 32px">
+  <tr><td style="background:#0a1733;padding:24px 32px">
     <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
     <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.7)">Singapore Property Agent Rankings</p>
   </td></tr>
@@ -114,7 +114,7 @@ export async function GET(req: Request) {
       This week's highest-scoring property agents in Singapore, ranked on CEA transaction data. No paid placements.
     </p>
 
-    ${weeklyViews ? `<p style="margin:0 0 20px;font-size:13px;color:#0f766e;background:#f0fdfa;padding:10px 14px;border-radius:8px">
+    ${weeklyViews ? `<p style="margin:0 0 20px;font-size:13px;color:#0a1733;background:#eef1ff;padding:10px 14px;border-radius:8px">
       <strong>${weeklyViews.toLocaleString()}</strong> agent profiles researched this week by Singapore buyers.
     </p>` : ""}
 
@@ -128,7 +128,7 @@ export async function GET(req: Request) {
 
     <!-- CTA -->
     <tr><td style="padding:24px 0">
-      <a href="https://fair-comparisons.com/insights/top-agents-2026?utm_source=digest&utm_medium=email" style="display:inline-block;background:#0d9488;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+      <a href="https://fair-comparisons.com/insights/top-agents-2026?utm_source=digest&utm_medium=email" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
         See full rankings
       </a>
     </td></tr>
@@ -137,7 +137,7 @@ export async function GET(req: Request) {
     <tr><td style="padding:16px 0 0;border-top:1px solid #f3f4f6">
       <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#111827">Are you a property agent?</p>
       <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.5">
-        Your profile is already public. <a href="https://fair-comparisons.com/for-agents?utm_source=digest&utm_medium=email" style="color:#0d9488;text-decoration:none;font-weight:500">Claim it</a> to add your photo, WhatsApp, and bio. Free.
+        Your profile is already public. <a href="https://fair-comparisons.com/for-agents?utm_source=digest&utm_medium=email" style="color:#1f44ff;text-decoration:none;font-weight:500">Claim it</a> to add your photo, WhatsApp, and bio. Free.
       </p>
     </td></tr>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { trackEvent } from "../lib/analytics";
+import { givenName } from "../lib/names";
 
 /** Fire-and-forget funnel event to /api/funnel */
 function trackFunnel(event: string, agentId: number, metadata?: Record<string, unknown>) {
@@ -16,18 +17,47 @@ type Props = {
   agentId: number;
   agentName: string;
   claimed: boolean;
+  /** Exp 1 claim-hook enrichment (all optional; omitted lines simply do not render) */
+  variant?: "A" | "B";
+  rank?: number | null;
+  areaName?: string | null;
+  areaTotal?: number | null;
+  score?: number | null;
+  profileViews7d?: number | null;
 };
 
-export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
+export default function ClaimBanner({
+  agentId,
+  agentName,
+  claimed,
+  variant = "A",
+  rank = null,
+  areaName = null,
+  areaTotal = null,
+  score = null,
+  profileViews7d = null,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [ceaNumber, setCeaNumber] = useState("");
+  const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const bannerRef = useRef<HTMLDivElement>(null);
   const hasTrackedView = useRef(false);
+  const refSource = useRef<string | null>(null);
 
-  const firstName = agentName.split(" ")[0];
+  const firstName = givenName(agentName);
+
+  // Attribution + experiment metadata on every funnel event for this banner.
+  const meta = () => ({ variant, ref: refSource.current });
+
+  useEffect(() => {
+    // Capture ?ref (outreach / leaderboard / badge) so a claim attributes back.
+    try {
+      refSource.current = new URLSearchParams(window.location.search).get("ref");
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (claimed || hasTrackedView.current) return;
@@ -37,14 +67,25 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
       ([entry]) => {
         if (entry.isIntersecting && !hasTrackedView.current) {
           hasTrackedView.current = true;
-          trackFunnel("claim_banner_view", agentId);
+          trackFunnel("claim_banner_view", agentId, meta());
         }
       },
       { threshold: 0.5 }
     );
     observer.observe(el);
     return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimed, agentId]);
+
+  // Variant B headline: lead with rank if we have it, else score, else the
+  // neutral control headline. Every figure is real or the line is dropped.
+  const headlineB =
+    rank && areaName
+      ? `You rank #${rank}${areaTotal ? ` of ${areaTotal}` : ""} in ${areaName}, ${firstName}.`
+      : score
+        ? `Your AgentScore is ${score}, ${firstName}. Sellers can already see it.`
+        : `Is this your profile, ${firstName}?`;
+  const headline = variant === "B" ? headlineB : `Is this your profile, ${firstName}?`;
 
   if (claimed) {
     return (
@@ -59,7 +100,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !ceaNumber) return;
+    if (!email || !ceaNumber || !consent) return;
     setStatus("loading");
     try {
       const res = await fetch("/api/claim", {
@@ -70,7 +111,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
       const data = await res.json();
       if (res.ok) {
         trackEvent("claim_submit", { agent_id: agentId, agent_name: agentName });
-        trackFunnel("claim_submit", agentId);
+        trackFunnel("claim_submit", agentId, meta());
         setStatus("success");
       } else {
         setStatus("error");
@@ -84,17 +125,17 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
 
   if (status === "success") {
     return (
-      <div className="rounded-xl border border-teal-200 bg-teal-50 p-5">
+      <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
         <div className="flex items-center gap-2">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-500 text-[11px] text-white">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--blue)] text-[11px] text-white">
             &#10003;
           </span>
-          <p className="font-semibold text-teal-800">Check your email</p>
+          <p className="font-semibold text-[var(--blue-deep)]">Check your email</p>
         </div>
-        <p className="mt-2 text-sm text-teal-700">
+        <p className="mt-2 text-sm text-[var(--blue-deep)]">
           We sent a verification link to <strong>{email}</strong>. Click it to activate your profile. The link expires in 24 hours.
         </p>
-        <p className="mt-2 text-xs text-teal-600">
+        <p className="mt-2 text-xs text-[var(--blue)]">
           Not seeing it? Check spam, or resubmit.
         </p>
       </div>
@@ -105,34 +146,39 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
     <div
       ref={bannerRef}
       id="claim"
-      className="overflow-hidden rounded-xl border border-teal-200 bg-gradient-to-r from-teal-50 to-white"
+      className="overflow-hidden rounded-xl border border-[var(--line-2)] bg-gradient-to-r from-[var(--blue-wash)] to-white"
     >
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <p className="text-base font-bold text-gray-900">Is this your profile, {firstName}?</p>
+            <p className="text-base font-bold text-gray-900">{headline}</p>
             <p className="mt-1.5 text-sm text-gray-600">
               Your CEA transaction record is already public, so this page exists whether you claim it or not.
-              Right now buyers can see your score and history but cannot contact you.
+              Claim it to receive seller leads in your area and respond with a quote.
             </p>
+            {variant === "B" && profileViews7d != null && profileViews7d > 0 && (
+              <p className="mt-2 text-sm font-semibold text-[var(--blue-deep)]">
+                {profileViews7d} {profileViews7d === 1 ? "person" : "people"} viewed your profile in the last 7 days.
+              </p>
+            )}
             <div className="mt-3 space-y-1.5">
               <div className="flex items-start gap-2 text-sm text-gray-700">
-                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-700">
+                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">
                   1
                 </span>
-                <span>Add a WhatsApp number so buyers can message you directly.</span>
+                <span>Get matched with sellers near you who are ready to instruct an agent.</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-700">
-                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-700">
+                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">
                   2
                 </span>
-                <span>Add a photo and a short message so buyers know who they are contacting.</span>
+                <span>Add a photo, bio and message so sellers know who they are inviting.</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-700">
-                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-700">
+                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">
                   3
                 </span>
-                <span>See how often buyers view your profile in your dashboard.</span>
+                <span>Track your leads, quotes and completions in your dashboard.</span>
               </div>
             </div>
             <p className="mt-3 text-xs text-gray-500">
@@ -143,10 +189,10 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
             <button
               onClick={() => {
                 trackEvent("claim_click", { agent_id: agentId, agent_name: agentName });
-                trackFunnel("claim_click", agentId);
+                trackFunnel("claim_click", agentId, meta());
                 setOpen(true);
               }}
-              className="flex-shrink-0 rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 hover:shadow-md"
+              className="flex-shrink-0 rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue-deep)] hover:shadow-md"
             >
               Claim profile
             </button>
@@ -154,7 +200,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
         </div>
 
         {open && (
-          <form onSubmit={handleSubmit} className="mt-5 rounded-lg border border-teal-100 bg-white p-4">
+          <form onSubmit={handleSubmit} className="mt-5 rounded-lg border border-[var(--line)] bg-white p-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-medium text-gray-700">Email address</label>
@@ -165,7 +211,7 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
                   placeholder="you@example.com"
                   required
                   autoComplete="email"
-                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
                 />
                 <p className="mt-1 text-[11px] text-gray-400">We send a verification link to this address.</p>
               </div>
@@ -178,17 +224,31 @@ export default function ClaimBanner({ agentId, agentName, claimed }: Props) {
                   placeholder="R012345A"
                   required
                   autoCapitalize="characters"
-                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
                 />
                 <p className="mt-1 text-[11px] text-gray-400">We match this against your CEA public record to verify identity.</p>
               </div>
             </div>
+            <label className="mt-3 flex items-start gap-2 text-[12px] leading-snug text-gray-600">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                required
+              />
+              <span>
+                I agree to the{" "}
+                <a href="/for-agents/agreement" target="_blank" rel="noopener" className="font-semibold underline">FairComparisons Agent Agreement</a>:
+                a 0.25% success fee (the 2026 launch rate) on completed sales from FairComparisons introductions. Free to claim, no monthly fee, no fee unless a sale completes.
+              </span>
+            </label>
             {status === "error" && <p className="mt-3 text-sm text-red-600">{errorMsg}</p>}
             <div className="mt-3 flex items-center justify-between gap-3">
               <button
                 type="submit"
-                disabled={status === "loading"}
-                className="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50"
+                disabled={status === "loading" || !consent}
+                className="rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {status === "loading" ? "Sending..." : "Send verification link"}
               </button>

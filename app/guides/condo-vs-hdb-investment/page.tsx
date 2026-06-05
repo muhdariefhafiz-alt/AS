@@ -92,7 +92,7 @@ export default function CondoVsHdbInvestmentPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -104,7 +104,7 @@ export default function CondoVsHdbInvestmentPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
           <span className="inline-block rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">Investment</span>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Condo vs HDB as an Investment in Singapore</h1>
@@ -218,7 +218,7 @@ export default function CondoVsHdbInvestmentPage() {
                 </ul>
                 <p>
                   For data on freehold vs leasehold pricing across districts, see our{" "}
-                  <Link href="/insights/freehold-premium" className="text-teal-600 underline hover:text-teal-800">Freehold Premium analysis</Link>.
+                  <Link href="/insights/freehold-premium" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">Freehold Premium analysis</Link>.
                 </p>
               </div>
             </section>
@@ -229,7 +229,7 @@ export default function CondoVsHdbInvestmentPage() {
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
                   <details key={f.q} className="group px-5 py-4">
-                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-teal-700">{f.q}</summary>
+                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-[var(--blue-deep)]">{f.q}</summary>
                     <p className="mt-3 text-sm leading-relaxed text-gray-500">{f.a}</p>
                   </details>
                 ))}
@@ -243,23 +243,23 @@ export default function CondoVsHdbInvestmentPage() {
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Find Investment-Focused Agents</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Search for agents with strong track records in your target area and property type.</p>
-              <Link href="/search" className="mt-4 block rounded-lg bg-teal-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-teal-500">
+              <Link href="/search" className="mt-4 block rounded-lg bg-[var(--blue)] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
                 Search agents
               </Link>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Market Data</h3>
               <ul className="mt-3 space-y-2 text-sm">
-                <li><Link href="/insights/freehold-premium" className="text-teal-600 hover:underline">Freehold Premium by District</Link></li>
-                <li><Link href="/insights/million-dollar-hdb" className="text-teal-600 hover:underline">Million-Dollar HDB Tracker</Link></li>
+                <li><Link href="/insights/freehold-premium" className="text-[var(--blue)] hover:underline">Freehold Premium by District</Link></li>
+                <li><Link href="/insights/million-dollar-hdb" className="text-[var(--blue)] hover:underline">Million-Dollar HDB Tracker</Link></li>
               </ul>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
-                <li><Link href="/guides/property-agent-commission" className="text-sm text-teal-600 hover:underline">Agent commission rates</Link></li>
-                <li><Link href="/guides/hdb-resale-process" className="text-sm text-teal-600 hover:underline">HDB resale process</Link></li>
-                <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-teal-600 hover:underline">How to choose an agent</Link></li>
+                <li><Link href="/guides/property-agent-commission" className="text-sm text-[var(--blue)] hover:underline">Agent commission rates</Link></li>
+                <li><Link href="/guides/hdb-resale-process" className="text-sm text-[var(--blue)] hover:underline">HDB resale process</Link></li>
+                <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-[var(--blue)] hover:underline">How to choose an agent</Link></li>
               </ul>
             </div>
           </aside>

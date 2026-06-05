@@ -127,7 +127,7 @@ export default async function MillionDollarHdbPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -215,7 +215,7 @@ export default async function MillionDollarHdbPage() {
                   const slug = townSlug(t.town);
                   return (
                     <Link key={t.town} href={`/property-agents/hdb/${slug}`}
-                      className="block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-teal-200 hover:shadow-sm">
+                      className="block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-green-600" : i < 10 ? "bg-green-400" : "bg-gray-400"}`}>{i + 1}</span>
@@ -275,7 +275,7 @@ export default async function MillionDollarHdbPage() {
             </section>
 
             {/* CTA */}
-            <div className="rounded-xl border border-teal-200 bg-teal-50 p-6">
+            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6">
               <h3 className="text-lg font-bold text-gray-900">Explore HDB prices by town</h3>
               <p className="mt-2 text-[15px] text-gray-600">
                 View detailed HDB resale analysis for every town in Singapore, including prices by flat type, floor premiums, and lease age impact.
@@ -283,7 +283,7 @@ export default async function MillionDollarHdbPage() {
               <div className="mt-4 flex flex-wrap gap-2">
                 {towns.slice(0, 8).map((t) => (
                   <Link key={t.town} href={`/property-agents/hdb/${townSlug(t.town)}`}
-                    className="rounded-lg border border-teal-200 bg-white px-3 py-1.5 text-xs font-medium text-teal-700 transition hover:bg-teal-50">
+                    className="rounded-lg border border-[var(--line-2)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--blue-deep)] transition hover:bg-[var(--blue-wash)]">
                     {townDisplayName(t.town)}
                   </Link>
                 ))}
@@ -309,7 +309,7 @@ export default async function MillionDollarHdbPage() {
               <div className="mt-4 space-y-3">
                 {towns.slice(0, 5).map((t) => (
                   <Link key={t.town} href={`/property-agents/hdb/${townSlug(t.town)}`}
-                    className="flex items-center justify-between text-sm hover:text-teal-600">
+                    className="flex items-center justify-between text-sm hover:text-[var(--blue)]">
                     <span className="text-gray-600">{townDisplayName(t.town)}</span>
                     <span className="font-bold text-gray-900">{t.count}</span>
                   </Link>
@@ -328,8 +328,8 @@ export default async function MillionDollarHdbPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>
               <div className="mt-3 space-y-2">
-                <Link href="/insights/freehold-premium" className="block text-sm text-gray-600 hover:text-teal-600">Freehold Premium by District</Link>
-                <Link href="/insights/court-case-statistics" className="block text-sm text-gray-600 hover:text-teal-600">Court Case Statistics</Link>
+                <Link href="/insights/freehold-premium" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Freehold Premium by District</Link>
+                <Link href="/insights/court-case-statistics" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Court Case Statistics</Link>
               </div>
             </div>
           </aside>

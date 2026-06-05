@@ -97,16 +97,16 @@ export default async function BestByTypePage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
 
-      <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
+      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)]">
         <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <nav className="text-xs text-teal-300/60">
-            <Link href="/" className="hover:text-teal-200">Home</Link>
+          <nav className="text-xs text-[var(--slate-2)]">
+            <Link href="/" className="hover:text-[var(--blue-wash)]">Home</Link>
             <span className="mx-1.5">/</span>
-            <Link href="/property-agents" className="hover:text-teal-200">Property Agents</Link>
+            <Link href="/property-agents" className="hover:text-[var(--blue-wash)]">Property Agents</Link>
             <span className="mx-1.5">/</span>
-            <span className="text-teal-200">Best {t.label} Agents</span>
+            <span className="text-[var(--slate-2)]">Best {t.label} Agents</span>
           </nav>
           <h1 className="mt-6 text-3xl font-extrabold text-white md:text-4xl">
             Best {t.label} property agents in Singapore
@@ -115,7 +115,7 @@ export default async function BestByTypePage({ params }: Props) {
             Ranked by AgentScore based on actual {t.desc}. Not advertising, not self-reported.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-500">
+            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue-deep)]">
               Compare agents side by side
             </Link>
             <Link href="/search" className="inline-flex items-center rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10">
@@ -136,18 +136,18 @@ export default async function BestByTypePage({ params }: Props) {
             <Link
               key={a.ceaReg || i}
               href={`/property-agents/agent/${a.slug}`}
-              className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm"
+              className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-[var(--line-2)] hover:shadow-sm"
             >
               <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
-                i === 0 ? "bg-amber-500" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-amber-700" : "bg-teal-600"
+                i === 0 ? "bg-amber-500" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-amber-700" : "bg-[var(--blue)]"
               }`}>{i + 1}</div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 group-hover:text-teal-600">{a.name}</p>
+                <p className="font-semibold text-gray-900 group-hover:text-[var(--blue)]">{a.name}</p>
                 <p className="text-xs text-gray-500 truncate">{a.agency} - {a.typeCount} {t.label.toLowerCase()} transactions</p>
               </div>
               {a.score > 0 && (
-                <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1.5">
-                  <span className="text-lg font-extrabold text-teal-600">{Math.round(a.score)}</span>
+                <div className="flex flex-col items-center rounded-lg border border-[var(--line)] bg-[var(--blue-wash)] px-3 py-1.5">
+                  <span className="text-lg font-extrabold text-[var(--blue)]">{Math.round(a.score)}</span>
                   <span className="text-[8px] uppercase tracking-widest text-gray-400">Score</span>
                 </div>
               )}
@@ -172,7 +172,7 @@ export default async function BestByTypePage({ params }: Props) {
           <div className="mt-3 flex flex-wrap gap-2">
             {TYPES.filter(x => x.slug !== type).map(x => (
               <Link key={x.slug} href={`/property-agents/best-by-type/${x.slug}`}
-                className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 transition hover:border-teal-300 hover:text-teal-600">
+                className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]">
                 Best {x.label} agents
               </Link>
             ))}

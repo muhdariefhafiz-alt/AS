@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../../lib/email";
+import { AGENT_TERMS_VERSION } from "../../../lib/agent-terms";
+import { PLATFORM_FEE_PCT } from "../../../lib/fee";
+import { givenName } from "../../../lib/names";
 
+// Service role: reads/writes agent email + claimed_email during claim
+// verification. Those columns are REVOKEd from the anon role.
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export async function GET(req: Request) {
@@ -45,9 +50,24 @@ export async function GET(req: Request) {
   // Fetch agent details for the welcome email payload
   const { data: agentFull } = await supabase
     .from("sg_agents")
-    .select("name, slug, score, agency_name")
+    .select("name, slug, score, agency_name, cea_registration")
     .eq("id", claim.agent_id)
     .single();
+
+  // Record the blanket agent agreement. Clicking the email-verified claim link
+  // is the e-signature: identity is confirmed (CEA match at request time +
+  // verified email here). This is the binding success-fee contract, stored.
+  await supabase.from("sg_agent_agreements").insert({
+    agent_id: claim.agent_id,
+    cea_registration: agentFull?.cea_registration ?? null,
+    terms_version: AGENT_TERMS_VERSION,
+    fee_pct: PLATFORM_FEE_PCT,
+    signatory_name: agentFull?.name ?? null,
+    signatory_email: claim.email,
+    ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    user_agent: req.headers.get("user-agent")?.slice(0, 300) ?? null,
+    source: "claim",
+  });
 
   // Fire Agent Claimed welcome with full HTML.
   // Consent: double opt-in (submitted email + clicked verification link).
@@ -59,22 +79,26 @@ export async function GET(req: Request) {
     profileUrl,
     dashboardUrl,
   );
-  sendEmail({
-    to: claim.email,
-    subject: "Your profile is claimed. Here's what to do next.",
-    html: claimedHtml,
-    metric: "Agent Claimed",
-    properties: {
-      agent_name: agentFull?.name ?? "",
-      agent_slug: agentFull?.slug ?? "",
-      agent_score: agentFull?.score ?? null,
-      agency_name: agentFull?.agency_name ?? "",
-      profile_url: profileUrl,
-      dashboard_url: dashboardUrl,
-    },
-  }).catch((err) => {
+  // Await before the redirect: a fire-and-forget promise is dropped when the
+  // Vercel lambda freezes after responding, so the Klaviyo event never lands.
+  try {
+    await sendEmail({
+      to: claim.email,
+      subject: "Your profile is claimed. Here's what to do next.",
+      html: claimedHtml,
+      metric: "Agent Claimed",
+      properties: {
+        agent_name: agentFull?.name ?? "",
+        agent_slug: agentFull?.slug ?? "",
+        agent_score: agentFull?.score ?? null,
+        agency_name: agentFull?.agency_name ?? "",
+        profile_url: profileUrl,
+        dashboard_url: dashboardUrl,
+      },
+    });
+  } catch (err) {
     console.error("[claim/verify] Klaviyo welcome event failed:", err);
-  });
+  }
 
   // Redirect to success page
   return NextResponse.redirect(new URL("/claim/success", req.url));
@@ -86,11 +110,11 @@ function buildClaimedEmail(
   profileUrl: string,
   dashboardUrl: string,
 ): string {
-  const firstName = name.split(" ")[0];
+  const firstName = givenName(name);
   const scoreSection = score
     ? `
-    <div style="background:#f0fdfa;border:2px solid #0f766e;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
-      <div style="font-size:48px;font-weight:800;color:#0f766e;">${score}</div>
+    <div style="background:#eef2fb;border:2px solid #0a1733;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
+      <div style="font-size:48px;font-weight:800;color:#0a1733;">${score}</div>
       <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:2px;">Your AgentScore</div>
     </div>`
     : "";
@@ -103,7 +127,7 @@ function buildClaimedEmail(
 <tr><td align="center" style="padding:24px 16px">
 <table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
 
-  <tr><td style="background:#0f766e;padding:24px 32px">
+  <tr><td style="background:#0a1733;padding:24px 32px">
     <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
   </td></tr>
 
@@ -113,27 +137,27 @@ function buildClaimedEmail(
     ${scoreSection}
 
     <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.6">
-      Buyers searching for property agents in your area can now see your full profile and contact you directly. Three things to do now:
+      Sellers in your area looking for an agent can now find your profile and invite you to quote. Three things to do now:
     </p>
 
     <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 24px;">
       <tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;">
-        <span style="display:inline-block;width:24px;height:24px;background:#0d9488;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;margin-right:10px;">1</span>
+        <span style="display:inline-block;width:24px;height:24px;background:#1f44ff;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;margin-right:10px;">1</span>
         <span style="font-size:14px;color:#374151;font-weight:500;">Add a professional photo</span>
       </td></tr>
       <tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;">
-        <span style="display:inline-block;width:24px;height:24px;background:#0d9488;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;margin-right:10px;">2</span>
+        <span style="display:inline-block;width:24px;height:24px;background:#1f44ff;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;margin-right:10px;">2</span>
         <span style="font-size:14px;color:#374151;font-weight:500;">Add your WhatsApp number</span>
       </td></tr>
       <tr><td style="padding:10px 0;">
-        <span style="display:inline-block;width:24px;height:24px;background:#0d9488;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;margin-right:10px;">3</span>
+        <span style="display:inline-block;width:24px;height:24px;background:#1f44ff;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;margin-right:10px;">3</span>
         <span style="font-size:14px;color:#374151;font-weight:500;">Write a short practice description</span>
       </td></tr>
     </table>
 
     <table cellpadding="0" cellspacing="0" border="0"><tr>
       <td style="padding-right:8px">
-        <a href="${dashboardUrl}?utm_source=claimed&utm_medium=email" style="display:inline-block;background:#0d9488;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+        <a href="${dashboardUrl}?utm_source=claimed&utm_medium=email" style="display:inline-block;background:#1f44ff;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
           Complete your profile
         </a>
       </td>
@@ -145,7 +169,7 @@ function buildClaimedEmail(
     </tr></table>
 
     <p style="margin:24px 0 0;font-size:13px;color:#6b7280;line-height:1.5;padding-top:16px;border-top:1px solid #f3f4f6;">
-      You will receive a weekly report showing how many buyers viewed your profile. You can unsubscribe from those at any time.
+      You will receive a weekly report on your seller leads and profile activity. You can unsubscribe from those at any time.
     </p>
   </td></tr>
 

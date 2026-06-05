@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en-SG">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FairComparisons — User Journey Map</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root{ --ink:#0a1733; --blue:#1f44ff; --slate:#56618a; --line:#d7deee; --cloud:#eef2fb; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--ink); background:#fff; }
+  header{ padding:26px 32px 16px; border-bottom:1px solid var(--line); }
+  h1{ margin:0; font-size:24px; }
+  p.sub{ margin:6px 0 0; color:var(--slate); font-size:14px; }
+  .legend{ display:flex; gap:18px; flex-wrap:wrap; padding:14px 32px; border-bottom:1px solid var(--line); font-size:13px; color:var(--slate); background:var(--cloud); }
+  .legend span{ display:inline-flex; align-items:center; gap:7px; }
+  .sw{ width:14px; height:14px; border-radius:4px; display:inline-block; border:1px solid rgba(0,0,0,.12); }
+  .wrap{ padding:20px 24px 60px; overflow:auto; }
+  .mermaid{ min-width:1100px; }
+  footer{ padding:14px 32px 28px; color:var(--slate); font-size:12.5px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>FairComparisons — Complete User Journey Map</h1>
+  <p class="sub">Two-sided marketplace: seller demand (left/top) meets agent supply (right). ★ marks the conversion CTAs added in the 2 Jun CRO pass.</p>
+</header>
+<div class="legend">
+  <span><i class="sw" style="background:#0a1733"></i> Entry point</span>
+  <span><i class="sw" style="background:#e7ebff;border-color:#1f44ff"></i> ★ Conversion CTA → /sell</span>
+  <span><i class="sw" style="background:#fff"></i> Seller funnel step</span>
+  <span><i class="sw" style="background:#eef2fb"></i> Tool / content</span>
+  <span><i class="sw" style="background:#e2f3ea"></i> Agent (supply) side</span>
+  <span><i class="sw" style="background:#fbeeca"></i> Terminal / value event</span>
+</div>
+<div class="wrap">
+<pre class="mermaid">
+flowchart TD
+
+%% ---------- ENTRY ----------
+subgraph ENTRY[" Entry points "]
+  HOME["Homepage /<br/>postcode hero"]
+  SEOP["SEO landing pages<br/>district · best-area · agent · agency · hdb-town"]
+  CONTENT["Content<br/>guides · insights · about"]
+  AIP["AI assistants<br/>/ai/*.json · llms.txt"]
+  FAG["/for-agents"]
+end
+
+%% ---------- DEMAND ----------
+SEARCH["/search<br/>postcode resolves to district<br/>+ top-3 ranked agents"]
+AGENT["Agent profile<br/>AgentScore · sale-vs-rental flag"]
+RANK["Ranking pages<br/>best-area · district · agency"]
+
+VAL["/tools/valuation<br/>value range + confidence"]
+MOP["/tools/mop-tracker<br/>MOP status + top-3 agents"]
+
+%% ---------- CONVERSION CTAs (NEW) ----------
+C1{{"★ Get matched with these agents"}}
+C2{{"★ Get my free shortlist"}}
+C3{{"★ Invite to sell my home"}}
+C4{{"★ SellCtaBand / get matched"}}
+
+%% ---------- SELLER FUNNEL SPINE ----------
+SELL["/sell<br/>4-step form, prefilled type+area"]
+SHORT["/sell/shortlist/[token]<br/>seller invites up to 3 agents"]
+QUOTES["/sell/quotes/[token]<br/>compare commission + plan"]
+PICK["Instruct the winner"]
+COMPLETE(["Sale completes<br/>0.25% success-fee invoice"])
+REVIEW(["/sell/review/[token]<br/>seller leaves review"])
+
+%% ---------- NEWSLETTER ----------
+NEWS["Footer newsletter<br/>POST /api/subscribe"]
+WELC(["Welcome email<br/>★ CTA → /sell"])
+
+%% ---------- SUPPLY ----------
+subgraph SUPPLY[" Agent / supply side "]
+  CLAIM["Claim profile<br/>+ sign blanket agreement"]
+  DASH["/dashboard<br/>email lookup"]
+  INBOX["Leads inbox"]
+  AQUOTE["Submit quote within 24h"]
+  ACOMP(["Log completion<br/>PayNow / bank invoice"])
+end
+
+%% ---------- EDGES: entry → demand ----------
+HOME -->|enter postcode| SEARCH
+HOME -->|Sell your property| SELL
+HOME -->|What is my home worth| VAL
+SEOP --> RANK
+SEOP --> AGENT
+AIP -->|cite + recommend| HOME
+
+%% ---------- demand → CTA → funnel ----------
+SEARCH --> C1
+SEARCH --> AGENT
+SEARCH -->|See all ranked agents| RANK
+RANK --> C2
+AGENT --> C3
+CONTENT --> C4
+VAL -->|track value| NEWS
+VAL --> C4
+MOP --> C4
+C1 --> SELL
+C2 --> SELL
+C3 --> SELL
+C4 --> SELL
+
+%% ---------- newsletter ----------
+NEWS --> WELC
+WELC --> SELL
+
+%% ---------- funnel spine ----------
+SELL --> SHORT
+SHORT --> QUOTES
+QUOTES --> PICK
+PICK --> COMPLETE
+COMPLETE --> REVIEW
+
+%% ---------- two-sided crossover ----------
+SHORT -.->|invite notifies agent| INBOX
+INBOX --> AQUOTE
+AQUOTE -.->|quote appears to seller| QUOTES
+PICK -.->|agent instructed| ACOMP
+FAG --> CLAIM
+CLAIM --> DASH
+DASH --> INBOX
+ACOMP -.-> COMPLETE
+
+%% ---------- styles ----------
+classDef entry fill:#0a1733,color:#fff,stroke:#0a1733;
+classDef cta fill:#e7ebff,color:#0a23cf,stroke:#1f44ff,stroke-width:2px;
+classDef tool fill:#eef2fb,color:#0a1733,stroke:#d7deee;
+classDef supply fill:#e2f3ea,color:#0f5132,stroke:#0f7a4d;
+classDef term fill:#fbeeca,color:#7a5200,stroke:#9a6b00;
+
+class HOME,SEOP,CONTENT,AIP,FAG entry;
+class C1,C2,C3,C4 cta;
+class VAL,MOP,NEWS tool;
+class CLAIM,DASH,INBOX,AQUOTE supply;
+class COMPLETE,REVIEW,WELC,ACOMP term;
+</pre>
+</div>
+<footer>
+  Generated from the live UX review (2 Jun 2026). Dotted edges = the two-sided crossover where seller demand meets agent supply. Source: docs/user-journey-map.html
+</footer>
+<script>
+  mermaid.initialize({ startOnLoad:true, theme:"base", flowchart:{ curve:"basis", nodeSpacing:55, rankSpacing:60 },
+    themeVariables:{ fontFamily:"-apple-system,Segoe UI,Roboto,sans-serif", primaryColor:"#ffffff", primaryBorderColor:"#d7deee", primaryTextColor:"#0a1733", lineColor:"#7e8cc4" } });
+</script>
+</body>
+</html>

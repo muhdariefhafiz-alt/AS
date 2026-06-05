@@ -2,7 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import EmailCapture from "../../../components/EmailCapture";
+import { titleName, cleanAgency } from "../../../lib/names";
 import type { Metadata } from "next";
+
+function initials(name: string) {
+  return name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+}
 
 export const revalidate = false;
 export const dynamicParams = true;
@@ -24,9 +29,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const isThin = agency.agent_count < 50 && !agency.google_rating && !agency.score;
 
+  const clean = cleanAgency(agency.name);
   return {
-    title: `${agency.name} - Property Agency in Singapore`,
-    description: `${agency.name} has ${agency.agent_count.toLocaleString()} registered ${agency.agent_count === 1 ? "agent" : "agents"} in Singapore. ${scoreText}${ratingText}Compare with other agencies on FairComparisons.`,
+    title: `${clean} Reviews & AgentScore | Singapore Property Agency`,
+    description: `${clean} reviews and ratings: ${agency.agent_count.toLocaleString()} registered ${agency.agent_count === 1 ? "agent" : "agents"}. ${ratingText}${scoreText}See the agency's record on real CEA transaction data and compare it on FairComparisons.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/agency/${slug}` },
     ...(isThin && { robots: { index: false, follow: true } }),
   };
@@ -62,11 +68,15 @@ export default async function AgencyPage({ params }: Props) {
 
   if (!agency) notFound();
 
-  // Get agents for this agency
+  // Rank the agency's agents by real activity so the best performers surface
+  // first (not alphabetically — this is a ranking platform). AgentScore is
+  // compressed at the cap (many agents tie at 80), so transaction volume is the
+  // meaningful differentiator and is a clean integer to sort on.
   const { data: agents } = await supabase
     .from("sg_agents")
-    .select("name, slug, cea_registration, google_rating, google_review_count")
+    .select("name, slug, cea_registration, google_rating, google_review_count, score, transaction_count")
     .eq("agency_id", agency.id)
+    .order("transaction_count", { ascending: false, nullsFirst: false })
     .order("name")
     .limit(50);
 
@@ -133,177 +143,115 @@ export default async function AgencyPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
 
-      <nav className="border-b border-gray-200 bg-gray-50">
-        <div className="mx-auto max-w-[1280px] px-5 py-2.5 text-xs text-gray-400 md:px-10">
-          <Link href="/" className="hover:text-gray-600">Home</Link>
-          <span className="mx-1.5">/</span>
-          <Link href="/property-agents" className="hover:text-gray-600">Agencies</Link>
-          <span className="mx-1.5">/</span>
-          <span className="text-gray-600">{agency.name}</span>
+      <header className="fc-wrap" style={{ padding: "24px 40px 0" }}>
+        <div className="sr-crumb">
+          <Link href="/">Home</Link> / <Link href="/property-agents">Compare agents</Link> / {titleName(agency.name)}
         </div>
-      </nav>
+      </header>
 
-      <div className="mx-auto max-w-[1280px] px-5 py-10 md:px-10">
-        <div className="grid gap-10 lg:grid-cols-3">
-          {/* Main */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Header */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{agency.name}</h1>
-                  <p className="mt-1 text-sm text-gray-500">
-                    CEA License: {agency.license_number}
-                  </p>
-                </div>
-                {agency.score && (
-                  <div className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-center">
-                    <div className="text-xl font-bold text-teal-700">{Math.round(Number(agency.score))}</div>
-                    <div className="text-[8px] uppercase text-teal-600">Score</div>
+      <div className="fc-wrap" style={{ padding: "18px 40px 72px" }}>
+        <div className="ap-layout">
+          <main>
+            {/* identity */}
+            <div className="fc-card" style={{ padding: 26 }}>
+              <h1 style={{ margin: 0, fontSize: "clamp(28px,3.4vw,40px)" }}>{titleName(agency.name)}</h1>
+              <div className="mono small muted" style={{ marginTop: 6 }}>CEA License {agency.license_number}</div>
+              <div className="fc-row" style={{ gap: 14, marginTop: 18 }}>
+                {agency.google_rating && (
+                  <div className="fc-card fc-row" style={{ padding: "14px 18px", gap: 14, background: "var(--cloud)", border: "none" }}>
+                    <span className="serif" style={{ fontWeight: 600, fontSize: 34 }}>{Number(agency.google_rating).toFixed(1)}</span>
+                    <div>
+                      <div style={{ color: "var(--blue)", fontSize: 16, letterSpacing: 2 }}>
+                        {"\u2605".repeat(Math.round(Number(agency.google_rating)))}
+                        <span style={{ color: "var(--line-2)" }}>{"\u2605".repeat(5 - Math.round(Number(agency.google_rating)))}</span>
+                      </div>
+                      <div className="small muted">{agency.google_review_count} Google reviews</div>
+                    </div>
                   </div>
                 )}
+                <span className="fc-badge fc-badge--ranked"><span className="dot" /> {agency.agent_count.toLocaleString()} agents ranked</span>
               </div>
-
-              {agency.google_rating && (
-                <div className="mt-4 flex items-center gap-3 rounded-lg bg-amber-50 p-3">
-                  <span className="text-2xl font-bold text-amber-600">{Number(agency.google_rating).toFixed(1)}</span>
-                  <div>
-                    <span className="text-amber-400">
-                      {"\u2605".repeat(Math.round(Number(agency.google_rating)))}
-                      {"\u2606".repeat(5 - Math.round(Number(agency.google_rating)))}
-                    </span>
-                    <div className="text-xs text-amber-600/70">{agency.google_review_count} Google reviews</div>
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* Assessment - AI citable */}
-            <article className="rounded-lg border border-gray-200 bg-white p-6">
-              <h2 className="text-lg font-bold text-gray-900">{agency.name} - overview and data</h2>
-              <p className="mt-3 text-sm leading-relaxed text-gray-600">
-                {agency.name} (CEA {agency.license_number}) is a property agency in Singapore
-                with {agency.agent_count.toLocaleString()} registered {agency.agent_count === 1 ? "agent" : "agents"}.
-                {agency.google_rating && ` Clients rate this agency ${Number(agency.google_rating).toFixed(1)}/5 based on ${agency.google_review_count} Google reviews.`}
-                {agency.agent_count > 1000
-                  ? ` It is one of the largest agencies in Singapore by number of agents.`
-                  : agency.agent_count > 100
-                    ? ` It is a mid-sized agency in the Singapore market.`
-                    : ` It is a boutique agency in the Singapore market.`
-                }
+            {/* overview */}
+            <div className="fc-card fc-card--pad" style={{ marginTop: 16 }}>
+              <h2 style={{ fontSize: 22, margin: "0 0 10px" }}>Overview</h2>
+              <p style={{ color: "#39425e", fontSize: 16, lineHeight: 1.6, margin: "0 0 10px" }}>
+                {titleName(agency.name)} (CEA {agency.license_number}) is a property agency in Singapore with {agency.agent_count.toLocaleString()} registered {agency.agent_count === 1 ? "agent" : "agents"}.
+                {agency.google_rating && ` Clients rate this agency ${Number(agency.google_rating).toFixed(1)} of 5 based on ${agency.google_review_count} Google reviews.`}
+                {agency.agent_count > 1000 ? " It is one of the largest agencies in Singapore by number of agents." : agency.agent_count > 100 ? " It is a mid-sized agency in the Singapore market." : " It is a boutique agency in the Singapore market."}
               </p>
-              {totalAgencies && (
-                <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                  There are {totalAgencies.toLocaleString()} CEA-licensed agencies in Singapore.
-                </p>
-              )}
-            </article>
+              <p className="muted small" style={{ margin: 0 }}>
+                {totalAgencies ? `There are ${totalAgencies.toLocaleString()} CEA-licensed agencies in Singapore. ` : ""}
+                Agency size does not affect any individual agent&apos;s AgentScore, which is computed per person from public records.
+              </p>
+            </div>
 
-            {/* Agents */}
+            {/* agents */}
             {agentList.length > 0 && (
-              <div className="rounded-lg border border-gray-200 bg-white p-6">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                  Agents ({agency.agent_count.toLocaleString()})
-                </h2>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <div className="fc-card fc-card--pad" style={{ marginTop: 16 }}>
+                <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                  <div className="eyebrow eyebrow--muted">Agents \u00b7 showing {agentList.length} of {agency.agent_count.toLocaleString()}</div>
+                  <Link href="/property-agents" className="small" style={{ fontWeight: 700 }}>Compare by AgentScore \u203a</Link>
+                </div>
+                <div className="agent-grid" style={{ marginTop: 14 }}>
                   {agentList.map((agent) => (
-                    <Link
-                      key={agent.slug}
-                      href={`/property-agents/agent/${agent.slug}`}
-                      className="group flex items-center gap-3 rounded-lg bg-gray-50 p-3 transition hover:bg-teal-50"
-                    >
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-100 text-sm font-bold text-teal-700">
-                        {agent.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 group-hover:text-teal-600">{agent.name}</div>
-                        <div className="text-[10px] text-gray-400">{agent.cea_registration}</div>
-                      </div>
+                    <Link key={agent.slug} href={`/property-agents/agent/${agent.slug}`} className="agent-cell">
+                      <span className="av">{initials(agent.name)}</span>
+                      <div><div className="nm">{titleName(agent.name)}</div><div className="rg">{agent.cea_registration}</div></div>
                     </Link>
                   ))}
                 </div>
-                {agency.agent_count > 50 && (
-                  <p className="mt-3 text-xs text-gray-400">
-                    Showing 50 of {agency.agent_count.toLocaleString()} agents.
-                  </p>
-                )}
+                <p className="mono small muted" style={{ marginTop: 12 }}>
+                  Top {agentList.length} by transaction volume. Rank the full roster on the compare page.
+                </p>
               </div>
             )}
-          </div>
+          </main>
 
-          {/* Sidebar */}
-          <aside className="space-y-6">
-            <div className="rounded-lg border border-gray-200 bg-white p-5">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Agency Details</h3>
-              <dl className="mt-4 space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-gray-500">CEA License</dt>
-                  <dd className="font-medium text-gray-900">{agency.license_number}</dd>
+          <aside>
+            <div className="ap-side">
+              <div className="fc-card fc-card--pad">
+                <div className="eyebrow eyebrow--muted">Agency details</div>
+                <div style={{ marginTop: 10 }}>
+                  <div className="metarow"><span className="k">CEA license</span><span className="v tnum">{agency.license_number}</span></div>
+                  <div className="metarow"><span className="k">Agents</span><span className="v tnum">{agency.agent_count.toLocaleString()}</span></div>
+                  {agency.phone && <div className="metarow"><span className="k">Phone</span><span className="v"><a href={`tel:${agency.phone}`}>{agency.phone}</a></span></div>}
+                  {agency.website && <div className="metarow"><span className="k">Website</span><span className="v"><a href={agency.website} target="_blank" rel="noopener noreferrer">{agency.website.replace(/^https?:\/\/(www\.)?/, "")}</a></span></div>}
                 </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-500">Agents</dt>
-                  <dd className="font-medium text-gray-900">{agency.agent_count.toLocaleString()}</dd>
+              </div>
+
+              <div className="fc-card fc-card--pad" style={{ background: "var(--ink)", color: "#fff" }}>
+                <div className="eyebrow" style={{ color: "var(--slate-2)" }}>Selling your home?</div>
+                <p className="small" style={{ margin: "10px 0 14px", color: "rgba(255,255,255,0.82)" }}>
+                  We rank every CEA agent on real transaction records and shortlist the best for your area. Free for sellers.
+                </p>
+                <Link href="/sell?utm_source=agency" className="fc-btn fc-btn--primary fc-btn--block">Get my free shortlist</Link>
+                <Link href="/property-agents" className="small" style={{ display: "block", marginTop: 12, textAlign: "center", color: "rgba(255,255,255,0.82)" }}>Or browse all agencies ›</Link>
+              </div>
+
+              <div className="fc-card fc-card--pad">
+                <EmailCapture variant="sidebar" source="agency" pagePath={`/property-agents/agency/${slug}`} heading="Agency updates" description={`Get notified when ${titleName(agency.name)} data is updated.`} />
+              </div>
+
+              <div className="fc-card fc-card--pad">
+                <div className="eyebrow eyebrow--muted">Compare with</div>
+                <div className="fc-col" style={{ gap: 8, marginTop: 10 }}>
+                  {[
+                    { slug: "propnex-realty-pte-ltd", short: "PropNex" },
+                    { slug: "era-realty-network-pte-ltd", short: "ERA" },
+                    { slug: "huttons-asia-pte-ltd", short: "Huttons" },
+                    { slug: "orangetee-tie-pte-ltd", short: "OrangeTee" },
+                    { slug: "sri-pte-ltd", short: "SRI" },
+                  ].filter((a) => a.slug !== agency.slug).slice(0, 4).map((other) => {
+                    const pair = agency.slug < other.slug ? `${agency.slug}-vs-${other.slug}` : `${other.slug}-vs-${agency.slug}`;
+                    return <Link key={other.slug} href={`/property-agents/agency-compare/${pair}`} className="small" style={{ fontWeight: 600 }}>vs {other.short} \u203a</Link>;
+                  })}
                 </div>
-                {agency.phone && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Phone</dt>
-                    <dd><a href={`tel:${agency.phone}`} className="font-medium text-teal-600">{agency.phone}</a></dd>
-                  </div>
-                )}
-                {agency.website && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Website</dt>
-                    <dd><a href={agency.website} target="_blank" rel="noopener noreferrer" className="font-medium text-teal-600 truncate block max-w-[150px]">{agency.website.replace(/^https?:\/\/(www\.)?/, "")}</a></dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-
-            <div className="rounded-lg border border-teal-200 bg-teal-50 p-5">
-              <h3 className="text-sm font-bold text-gray-900">Looking for an agent at {agency.name}?</h3>
-              <p className="mt-1 text-xs text-gray-600">
-                Browse {agency.agent_count.toLocaleString()} registered {agency.agent_count === 1 ? "agent" : "agents"}.
-                Compare on experience and district expertise.
-              </p>
-              <Link href="/property-agents/compare" className="mt-3 inline-block text-sm font-semibold text-teal-600 hover:text-teal-700">
-                Compare agents {"\u2192"}
-              </Link>
-            </div>
-
-            <EmailCapture
-              variant="sidebar"
-              source="agency"
-              pagePath={`/property-agents/agency/${slug}`}
-              heading="Agency updates"
-              description={`Get notified when ${agency.name} data is updated.`}
-            />
-
-            {/* Agency comparisons */}
-            <div className="rounded-lg border border-gray-200 bg-white p-5">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Compare with</h3>
-              <div className="mt-3 space-y-2">
-                {[
-                  { slug: "propnex-realty-pte-ltd", short: "PropNex" },
-                  { slug: "era-realty-network-pte-ltd", short: "ERA" },
-                  { slug: "huttons-asia-pte-ltd", short: "Huttons" },
-                  { slug: "orangetee-tie-pte-ltd", short: "OrangeTee" },
-                  { slug: "sri-pte-ltd", short: "SRI" },
-                ].filter((a) => a.slug !== agency.slug).slice(0, 4).map((other) => {
-                  // Always put alphabetically-first slug first for canonical URL
-                  const pair = agency.slug < other.slug
-                    ? `${agency.slug}-vs-${other.slug}`
-                    : `${other.slug}-vs-${agency.slug}`;
-                  return (
-                    <Link key={other.slug} href={`/property-agents/agency-compare/${pair}`}
-                      className="block text-sm text-gray-600 hover:text-teal-600">
-                      vs {other.short}
-                    </Link>
-                  );
-                })}
               </div>
             </div>
           </aside>

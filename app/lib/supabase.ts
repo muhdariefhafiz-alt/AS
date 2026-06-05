@@ -1,9 +1,29 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+
+// Server-only admin client. Bypasses RLS — use for seller-funnel writes
+// (sg_leads, sg_lead_shortlist, sg_lead_quotes, sg_lead_completions) which
+// have RLS on with no anon policies. Throws on the server if the env var is
+// missing so we never silently fall back to anon.
+let _adminClient: SupabaseClient | null = null;
+export function supabaseAdmin(): SupabaseClient {
+  if (_adminClient) return _adminClient;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error(
+      "supabaseAdmin requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY"
+    );
+  }
+  _adminClient = createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return _adminClient;
+}
 
 // SG Types
 export type Agency = {

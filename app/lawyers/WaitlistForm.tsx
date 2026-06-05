@@ -19,7 +19,7 @@ export default function WaitlistForm({ lawyerMode }: { lawyerMode?: boolean }) {
   }
 
   if (status === "done") {
-    return <p className="mt-4 text-sm font-medium text-teal-700">You are on the list. We will be in touch.</p>;
+    return <p className="mt-4 text-sm font-medium text-[var(--blue-deep)]">You are on the list. We will be in touch.</p>;
   }
 
   return (
@@ -30,13 +30,13 @@ export default function WaitlistForm({ lawyerMode }: { lawyerMode?: boolean }) {
         onChange={(e) => setEmail(e.target.value)}
         required
         placeholder={lawyerMode ? "your@lawfirm.com" : "your@email.com"}
-        className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+        className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
       />
       <button
         type="submit"
         disabled={status === "loading"}
         className={`shrink-0 rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50 ${
-          lawyerMode ? "bg-teal-600 hover:bg-teal-700" : "bg-slate-800 hover:bg-slate-700"
+          lawyerMode ? "bg-[var(--blue)] hover:bg-[var(--blue-deep)]" : "bg-slate-800 hover:bg-slate-700"
         }`}
       >
         {status === "loading" ? "..." : lawyerMode ? "Claim early access" : "Join waitlist"}

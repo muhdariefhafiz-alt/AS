@@ -21,7 +21,7 @@ function pctChange(a: number, b: number) {
 
 function affordBadge(median: number) {
   if (median >= 800_000) return { label: "Premium", css: "text-amber-700 bg-amber-50 border-amber-200" };
-  if (median >= 600_000) return { label: "Above Average", css: "text-teal-700 bg-teal-50 border-teal-200" };
+  if (median >= 600_000) return { label: "Above Average", css: "text-[var(--blue-deep)] bg-[var(--blue-wash)] border-[var(--line-2)]" };
   if (median >= 450_000) return { label: "Mid-range", css: "text-gray-700 bg-gray-50 border-gray-200" };
   return { label: "Affordable", css: "text-green-700 bg-green-50 border-green-200" };
 }
@@ -128,7 +128,7 @@ export default async function HdbTownPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -139,7 +139,7 @@ export default async function HdbTownPage({ params }: Props) {
       </nav>
 
       {/* Hero */}
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
           <span className={`inline-block rounded-full border px-3 py-1 text-xs font-semibold ${badge.css}`}>{badge.label}</span>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">{display} HDB Resale Prices</h1>
@@ -155,6 +155,26 @@ export default async function HdbTownPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* Selling-here CTA → seller funnel */}
+      <div className="mx-auto max-w-[1120px] px-5 pt-6 md:px-8">
+        <a
+          href={`/sell/hdb/${slug}`}
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] px-5 py-4 transition hover:border-[var(--line-2)]"
+        >
+          <div>
+            <p className="text-sm font-bold text-[var(--ink)]">
+              Selling an HDB flat in {display}?
+            </p>
+            <p className="text-xs text-[var(--blue-deep)]">
+              Get matched with the top agents who actually close here. Free shortlist.
+            </p>
+          </div>
+          <span className="rounded-lg bg-[var(--blue)] px-4 py-2 text-sm font-semibold text-white">
+            See top agents →
+          </span>
+        </a>
+      </div>
 
       {/* Definition Block - optimized for featured snippets and AI extraction */}
       <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
@@ -255,8 +275,8 @@ export default async function HdbTownPage({ params }: Props) {
                             <span className="w-16 text-xs text-gray-500">{s.storey_range}</span>
                             <div className="flex-1">
                               <div className="h-5 rounded bg-gray-100">
-                                <div className="h-5 rounded bg-teal-200 flex items-center px-2" style={{ width: `${w}%` }}>
-                                  <span className="text-xs font-medium text-teal-800">{formatPrice(s.median_price)}</span>
+                                <div className="h-5 rounded bg-[var(--blue-wash)] flex items-center px-2" style={{ width: `${w}%` }}>
+                                  <span className="text-xs font-medium text-[var(--blue-deep)]">{formatPrice(s.median_price)}</span>
                                 </div>
                               </div>
                             </div>
@@ -388,7 +408,7 @@ export default async function HdbTownPage({ params }: Props) {
                       <div key={s.street_name} className="rounded-lg border border-gray-100 bg-white px-4 py-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">{i + 1}</span>
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--blue-wash)] text-xs font-bold text-[var(--blue-deep)]">{i + 1}</span>
                             <span className="text-sm font-medium text-gray-900">{s.street_name}</span>
                           </div>
                           <div className="text-right">
@@ -397,7 +417,7 @@ export default async function HdbTownPage({ params }: Props) {
                           </div>
                         </div>
                         <div className="mt-2 h-1.5 w-full rounded-full bg-gray-100">
-                          <div className="h-1.5 rounded-full bg-teal-200" style={{ width: `${w}%` }} />
+                          <div className="h-1.5 rounded-full bg-[var(--blue-wash)]" style={{ width: `${w}%` }} />
                         </div>
                       </div>
                     );
@@ -431,7 +451,7 @@ export default async function HdbTownPage({ params }: Props) {
                     const pair = slug < otherSlug ? `${slug}-vs-${otherSlug}` : `${otherSlug}-vs-${slug}`;
                     return (
                       <Link key={t.town} href={`/property-agents/hdb-compare/${pair}`}
-                        className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-medium text-teal-700 transition hover:bg-teal-100">
+                        className="rounded-lg border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1.5 text-xs font-medium text-[var(--blue-deep)] transition hover:bg-[var(--blue-wash)]">
                         {display} vs {townDisplayName(t.town)}
                       </Link>
                     );
@@ -441,7 +461,7 @@ export default async function HdbTownPage({ params }: Props) {
             )}
 
             {/* 9. Buyer Insight Box */}
-            <section className="rounded-xl border border-teal-100 bg-teal-50/50 p-6">
+            <section className="rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-6">
               <h2 className="text-lg font-bold text-gray-900">What This Means If You Are Buying in {display}</h2>
               <div className="mt-3 space-y-3 text-[15px] leading-[1.75] text-gray-600">
                 {data.medianPrice > data.sgMedianHdb * 1.1 ? (
@@ -506,12 +526,12 @@ export default async function HdbTownPage({ params }: Props) {
             </section>
 
             {/* Best agents CTA */}
-            <div className="mt-8 rounded-xl border border-teal-200 bg-teal-50 p-6">
+            <div className="mt-8 rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6">
               <h3 className="text-lg font-bold text-gray-900">Looking for an HDB agent in {display}?</h3>
               <p className="mt-2 text-[15px] text-gray-600">
                 We ranked the top-performing agents for HDB resale transactions in {display} based on actual transaction records.
               </p>
-              <Link href={`/property-agents/best/hdb/${slug}`} className="mt-4 inline-block rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700">
+              <Link href={`/property-agents/best/hdb/${slug}`} className="mt-4 inline-block rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
                 View best HDB agents in {display} &rarr;
               </Link>
             </div>
@@ -562,7 +582,7 @@ export default async function HdbTownPage({ params }: Props) {
               <div className="mt-3 flex flex-wrap gap-2">
                 {HDB_TOWNS.filter((t) => t.slug !== slug).slice(0, 12).map((t) => (
                   <Link key={t.slug} href={`/property-agents/hdb/${t.slug}`}
-                    className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 transition hover:border-teal-300 hover:text-teal-600">
+                    className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]">
                     {townDisplayName(t.name)}
                   </Link>
                 ))}

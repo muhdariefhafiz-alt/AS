@@ -15,6 +15,23 @@ async function countEvent(event: string, since: string): Promise<number> {
   return count ?? 0;
 }
 
+async function countLeadEvent(eventType: string, since: string): Promise<number> {
+  const { count } = await supabase
+    .from("sg_lead_events")
+    .select("id", { count: "exact", head: true })
+    .eq("event_type", eventType)
+    .gte("created_at", since);
+  return count ?? 0;
+}
+
+function fmtSgd(n: number): string {
+  return new Intl.NumberFormat("en-SG", {
+    style: "currency",
+    currency: "SGD",
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
 export async function FunnelTab() {
   const cutoff30 = new Date(Date.now() - 30 * MS_DAY).toISOString();
 
@@ -47,6 +64,73 @@ export async function FunnelTab() {
   const claims = claimsRes.data ?? [];
   const verified = claims.filter((c) => c.status === "verified").length;
 
+  // Seller funnel (sg_lead_events) — the GetAgent-style flow.
+  const cutoff7 = new Date(Date.now() - 7 * MS_DAY).toISOString();
+  const [
+    sViewForm,
+    sSubmit,
+    sViewShortlist,
+    sSelect,
+    sQuote,
+    sViewQuotes,
+    sPick,
+    sCompletion,
+    sPaid,
+    paidCompletionsRes,
+    weekCompletionsRes,
+  ] = await Promise.all([
+    countLeadEvent("view_form", cutoff30),
+    countLeadEvent("submit_form", cutoff30),
+    countLeadEvent("view_shortlist", cutoff30),
+    countLeadEvent("select_agents", cutoff30),
+    countLeadEvent("agent_submit_quote", cutoff30),
+    countLeadEvent("view_quotes", cutoff30),
+    countLeadEvent("pick_winner", cutoff30),
+    countLeadEvent("log_completion", cutoff30),
+    countLeadEvent("admin_invoice_mark_paid", cutoff30),
+    supabase
+      .from("sg_lead_completions")
+      .select("platform_fee_amt, sale_price, commission_pct_final, paid_at")
+      .eq("fee_status", "paid")
+      .gte("paid_at", cutoff30),
+    supabase
+      .from("sg_lead_completions")
+      .select("id", { count: "exact", head: true })
+      .eq("fee_status", "paid")
+      .gte("paid_at", cutoff7),
+  ]);
+
+  const sellerSteps = [
+    { label: "Form viewed", value: sViewForm, note: "landed on /sell" },
+    { label: "Lead submitted", value: sSubmit, note: "/sell form completed" },
+    { label: "Shortlist viewed", value: sViewShortlist, note: "saw ranked agents" },
+    { label: "Agents invited", value: sSelect, note: "picked up to 3" },
+    { label: "Quotes submitted", value: sQuote, note: "agent-side response" },
+    { label: "Quotes compared", value: sViewQuotes, note: "seller reviewed" },
+    { label: "Agent instructed", value: sPick, note: "picked a winner" },
+    { label: "Completion logged", value: sCompletion, note: "sale closed" },
+    { label: "Fee paid", value: sPaid, note: "revenue collected" },
+  ];
+
+  const paidCompletions = paidCompletionsRes.data ?? [];
+  const mrr = paidCompletions.reduce(
+    (s, c) => s + Number(c.platform_fee_amt ?? 0),
+    0
+  );
+  const avgCommission =
+    paidCompletions.length > 0
+      ? paidCompletions.reduce(
+          (s, c) => s + Number(c.commission_pct_final ?? 0),
+          0
+        ) / paidCompletions.filter((c) => c.commission_pct_final).length || 0
+      : 0;
+  const avgSalePrice =
+    paidCompletions.length > 0
+      ? paidCompletions.reduce((s, c) => s + Number(c.sale_price ?? 0), 0) /
+        paidCompletions.length
+      : 0;
+  const completionsThisWeek = weekCompletionsRes.count ?? 0;
+
   const consumerSteps = [
     { label: "Searches", value: searches, note: "/search, district pagina's" },
     { label: "Profile views", value: profileViews, note: "klik naar agent pagina" },
@@ -66,6 +150,39 @@ export async function FunnelTab() {
 
   return (
     <div className="space-y-8">
+      {/* Seller funnel KPIs */}
+      <div>
+        <SectionHeading
+          title="Seller funnel (30d)"
+          hint="The GetAgent-style flow: lead to paid success fee."
+        />
+        <div className="mb-4 grid gap-3 sm:grid-cols-4">
+          <StatCard
+            title="Completions (7d)"
+            value={completionsThisWeek}
+            sub="paid this week"
+            color="#059669"
+          />
+          <StatCard
+            title="Fee revenue (30d)"
+            value={fmtSgd(mrr)}
+            sub={`${paidCompletions.length} paid`}
+            color="#059669"
+          />
+          <StatCard
+            title="Avg commission"
+            value={avgCommission ? `${avgCommission.toFixed(2)}%` : "-"}
+            sub="agent's rate"
+          />
+          <StatCard
+            title="Avg sale price"
+            value={avgSalePrice ? fmtSgd(avgSalePrice) : "-"}
+            sub="across completions"
+          />
+        </div>
+        <FunnelTable steps={sellerSteps} />
+      </div>
+
       <div>
         <SectionHeading
           title="Consumer-funnel (30d)"

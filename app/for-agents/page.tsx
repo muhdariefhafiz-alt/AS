@@ -7,7 +7,7 @@ export const revalidate = false;
 
 export const metadata: Metadata = {
   title: "For Property Agents - Claim Your Profile",
-  description: "Your FairComparisons profile is live. Claim it for free to add your photo, contact details, and connect with buyers searching your area.",
+  description: "Your FairComparisons profile is live. Claim it for free to add your photo and bio, respond to seller invitations, and win listings on your record. 0.25% success fee, the 2026 launch rate, only on a completed sale.",
   alternates: { canonical: "https://fair-comparisons.com/for-agents" },
 };
 
@@ -24,120 +24,121 @@ async function getStats() {
   };
 }
 
+function Tick() {
+  return (
+    <svg className="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--blue)" }}>
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
 export default async function ForAgentsPage() {
   const stats = await getStats();
   return (
     <>
-      <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
-        <div className="mx-auto max-w-[900px] px-5 py-16 text-center md:px-8 md:py-24">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-300">For Property Agents</p>
-          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl">
-            Your profile is already live.
+      {/* hero */}
+      <header className="lp-hero">
+        <div className="fc-wrap" style={{ textAlign: "center" }}>
+          <div className="lp-hero__eyebrow">For property agents</div>
+          <h1 style={{ maxWidth: "18ch", margin: "16px auto 0" }}>
+            You&apos;re judged on your <span className="accent">record,</span> not your wallet.
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">
-            FairComparisons has scored {stats.scored.toLocaleString()} Singapore property agents across {stats.agencies.toLocaleString()} agencies based on CEA transaction records.
-            If you are a CEA-registered agent, your profile and score are already public. Claim it to take control.
+          <p className="lp-hero__sub" style={{ margin: "16px auto 0" }}>
+            FairComparisons sends you sellers in your area who are ready to instruct an agent. No cost to be ranked, no cost to receive leads. You pay a 0.25% success fee, our 2026 launch rate, only when a referred sale completes, and never to rank higher.
           </p>
-          <div className="mt-6 flex justify-center gap-6">
-            <div className="text-center"><span className="text-2xl font-extrabold text-white">{stats.total.toLocaleString()}</span><p className="text-[10px] text-white/40">agents profiled</p></div>
-            <div className="text-center"><span className="text-2xl font-extrabold text-white">{stats.scored.toLocaleString()}</span><p className="text-[10px] text-white/40">agents scored</p></div>
-            <div className="text-center"><span className="text-2xl font-extrabold text-white">28</span><p className="text-[10px] text-white/40">districts</p></div>
+          <div style={{ display: "flex", gap: 48, justifyContent: "center", margin: "34px 0 30px", flexWrap: "wrap" }}>
+            <div className="hstat"><div className="n tnum">{stats.scored.toLocaleString()}</div><div className="l">Agents scored</div></div>
+            <div className="hstat"><div className="n tnum">28</div><div className="l">Districts</div></div>
+            <div className="hstat"><div className="n">0%</div><div className="l">Upfront cost</div></div>
           </div>
-          <div className="mt-8">
-            <Link href="/search" className="inline-block rounded-lg bg-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-teal-400">
-              Find your profile
-            </Link>
+          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Claim your free profile</Link>
+        </div>
+      </header>
+
+      {/* claimed vs unclaimed */}
+      <section className="lp-section--paper">
+        <div className="fc-wrap" style={{ padding: "64px 40px" }}>
+          <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Claimed vs unclaimed profiles</h2>
+          <div className="fc-grid-2" style={{ marginTop: 28, gap: 18 }}>
+            <div className="fc-card compare-col">
+              <div className="eyebrow eyebrow--muted">Unclaimed (current)</div>
+              <ul style={{ listStyle: "none", margin: "14px 0 0", padding: 0 }}>
+                {["Name and CEA registration visible", "AgentScore and transaction history public", "No photo, no bio", "Cannot receive seller invitations"].map((t, i, a) => (
+                  <li key={t} style={{ padding: "8px 0", borderBottom: i < a.length - 1 ? "1px solid var(--line)" : "none", color: "var(--slate)" }}>{t}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="fc-card compare-col" style={{ border: "1.5px solid var(--blue)" }}>
+              <div className="eyebrow">Claimed (free)</div>
+              <ul style={{ listStyle: "none", margin: "14px 0 0", padding: 0 }}>
+                {["Add your photo and practice bio", "Respond to seller invitations from your area", "Get notified when buyers view your profile", "Embed your AgentScore widget on your site"].map((t, i, a) => (
+                  <li key={t} style={{ display: "flex", gap: 9, padding: "8px 0", borderBottom: i < a.length - 1 ? "1px solid var(--line)" : "none" }}>
+                    <Tick /> {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Claimed vs unclaimed */}
-      <section className="mx-auto max-w-[900px] px-5 py-14 md:px-8">
-        <h2 className="text-center text-2xl font-bold text-gray-900">Claimed vs unclaimed profiles</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Unclaimed (current)</p>
-            <ul className="mt-4 space-y-3 text-sm text-gray-600">
-              <li className="flex items-start gap-2"><span className="text-gray-300">-</span> Name and CEA registration visible</li>
-              <li className="flex items-start gap-2"><span className="text-gray-300">-</span> AgentScore and transaction history public</li>
-              <li className="flex items-start gap-2"><span className="text-gray-300">-</span> No photo, no contact details</li>
-              <li className="flex items-start gap-2"><span className="text-gray-300">-</span> Buyers cannot reach you</li>
-            </ul>
-          </div>
-          <div className="rounded-xl border-2 border-teal-300 bg-teal-50 p-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-teal-600">Claimed (free)</p>
-            <ul className="mt-4 space-y-3 text-sm text-gray-700">
-              <li className="flex items-start gap-2"><span className="text-teal-500">+</span> Add your photo and WhatsApp number</li>
-              <li className="flex items-start gap-2"><span className="text-teal-500">+</span> Write your practice area description</li>
-              <li className="flex items-start gap-2"><span className="text-teal-500">+</span> Get notified when buyers view your profile</li>
-              <li className="flex items-start gap-2"><span className="text-teal-500">+</span> Embed your AgentScore widget on your site</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* How scoring works */}
-      <section className="border-t border-gray-100 bg-gray-50">
-        <div className="mx-auto max-w-[900px] px-5 py-14 md:px-8">
-          <h2 className="text-center text-2xl font-bold text-gray-900">How your score is calculated</h2>
-          <p className="mx-auto mt-3 max-w-lg text-center text-sm text-gray-500">
+      {/* how score works */}
+      <section className="lp-section">
+        <div className="fc-wrap" style={{ padding: "64px 40px" }}>
+          <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>How your score is calculated</h2>
+          <p className="muted" style={{ textAlign: "center", maxWidth: "60ch", margin: "12px auto 0" }}>
             The AgentScore is fully automated. Payment does not influence your ranking. The only way to improve your score is to close more transactions and deliver better service.
           </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-4">
-            {[
-              { label: "Volume", pts: 30, desc: "Total CEA transactions" },
-              { label: "Recency", pts: 25, desc: "Recent activity weighted higher" },
-              { label: "Diversity", pts: 15, desc: "Property types and transaction types" },
-              { label: "Experience", pts: 15, desc: "Years registered and consistency" },
-            ].map(d => (
-              <div key={d.label} className="rounded-xl border border-gray-200 bg-white p-4 text-center">
-                <span className="text-2xl font-extrabold text-teal-600">{d.pts}</span>
-                <p className="mt-1 text-xs font-bold text-gray-900">{d.label}</p>
-                <p className="mt-1 text-[10px] text-gray-400">{d.desc}</p>
+          <div className="fc-grid-4" style={{ marginTop: 28 }}>
+            {[["30", "Volume", "Total CEA transactions"], ["25", "Recency", "Recent activity weighted higher"], ["15", "Diversity", "Property and transaction types"], ["15", "Experience", "Years registered and consistency"]].map(([n, t, d]) => (
+              <div key={t} className="fc-card fc-card--pad" style={{ textAlign: "center" }}>
+                <div className="serif" style={{ fontWeight: 600, fontSize: 34, color: "var(--blue)" }}>{n}</div>
+                <div style={{ fontWeight: 700, marginTop: 4 }}>{t}</div>
+                <div className="small muted">{d}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="mx-auto max-w-[900px] px-5 py-14 md:px-8">
-        <h2 className="text-center text-2xl font-bold text-gray-900">Simple pricing</h2>
-        <p className="mx-auto mt-3 max-w-lg text-center text-sm text-gray-500">
-          Claiming your profile is free. Upgrade when you want more visibility.
-        </p>
-        <PricingCards />
+      {/* pricing */}
+      <section className="lp-section--paper">
+        <div className="fc-wrap" style={{ padding: "64px 40px" }}>
+          <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Simple pricing</h2>
+          <p className="muted" style={{ textAlign: "center", maxWidth: "60ch", margin: "12px auto 0" }}>
+            Claiming your profile and receiving seller leads is always free. The paid tiers add analytics tools only. They never change your rank or the leads you receive.
+          </p>
+          <div style={{ marginTop: 28 }}><PricingCards /></div>
+        </div>
       </section>
 
-      {/* Related pages for agents */}
-      <section className="border-t border-gray-100 bg-white">
-        <div className="mx-auto max-w-[900px] px-5 py-14 md:px-8">
-          <h2 className="text-center text-2xl font-bold text-gray-900">Resources for agents</h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            <Link href="/for-agents/propertyguru-alternative" className="group rounded-xl border border-gray-200 bg-white p-6 transition hover:border-teal-300 hover:shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-widest text-teal-600">Compare</p>
-              <p className="mt-2 text-lg font-bold text-gray-900 group-hover:text-teal-600">PropertyGuru Alternative</p>
-              <p className="mt-2 text-sm text-gray-500">How FairComparisons compares to PropertyGuru on pricing, features, and visibility. See the side-by-side breakdown.</p>
+      {/* resources */}
+      <section className="lp-section">
+        <div className="fc-wrap" style={{ padding: "64px 40px" }}>
+          <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Resources for agents</h2>
+          <div className="fc-grid-2" style={{ marginTop: 28, gap: 18 }}>
+            <Link href="/for-agents/propertyguru-alternative" className="fc-card fc-card--pad fc-card--hover">
+              <div className="eyebrow">Compare</div>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>PropertyGuru alternative</div>
+              <p className="muted small">How FairComparisons compares to PropertyGuru on pricing, features and visibility. The side-by-side breakdown.</p>
             </Link>
-            <Link href="/for-agents/lead-generation" className="group rounded-xl border border-gray-200 bg-white p-6 transition hover:border-teal-300 hover:shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-widest text-teal-600">Lead Generation</p>
-              <p className="mt-2 text-lg font-bold text-gray-900 group-hover:text-teal-600">How Agents Get Leads on FairComparisons</p>
-              <p className="mt-2 text-sm text-gray-500">Buyers search Google for agents in their area. Your track record does the selling. See how it works.</p>
+            <Link href="/for-agents/lead-generation" className="fc-card fc-card--pad fc-card--hover">
+              <div className="eyebrow">Lead generation</div>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>How agents get leads on FairComparisons</div>
+              <p className="muted small">Buyers search Google for agents in their area. Your track record does the selling. See how it works.</p>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="border-t border-gray-100 bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
-        <div className="mx-auto max-w-[600px] px-5 py-16 text-center md:px-8">
-          <h2 className="text-2xl font-bold text-white">Your profile is already being viewed by buyers.</h2>
-          <p className="mt-3 text-white/60">Claim it to control what they see.</p>
-          <Link href="/search" className="mt-6 inline-block rounded-lg bg-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-teal-400">
-            Find and claim your profile
-          </Link>
-          <p className="mt-4 text-sm text-white/40">
-            Questions? <a href="mailto:hello@fair-comparisons.com" className="text-white/60 underline hover:text-white">hello@fair-comparisons.com</a>
+      {/* final CTA */}
+      <section className="lp-hero">
+        <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px" }}>
+          <h2 style={{ color: "#fff", fontSize: "clamp(26px,3vw,34px)" }}>Your profile is already being viewed by buyers.</h2>
+          <p className="lp-hero__sub" style={{ margin: "12px auto 22px" }}>Claim it to control what they see.</p>
+          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+          <p className="small" style={{ color: "var(--slate-2)", marginTop: 16 }}>
+            Questions? <a href="mailto:hello@fair-comparisons.com" style={{ color: "#fff" }}>hello@fair-comparisons.com</a>
           </p>
         </div>
       </section>

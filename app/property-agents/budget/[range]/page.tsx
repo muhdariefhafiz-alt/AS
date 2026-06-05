@@ -128,16 +128,16 @@ export default async function BudgetPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
 
-      <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
+      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)]">
         <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <nav className="text-xs text-teal-300/60">
-            <Link href="/" className="hover:text-teal-200">Home</Link>
+          <nav className="text-xs text-[var(--slate-2)]">
+            <Link href="/" className="hover:text-[var(--blue-wash)]">Home</Link>
             <span className="mx-1.5">/</span>
-            <Link href="/property-agents" className="hover:text-teal-200">Property Agents</Link>
+            <Link href="/property-agents" className="hover:text-[var(--blue-wash)]">Property Agents</Link>
             <span className="mx-1.5">/</span>
-            <span className="text-teal-200">Budget: {r.label}</span>
+            <span className="text-[var(--slate-2)]">Budget: {r.label}</span>
           </nav>
           <h1 className="mt-6 text-3xl font-extrabold text-white md:text-4xl">
             What can you buy for {r.label} in Singapore?
@@ -182,7 +182,7 @@ export default async function BudgetPage({ params }: Props) {
                     const slug = `d${d.replace("D", "").toLowerCase()}`;
                     return (
                       <div key={d} className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3">
-                        <span className="text-sm font-medium text-teal-700">{d}</span>
+                        <span className="text-sm font-medium text-[var(--blue-deep)]">{d}</span>
                         <span className="text-sm text-gray-400">{v.count} transactions</span>
                       </div>
                     );
@@ -200,7 +200,7 @@ export default async function BudgetPage({ params }: Props) {
                     const slug = town.toLowerCase().replace(/\s+/g, "-").replace(/\//g, "-");
                     return (
                       <Link key={town} href={`/property-agents/hdb/${slug}`}
-                        className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 transition hover:border-teal-200">
+                        className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)]">
                         <span className="text-sm font-medium text-gray-700">{town}</span>
                         <span className="text-sm text-gray-400">{v.count} transactions</span>
                       </Link>
@@ -228,12 +228,12 @@ export default async function BudgetPage({ params }: Props) {
 
           {/* Sidebar */}
           <aside className="space-y-6">
-            <div className="rounded-xl border border-teal-200 bg-teal-50 p-5">
+            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Need an agent?</h3>
               <p className="mt-2 text-sm text-gray-600">
                 Find the top-performing agents for your budget and area.
               </p>
-              <Link href="/property-agents" className="mt-3 inline-block text-sm font-semibold text-teal-600 hover:text-teal-700">
+              <Link href="/property-agents" className="mt-3 inline-block text-sm font-semibold text-[var(--blue)] hover:text-[var(--blue-deep)]">
                 Compare agents
               </Link>
             </div>
@@ -243,7 +243,7 @@ export default async function BudgetPage({ params }: Props) {
               <div className="mt-3 space-y-2">
                 {RANGES.filter(x => x.slug !== range).map(x => (
                   <Link key={x.slug} href={`/property-agents/budget/${x.slug}`}
-                    className="block text-sm text-gray-600 hover:text-teal-600">{x.label}</Link>
+                    className="block text-sm text-gray-600 hover:text-[var(--blue)]">{x.label}</Link>
                 ))}
               </div>
             </div>

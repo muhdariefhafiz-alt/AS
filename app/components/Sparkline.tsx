@@ -1,12 +1,12 @@
 /**
  * Tiny inline SVG sparkline. Zero-dependency, server-renderable.
- * Usage: <Sparkline values={[3,4,2,7,5]} height={28} width={100} color="#0d9488" />
+ * Usage: <Sparkline values={[3,4,2,7,5]} height={28} width={100} color="#1f44ff" />
  */
 export function Sparkline({
   values,
   width = 120,
   height = 32,
-  color = "#0d9488",
+  color = "#1f44ff",
   fill = true,
 }: {
   values: number[];

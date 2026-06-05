@@ -106,7 +106,7 @@ export default async function FreeholdPremiumPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -118,9 +118,9 @@ export default async function FreeholdPremiumPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">Private Property</span>
+          <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Private Property</span>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Freehold Premium by District</h1>
           <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             How much more does freehold cost than leasehold in each Singapore district? A data-driven breakdown based on {(totalFreehold + totalLeasehold).toLocaleString()} URA transactions.
@@ -176,10 +176,10 @@ export default async function FreeholdPremiumPage() {
                   const barW = Math.max(10, Math.min(100, Math.round((d.premiumPct / highestPremium.premiumPct) * 100)));
                   return (
                     <Link key={d.district} href={`/property-agents/district/${d.districtSlug}`}
-                      className="block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-teal-200 hover:shadow-sm">
+                      className="block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-teal-600" : i < 10 ? "bg-teal-400" : "bg-gray-400"}`}>{i + 1}</span>
+                          <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-[var(--blue)]" : i < 10 ? "bg-[var(--blue)]" : "bg-gray-400"}`}>{i + 1}</span>
                           <div>
                             <p className="text-sm font-medium text-gray-900">{d.district} {d.districtName}</p>
                             <p className="text-xs text-gray-400">
@@ -188,12 +188,12 @@ export default async function FreeholdPremiumPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-extrabold text-teal-600">+{d.premiumPct}%</p>
+                          <p className="text-lg font-extrabold text-[var(--blue)]">+{d.premiumPct}%</p>
                           <p className="text-xs text-gray-400">{formatPrice(d.premiumAbs)} gap</p>
                         </div>
                       </div>
                       <div className="mt-2 h-1.5 w-full rounded-full bg-gray-100">
-                        <div className="h-1.5 rounded-full bg-teal-200" style={{ width: `${barW}%` }} />
+                        <div className="h-1.5 rounded-full bg-[var(--blue-wash)]" style={{ width: `${barW}%` }} />
                       </div>
                     </Link>
                   );
@@ -202,7 +202,7 @@ export default async function FreeholdPremiumPage() {
             </section>
 
             {/* Buyer advice */}
-            <section className="rounded-xl border border-teal-100 bg-teal-50/50 p-6">
+            <section className="rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-6">
               <h2 className="text-lg font-bold text-gray-900">Should You Buy Freehold or Leasehold?</h2>
               <div className="mt-3 space-y-3 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -244,7 +244,7 @@ export default async function FreeholdPremiumPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Key Numbers</h3>
               <dl className="mt-4 space-y-3 text-sm">
-                <div className="flex justify-between"><dt className="text-gray-500">Avg premium</dt><dd className="font-bold text-teal-600">+{avgPremium}%</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-500">Avg premium</dt><dd className="font-bold text-[var(--blue)]">+{avgPremium}%</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Highest premium</dt><dd className="font-bold text-gray-900">{highestPremium.district} (+{highestPremium.premiumPct}%)</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Lowest premium</dt><dd className="font-bold text-gray-900">{lowestPremium.district} (+{lowestPremium.premiumPct}%)</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Districts analyzed</dt><dd className="font-bold text-gray-900">{districtData.length}</dd></div>
@@ -262,8 +262,8 @@ export default async function FreeholdPremiumPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>
               <div className="mt-3 space-y-2">
-                <Link href="/insights/million-dollar-hdb" className="block text-sm text-gray-600 hover:text-teal-600">Million-Dollar HDB Tracker</Link>
-                <Link href="/insights/court-case-statistics" className="block text-sm text-gray-600 hover:text-teal-600">Court Case Statistics</Link>
+                <Link href="/insights/million-dollar-hdb" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Million-Dollar HDB Tracker</Link>
+                <Link href="/insights/court-case-statistics" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Court Case Statistics</Link>
               </div>
             </div>
           </aside>

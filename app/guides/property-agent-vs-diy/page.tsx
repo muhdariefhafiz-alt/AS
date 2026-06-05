@@ -91,7 +91,7 @@ export default function PropertyAgentVsDiyPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -103,7 +103,7 @@ export default function PropertyAgentVsDiyPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
           <span className="inline-block rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">DIY</span>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Selling Property Without an Agent in Singapore</h1>
@@ -190,9 +190,9 @@ export default function PropertyAgentVsDiyPage() {
                 </ul>
                 <p>
                   If you decide to engage an agent, use{" "}
-                  <Link href="/search" className="text-teal-600 underline hover:text-teal-800">FairComparisons</Link>{" "}
+                  <Link href="/search" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">FairComparisons</Link>{" "}
                   to compare agents on actual transaction data rather than marketing claims. The{" "}
-                  <Link href="/property-agents/compare" className="text-teal-600 underline hover:text-teal-800">side-by-side comparison tool</Link>{" "}
+                  <Link href="/property-agents/compare" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">side-by-side comparison tool</Link>{" "}
                   lets you evaluate agents on volume, recency, and area specialization.
                 </p>
               </div>
@@ -212,9 +212,9 @@ export default function PropertyAgentVsDiyPage() {
                 </ul>
                 <p>
                   For a detailed walkthrough of the HDB process, see our{" "}
-                  <Link href="/guides/hdb-resale-process" className="text-teal-600 underline hover:text-teal-800">HDB Resale Process guide</Link>.
+                  <Link href="/guides/hdb-resale-process" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">HDB Resale Process guide</Link>.
                   For commission rates and what agents include in their fees, see the{" "}
-                  <Link href="/guides/property-agent-commission" className="text-teal-600 underline hover:text-teal-800">agent commission guide</Link>.
+                  <Link href="/guides/property-agent-commission" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">agent commission guide</Link>.
                 </p>
               </div>
             </section>
@@ -225,7 +225,7 @@ export default function PropertyAgentVsDiyPage() {
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
                   <details key={f.q} className="group px-5 py-4">
-                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-teal-700">{f.q}</summary>
+                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-[var(--blue-deep)]">{f.q}</summary>
                     <p className="mt-3 text-sm leading-relaxed text-gray-500">{f.a}</p>
                   </details>
                 ))}
@@ -239,23 +239,23 @@ export default function PropertyAgentVsDiyPage() {
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Decided to Hire an Agent?</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Compare agents on actual transaction data. Find the best-performing agents in your area.</p>
-              <Link href="/search" className="mt-4 block rounded-lg bg-teal-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-teal-500">
+              <Link href="/search" className="mt-4 block rounded-lg bg-[var(--blue)] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
                 Search agents
               </Link>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Compare Side by Side</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Pick any two agents and compare their transaction history, area focus, and AgentScore breakdown.</p>
-              <Link href="/property-agents/compare" className="mt-4 block rounded-lg border border-teal-200 px-4 py-2.5 text-center text-sm font-semibold text-teal-700 transition hover:bg-teal-50">
+              <Link href="/property-agents/compare" className="mt-4 block rounded-lg border border-[var(--line-2)] px-4 py-2.5 text-center text-sm font-semibold text-[var(--blue-deep)] transition hover:bg-[var(--blue-wash)]">
                 Compare agents
               </Link>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
-                <li><Link href="/guides/property-agent-commission" className="text-sm text-teal-600 hover:underline">Agent commission rates</Link></li>
-                <li><Link href="/guides/hdb-resale-process" className="text-sm text-teal-600 hover:underline">HDB resale process</Link></li>
-                <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-teal-600 hover:underline">How to choose an agent</Link></li>
+                <li><Link href="/guides/property-agent-commission" className="text-sm text-[var(--blue)] hover:underline">Agent commission rates</Link></li>
+                <li><Link href="/guides/hdb-resale-process" className="text-sm text-[var(--blue)] hover:underline">HDB resale process</Link></li>
+                <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-[var(--blue)] hover:underline">How to choose an agent</Link></li>
               </ul>
             </div>
           </aside>

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
+import { checkRateLimit, clientIp } from "../../lib/rateLimit";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,7 +15,13 @@ const supabase = createClient(
  */
 export async function POST(req: Request) {
   try {
-    const { agentId, email, bio, photoUrl, whatsapp, message } = await req.json();
+    // Auth is email-only; throttle to blunt brute-forcing claimed_email values.
+    const { limited } = await checkRateLimit(`profile:${clientIp(req)}`, 20, 60 * 60 * 1000);
+    if (limited) {
+      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    }
+
+    const { agentId, email, bio, photoUrl, whatsapp, message, marketingName } = await req.json();
 
     if (!agentId || !email) {
       return NextResponse.json({ error: "Agent ID and email required" }, { status: 400 });
@@ -21,7 +29,7 @@ export async function POST(req: Request) {
 
     const { data: agent } = await supabase
       .from("sg_agents")
-      .select("id, name, claimed, claimed_email, bio, photo_url, message")
+      .select("id, name, claimed, claimed_email, bio, photo_url, message, marketing_name")
       .eq("id", agentId)
       .single();
 
@@ -45,6 +53,9 @@ export async function POST(req: Request) {
     if (message && typeof message === "string" && message.length > 500) {
       return NextResponse.json({ error: "Message must be under 500 characters" }, { status: 400 });
     }
+    if (marketingName && typeof marketingName === "string" && marketingName.length > 60) {
+      return NextResponse.json({ error: "Marketing name must be under 60 characters" }, { status: 400 });
+    }
 
     const updates: Record<string, string | null> = {};
     const changed: string[] = [];
@@ -65,6 +76,14 @@ export async function POST(req: Request) {
         changed.push("photo");
       }
     }
+    if (marketingName !== undefined) {
+      updates.marketing_name = marketingName || null;
+      if ((marketingName || null) !== (agent.marketing_name || null)) {
+        updates.marketing_name_status = "pending";
+        updates.marketing_name_updated_at = new Date().toISOString();
+        changed.push("marketing name");
+      }
+    }
     if (whatsapp !== undefined) updates.whatsapp = whatsapp || null;
     if (message !== undefined) {
       updates.message = message || null;
@@ -75,11 +94,26 @@ export async function POST(req: Request) {
       }
     }
 
-    const { error } = await supabase.from("sg_agents").update(updates).eq("id", agentId);
+    const { data: updated, error } = await supabase
+      .from("sg_agents")
+      .update(updates)
+      .eq("id", agentId)
+      .select("slug")
+      .single();
 
     if (error) {
       console.error("Profile update error:", error);
       return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
+    }
+
+    // If moderated content changed (now pending), purge the public profile so the
+    // previously-approved version stops showing until re-approved.
+    if (changed.length > 0 && updated?.slug) {
+      try {
+        revalidatePath(`/property-agents/agent/${updated.slug}`);
+      } catch (err) {
+        console.error("[profile] revalidate failed:", err);
+      }
     }
 
     await supabase.from("sg_funnel_events").insert({

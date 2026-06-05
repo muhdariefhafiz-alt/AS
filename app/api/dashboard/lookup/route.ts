@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +13,14 @@ const supabase = createClient(
  */
 export async function POST(req: Request) {
   try {
+    // Auth here is email-only, so throttle to stop enumeration of which
+    // agents are claimed (and harvesting of their CEA numbers).
+    const ip = clientIp(req);
+    const { limited } = await checkRateLimit(`dash-lookup:${ip}`, 10, 60 * 60 * 1000);
+    if (limited) {
+      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    }
+
     const { email } = await req.json();
 
     if (!email || typeof email !== "string") {
@@ -22,7 +31,7 @@ export async function POST(req: Request) {
 
     const { data: agent } = await supabase
       .from("sg_agents")
-      .select("id, name, slug, bio, photo_url, whatsapp, message, score, agency_name, claimed, claimed_email, subscription_tier, claimed_at")
+      .select("id, name, slug, bio, photo_url, whatsapp, message, marketing_name, score, agency_name, claimed, claimed_email, cea_registration, subscription_tier, claimed_at")
       .eq("claimed", true)
       .eq("claimed_email", normalized)
       .single();
@@ -69,8 +78,10 @@ export async function POST(req: Request) {
         photo_url: agent.photo_url,
         whatsapp: agent.whatsapp,
         message: agent.message || null,
+        marketing_name: agent.marketing_name || null,
         score: agent.score,
         agency_name: agent.agency_name,
+        cea_registration: agent.cea_registration,
         subscription_tier: agent.subscription_tier || "free",
         claimed_at: agent.claimed_at || null,
         views_this_week: viewsResult.count ?? 0,

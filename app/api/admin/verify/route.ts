@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyToken, issueSession, getAdminEmail, COOKIE_NAME, SESSION_TTL_MS } from "../../../lib/admin-auth";
+import { verifyToken, issueSession, isAdminEmail, COOKIE_NAME, SESSION_TTL_MS } from "../../../lib/admin-auth";
 
 /**
  * GET /api/admin/verify?token=...
@@ -16,8 +16,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  const allowed = getAdminEmail();
-  if (!allowed || session.email !== allowed) {
+  if (!isAdminEmail(session.email)) {
     return NextResponse.redirect(loginUrl);
   }
 
@@ -27,7 +26,9 @@ export async function GET(req: Request) {
     name: COOKIE_NAME,
     value: sessionToken,
     httpOnly: true,
-    secure: true,
+    // Only require HTTPS in production; localhost over http needs secure=false
+    // for the cookie to stick.
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: Math.floor(SESSION_TTL_MS / 1000),

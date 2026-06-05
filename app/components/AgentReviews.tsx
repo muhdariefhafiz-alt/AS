@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { givenName } from "../lib/names";
 
 type Review = {
   id: number;
@@ -58,9 +59,11 @@ export default function AgentReviews({ agentId, agentName }: Props) {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [rating, setRating] = useState(0);
   const [txType, setTxType] = useState("");
   const [comment, setComment] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -81,6 +84,14 @@ export default function AgentReviews({ agentId, agentName }: Props) {
       setError("Please enter your name and select a rating.");
       return;
     }
+    if (!email.trim()) {
+      setError("Please enter your email — we send a one-click confirmation.");
+      return;
+    }
+    if (comment.trim().length < 15) {
+      setError("Please write at least 15 characters about your experience.");
+      return;
+    }
     setSubmitting(true);
     setError("");
     try {
@@ -90,9 +101,11 @@ export default function AgentReviews({ agentId, agentName }: Props) {
         body: JSON.stringify({
           agentId,
           reviewerName: name,
+          reviewerEmail: email,
           rating,
           transactionType: txType || null,
           comment: comment || null,
+          website, // honeypot
         }),
       });
       const data = await res.json();
@@ -112,7 +125,7 @@ export default function AgentReviews({ agentId, agentName }: Props) {
     ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
     : null;
 
-  const firstName = agentName.split(" ")[0];
+  const firstName = givenName(agentName);
 
   return (
     <section>
@@ -128,7 +141,7 @@ export default function AgentReviews({ agentId, agentName }: Props) {
         {!showForm && !submitted && (
           <button
             onClick={() => setShowForm(true)}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-teal-300 hover:text-teal-700"
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue-deep)]"
           >
             Write a review
           </button>
@@ -158,7 +171,37 @@ export default function AgentReviews({ agentId, agentName }: Props) {
               placeholder="e.g. Sarah T."
               maxLength={100}
               required
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
+            />
+            <p className="mt-1 text-[11px] text-gray-400">Published as initials only.</p>
+          </div>
+
+          {/* Email (verification) */}
+          <div className="mt-3">
+            <label className="text-xs font-medium text-gray-500">Your email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              maxLength={254}
+              required
+              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              Never shown. We email a one-click link to confirm your review is real.
+            </p>
+          </div>
+
+          {/* Honeypot — hidden from humans, bots fill it */}
+          <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", height: 0, overflow: "hidden" }}>
+            <label>Website</label>
+            <input
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
             />
           </div>
 
@@ -173,7 +216,7 @@ export default function AgentReviews({ agentId, agentName }: Props) {
                   onClick={() => setTxType(txType === t ? "" : t)}
                   className={`rounded-full border px-3 py-1 text-xs transition ${
                     txType === t
-                      ? "border-teal-500 bg-teal-50 text-teal-700"
+                      ? "border-[var(--blue)] bg-[var(--blue-wash)] text-[var(--blue-deep)]"
                       : "border-gray-200 text-gray-600 hover:border-gray-300"
                   }`}
                 >
@@ -185,14 +228,14 @@ export default function AgentReviews({ agentId, agentName }: Props) {
 
           {/* Comment */}
           <div className="mt-3">
-            <label className="text-xs font-medium text-gray-500">Your review (optional)</label>
+            <label className="text-xs font-medium text-gray-500">Your review</label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="What was your experience like?"
               maxLength={2000}
               rows={3}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
             />
           </div>
 
@@ -202,7 +245,7 @@ export default function AgentReviews({ agentId, agentName }: Props) {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-50"
+              className="rounded-lg bg-[var(--blue)] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)] disabled:opacity-50"
             >
               {submitting ? "Submitting..." : "Submit review"}
             </button>
@@ -215,16 +258,18 @@ export default function AgentReviews({ agentId, agentName }: Props) {
             </button>
           </div>
           <p className="mt-2 text-[11px] text-gray-400">
-            Reviews are moderated before publishing. Only genuine client experiences are approved.
+            Email-confirmed before publishing. Reviews are spot-checked and abuse is removed. Sales sourced through FairComparisons carry a &ldquo;Verified completion&rdquo; badge.
           </p>
         </form>
       )}
 
       {/* Success message */}
       {submitted && (
-        <div className="mt-4 rounded-xl border border-teal-200 bg-teal-50 p-4">
-          <p className="text-sm font-medium text-teal-800">Thank you for your review.</p>
-          <p className="mt-1 text-xs text-teal-700">It will appear on this page after moderation.</p>
+        <div className="mt-4 rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-4">
+          <p className="text-sm font-medium text-[var(--blue-deep)]">Almost done — check your email.</p>
+          <p className="mt-1 text-xs text-[var(--blue-deep)]">
+            We sent a one-click confirmation link. Your review publishes the moment you click it. (This is how we keep fake reviews out.)
+          </p>
         </div>
       )}
 
@@ -261,7 +306,7 @@ export default function AgentReviews({ agentId, agentName }: Props) {
       ) : !showForm && !submitted ? (
         <p className="mt-4 text-sm text-gray-400">
           No reviews yet. Worked with {firstName}?{" "}
-          <button onClick={() => setShowForm(true)} className="text-teal-600 hover:underline">
+          <button onClick={() => setShowForm(true)} className="text-[var(--blue)] hover:underline">
             Be the first to leave a review.
           </button>
         </p>

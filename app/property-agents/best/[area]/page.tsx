@@ -4,6 +4,10 @@ import { supabase } from "../../../lib/supabase";
 import { formatPrice } from "../../../lib/narrativeHelpers";
 import EmailCapture from "../../../components/EmailCapture";
 import ShareButtons from "../../../components/ShareButtons";
+import StickyMobileCta from "../../../components/StickyMobileCta";
+import PostcodeBox from "../../../components/PostcodeBox";
+import { bandFor } from "../../../components/Brand";
+import { titleName, cleanAgency } from "../../../lib/names";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -57,6 +61,7 @@ type RichAgent = {
   area_property_types: string;
   area_roles: string;
   area_txn_types: string;
+  sale_share: number | null;
   subscription_tier: string;
 };
 
@@ -106,6 +111,20 @@ export async function generateStaticParams() {
   return AREAS.map(a => ({ area: a.slug }));
 }
 
+const RANK_TIER = (i: number) => (i === 0 ? "rank-num--top" : i < 3 ? "rank-num--mid" : "rank-num--rest");
+
+function agentNarrative(a: RichAgent, short: string): string {
+  const types = formatTypes(a.area_property_types);
+  let s = `${a.agent_name} is ${focusLabel(a.area_focus_pct)} in ${short} with ${a.area_txns} transactions in this area (${a.area_focus_pct}% of their ${a.total_txns} total career deals). Handles ${types} properties.`;
+  if (a.area_txn_types.includes("NEW SALE") && a.area_txn_types.includes("RESALE"))
+    s += " Works across both new launches and resale, giving buyers exposure to the full market.";
+  else if (a.area_txn_types.includes("WHOLE RENTAL") && !a.area_txn_types.includes("RESALE"))
+    s += " Primarily focused on the rental market, connecting landlords with tenants.";
+  if (a.area_roles.includes("BUYER") && a.area_roles.includes("SELLER"))
+    s += " Represents both buyers and sellers, for perspective on both sides of a negotiation.";
+  return s;
+}
+
 export default async function BestAgentsPage({ params }: Props) {
   const { area: slug } = await params;
   const area = areaFromSlug(slug);
@@ -131,16 +150,17 @@ export default async function BestAgentsPage({ params }: Props) {
     tierMap[t.slug] = t.subscription_tier ?? "free";
   });
 
-  const tierPriority: Record<string, number> = { premium: 0, pro: 1, free: 2 };
-
+  // Ranking is purely by AgentScore/rank — paid tiers never reorder the list.
+  // (GetAgent model: rankings cannot be bought.)
   const topAgents = (agents ?? []).map((a): RichAgent => ({
-    agent_name: a.agent_name, agent_slug: a.agent_slug, cea_reg: a.cea_reg,
-    agency_name: a.agency_name, score: Number(a.score), total_txns: a.total_txns,
+    agent_name: titleName(a.agent_name), agent_slug: a.agent_slug, cea_reg: a.cea_reg,
+    agency_name: cleanAgency(a.agency_name), score: Number(a.score), total_txns: a.total_txns,
     area_txns: a.area_txns, area_focus_pct: a.area_focus_pct,
     area_property_types: a.area_property_types || "", area_roles: a.area_roles || "",
     area_txn_types: a.area_txn_types || "",
+    sale_share: a.sale_share != null ? Number(a.sale_share) : null,
     subscription_tier: tierMap[a.agent_slug] ?? "free",
-  })).sort((a, b) => (tierPriority[a.subscription_tier] ?? 2) - (tierPriority[b.subscription_tier] ?? 2));
+  }));
 
   const districtNum = area.district.replace("D", "").padStart(2, "0");
   const { data: marketData } = await supabase.rpc("get_district_property_types", { d_code: districtNum });
@@ -160,6 +180,7 @@ export default async function BestAgentsPage({ params }: Props) {
   const specialists = topAgents.filter(a => a.area_focus_pct >= 40);
   const generalists = topAgents.filter(a => a.area_focus_pct < 20);
   const avgAreaTxns = topAgents.length > 0 ? Math.round(topAgents.reduce((s, a) => s + a.area_txns, 0) / topAgents.length) : 0;
+  const updated = new Date().toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" });
 
   const faqItems = [
     ...(topAgents.length > 0 ? [{
@@ -175,7 +196,7 @@ export default async function BestAgentsPage({ params }: Props) {
     {
       "@type": "Question",
       name: "Can agents pay for a higher ranking?",
-      acceptedAnswer: { "@type": "Answer", text: "AgentScore is calculated from public data only. Sponsored agents pay for priority placement at the top of area listings, but their score is never influenced by payment. Sponsored listings are clearly labelled." },
+      acceptedAnswer: { "@type": "Answer", text: "No. AgentScore is calculated from public CEA data only, and there is no paid placement on FairComparisons. Rankings reflect each agent's actual transaction record and cannot be bought." },
     },
   ];
 
@@ -195,269 +216,191 @@ export default async function BestAgentsPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
-      <nav className="border-b border-gray-100">
-        <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
-          <Link href="/" className="hover:text-gray-600">Home</Link>
-          <span className="mx-1.5">/</span>
-          <span className="text-gray-600">Best Agents in {short}</span>
+      {/* breadcrumb */}
+      <div className="fc-wrap" style={{ padding: "20px 40px 0" }}>
+        <div className="sr-crumb">
+          <Link href="/">Home</Link> / <Link href="/property-agents">Compare agents</Link> / Best agents in {short}
         </div>
-      </nav>
+      </div>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-8 pt-8 md:px-8">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">{area.district}</span>
-            <span className="inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-500">
-              Updated {new Date().toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}
-            </span>
+      {/* header */}
+      <header className="fc-wrap" style={{ padding: "24px 40px 30px" }}>
+        <div className="fc-row" style={{ gap: 10 }}>
+          <span className="dpill">{area.district}</span>
+          <span className="upill">Updated {updated}</span>
+        </div>
+        <h1 style={{ margin: "20px 0 0", fontSize: "clamp(34px,5vw,60px)" }}>
+          Best property agents in {short}
+        </h1>
+        <p className="lede" style={{ maxWidth: "62ch", marginTop: 16 }}>
+          {topAgents.length} agents ranked by AgentScore, with a detailed transaction analysis for each.
+          {medianPrice > 0 && ` Median condo price ${formatPrice(medianPrice)},`}
+          {totalTxns > 0 && ` from ${totalTxns.toLocaleString()} URA transactions recorded in ${area.district}.`}
+        </p>
+        <div className="fc-row" style={{ marginTop: 24, gap: 12 }}>
+          <Link href={`/sell?type=CONDO&district=${area.district}&utm_source=best_area`} className="fc-btn fc-btn--primary">Get matched with these agents</Link>
+          <Link href="/property-agents/compare" className="fc-btn fc-btn--ghost">Compare side by side</Link>
+          <div style={{ marginLeft: 4 }}>
+            <ShareButtons compact url={`/property-agents/best/${slug}`} title={`Best property agents in ${short} (${area.district})`} />
           </div>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
-            Best Property Agents in {short}
-          </h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
-            {topAgents.length} agents ranked by AgentScore with detailed transaction analysis per agent.
-            {medianPrice > 0 && ` Median condo price: ${formatPrice(medianPrice)}.`}
-            {totalTxns > 0 && ` ${totalTxns.toLocaleString()} URA transactions in ${area.district}.`}
+        </div>
+      </header>
+
+      <div className="fc-wrap" style={{ padding: "0 40px" }}><hr className="rule" /></div>
+
+      {/* editorial */}
+      <section className="fc-wrap" style={{ padding: "48px 40px 8px" }}>
+        <h2 style={{ fontSize: "clamp(26px,3vw,34px)" }}>The agent market in {short}</h2>
+        <div className="prose" style={{ marginTop: 18 }}>
+          <p>
+            {area.name} ({area.district}) is served by a deep pool of property agents.
+            {topAgents.length > 0 && ` Of the agents with recorded CEA transaction data in this area, the top ${topAgents.length} are ranked below on AgentScore.`}
+            {medianPrice > 0 && ` With a median condo price of ${formatPrice(medianPrice)}, the stakes are high. Choosing the wrong agent can cost tens of thousands of dollars in missed price or pacing.`}
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-500">
-              Compare agents side by side
-            </Link>
-            <Link href="/search" className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-teal-200 hover:text-teal-600">
-              Search by name
-            </Link>
-            <ShareButtons compact url={`/property-agents/best/${slug}`} title={`Top Property Agents in ${short} 2026 - Ranked by Data`} />
+          {topAgency && (
+            <p>
+              <strong>{topAgency[0]}</strong> places {topAgency[1]} agents in the top {topAgents.length}, making it the most represented agency in {short}.
+              {specialists.length > 0 && ` ${specialists.length} of the top ${topAgents.length} dedicate 40% or more of their practice to this area, a sign of deep local knowledge.`}
+              {generalists.length > 0 && ` ${generalists.length} operate across many districts, bringing broader market perspective with less area-specific focus.`}
+            </p>
+          )}
+          {topAgents.length >= 3 && (
+            <p>
+              The top-ranked agent, <strong>{topAgents[0].agent_name}</strong>, has completed {topAgents[0].area_txns} transactions in {short} alone ({topAgents[0].area_focus_pct}% of their {topAgents[0].total_txns} career transactions). They handle {formatTypes(topAgents[0].area_property_types)} property, and represent {formatRoles(topAgents[0].area_roles)}.
+            </p>
+          )}
+        </div>
+        <div className="fc-row" style={{ marginTop: 18, gap: 10 }}>
+          <span className="fc-badge fc-badge--ranked"><span className="dot" /> Ranked on CEA data</span>
+          <span className="fc-badge fc-badge--source">Source · URA · HDB · CEA</span>
+        </div>
+      </section>
+
+      {/* ranked agents */}
+      <section className="fc-wrap" style={{ padding: "40px 40px 24px" }}>
+        <h2 style={{ fontSize: "clamp(26px,3vw,34px)" }}>Top {topAgents.length} agents in {short}</h2>
+        <p className="muted small" style={{ margin: "8px 0 0", maxWidth: "70ch" }}>
+          Agents on the same AgentScore are ordered by local transaction volume. The score counts all CEA
+          activity, sales and rentals, so if you are selling, check each agent&apos;s sale-versus-rental mix on
+          their profile.
+        </p>
+
+        {topAgents.map((a, i) => {
+          const band = bandFor(a.score);
+          return (
+            <article key={a.cea_reg} className="fc-card arank">
+              <div className="arank__head">
+                <span className={`rank-num ${RANK_TIER(i)}`}>{i + 1}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Link href={`/property-agents/agent/${a.agent_slug}?ref=leaderboard`} className="agent-name">{a.agent_name}</Link>
+                  <div className="agent-meta">{a.agency_name} · CEA {a.cea_reg}</div>
+                  <p className="agent-desc">{agentNarrative(a, short)}</p>
+                  <div className="fc-row" style={{ gap: 8 }}>
+                    <span className="statchip">{a.area_txns} local txns</span>
+                    <span className="statchip">{a.area_focus_pct}% area focus</span>
+                    <span className="statchip">{a.total_txns} career total</span>
+                    {a.sale_share != null && a.sale_share < 0.4 && (
+                      <span className="fc-badge fc-badge--warn">Mostly rentals · {Math.round(a.sale_share * 100)}% sales</span>
+                    )}
+                  </div>
+                </div>
+                <div className="score-box" style={{ borderTopColor: band.color }}>
+                  <div className="score-num">{Math.round(a.score)}</div>
+                  <div className="score-cap">AGENTSCORE</div>
+                  <div className="score-word" style={{ color: band.color }}>{band.word}</div>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+
+        <p className="mono muted" style={{ textAlign: "center", marginTop: 22, fontSize: 12 }}>
+          Source · CEA Public Register via data.gov.sg. Order is set by AgentScore alone. No agent can pay to rank higher.
+        </p>
+      </section>
+
+      {/* how to choose */}
+      <section className="fc-wrap" style={{ padding: "16px 40px 8px" }}>
+        <div className="fc-card fc-card--fill fc-card--pad">
+          <h2 style={{ fontSize: "clamp(22px,2.4vw,28px)" }}>How to choose an agent in {short}</h2>
+          <div className="prose" style={{ marginTop: 14 }}>
+            <p>A high AgentScore signals a strong overall track record, but the best agent for you depends on your home and your timeline. Three things to weigh as you read the list above:</p>
+            <p><strong>Area focus.</strong> An agent who dedicates 40% or more of their business to {short} knows the local pricing, the best stacks, and which developments are gaining value.{specialists.length > 0 && ` ${specialists.length} agents above qualify as area specialists.`}</p>
+            <p><strong>Transaction-type match.</strong> Selling a resale condo, look for resale depth. Renting out, prioritise rental history. Each agent&apos;s mix is shown in their record.</p>
+            <p><strong>Representation experience.</strong> Agents who have acted for both buyers and sellers understand both sides of a negotiation, an advantage in pricing and deal structure.</p>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
-        <div className="grid gap-10 lg:grid-cols-5">
-          <div className="space-y-8 lg:col-span-3">
-
-            {/* Market context narrative */}
-            <section>
-              <h2 className="text-xl font-bold text-gray-900">The Agent Market in {short}</h2>
-              <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
-                <p>
-                  {area.name} ({area.district}) is served by a deep pool of property agents.
-                  {topAgents.length > 0 && ` Of the agents with recorded CEA transaction data in this area, the top ${topAgents.length} are ranked below based on AgentScore.`}
-                  {medianPrice > 0 && ` With a median condo price of ${formatPrice(medianPrice)}, the stakes are high. Choosing the wrong agent can cost tens of thousands of dollars in missed opportunities or pricing errors.`}
-                </p>
-
-                {topAgency && (
-                  <p>
-                    {topAgency[0]} places {topAgency[1]} agents in the top {topAgents.length}, making it the most
-                    represented agency in {short}.
-                    {specialists.length > 0 && ` ${specialists.length} of the top ${topAgents.length} agents dedicate 40% or more of their practice to this area, suggesting deep local knowledge.`}
-                    {generalists.length > 0 && ` ${generalists.length} agents operate across many districts, bringing broader market perspective but less area-specific focus.`}
-                  </p>
-                )}
-
-                {topAgents.length >= 3 && (
-                  <p>
-                    The top-ranked agent, <strong>{topAgents[0].agent_name}</strong>, has completed{" "}
-                    {topAgents[0].area_txns} transactions in {short} alone ({topAgents[0].area_focus_pct}% of their
-                    total {topAgents[0].total_txns} career transactions). They handle {formatTypes(topAgents[0].area_property_types)} properties
-                    and represent {formatRoles(topAgents[0].area_roles)}.
-                    {topAgents[1].area_focus_pct > topAgents[0].area_focus_pct && (
-                      ` However, ${topAgents[1].agent_name} shows stronger area focus at ${topAgents[1].area_focus_pct}% of their business in ${short}, making them a deeper specialist despite fewer total transactions.`
-                    )}
-                  </p>
-                )}
-              </div>
-            </section>
-
-            {/* Agent list with rich data */}
-            <section>
-              <h2 className="text-xl font-bold text-gray-900">Top {topAgents.length} Agents in {short}</h2>
-              <div className="mt-4 space-y-4">
-                {topAgents.map((a, i) => {
-                  const types = formatTypes(a.area_property_types);
-                  const focus = focusLabel(a.area_focus_pct);
-                  const isPremium = a.subscription_tier === "premium";
-                  const isPro = a.subscription_tier === "pro";
-                  const borderClass = isPremium ? "border-l-4 border-l-amber-400 border border-gray-100" : isPro ? "border-l-4 border-l-teal-400 border border-gray-100" : "border border-gray-100";
-                  return (
-                    <div key={a.cea_reg} className={`rounded-xl bg-white p-5 ${borderClass}`}>
-                      <div className="flex items-start gap-4">
-                        <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
-                          i === 0 ? "bg-amber-500" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-amber-700" : "bg-teal-600"
-                        }`}>{i + 1}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Link href={`/property-agents/agent/${a.agent_slug}`} className="font-semibold text-gray-900 hover:text-teal-600">
-                                {a.agent_name}
-                              </Link>
-                              {isPremium && <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Sponsored</span>}
-                              {isPro && <span className="inline-flex items-center rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-semibold text-teal-700">Sponsored</span>}
-                            </div>
-                            <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1">
-                              <span className="text-lg font-extrabold text-teal-600">{Math.round(a.score)}</span>
-                              <span className="text-[7px] uppercase tracking-widest text-gray-400">Score</span>
-                            </div>
-                          </div>
-                          <p className="mt-0.5 text-xs text-gray-500">{a.agency_name} · CEA {a.cea_reg}</p>
-
-                          {/* Rich narrative per agent */}
-                          <p className="mt-3 text-sm leading-relaxed text-gray-600">
-                            {a.agent_name} is {focus} in {short} with <strong>{a.area_txns} transactions</strong> in
-                            this area ({a.area_focus_pct}% of their {a.total_txns} total career deals).
-                            {" "}Handles {types} properties.
-                            {a.area_txn_types.includes("NEW SALE") && a.area_txn_types.includes("RESALE") && (
-                              " Works across both new launches and resale, giving buyers exposure to the full market."
-                            )}
-                            {a.area_txn_types.includes("WHOLE RENTAL") && !a.area_txn_types.includes("RESALE") && (
-                              " Primarily focused on the rental market, connecting landlords with tenants."
-                            )}
-                            {a.area_roles.includes("BUYER") && a.area_roles.includes("SELLER") && (
-                              " Represents both buyers and sellers, providing perspective from both sides of the negotiation."
-                            )}
-                          </p>
-
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600">{a.area_txns} local txns</span>
-                            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600">{a.area_focus_pct}% area focus</span>
-                            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600">{a.total_txns} career total</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="mt-4 text-[11px] text-gray-400">Source: CEA Public Register via data.gov.sg. AgentScore by FairComparisons.</p>
-            </section>
-
-            {/* How to choose */}
-            <section className="rounded-xl border border-teal-100 bg-teal-50/50 p-6">
-              <h2 className="text-lg font-bold text-gray-900">How to Choose an Agent in {short}</h2>
-              <div className="mt-3 space-y-3 text-[15px] leading-[1.75] text-gray-600">
-                <p>
-                  A high AgentScore indicates a strong overall track record, but the best agent for you depends
-                  on your specific needs. Consider these factors when reviewing the agents above:
-                </p>
-                <p>
-                  <strong>Area focus percentage.</strong> An agent who dedicates 50%+ of their business to {short} likely
-                  knows the local pricing dynamics, the best blocks, and which developments are gaining value.
-                  {specialists.length > 0 && ` ${specialists.length} agents above qualify as area specialists.`}
-                </p>
-                <p>
-                  <strong>Transaction type match.</strong> If you are selling a resale condo, look for agents with
-                  strong resale experience. If you are renting out, prioritize agents with rental transaction history.
-                  The breakdowns above show each agent's transaction mix.
-                </p>
-                <p>
-                  <strong>Representation experience.</strong> Agents who have represented both buyers and sellers
-                  understand both sides of the negotiation. This can be an advantage in pricing strategy and deal
-                  structuring.
-                </p>
-              </div>
-            </section>
-
-            {/* Email capture */}
-            <EmailCapture
-              variant="inline"
-              source="best-agent"
-              pagePath={`/property-agents/best/${slug}`}
-              districtTag={area.district}
-              heading={`Get updates for ${short}`}
-              description={`We'll notify you when agent rankings change in ${short} or new market data becomes available.`}
-            />
-
-            {/* FAQ */}
-            <section>
-              <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
-              <div className="mt-4 space-y-4">
-                {topAgents.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Who is the best property agent in {short}?</h3>
-                    <p className="mt-1 text-[15px] leading-[1.75] text-gray-600">
-                      Based on AgentScore, the highest-ranked agent in {area.name} is {topAgents[0].agent_name} from{" "}
-                      {topAgents[0].agency_name}, with {topAgents[0].area_txns} transactions in this area and a score
-                      of {Math.round(topAgents[0].score)}. {topAgents[0].agent_name} is {focusLabel(topAgents[0].area_focus_pct)} in {short},
-                      dedicating {topAgents[0].area_focus_pct}% of their practice to this area.
-                    </p>
-                  </div>
-                )}
-                <div>
-                  <h3 className="font-semibold text-gray-900">How many active agents are there in {short}?</h3>
-                  <p className="mt-1 text-[15px] leading-[1.75] text-gray-600">
-                    {topAgents.length} agents have CEA-recorded transactions and an AgentScore for {area.name}. The average
-                    agent in this ranking has completed {avgAreaTxns} transactions in the area.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Can agents pay for a higher ranking?</h3>
-                  <p className="mt-1 text-[15px] leading-[1.75] text-gray-600">
-                    AgentScore is calculated from public data only. Sponsored agents pay for priority placement at the top of area listings, but their score is never influenced by payment. Sponsored listings are clearly labelled.
-                  </p>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          <aside className="space-y-6 lg:col-span-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">{area.district} Market</h3>
-              <p className="mt-2 font-medium text-gray-900">{area.name}</p>
-              {totalTxns > 0 && <p className="mt-1 text-sm text-gray-500">{totalTxns.toLocaleString()} URA transactions</p>}
-              {medianPrice > 0 && <p className="text-sm text-gray-500">Median condo: {formatPrice(medianPrice)}</p>}
-              {topAgents.length > 0 && <p className="text-sm text-gray-500">{topAgents.length} ranked agents</p>}
-            </div>
-
-            {specialists.length > 0 && (
-              <div className="rounded-xl border border-teal-200 bg-teal-50 p-5">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-teal-700">Area Specialists</h3>
-                <p className="mt-2 text-sm text-teal-800">
-                  {specialists.length} agents dedicate 40%+ of their practice to {short}:
-                </p>
-                <div className="mt-2 space-y-1">
-                  {specialists.slice(0, 5).map(a => (
-                    <Link key={a.cea_reg} href={`/property-agents/agent/${a.agent_slug}`}
-                      className="block text-sm text-teal-700 hover:text-teal-900">
-                      {a.agent_name} ({a.area_focus_pct}% focus)
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="rounded-xl border-2 border-teal-300 bg-gradient-to-b from-teal-50 to-white p-5">
-              <h3 className="text-sm font-bold text-gray-900">Are you ranked here?</h3>
-              <p className="mt-1.5 text-xs text-gray-500">Claim your profile to add your photo, bio, and connect with buyers in {short}.</p>
-              <Link href="/for-agents" className="mt-3 block rounded-lg bg-teal-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-teal-700">
-                Claim your profile
-              </Link>
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other Areas</h3>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {AREAS.filter(a => a.slug !== slug).slice(0, 10).map(a => (
-                  <Link key={a.slug} href={`/property-agents/best/${a.slug}`}
-                    className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 transition hover:border-teal-300 hover:text-teal-600">
-                    {shortName(a.name)}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Guides</h3>
-              <div className="mt-3 space-y-2 text-sm">
-                <Link href="/guides/how-to-choose-property-agent" className="block text-gray-600 hover:text-teal-600">How to choose a property agent</Link>
-                <Link href="/guides/property-agent-commission" className="block text-gray-600 hover:text-teal-600">Agent commission rates explained</Link>
-                <Link href="/guides/condo-vs-hdb-investment" className="block text-gray-600 hover:text-teal-600">Condo vs HDB as investment</Link>
-              </div>
-            </div>
-          </aside>
+      {/* email capture */}
+      <section className="fc-wrap" style={{ padding: "24px 40px" }}>
+        <div className="fc-card fc-card--pad">
+          <EmailCapture
+            variant="inline"
+            source="best-agent"
+            pagePath={`/property-agents/best/${slug}`}
+            districtTag={area.district}
+            heading={`Get updates for ${short}`}
+            description={`We will let you know when agent rankings change in ${short} or new market data lands.`}
+          />
         </div>
-      </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="fc-wrap" style={{ padding: "16px 40px 8px" }}>
+        <h2 style={{ fontSize: "clamp(22px,2.4vw,28px)" }}>Frequently asked questions</h2>
+        <div className="prose" style={{ marginTop: 14 }}>
+          {topAgents.length > 0 && (
+            <>
+              <h3 className="serif" style={{ fontSize: 19, margin: "0 0 4px" }}>Who is the best property agent in {short}?</h3>
+              <p>Based on AgentScore, the highest-ranked agent in {area.name} is {topAgents[0].agent_name} from {topAgents[0].agency_name}, with {topAgents[0].area_txns} transactions in this area and a score of {Math.round(topAgents[0].score)}. They are {focusLabel(topAgents[0].area_focus_pct)} in {short}, dedicating {topAgents[0].area_focus_pct}% of their practice to it.</p>
+            </>
+          )}
+          <h3 className="serif" style={{ fontSize: 19, margin: "0 0 4px" }}>How many active agents are there in {short}?</h3>
+          <p>{topAgents.length} agents have CEA-recorded transactions and an AgentScore for {area.name}. The average agent in this ranking has completed {avgAreaTxns} transactions in the area.</p>
+          <h3 className="serif" style={{ fontSize: 19, margin: "0 0 4px" }}>Can agents pay for a higher ranking?</h3>
+          <p>No. AgentScore is computed from public CEA data only, and there is no paid placement on FairComparisons. Rankings reflect each agent&apos;s actual transaction record and cannot be bought.</p>
+        </div>
+      </section>
+
+      {/* explore / claim */}
+      <section className="fc-wrap" style={{ padding: "24px 40px 72px" }}>
+        <div className="fc-grid-2">
+          <div className="fc-card fc-card--pad">
+            <div className="eyebrow eyebrow--muted">Are you ranked here?</div>
+            <h3 className="serif" style={{ fontSize: 22, margin: "10px 0 6px" }}>Claim your profile</h3>
+            <p className="muted" style={{ fontSize: 14, marginBottom: 16 }}>
+              Add your photo and bio, and connect with sellers in {short}. Claiming never changes your rank.
+            </p>
+            <Link href="/for-agents" className="fc-btn fc-btn--ink fc-btn--sm">Claim your profile</Link>
+          </div>
+          <div className="fc-card fc-card--pad">
+            <div className="eyebrow eyebrow--muted">Other areas</div>
+            <div className="fc-row" style={{ gap: 8, marginTop: 12 }}>
+              {AREAS.filter(a => a.slug !== slug).slice(0, 12).map(a => (
+                <Link key={a.slug} href={`/property-agents/best/${a.slug}`} className="fc-chip">
+                  {shortName(a.name)}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="fc-section fc-section--dark">
+        <div className="fc-wrap" style={{ textAlign: "center" }}>
+          <h2 style={{ color: "#fff" }}>Selling in {short}?</h2>
+          <p className="lede" style={{ margin: "12px auto 20px", textAlign: "center" }}>
+            Enter your postal code for a free shortlist of the agents who actually sell here.
+          </p>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <PostcodeBox source="best_postcode" />
+          </div>
+        </div>
+      </section>
+      <StickyMobileCta href={`/sell?type=CONDO&district=${area.district}&utm_source=best_sticky`} />
     </>
   );
 }
-// v2 1775826185

@@ -5,6 +5,8 @@
  * Agent data comes from sg_agents (all real, CEA-sourced).
  */
 
+import { givenName } from "./names";
+
 const BASE_URL = "https://fair-comparisons.com";
 const BRAND_COLOR = "#0A6B5E";
 
@@ -28,7 +30,7 @@ function claimUrl(slug: string, campaign: string) {
 }
 
 function firstName(name: string) {
-  return name.split(" ")[0];
+  return givenName(name);
 }
 
 function roundScore(score: number | null): string {
@@ -89,7 +91,7 @@ function scoreBlock(score: number | null, percentile: number | null) {
   if (!score) return "";
   const rounded = Math.round(Number(score));
   return `
-<div style="background:#f0fdfa;border:2px solid ${BRAND_COLOR};border-radius:12px;padding:20px;text-align:center;margin:24px 0;">
+<div style="background:#eef1ff;border:2px solid ${BRAND_COLOR};border-radius:12px;padding:20px;text-align:center;margin:24px 0;">
   <div style="font-size:48px;font-weight:800;color:${BRAND_COLOR};">${rounded}</div>
   <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:2px;">AgentScore</div>
   ${percentile && percentile <= 25 ? `<div style="margin-top:8px;font-size:14px;color:${BRAND_COLOR};font-weight:600;">Top ${percentile}% in Singapore</div>` : ""}
@@ -151,8 +153,8 @@ export function competitorComparison(agent: AgentData) {
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;font-size:14px;">
   <tr>
-    <td width="50%" style="padding:16px;background:#f0fdfa;border-radius:8px 0 0 8px;vertical-align:top;">
-      <p style="margin:0 0 8px;font-weight:700;color:#0f766e;font-size:12px;text-transform:uppercase;">Claimed profile</p>
+    <td width="50%" style="padding:16px;background:#eef1ff;border-radius:8px 0 0 8px;vertical-align:top;">
+      <p style="margin:0 0 8px;font-weight:700;color:#0a1733;font-size:12px;text-transform:uppercase;">Claimed profile</p>
       <p style="margin:0;color:#374151;line-height:1.7;font-size:13px;">Photo, WhatsApp button, practice description, full transaction history. Buyers contact you directly.</p>
     </td>
     <td width="50%" style="padding:16px;background:#f3f4f6;border-radius:0 8px 8px 0;vertical-align:top;">
@@ -228,7 +230,7 @@ export function weeklyNudge(agent: AgentData, views: number) {
   const html = `${emailHeader()}${bodyOpen()}
 <p>Hi ${firstName(agent.name)},</p>
 
-<div style="background:#f0fdfa;border:2px solid ${BRAND_COLOR};border-radius:12px;padding:20px;text-align:center;margin:24px 0;">
+<div style="background:#eef1ff;border:2px solid ${BRAND_COLOR};border-radius:12px;padding:20px;text-align:center;margin:24px 0;">
   <div style="font-size:48px;font-weight:800;color:${BRAND_COLOR};">${views}</div>
   <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:2px;">Profile views this week</div>
 </div>

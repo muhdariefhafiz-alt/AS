@@ -54,7 +54,7 @@ export default function HowToChooseAgentPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -66,9 +66,9 @@ export default function HowToChooseAgentPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">Agent Selection</span>
+          <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Agent Selection</span>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">How to Choose a Property Agent in Singapore</h1>
           <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             Your property agent will handle one of the largest financial transactions of your life. Here is how to evaluate agents based on track record, specialization, and professionalism rather than marketing.
@@ -89,7 +89,7 @@ export default function HowToChooseAgentPage() {
                 </p>
                 <p>
                   Before engaging any agent, verify their registration on the{" "}
-                  <a href="https://www.cea.gov.sg/aceas/public-register" target="_blank" rel="noopener noreferrer" className="text-teal-600 underline hover:text-teal-800">CEA Public Register</a>.
+                  <a href="https://www.cea.gov.sg/aceas/public-register" target="_blank" rel="noopener noreferrer" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">CEA Public Register</a>.
                   This will show you:
                 </p>
                 <ul className="list-disc space-y-2 pl-6">
@@ -126,7 +126,7 @@ export default function HowToChooseAgentPage() {
                 </div>
                 <p>
                   You can check an agent&apos;s transaction history on{" "}
-                  <Link href="/search" className="text-teal-600 underline hover:text-teal-800">FairComparisons</Link>,
+                  <Link href="/search" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">FairComparisons</Link>,
                   which compiles CEA transaction records and calculates an independent AgentScore based on volume, recency, diversity, experience, and reviews.
                 </p>
               </div>
@@ -150,7 +150,7 @@ export default function HowToChooseAgentPage() {
                 </p>
                 <p>
                   Use our{" "}
-                  <Link href="/property-agents/compare" className="text-teal-600 underline hover:text-teal-800">agent comparison tool</Link>{" "}
+                  <Link href="/property-agents/compare" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">agent comparison tool</Link>{" "}
                   to compare agents side by side on specialization and transaction history.
                 </p>
               </div>
@@ -208,9 +208,9 @@ export default function HowToChooseAgentPage() {
                 </ul>
                 <p>
                   Start by browsing the{" "}
-                  <Link href="/property-agents/best/bukit-timah" className="text-teal-600 underline hover:text-teal-800">top agents in your area</Link>,
+                  <Link href="/property-agents/best/bukit-timah" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">top agents in your area</Link>,
                   or use the{" "}
-                  <Link href="/search" className="text-teal-600 underline hover:text-teal-800">search tool</Link>{" "}
+                  <Link href="/search" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">search tool</Link>{" "}
                   to find agents who match your property type and location.
                 </p>
               </div>
@@ -222,7 +222,7 @@ export default function HowToChooseAgentPage() {
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
                   <details key={f.q} className="group px-5 py-4">
-                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-teal-700">{f.q}</summary>
+                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-[var(--blue-deep)]">{f.q}</summary>
                     <p className="mt-3 text-sm leading-relaxed text-gray-500">{f.a}</p>
                   </details>
                 ))}
@@ -236,23 +236,23 @@ export default function HowToChooseAgentPage() {
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Find Top Agents</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Search by area, property type, or agent name. Compare agents on actual transaction data.</p>
-              <Link href="/search" className="mt-4 block rounded-lg bg-teal-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-teal-500">
+              <Link href="/search" className="mt-4 block rounded-lg bg-[var(--blue)] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
                 Search agents
               </Link>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Are You an Agent?</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Your profile is already live on FairComparisons. Claim it to add your photo, contact details, and manage how buyers see you.</p>
-              <Link href="/for-agents" className="mt-4 block rounded-lg border border-teal-200 px-4 py-2.5 text-center text-sm font-semibold text-teal-700 transition hover:bg-teal-50">
+              <Link href="/for-agents" className="mt-4 block rounded-lg border border-[var(--line-2)] px-4 py-2.5 text-center text-sm font-semibold text-[var(--blue-deep)] transition hover:bg-[var(--blue-wash)]">
                 Claim your profile
               </Link>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
-                <li><Link href="/guides/property-agent-commission" className="text-sm text-teal-600 hover:underline">Agent commission rates</Link></li>
-                <li><Link href="/guides/property-agent-vs-diy" className="text-sm text-teal-600 hover:underline">Selling without an agent</Link></li>
-                <li><Link href="/guides/hdb-resale-process" className="text-sm text-teal-600 hover:underline">HDB resale process</Link></li>
+                <li><Link href="/guides/property-agent-commission" className="text-sm text-[var(--blue)] hover:underline">Agent commission rates</Link></li>
+                <li><Link href="/guides/property-agent-vs-diy" className="text-sm text-[var(--blue)] hover:underline">Selling without an agent</Link></li>
+                <li><Link href="/guides/hdb-resale-process" className="text-sm text-[var(--blue)] hover:underline">HDB resale process</Link></li>
               </ul>
             </div>
           </aside>

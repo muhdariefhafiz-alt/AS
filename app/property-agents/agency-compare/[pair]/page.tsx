@@ -250,8 +250,8 @@ export default async function AgencyComparePage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -264,17 +264,17 @@ export default async function AgencyComparePage({ params }: Props) {
       </nav>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900">
+      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)]">
         <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-300">Agency Comparison</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)]">Agency Comparison</p>
           <h1 className="mt-3 text-3xl font-extrabold text-white md:text-4xl">
             {nameA} vs {nameB}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-teal-200/60">
+          <p className="mt-4 max-w-2xl text-lg text-[var(--slate-2)]">
             Head-to-head comparison based on CEA transaction records, AgentScore data, and Google reviews.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-400">
+            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue)]">
               Compare top agents from both
             </Link>
             <Link href="/search" className="inline-flex items-center rounded-lg border border-white/20 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/10">
@@ -286,19 +286,19 @@ export default async function AgencyComparePage({ params }: Props) {
           <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
               <p className="text-2xl font-extrabold text-white">{agencyA.agent_count.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-teal-300/50">{nameA} agents</p>
+              <p className="mt-1 text-xs text-[var(--slate-2)]">{nameA} agents</p>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
               <p className="text-2xl font-extrabold text-white">{agencyB.agent_count.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-teal-300/50">{nameB} agents</p>
+              <p className="mt-1 text-xs text-[var(--slate-2)]">{nameB} agents</p>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-teal-300">{metricsA.avg_score}</p>
-              <p className="mt-1 text-xs text-teal-300/50">{nameA} avg score</p>
+              <p className="text-2xl font-extrabold text-[var(--slate-2)]">{metricsA.avg_score}</p>
+              <p className="mt-1 text-xs text-[var(--slate-2)]">{nameA} avg score</p>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-teal-300">{metricsB.avg_score}</p>
-              <p className="mt-1 text-xs text-teal-300/50">{nameB} avg score</p>
+              <p className="text-2xl font-extrabold text-[var(--slate-2)]">{metricsB.avg_score}</p>
+              <p className="mt-1 text-xs text-[var(--slate-2)]">{nameB} avg score</p>
             </div>
           </div>
         </div>
@@ -328,10 +328,10 @@ export default async function AgencyComparePage({ params }: Props) {
                 <tr className="border-b border-gray-200">
                   <th className="py-3 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Metric</th>
                   <th className="px-4 py-3 text-center">
-                    <Link href={`/property-agents/agency/${agencyA.slug}`} className="font-semibold text-teal-600 hover:underline">{nameA}</Link>
+                    <Link href={`/property-agents/agency/${agencyA.slug}`} className="font-semibold text-[var(--blue)] hover:underline">{nameA}</Link>
                   </th>
                   <th className="px-4 py-3 text-center">
-                    <Link href={`/property-agents/agency/${agencyB.slug}`} className="font-semibold text-teal-600 hover:underline">{nameB}</Link>
+                    <Link href={`/property-agents/agency/${agencyB.slug}`} className="font-semibold text-[var(--blue)] hover:underline">{nameB}</Link>
                   </th>
                   <th className="pl-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-400">Diff</th>
                 </tr>
@@ -342,10 +342,10 @@ export default async function AgencyComparePage({ params }: Props) {
                   return (
                     <tr key={m.label}>
                       <td className="py-3.5 pr-4 text-gray-700">{m.label}</td>
-                      <td className={`px-4 py-3.5 text-center font-medium ${w === "a" ? "text-teal-600" : "text-gray-600"}`}>
+                      <td className={`px-4 py-3.5 text-center font-medium ${w === "a" ? "text-[var(--blue)]" : "text-gray-600"}`}>
                         {m.fmt(m.a)}
                       </td>
-                      <td className={`px-4 py-3.5 text-center font-medium ${w === "b" ? "text-teal-600" : "text-gray-600"}`}>
+                      <td className={`px-4 py-3.5 text-center font-medium ${w === "b" ? "text-[var(--blue)]" : "text-gray-600"}`}>
                         {m.fmt(m.b)}
                       </td>
                       <td className="pl-4 py-3.5 text-center text-xs text-gray-400">
@@ -366,15 +366,15 @@ export default async function AgencyComparePage({ params }: Props) {
             <div className="mt-3 space-y-2">
               {metricsA.top_agents.map((a, i) => (
                 <Link key={a.slug} href={`/property-agents/agent/${a.slug}`}
-                  className="group flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-3 transition hover:border-teal-200">
-                  <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-teal-500" : "bg-gray-400"}`}>
+                  className="group flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)]">
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-[var(--blue)]" : "bg-gray-400"}`}>
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 group-hover:text-teal-600 truncate">{a.name}</p>
+                    <p className="text-sm font-medium text-gray-900 group-hover:text-[var(--blue)] truncate">{a.name}</p>
                     <p className="text-xs text-gray-400">{a.transaction_count} transactions</p>
                   </div>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-xs font-bold text-teal-600">{a.score}</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--blue-wash)] text-xs font-bold text-[var(--blue)]">{a.score}</div>
                 </Link>
               ))}
             </div>
@@ -384,15 +384,15 @@ export default async function AgencyComparePage({ params }: Props) {
             <div className="mt-3 space-y-2">
               {metricsB.top_agents.map((a, i) => (
                 <Link key={a.slug} href={`/property-agents/agent/${a.slug}`}
-                  className="group flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-3 transition hover:border-teal-200">
-                  <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-teal-500" : "bg-gray-400"}`}>
+                  className="group flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)]">
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-[var(--blue)]" : "bg-gray-400"}`}>
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 group-hover:text-teal-600 truncate">{a.name}</p>
+                    <p className="text-sm font-medium text-gray-900 group-hover:text-[var(--blue)] truncate">{a.name}</p>
                     <p className="text-xs text-gray-400">{a.transaction_count} transactions</p>
                   </div>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-xs font-bold text-teal-600">{a.score}</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--blue-wash)] text-xs font-bold text-[var(--blue)]">{a.score}</div>
                 </Link>
               ))}
             </div>
@@ -415,7 +415,7 @@ export default async function AgencyComparePage({ params }: Props) {
                           <span className="text-gray-400">{pct}%</span>
                         </div>
                         <div className="h-2 rounded-full bg-gray-100">
-                          <div className="h-2 rounded-full bg-teal-400" style={{ width: `${pct}%` }} />
+                          <div className="h-2 rounded-full bg-[var(--blue)]" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     </div>
@@ -436,7 +436,7 @@ export default async function AgencyComparePage({ params }: Props) {
                           <span className="text-gray-400">{pct}%</span>
                         </div>
                         <div className="h-2 rounded-full bg-gray-100">
-                          <div className="h-2 rounded-full bg-teal-400" style={{ width: `${pct}%` }} />
+                          <div className="h-2 rounded-full bg-[var(--blue)]" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     </div>
@@ -476,17 +476,17 @@ export default async function AgencyComparePage({ params }: Props) {
         )}
 
         {/* CTA - Find the right agent */}
-        <section className="mt-10 rounded-xl border-2 border-teal-200 bg-gradient-to-r from-teal-50 to-white p-6 md:p-8">
+        <section className="mt-10 rounded-xl border-2 border-[var(--line-2)] bg-gradient-to-r from-[var(--blue-wash)] to-white p-6 md:p-8">
           <h2 className="text-xl font-bold text-gray-900">Deciding between {nameA} and {nameB}? Compare their agents directly.</h2>
           <p className="mt-2 text-[15px] text-gray-600">
             Aggregate numbers only tell part of the story. The agent you work with matters more than the agency name.
             Compare top agents from {nameA} and {nameB} side by side on transaction history, area expertise, and AgentScore to find the right fit.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700">
+            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
               Compare agents
             </Link>
-            <Link href="/search" className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:border-teal-200 hover:text-teal-600">
+            <Link href="/search" className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]">
               Search agents
             </Link>
           </div>
@@ -535,7 +535,7 @@ export default async function AgencyComparePage({ params }: Props) {
                 <Link
                   key={item.pair}
                   href={`/property-agents/agency-compare/${item.pair}`}
-                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-teal-300 hover:text-teal-600"
+                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
                 >
                   {item.label}
                 </Link>

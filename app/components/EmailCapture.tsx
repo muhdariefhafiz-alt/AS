@@ -88,7 +88,7 @@ export default function EmailCapture({
   if (status === "success") {
     return (
       <div className={wrapperClass(variant)} role="status" aria-live="polite">
-        <div className="flex items-center gap-2 text-teal-600">
+        <div className="flex items-center gap-2 text-[#1f44ff]">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
@@ -116,12 +116,12 @@ export default function EmailCapture({
             placeholder="your@email.com"
             required
             aria-label="Email address"
-            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-teal-400 focus:outline-none focus:ring-1 focus:ring-teal-400"
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#1f44ff] focus:outline-none focus:ring-1 focus:ring-[#1f44ff]"
           />
           <button
             type="submit"
             disabled={status === "loading" || !consent}
-            className="shrink-0 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="shrink-0 rounded-lg bg-[#1f44ff] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0a23cf] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {status === "loading" ? "..." : "Subscribe"}
           </button>
@@ -132,7 +132,7 @@ export default function EmailCapture({
             type="checkbox"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#1f44ff] focus:ring-[#1f44ff]"
           />
           <span className="text-[11px] leading-tight text-gray-400">
             I agree to receive emails from FairComparisons. You can{" "}
@@ -154,7 +154,7 @@ function wrapperClass(variant: Variant): string {
     case "footer":
       return "space-y-3";
     case "inline":
-      return "rounded-xl border border-teal-100 bg-teal-50/50 p-5 space-y-3";
+      return "rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-5 space-y-3";
     case "sidebar":
       return "rounded-lg border border-gray-200 bg-white p-5 space-y-3";
   }

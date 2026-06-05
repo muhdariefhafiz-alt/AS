@@ -1,23 +1,35 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../lib/email";
+import { givenName, titleName } from "../../lib/names";
+import { checkRateLimit, clientIp } from "../../lib/rateLimit";
 
+// Service role: this route reads agent contact PII (email/phone) to send a
+// claim verification email. Those columns are REVOKEd from the anon role.
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 function generateToken(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let token = "";
-  for (let i = 0; i < 32; i++) {
-    token += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return token;
+  // Cryptographically secure, URL-safe (~32 chars, 192 bits).
+  return randomBytes(24).toString("base64url");
 }
 
 export async function POST(req: Request) {
   try {
+    // Throttle claim attempts so the public CEA number cannot be used to
+    // brute-force / spam claim emails.
+    const ip = clientIp(req);
+    const { limited } = await checkRateLimit(`claim:${ip}`, 5, 60 * 60 * 1000);
+    if (limited) {
+      return NextResponse.json(
+        { error: "Too many claim attempts. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const { agentId, email, phone, ceaNumber } = await req.json();
 
     if (!agentId || !email || !ceaNumber) {
@@ -27,7 +39,7 @@ export async function POST(req: Request) {
     // Check agent exists
     const { data: agent } = await supabase
       .from("sg_agents")
-      .select("id, name, claimed, cea_registration")
+      .select("id, name, claimed, cea_registration, email")
       .eq("id", agentId)
       .single();
 
@@ -48,6 +60,22 @@ export async function POST(req: Request) {
 
     if (agent.claimed) {
       return NextResponse.json({ error: "This profile has already been claimed" }, { status: 409 });
+    }
+
+    // SECURITY: the verification link is sent to the agent's ON-FILE email, not
+    // to whatever address the request supplied. The CEA number is public, so
+    // accepting an attacker-supplied destination would let anyone claim any
+    // profile to their own inbox. The submitted email is only recorded and
+    // becomes claimed_email AFTER the real agent clicks the link in their own
+    // inbox. If we have no on-file email, claiming must go through support.
+    if (!agent.email) {
+      return NextResponse.json(
+        {
+          error:
+            "We could not verify ownership automatically for this profile. Please email hello@fair-comparisons.com to claim it.",
+        },
+        { status: 422 }
+      );
     }
 
     // Check for existing pending claim
@@ -76,22 +104,28 @@ export async function POST(req: Request) {
     }
 
     // Transactional: send verification link with full HTML.
-    // PDPA-exempt: user explicitly submitted their email.
+    // Sent to the agent's ON-FILE email (agent.email), never the submitted
+    // address — this is what proves the claimant controls the agent's inbox.
     const verifyUrl = `https://fair-comparisons.com/api/claim/verify?token=${token}`;
     const verifyHtml = buildVerifyEmail(agent.name, verifyUrl);
-    sendEmail({
-      to: email,
-      subject: `Verify your profile claim, ${agent.name.split(" ")[0]}`,
-      html: verifyHtml,
-      metric: "Claim Verification",
-      properties: {
-        agent_name: agent.name,
-        agent_id: agentId,
-        verify_url: verifyUrl,
-      },
-    }).catch((err) => {
+    // Await the send: on Vercel a fire-and-forget promise is dropped once the
+    // response returns (the lambda freezes), so the Klaviyo event never lands.
+    // try/catch so a Klaviyo hiccup does not fail an otherwise-valid claim.
+    try {
+      await sendEmail({
+        to: agent.email,
+        subject: `Verify your profile claim, ${givenName(agent.name)}`,
+        html: verifyHtml,
+        metric: "Claim Verification",
+        properties: {
+          agent_name: agent.name,
+          agent_id: agentId,
+          verify_url: verifyUrl,
+        },
+      });
+    } catch (err) {
       console.error("[claim] Klaviyo verification event failed:", err);
-    });
+    }
 
     return NextResponse.json({
       success: true,
@@ -111,7 +145,7 @@ function buildVerifyEmail(agentName: string, verifyUrl: string): string {
 <tr><td align="center" style="padding:24px 16px">
 <table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
 
-  <tr><td style="background:#0f766e;padding:24px 32px">
+  <tr><td style="background:#0a1733;padding:24px 32px">
     <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
   </td></tr>
 
@@ -119,11 +153,11 @@ function buildVerifyEmail(agentName: string, verifyUrl: string): string {
     <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">Confirm your profile claim</p>
 
     <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6">
-      You requested to claim the profile for <strong>${agentName}</strong> on FairComparisons. Click below to verify this is you.
+      You requested to claim the profile for <strong>${titleName(agentName)}</strong> on FairComparisons. Click below to verify this is you.
     </p>
 
     <div style="text-align:center;margin:28px 0;">
-      <a href="${verifyUrl}" style="display:inline-block;background:#0d9488;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px">
+      <a href="${verifyUrl}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px">
         Verify and claim profile
       </a>
     </div>
@@ -136,7 +170,7 @@ function buildVerifyEmail(agentName: string, verifyUrl: string): string {
     </p>
 
     <p style="margin:16px 0 0;font-size:14px;color:#374151;line-height:1.6;padding-top:16px;border-top:1px solid #f3f4f6;">
-      Once verified, you can add your photo, WhatsApp number, and a short bio. Buyers searching your area will be able to contact you directly through your profile.
+      Once verified, you can add your photo, a short bio, and start receiving seller leads in your area through your dashboard.
     </p>
   </td></tr>
 

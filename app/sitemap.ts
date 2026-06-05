@@ -74,7 +74,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     // === HIGH PRIORITY: Core pages (lastModified = today because daily cron revalidates) ===
     { url: BASE, lastModified: today(), changeFrequency: "daily", priority: 1.0 },
+    { url: `${BASE}/sell`, lastModified: today(), changeFrequency: "weekly", priority: 0.95 },
+    { url: `${BASE}/tools/mop-tracker`, lastModified: today(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${BASE}/tools/valuation`, lastModified: today(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${BASE}/tools/commission-calculator`, lastModified: today(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/property-agents`, lastModified: today(), changeFrequency: "daily", priority: 0.95 },
+    { url: `${BASE}/property-agents/check`, lastModified: today(), changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/insights`, lastModified: today(), changeFrequency: "weekly", priority: 0.85 },
     { url: `${BASE}/insights/million-dollar-hdb`, lastModified: today(), changeFrequency: "weekly", priority: 0.85 },
     { url: `${BASE}/insights/freehold-premium`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
@@ -91,12 +96,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/for-agents/propertyguru-alternative`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/for-agents/lead-generation`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/trust`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/contact`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${BASE}/privacy`, changeFrequency: "monthly", priority: 0.3 },
     { url: `${BASE}/terms`, changeFrequency: "monthly", priority: 0.3 },
 
     // === Districts + HDB towns (revalidated daily) ===
     ...districts.map(d => ({ url: `${BASE}/property-agents/district/${d.slug}`, lastModified: today(), changeFrequency: "daily" as const, priority: 0.9 })),
     ...HDB_TOWNS.map(t => ({ url: `${BASE}/property-agents/hdb/${t.slug}`, lastModified: today(), changeFrequency: "daily" as const, priority: 0.9 })),
+
+    // === Sell-by-area landing pages (seller funnel SEO) ===
+    ...HDB_TOWNS.map(t => ({ url: `${BASE}/sell/hdb/${t.slug}`, lastModified: today(), changeFrequency: "weekly" as const, priority: 0.85 })),
+    ...districts.map(d => ({ url: `${BASE}/sell/condo/${d.slug}`, lastModified: today(), changeFrequency: "weekly" as const, priority: 0.85 })),
 
     // === Best agent pages (revalidated daily - key SEO pages) ===
     ...BEST_AGENT_AREAS.map(slug => ({ url: `${BASE}/property-agents/best/${slug}`, lastModified: today(), changeFrequency: "daily" as const, priority: 0.85 })),

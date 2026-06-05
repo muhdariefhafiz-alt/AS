@@ -207,7 +207,7 @@ export default function DistrictMarketNarrative({ areaName, districtCode, data, 
                 className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-4 py-3"
               >
                 <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${
-                  i === 0 ? "bg-teal-600" : i === 1 ? "bg-teal-500" : i === 2 ? "bg-teal-400" : "bg-gray-400"
+                  i === 0 ? "bg-[var(--blue)]" : i === 1 ? "bg-[var(--blue)]" : i === 2 ? "bg-[var(--blue)]" : "bg-gray-400"
                 }`}>
                   {i + 1}
                 </span>
@@ -255,7 +255,7 @@ export default function DistrictMarketNarrative({ areaName, districtCode, data, 
                 className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-4 py-2.5"
               >
                 <span className="text-sm font-medium text-gray-900">{r.project}</span>
-                <span className="text-sm font-bold text-teal-600">{formatPsf(r.avg_rent_psf)}</span>
+                <span className="text-sm font-bold text-[var(--blue)]">{formatPsf(r.avg_rent_psf)}</span>
               </div>
             ))}
           </div>
@@ -281,7 +281,7 @@ export default function DistrictMarketNarrative({ areaName, districtCode, data, 
                 key={a.agent_license}
                 className="flex items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-4 py-3"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-100 text-sm font-bold text-teal-700">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--blue-wash)] text-sm font-bold text-[var(--blue-deep)]">
                   {a.agent_name
                     .split(" ")
                     .map((n) => n[0])
@@ -317,7 +317,7 @@ export default function DistrictMarketNarrative({ areaName, districtCode, data, 
                 {amenities.mrt.map((a) => (
                   <span
                     key={a.name}
-                    className="rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700"
+                    className="rounded-full bg-[var(--blue-wash)] px-3 py-1 text-xs font-medium text-[var(--blue-deep)]"
                   >
                     {a.name}
                   </span>

@@ -86,7 +86,7 @@ export default function DistrictFAQ({ areaName, districtCode, data }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
       />
 
       <article className="rounded-lg border border-gray-200 bg-white p-6">

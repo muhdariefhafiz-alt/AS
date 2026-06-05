@@ -15,20 +15,23 @@ type AgentRef = {
 type PendingMessage = AgentRef & { message: string; message_updated_at: string | null };
 type PendingPhoto = AgentRef & { photo_url: string; photo_updated_at: string | null };
 type PendingBio = AgentRef & { bio: string; bio_updated_at: string | null };
+type PendingMarketingName = AgentRef & { marketing_name: string; marketing_name_updated_at: string | null };
 
 type Props = {
   messages: PendingMessage[];
   photos: PendingPhoto[];
   bios: PendingBio[];
+  marketingNames: PendingMarketingName[];
 };
 
 export function ModerationQueue(props: Props) {
   const [msgs, setMsgs] = useState(props.messages);
   const [photos, setPhotos] = useState(props.photos);
   const [bios, setBios] = useState(props.bios);
+  const [names, setNames] = useState(props.marketingNames);
   const [busy, setBusy] = useState<number | null>(null);
 
-  async function act(type: "message" | "photo" | "bio", agentId: number, decision: "approve" | "reject") {
+  async function act(type: "message" | "photo" | "bio" | "marketing_name", agentId: number, decision: "approve" | "reject") {
     setBusy(agentId);
     try {
       const res = await fetch("/api/admin/moderation", {
@@ -45,6 +48,7 @@ export function ModerationQueue(props: Props) {
       if (type === "message") setMsgs(msgs.filter((m) => m.id !== agentId));
       if (type === "photo") setPhotos(photos.filter((p) => p.id !== agentId));
       if (type === "bio") setBios(bios.filter((b) => b.id !== agentId));
+      if (type === "marketing_name") setNames(names.filter((n) => n.id !== agentId));
     } catch {
       alert("Network error");
     } finally {
@@ -52,7 +56,7 @@ export function ModerationQueue(props: Props) {
     }
   }
 
-  const total = msgs.length + photos.length + bios.length;
+  const total = msgs.length + photos.length + bios.length + names.length;
 
   if (total === 0) {
     return (
@@ -65,8 +69,29 @@ export function ModerationQueue(props: Props) {
   return (
     <div className="space-y-8">
       <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
-        {total} item{total !== 1 ? "s" : ""} pending ({msgs.length} message, {photos.length} photo, {bios.length} bio)
+        {total} item{total !== 1 ? "s" : ""} pending ({msgs.length} message, {photos.length} photo, {bios.length} bio, {names.length} name)
       </div>
+
+      {names.length > 0 && (
+        <section>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500">Marketing names ({names.length})</h2>
+          <div className="mt-3 space-y-3">
+            {names.map((n) => (
+              <article key={n.id} className="rounded-md border border-gray-200 bg-white p-4 shadow-sm">
+                <AgentHeader agent={n} submittedAt={n.marketing_name_updated_at} />
+                <p className="mt-3 rounded bg-gray-50 px-3 py-2 text-sm text-gray-800">
+                  Registered: <strong>{n.name}</strong> &nbsp;·&nbsp; Marketing name: <strong>{n.marketing_name}</strong>
+                </p>
+                <Actions
+                  busy={busy === n.id}
+                  onApprove={() => act("marketing_name", n.id, "approve")}
+                  onReject={() => act("marketing_name", n.id, "reject")}
+                />
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {msgs.length > 0 && (
         <section>

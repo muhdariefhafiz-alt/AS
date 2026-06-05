@@ -160,8 +160,8 @@ export default async function MarketYearPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -176,7 +176,7 @@ export default async function MarketYearPage({ params }: Props) {
       {/* Hero */}
       <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-400">Market Overview</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue)]">Market Overview</p>
           <h1 className="mt-3 text-3xl font-extrabold text-white md:text-4xl">
             Singapore Property Market {year}
           </h1>
@@ -201,7 +201,7 @@ export default async function MarketYearPage({ params }: Props) {
             </div>
             {hasPrev && totalPrevTxns > 0 && (
               <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-                <p className={`text-2xl font-extrabold ${totalTxns >= totalPrevTxns ? "text-teal-300" : "text-red-300"}`}>
+                <p className={`text-2xl font-extrabold ${totalTxns >= totalPrevTxns ? "text-[var(--slate-2)]" : "text-red-300"}`}>
                   {pctChange(totalTxns, totalPrevTxns)}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">vs {prevYear}</p>
@@ -239,13 +239,13 @@ export default async function MarketYearPage({ params }: Props) {
                     <Link
                       key={a.license}
                       href={`/property-agents/agent/${a.license.toLowerCase()}`}
-                      className="group flex items-center gap-4 rounded-lg border border-gray-100 bg-white p-4 transition hover:border-teal-200 hover:shadow-sm"
+                      className="group flex items-center gap-4 rounded-lg border border-gray-100 bg-white p-4 transition hover:border-[var(--line-2)] hover:shadow-sm"
                     >
                       <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
                         i === 0 ? "bg-amber-500" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-amber-700" : "bg-slate-600"
                       }`}>{i + 1}</div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 group-hover:text-teal-600">{a.name}</p>
+                        <p className="font-semibold text-gray-900 group-hover:text-[var(--blue)]">{a.name}</p>
                         <p className="text-xs text-gray-500 truncate">{a.agency}</p>
                       </div>
                       <div className="flex flex-col items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
@@ -271,7 +271,7 @@ export default async function MarketYearPage({ params }: Props) {
                           <p className="text-sm font-medium text-gray-900">{a.name}</p>
                         </div>
                         <div className="w-24 h-2 rounded-full bg-gray-100">
-                          <div className="h-2 rounded-full bg-teal-500" style={{ width: `${Math.min(pct * 3, 100)}%` }} />
+                          <div className="h-2 rounded-full bg-[var(--blue)]" style={{ width: `${Math.min(pct * 3, 100)}%` }} />
                         </div>
                         <span className="text-sm font-medium text-gray-900 w-16 text-right">{a.count.toLocaleString()}</span>
                       </div>
@@ -300,7 +300,7 @@ export default async function MarketYearPage({ params }: Props) {
                         <td className="py-3.5 pr-4 font-medium text-gray-900">Total</td>
                         <td className="px-4 py-3.5 text-center font-medium text-gray-900">{totalTxns.toLocaleString()}</td>
                         <td className="px-4 py-3.5 text-center text-gray-600">{totalPrevTxns.toLocaleString()}</td>
-                        <td className={`pl-4 py-3.5 text-center text-xs font-medium ${totalTxns >= totalPrevTxns ? "text-teal-600" : "text-red-600"}`}>
+                        <td className={`pl-4 py-3.5 text-center text-xs font-medium ${totalTxns >= totalPrevTxns ? "text-[var(--blue)]" : "text-red-600"}`}>
                           {pctChange(totalTxns, totalPrevTxns)}
                         </td>
                       </tr>
@@ -308,7 +308,7 @@ export default async function MarketYearPage({ params }: Props) {
                         <td className="py-3.5 pr-4 text-gray-700">Private sales</td>
                         <td className="px-4 py-3.5 text-center text-gray-900">{privateTxns.toLocaleString()}</td>
                         <td className="px-4 py-3.5 text-center text-gray-600">{privatePrevTxns.toLocaleString()}</td>
-                        <td className={`pl-4 py-3.5 text-center text-xs font-medium ${privateTxns >= privatePrevTxns ? "text-teal-600" : "text-red-600"}`}>
+                        <td className={`pl-4 py-3.5 text-center text-xs font-medium ${privateTxns >= privatePrevTxns ? "text-[var(--blue)]" : "text-red-600"}`}>
                           {pctChange(privateTxns, privatePrevTxns)}
                         </td>
                       </tr>
@@ -316,7 +316,7 @@ export default async function MarketYearPage({ params }: Props) {
                         <td className="py-3.5 pr-4 text-gray-700">HDB resale</td>
                         <td className="px-4 py-3.5 text-center text-gray-900">{hdbTxns.toLocaleString()}</td>
                         <td className="px-4 py-3.5 text-center text-gray-600">{hdbPrevTxns.toLocaleString()}</td>
-                        <td className={`pl-4 py-3.5 text-center text-xs font-medium ${hdbTxns >= hdbPrevTxns ? "text-teal-600" : "text-red-600"}`}>
+                        <td className={`pl-4 py-3.5 text-center text-xs font-medium ${hdbTxns >= hdbPrevTxns ? "text-[var(--blue)]" : "text-red-600"}`}>
                           {pctChange(hdbTxns, hdbPrevTxns)}
                         </td>
                       </tr>
@@ -334,7 +334,7 @@ export default async function MarketYearPage({ params }: Props) {
               <div className="mt-3 space-y-1">
                 {VALID_YEARS.filter((y) => y !== year).map((y) => (
                   <Link key={y} href={`/property-agents/market/${y}`}
-                    className="block text-sm text-gray-600 hover:text-teal-600">
+                    className="block text-sm text-gray-600 hover:text-[var(--blue)]">
                     Market {y}
                   </Link>
                 ))}
@@ -354,7 +354,7 @@ export default async function MarketYearPage({ params }: Props) {
               <div className="mt-3 space-y-1">
                 {districts.slice(0, 10).map((d) => (
                   <Link key={d.code} href={`/property-agents/district/${d.slug}`}
-                    className="block text-sm text-gray-600 hover:text-teal-600 truncate">
+                    className="block text-sm text-gray-600 hover:text-[var(--blue)] truncate">
                     {d.code} {d.name.split(",")[0]}
                   </Link>
                 ))}

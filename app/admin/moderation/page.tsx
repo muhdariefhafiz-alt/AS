@@ -20,7 +20,7 @@ export default async function AdminModerationPage() {
   const session = await getAdminSession();
   if (!session) redirect("/admin/login");
 
-  const [msgRes, photoRes, bioRes] = await Promise.all([
+  const [msgRes, photoRes, bioRes, nameRes] = await Promise.all([
     supabase
       .from("sg_agents")
       .select("id, name, slug, agency_name, primary_area, message, message_updated_at, photo_url")
@@ -41,6 +41,13 @@ export default async function AdminModerationPage() {
       .eq("bio_status", "pending")
       .not("bio", "is", null)
       .order("bio_updated_at", { ascending: true })
+      .limit(100),
+    supabase
+      .from("sg_agents")
+      .select("id, name, slug, agency_name, primary_area, marketing_name, marketing_name_updated_at, photo_url")
+      .eq("marketing_name_status", "pending")
+      .not("marketing_name", "is", null)
+      .order("marketing_name_updated_at", { ascending: true })
       .limit(100),
   ]);
 
@@ -91,6 +98,16 @@ export default async function AdminModerationPage() {
           primary_area: string | null;
           bio: string;
           bio_updated_at: string | null;
+          photo_url: string | null;
+        }>}
+        marketingNames={(nameRes.data ?? []) as Array<{
+          id: number;
+          name: string;
+          slug: string;
+          agency_name: string | null;
+          primary_area: string | null;
+          marketing_name: string;
+          marketing_name_updated_at: string | null;
           photo_url: string | null;
         }>}
       />

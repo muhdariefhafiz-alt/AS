@@ -94,7 +94,7 @@ export default function ShareButtons({ url, title, compact }: ShareButtonsProps)
       </a>
       <button
         onClick={copyLink}
-        className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:border-teal-300 hover:text-teal-600"
+        className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
       >
         {copied ? (
           <>

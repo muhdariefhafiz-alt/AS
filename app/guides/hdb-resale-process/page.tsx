@@ -114,7 +114,7 @@ export default function HdbResaleProcessPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -126,7 +126,7 @@ export default function HdbResaleProcessPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-teal-50/60 to-white">
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
           <span className="inline-block rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">HDB</span>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">HDB Resale Process: Step-by-Step Guide</h1>
@@ -166,7 +166,7 @@ export default function HdbResaleProcessPage() {
                     {i < timelineSteps.length - 1 && (
                       <div className="absolute left-[17px] top-10 h-[calc(100%-32px)] w-0.5 bg-gray-200" />
                     )}
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-600 text-sm font-bold text-white">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--blue)] text-sm font-bold text-white">
                       {s.step}
                     </div>
                     <div className="pt-0.5">
@@ -190,14 +190,14 @@ export default function HdbResaleProcessPage() {
                         <h3 className="font-semibold text-gray-900">{c.item}</h3>
                         <p className="mt-1 text-xs text-gray-400">{c.note}</p>
                       </div>
-                      <span className="shrink-0 text-sm font-bold text-teal-700">{c.amount}</span>
+                      <span className="shrink-0 text-sm font-bold text-[var(--blue-deep)]">{c.amount}</span>
                     </div>
                   </div>
                 ))}
               </div>
               <p className="mt-4 text-[15px] leading-[1.75] text-gray-600">
                 For a detailed breakdown of agent fees, see our{" "}
-                <Link href="/guides/property-agent-commission" className="text-teal-600 underline hover:text-teal-800">guide on agent commission rates</Link>.
+                <Link href="/guides/property-agent-commission" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">guide on agent commission rates</Link>.
               </p>
             </section>
 
@@ -218,9 +218,9 @@ export default function HdbResaleProcessPage() {
                 </ul>
                 <p>
                   Not all agents provide the same level of service. Use{" "}
-                  <Link href="/search" className="text-teal-600 underline hover:text-teal-800">FairComparisons</Link>{" "}
+                  <Link href="/search" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">FairComparisons</Link>{" "}
                   to find agents who specialize in HDB resale in your town. You can browse the{" "}
-                  <Link href="/property-agents/best/hdb/ang-mo-kio" className="text-teal-600 underline hover:text-teal-800">top HDB agents by town</Link>{" "}
+                  <Link href="/property-agents/best/hdb/ang-mo-kio" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">top HDB agents by town</Link>{" "}
                   to compare track records.
                 </p>
               </div>
@@ -232,7 +232,7 @@ export default function HdbResaleProcessPage() {
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
                   <details key={f.q} className="group px-5 py-4">
-                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-teal-700">{f.q}</summary>
+                    <summary className="cursor-pointer text-[15px] font-medium text-gray-900 group-open:text-[var(--blue-deep)]">{f.q}</summary>
                     <p className="mt-3 text-sm leading-relaxed text-gray-500">{f.a}</p>
                   </details>
                 ))}
@@ -246,23 +246,23 @@ export default function HdbResaleProcessPage() {
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Find HDB Specialists</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Search for agents who have the strongest HDB resale track record in your town.</p>
-              <Link href="/search" className="mt-4 block rounded-lg bg-teal-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-teal-500">
+              <Link href="/search" className="mt-4 block rounded-lg bg-[var(--blue)] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
                 Search agents
               </Link>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">HDB Resources</h3>
               <ul className="mt-3 space-y-2 text-sm">
-                <li><a href="https://www.hdb.gov.sg/residential/selling-a-flat" target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">HDB: Selling a Flat (official)</a></li>
-                <li><Link href="/insights/million-dollar-hdb" className="text-teal-600 hover:underline">Million-Dollar HDB Tracker</Link></li>
+                <li><a href="https://www.hdb.gov.sg/residential/selling-a-flat" target="_blank" rel="noopener noreferrer" className="text-[var(--blue)] hover:underline">HDB: Selling a Flat (official)</a></li>
+                <li><Link href="/insights/million-dollar-hdb" className="text-[var(--blue)] hover:underline">Million-Dollar HDB Tracker</Link></li>
               </ul>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
-                <li><Link href="/guides/property-agent-commission" className="text-sm text-teal-600 hover:underline">Agent commission rates</Link></li>
-                <li><Link href="/guides/property-agent-vs-diy" className="text-sm text-teal-600 hover:underline">Selling without an agent</Link></li>
-                <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-teal-600 hover:underline">How to choose an agent</Link></li>
+                <li><Link href="/guides/property-agent-commission" className="text-sm text-[var(--blue)] hover:underline">Agent commission rates</Link></li>
+                <li><Link href="/guides/property-agent-vs-diy" className="text-sm text-[var(--blue)] hover:underline">Selling without an agent</Link></li>
+                <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-[var(--blue)] hover:underline">How to choose an agent</Link></li>
               </ul>
             </div>
           </aside>

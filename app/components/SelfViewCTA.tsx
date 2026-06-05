@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { givenName } from "../lib/names";
 
 interface SelfViewCTAProps {
   agentSlug: string;
@@ -48,15 +49,15 @@ export default function SelfViewCTA({ agentSlug, agentName, claimed }: SelfViewC
 
   if (!show || claimed) return null;
 
-  const firstName = agentName.split(" ")[0];
+  const firstName = givenName(agentName);
 
   return (
     <div className="mx-auto max-w-[1120px] px-5 md:px-8">
-      <div className="relative overflow-hidden rounded-xl border-2 border-teal-400 bg-gradient-to-r from-teal-600 to-teal-500 p-6 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-xl border-2 border-[var(--blue)] bg-gradient-to-r from-[var(--blue)] to-[var(--blue)] p-6 text-white shadow-lg">
         <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-white/10" />
         <div className="absolute -bottom-4 -left-4 h-24 w-24 rounded-full bg-white/5" />
         <div className="relative">
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-200">
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)]">
             {visitCount >= 4 ? "Welcome back" : "Is this you"}, {firstName}?
           </p>
           <p className="mt-2 text-lg font-bold">
@@ -70,7 +71,7 @@ export default function SelfViewCTA({ agentSlug, agentName, claimed }: SelfViewC
           <div className="mt-4 flex flex-wrap gap-3">
             <a
               href="#claim"
-              className="inline-flex items-center rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-teal-700 shadow-sm transition hover:bg-teal-50"
+              className="inline-flex items-center rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-[var(--blue-deep)] shadow-sm transition hover:bg-[var(--blue-wash)]"
             >
               Claim this profile
             </a>

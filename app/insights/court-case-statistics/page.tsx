@@ -81,7 +81,7 @@ export default async function CourtCaseStatsPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
         <div className="mx-auto max-w-[1120px] px-5 py-2.5 text-xs text-gray-400 md:px-8">
@@ -134,7 +134,7 @@ export default async function CourtCaseStatsPage() {
                   const w = Math.max(10, Math.round((a.case_count / practiceAreas[0].case_count) * 100));
                   return (
                     <Link key={a.slug} href={`/lawyers/practice/${a.slug}`}
-                      className="block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-teal-200 hover:shadow-sm">
+                      className="block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-slate-700" : "bg-gray-400"}`}>{i + 1}</span>
@@ -196,16 +196,16 @@ export default async function CourtCaseStatsPage() {
               <div className="mt-4 space-y-2">
                 {topFirms.slice(0, 10).map((f, i) => (
                   <Link key={f.slug} href={`/lawyers/firm/${f.slug}`}
-                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-teal-200 hover:shadow-sm">
+                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
                     <div className="flex items-center gap-3">
                       <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-slate-700" : "bg-gray-400"}`}>{i + 1}</span>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 group-hover:text-teal-600">{f.name}</p>
+                        <p className="text-sm font-medium text-gray-900 group-hover:text-[var(--blue)]">{f.name}</p>
                         <p className="text-xs text-gray-400">{f.lawyer_count} lawyers tracked</p>
                       </div>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1.5">
-                      <span className="text-lg font-extrabold text-teal-600">{f.case_count}</span>
+                    <div className="flex flex-col items-center rounded-lg border border-[var(--line)] bg-[var(--blue-wash)] px-3 py-1.5">
+                      <span className="text-lg font-extrabold text-[var(--blue)]">{f.case_count}</span>
                       <span className="text-[8px] uppercase tracking-widest text-gray-400">Cases</span>
                     </div>
                   </Link>
@@ -223,16 +223,16 @@ export default async function CourtCaseStatsPage() {
               <div className="mt-4 space-y-2">
                 {topLawyers.slice(0, 10).map((l, i) => (
                   <Link key={l.slug} href={`/lawyers/${l.slug}`}
-                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-teal-200 hover:shadow-sm">
+                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
                     <div className="flex items-center gap-3">
                       <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-slate-700" : "bg-gray-400"}`}>{i + 1}</span>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 group-hover:text-teal-600">{l.name}</p>
+                        <p className="text-sm font-medium text-gray-900 group-hover:text-[var(--blue)]">{l.name}</p>
                         <p className="text-xs text-gray-400">{l.primary_firm}</p>
                       </div>
                     </div>
-                    <div className="flex flex-col items-center rounded-lg border border-teal-100 bg-teal-50 px-3 py-1.5">
-                      <span className="text-lg font-extrabold text-teal-600">{l.case_count}</span>
+                    <div className="flex flex-col items-center rounded-lg border border-[var(--line)] bg-[var(--blue-wash)] px-3 py-1.5">
+                      <span className="text-lg font-extrabold text-[var(--blue)]">{l.case_count}</span>
                       <span className="text-[8px] uppercase tracking-widest text-gray-400">Cases</span>
                     </div>
                   </Link>
@@ -279,7 +279,7 @@ export default async function CourtCaseStatsPage() {
             </section>
 
             {/* CTA */}
-            <div className="rounded-xl border border-teal-200 bg-teal-50 p-6">
+            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6">
               <h3 className="text-lg font-bold text-gray-900">Find a lawyer by practice area</h3>
               <p className="mt-2 text-[15px] text-gray-600">
                 Browse lawyers by their court case experience. All data from publicly available eLitigation.sg judgments.
@@ -287,7 +287,7 @@ export default async function CourtCaseStatsPage() {
               <div className="mt-4 flex flex-wrap gap-2">
                 {practiceAreas.slice(0, 8).map((a) => (
                   <Link key={a.slug} href={`/lawyers/practice/${a.slug}`}
-                    className="rounded-lg border border-teal-200 bg-white px-3 py-1.5 text-xs font-medium text-teal-700 transition hover:bg-teal-50">
+                    className="rounded-lg border border-[var(--line-2)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--blue-deep)] transition hover:bg-[var(--blue-wash)]">
                     {a.name.split(" -- ")[0]}
                   </Link>
                 ))}
@@ -311,8 +311,8 @@ export default async function CourtCaseStatsPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>
               <div className="mt-3 space-y-2">
-                <Link href="/insights/million-dollar-hdb" className="block text-sm text-gray-600 hover:text-teal-600">Million-Dollar HDB Tracker</Link>
-                <Link href="/insights/freehold-premium" className="block text-sm text-gray-600 hover:text-teal-600">Freehold Premium by District</Link>
+                <Link href="/insights/million-dollar-hdb" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Million-Dollar HDB Tracker</Link>
+                <Link href="/insights/freehold-premium" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Freehold Premium by District</Link>
               </div>
             </div>
 
@@ -324,12 +324,6 @@ export default async function CourtCaseStatsPage() {
               description="New court case analyses and legal market data delivered to your inbox."
             />
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Browse Lawyers</h3>
-              <div className="mt-3 space-y-2">
-                <Link href="/lawyers" className="block text-sm text-teal-600 hover:text-teal-700 font-medium">All Lawyers &rarr;</Link>
-              </div>
-            </div>
           </aside>
         </div>
       </div>

@@ -39,7 +39,7 @@ export default function AboutPage() {
             {[
               { name: "CEA Transaction Records", desc: "730,000+ property transactions from the Council for Estate Agencies, linked to individual salesperson registration numbers." },
               { name: "Google Reviews", desc: "Client ratings from Google Maps for each agency. Bayesian-corrected to account for agencies with few reviews." },
-              { name: "CEA Public Register", desc: "Verification of active registration status, agency membership, and registration history for all 30,000+ agents." },
+              { name: "CEA Public Register", desc: "Registration numbers and agency membership for all 30,000+ agents. Each agent's current registration status can be confirmed directly on the CEA public register." },
               { name: "URA Transaction Data", desc: "Private residential property prices from URA, used for district-level market analysis and development profiles." },
               { name: "HDB Resale Data", desc: "208,000+ HDB resale transactions from data.gov.sg, used for town-level pricing analysis." },
             ].map((s) => (
@@ -65,7 +65,7 @@ export default function AboutPage() {
               { name: "Reviews", weight: "15 points", desc: "Google review rating of the agent's agency, Bayesian-corrected to account for agencies with few reviews." },
             ].map((d) => (
               <div key={d.name} className="flex items-start gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-xs font-bold text-teal-700">{d.weight.split(" ")[0]}</div>
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--blue-wash)] text-xs font-bold text-[var(--blue-deep)]">{d.weight.split(" ")[0]}</div>
                 <div>
                   <h3 className="font-semibold text-gray-900">{d.name} <span className="text-sm font-normal text-gray-400">({d.weight})</span></h3>
                   <p className="mt-1 text-sm text-gray-500">{d.desc}</p>
@@ -113,17 +113,17 @@ export default function AboutPage() {
           <h2 className="text-lg font-bold text-gray-900">Questions or feedback?</h2>
           <p className="mt-2 text-sm text-gray-600">
             Reach us at{" "}
-            <a href="mailto:hello@fair-comparisons.com" className="text-teal-600 hover:underline">hello@fair-comparisons.com</a>.
+            <a href="mailto:hello@fair-comparisons.com" className="text-[var(--blue)] hover:underline">hello@fair-comparisons.com</a>.
             We respond within 24 hours.
           </p>
         </div>
 
         {/* CTA */}
-        <div className="mt-6 rounded-xl border border-teal-200 bg-teal-50 p-6 text-center">
-          <h2 className="text-xl font-bold text-gray-900">Ready to compare agents?</h2>
-          <p className="mt-2 text-gray-600">Search 30,000+ agents rated on actual government data.</p>
-          <a href="/property-agents" className="mt-4 inline-block rounded-lg bg-teal-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-700">
-            Compare agents now
+        <div className="mt-6 rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6 text-center">
+          <h2 className="text-xl font-bold text-gray-900">Ready to choose on evidence?</h2>
+          <p className="mt-2 text-gray-600">Get a free shortlist of the agents who actually sell homes like yours, ranked on government data.</p>
+          <a href="/sell?utm_source=about" className="mt-4 inline-block rounded-lg bg-[var(--blue)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
+            Get my free shortlist
           </a>
         </div>
       </div>
