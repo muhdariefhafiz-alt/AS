@@ -28,9 +28,9 @@ const SOURCES: [string, string][] = [
 ];
 
 const GUARANTEES: [string, string][] = [
-  ["Rankings cannot be bought", "There is no paid placement, anywhere, ever. An agent cannot pay to rank higher. Optional paid tools for agents are clearly non-ranking."],
-  ["We are paid the same whoever you pick", "Agents pay a 0.25% success fee plus GST, and only when a sale completes through a referral. We earn the same regardless of which agent you choose, so we have no reason to favour anyone."],
-  ["Free for sellers", "You never pay FairComparisons. Your details are only shared with the agents you choose to invite."],
+  ["Rankings cannot be bought", "There is no paid placement, anywhere, ever. An agent cannot pay to rank higher. The agent subscription tools are clearly non-ranking."],
+  ["We are paid by subscriptions, not by sales", "Agents may subscribe for reputation and analytics tools, and that is how we make money. We never take a cut of a sale, so our rankings are never for sale and we have no reason to favour anyone."],
+  ["Free for sellers", "You never pay FairComparisons and we never take any cut of a sale. You compare every agent and contact the ones you choose yourself."],
 ];
 
 const LIMITS: string[] = [
@@ -58,9 +58,9 @@ export default async function TrustPage() {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
-      { "@type": "Question", name: "Is FairComparisons independent?", acceptedAnswer: { "@type": "Answer", text: "Yes. Rankings are computed from CEA, URA and HDB government data and cannot be bought. There is no paid placement. Agents pay a success fee only when a referred sale completes, and we earn the same regardless of which agent a seller chooses." } },
+      { "@type": "Question", name: "Is FairComparisons independent?", acceptedAnswer: { "@type": "Answer", text: "Yes. Rankings are computed from CEA, URA and HDB government data and cannot be bought. There is no paid placement. We are paid by agent subscriptions, not by sales, so our rankings are never for sale and we have no reason to favour any agent a seller chooses." } },
       { "@type": "Question", name: "Where does the data come from?", acceptedAnswer: { "@type": "Answer", text: "The CEA salesperson register (transactions and registration), URA private transaction prices, HDB resale data via data.gov.sg, and public Google agency ratings (a capped, minority input)." } },
-      { "@type": "Question", name: "How does FairComparisons make money?", acceptedAnswer: { "@type": "Answer", text: "Agents pay a 0.25% success fee plus GST, only when a sale completes through a FairComparisons referral. Sellers pay nothing." } },
+      { "@type": "Question", name: "How does FairComparisons make money?", acceptedAnswer: { "@type": "Answer", text: "Agents can claim their profile free and optionally subscribe for reputation and analytics tools: Verified S$29/mo, Professional S$69/mo, Elite S$149/mo. These tools never influence ranking. Sellers pay nothing and we never take a cut of a sale." } },
     ],
   };
 
@@ -153,10 +153,11 @@ export default async function TrustPage() {
             </div>
             <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
               <div className="eyebrow">How we make money</div>
-              <h2 style={{ marginTop: 10, fontSize: 24 }}>Paid only on success.</h2>
+              <h2 style={{ marginTop: 10, fontSize: 24 }}>Paid by subscriptions, not by sales.</h2>
               <p className="muted" style={{ marginTop: 8, fontSize: 14.5 }}>
-                Sellers pay nothing. Agents pay a 0.25% success fee plus GST, and only when a sale completes through a
-                referral. Because we are paid the same regardless of which agent a seller picks, the ranking stays honest.
+                Sellers pay nothing and we never take a cut of a sale. Agents can claim their profile free and optionally
+                subscribe for reputation and analytics tools: Verified S$29/mo, Professional S$69/mo, Elite S$149/mo. The
+                tools never influence ranking, so the ranking stays honest.
               </p>
             </div>
           </div>
@@ -182,9 +183,9 @@ export default async function TrustPage() {
         <div className="fc-wrap" style={{ textAlign: "center" }}>
           <h2 style={{ color: "#fff" }}>Choose your agent on evidence.</h2>
           <p className="lede" style={{ margin: "14px auto 24px", textAlign: "center" }}>
-            Get a free shortlist of the agents who actually sell homes like yours, ranked on the data above.
+            Compare the agents who actually sell homes like yours, ranked on the data above, then contact the ones you choose.
           </p>
-          <Link href="/sell?utm_source=trust" className="fc-btn fc-btn--primary fc-btn--lg">Get my free shortlist</Link>
+          <Link href="/sell?utm_source=trust" className="fc-btn fc-btn--primary fc-btn--lg">Compare agents</Link>
         </div>
       </section>
     </>

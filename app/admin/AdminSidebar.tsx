@@ -75,6 +75,17 @@ export function AdminSidebar({
               </span>
             )}
           </Link>
+          <Link
+            href="/admin/claims"
+            className="flex items-center justify-between rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+          >
+            <span>Claim review</span>
+            {badges.claims > 0 && (
+              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">
+                {badges.claims}
+              </span>
+            )}
+          </Link>
         </div>
         <form action="/api/admin/logout" method="POST">
           <button

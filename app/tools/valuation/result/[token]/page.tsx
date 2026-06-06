@@ -90,7 +90,7 @@ export default async function ValuationResultPage({ params }: Props) {
               href={`/sell?utm_source=avm_share&town=${encodeURIComponent(area)}`}
               className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--blue-deep)]"
             >
-              Get matched with an agent
+              Compare agents free
             </Link>
             <Link
               href="/tools/valuation"

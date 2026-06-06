@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { postalToDistrictCode, looksLikePostal } from "../lib/postal";
 
-// GetAgent-style postcode entry on ranking pages. Resolves the postcode to a
-// URA district and routes straight into the prefilled /sell funnel. Falls back
-// to plain /sell if the postcode is unrecognised, so the CTA always works.
+// Postcode entry on ranking pages. Resolves the postcode to a URA district and
+// routes straight into the prefilled /sell comparison. Falls back to plain
+// /sell if the postcode is unrecognised, so the CTA always works.
 export default function PostcodeBox({ source = "ranking" }: { source?: string }) {
   const router = useRouter();
   const [pc, setPc] = useState("");
@@ -32,7 +32,7 @@ export default function PostcodeBox({ source = "ranking" }: { source?: string })
         aria-label="Postal code"
       />
       <button type="submit" className="fc-btn fc-btn--primary">
-        Get my shortlist
+        Compare agents
       </button>
     </form>
   );

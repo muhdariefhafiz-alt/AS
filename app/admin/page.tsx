@@ -63,6 +63,11 @@ export default async function AdminPage({ searchParams }: Props) {
 
   const modTotal = (pendingMessages.count ?? 0) + (pendingPhotos.count ?? 0) + (pendingBios.count ?? 0);
 
+  const { count: manualReviewClaims } = await supabase
+    .from("sg_claim_requests")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "manual_review");
+
   const badges: Record<string, number> = {
     overzicht: pendingClaims.count ?? 0,
     ops: (emailFailed.count ?? 0) + (feedbackNew.count ?? 0),
@@ -73,6 +78,7 @@ export default async function AdminPage({ searchParams }: Props) {
     supply: 0,
     seo: 0,
     moderation: modTotal,
+    claims: manualReviewClaims ?? 0,
   };
 
   const activeTab = TABS.find((t) => t.id === active)!;

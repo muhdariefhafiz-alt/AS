@@ -7,7 +7,7 @@ export const revalidate = false;
 
 export const metadata: Metadata = {
   title: "For Property Agents - Claim Your Profile",
-  description: "Your FairComparisons profile is live. Claim it for free to add your photo and bio, respond to seller invitations, and win listings on your record. 0.25% success fee, the 2026 launch rate, only on a completed sale.",
+  description: "Your FairComparisons profile is live. Claim it free to add your photo and bio and be found by sellers comparing agents on real CEA data. Optional subscriptions add reputation and analytics tools and never influence ranking: Verified S$29/mo, Professional S$69/mo, Elite S$149/mo.",
   alternates: { canonical: "https://fair-comparisons.com/for-agents" },
 };
 
@@ -44,7 +44,7 @@ export default async function ForAgentsPage() {
             You&apos;re judged on your <span className="accent">record,</span> not your wallet.
           </h1>
           <p className="lp-hero__sub" style={{ margin: "16px auto 0" }}>
-            FairComparisons sends you sellers in your area who are ready to instruct an agent. No cost to be ranked, no cost to receive leads. You pay a 0.25% success fee, our 2026 launch rate, only when a referred sale completes, and never to rank higher.
+            Sellers compare every CEA-registered agent on real transaction data and contact the ones they choose. No cost to be ranked, no cost to be found. Claim your profile free, then subscribe for reputation and analytics tools if you want them. Subscriptions never change your rank.
           </p>
           <div style={{ display: "flex", gap: 48, justifyContent: "center", margin: "34px 0 30px", flexWrap: "wrap" }}>
             <div className="hstat"><div className="n tnum">{stats.scored.toLocaleString()}</div><div className="l">Agents scored</div></div>
@@ -63,7 +63,7 @@ export default async function ForAgentsPage() {
             <div className="fc-card compare-col">
               <div className="eyebrow eyebrow--muted">Unclaimed (current)</div>
               <ul style={{ listStyle: "none", margin: "14px 0 0", padding: 0 }}>
-                {["Name and CEA registration visible", "AgentScore and transaction history public", "No photo, no bio", "Cannot receive seller invitations"].map((t, i, a) => (
+                {["Name and CEA registration visible", "AgentScore and transaction history public", "No photo, no bio", "No way for sellers to contact you"].map((t, i, a) => (
                   <li key={t} style={{ padding: "8px 0", borderBottom: i < a.length - 1 ? "1px solid var(--line)" : "none", color: "var(--slate)" }}>{t}</li>
                 ))}
               </ul>
@@ -71,7 +71,7 @@ export default async function ForAgentsPage() {
             <div className="fc-card compare-col" style={{ border: "1.5px solid var(--blue)" }}>
               <div className="eyebrow">Claimed (free)</div>
               <ul style={{ listStyle: "none", margin: "14px 0 0", padding: 0 }}>
-                {["Add your photo and practice bio", "Respond to seller invitations from your area", "Get notified when buyers view your profile", "Embed your AgentScore widget on your site"].map((t, i, a) => (
+                {["Add your photo and practice bio", "Let sellers comparing your area contact you directly", "Get notified when buyers view your profile", "Embed your AgentScore widget on your site"].map((t, i, a) => (
                   <li key={t} style={{ display: "flex", gap: 9, padding: "8px 0", borderBottom: i < a.length - 1 ? "1px solid var(--line)" : "none" }}>
                     <Tick /> {t}
                   </li>
@@ -106,7 +106,7 @@ export default async function ForAgentsPage() {
         <div className="fc-wrap" style={{ padding: "64px 40px" }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Simple pricing</h2>
           <p className="muted" style={{ textAlign: "center", maxWidth: "60ch", margin: "12px auto 0" }}>
-            Claiming your profile and receiving seller leads is always free. The paid tiers add analytics tools only. They never change your rank or the leads you receive.
+            Claiming your profile and being found by sellers is always free. The paid tiers add reputation and analytics tools only. They never change your rank or how sellers find you.
           </p>
           <div style={{ marginTop: 28 }}><PricingCards /></div>
         </div>
@@ -123,9 +123,9 @@ export default async function ForAgentsPage() {
               <p className="muted small">How FairComparisons compares to PropertyGuru on pricing, features and visibility. The side-by-side breakdown.</p>
             </Link>
             <Link href="/for-agents/lead-generation" className="fc-card fc-card--pad fc-card--hover">
-              <div className="eyebrow">Lead generation</div>
-              <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>How agents get leads on FairComparisons</div>
-              <p className="muted small">Buyers search Google for agents in their area. Your track record does the selling. See how it works.</p>
+              <div className="eyebrow">Get found</div>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>How sellers find agents on FairComparisons</div>
+              <p className="muted small">Sellers compare agents in their area and contact the ones they choose. Your track record does the selling. See how it works.</p>
             </Link>
           </div>
         </div>

@@ -107,8 +107,8 @@ export default async function MopResultPage({ params }: Props) {
           </h1>
           <p className="mt-2 max-w-xl text-sm text-gray-600">
             We&apos;ll alert you 3 months before your MOP with a refreshed
-            valuation and a shortlist. You can share this snapshot with the
-            person deciding alongside you.
+            valuation and a ranked shortlist to compare. You can share this
+            snapshot with the person deciding alongside you.
           </p>
         </div>
       </section>
@@ -193,7 +193,7 @@ export default async function MopResultPage({ params }: Props) {
                   href={`/sell?utm_source=mop_share&town=${encodeURIComponent(town)}`}
                   className="rounded-lg bg-[var(--blue)] px-5 py-2.5 text-center text-sm font-semibold text-white hover:bg-[var(--blue-deep)]"
                 >
-                  Get matched with the right agent
+                  Compare every agent in {town} free
                 </Link>
                 <Link
                   href="/tools/mop-tracker"

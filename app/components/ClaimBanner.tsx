@@ -154,7 +154,7 @@ export default function ClaimBanner({
             <p className="text-base font-bold text-gray-900">{headline}</p>
             <p className="mt-1.5 text-sm text-gray-600">
               Your CEA transaction record is already public, so this page exists whether you claim it or not.
-              Claim it to receive seller leads in your area and respond with a quote.
+              Claim it to add your photo and bio and subscribe to agent tools.
             </p>
             {variant === "B" && profileViews7d != null && profileViews7d > 0 && (
               <p className="mt-2 text-sm font-semibold text-[var(--blue-deep)]">
@@ -166,19 +166,19 @@ export default function ClaimBanner({
                 <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">
                   1
                 </span>
-                <span>Get matched with sellers near you who are ready to instruct an agent.</span>
+                <span>Show sellers comparing agents in your area your photo, bio and record.</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-700">
                 <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">
                   2
                 </span>
-                <span>Add a photo, bio and message so sellers know who they are inviting.</span>
+                <span>Add a photo, bio and message so sellers know who they are contacting.</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-700">
                 <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">
                   3
                 </span>
-                <span>Track your leads, quotes and completions in your dashboard.</span>
+                <span>Track your profile views and performance in your dashboard.</span>
               </div>
             </div>
             <p className="mt-3 text-xs text-gray-500">
@@ -239,8 +239,8 @@ export default function ClaimBanner({
               />
               <span>
                 I agree to the{" "}
-                <a href="/for-agents/agreement" target="_blank" rel="noopener" className="font-semibold underline">FairComparisons Agent Agreement</a>:
-                a 0.25% success fee (the 2026 launch rate) on completed sales from FairComparisons introductions. Free to claim, no monthly fee, no fee unless a sale completes.
+                <a href="/for-agents/agreement" target="_blank" rel="noopener" className="font-semibold underline">FairComparisons Agent Agreement</a>.
+                Free to claim. Optional tool subscriptions never influence ranking, and FairComparisons never takes a cut of a sale.
               </span>
             </label>
             {status === "error" && <p className="mt-3 text-sm text-red-600">{errorMsg}</p>}

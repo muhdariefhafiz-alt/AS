@@ -17,7 +17,7 @@ export async function RevenueTab() {
       .select(
         "id, name, slug, primary_area, subscription_tier, subscription_started_at, subscription_ends_at, subscription_canceled_at, claimed_at"
       )
-      .in("subscription_tier", ["pro", "premium"])
+      .in("subscription_tier", ["verified", "professional", "elite"])
       .not("subscription_started_at", "is", null)
       .order("subscription_started_at", { ascending: false }),
     supabase
@@ -50,10 +50,12 @@ export async function RevenueTab() {
     claimed_at: string | null;
   }>;
   const premiumCount = paying.length;
-  const proCount = paying.filter((p) => p.subscription_tier === "pro").length;
-  const premiumTierCount = paying.filter((p) => p.subscription_tier === "premium").length;
+  const TIER_PRICE: Record<string, number> = { verified: 29, professional: 69, elite: 149 };
+  const tierCount = (t: string) => paying.filter((p) => p.subscription_tier === t).length;
+  const proCount = tierCount("professional");
+  const premiumTierCount = tierCount("elite");
 
-  const mrr = proCount * 99 + premiumTierCount * 299;
+  const mrr = paying.reduce((s, p) => s + (TIER_PRICE[p.subscription_tier] ?? 0), 0);
   const arr = mrr * 12;
 
   const intentRows = (upgradeIntent.data ?? []) as Array<{ event: string; created_at: string }>;

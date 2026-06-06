@@ -42,3 +42,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .gstack/
+
+# Local strategy/research docs — keep sensitive business material out of the code repo
+Getagent.co.uk reverse-engineering/

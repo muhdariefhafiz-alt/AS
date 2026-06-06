@@ -8,14 +8,14 @@ import SellerProof from "../components/SellerProof";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Sell your property — Get matched with Singapore's top agents",
+  title: "Sell your property: compare Singapore's top agents on real data",
   description:
-    "Tell us about your HDB, condo or landed property. We match you with the top-ranked CEA agents for your area based on actual transaction records. Free for sellers.",
+    "Tell us about your HDB, condo or landed property and compare the top-ranked CEA agents for your area on actual transaction records. Contact the ones you choose. Always free for sellers.",
   alternates: { canonical: "https://fair-comparisons.com/sell" },
   openGraph: {
-    title: "Sell your property — Singapore's data-driven agent shortlist",
+    title: "Sell your property: Singapore's data-driven agent comparison",
     description:
-      "Match with up to 7 top CEA-licensed agents for your area. Free for sellers.",
+      "Compare the top CEA-licensed agents for your area on real transaction data, then contact the ones you choose. Always free for sellers.",
     url: "https://fair-comparisons.com/sell",
     type: "website",
     locale: "en_SG",
@@ -64,8 +64,8 @@ export default async function SellPage({
   // so the seller lands on a pre-filled form instead of a blank one.
   const sp = await searchParams;
 
-  // Per-agent "Request an introduction" deep-link: ?agent=<slug> pins that agent
-  // to the top of the resulting shortlist (anti-leakage attribution).
+  // Per-agent "View profile" deep-link: ?agent=<slug> pins that agent
+  // to the top of the resulting comparison (attribution).
   let pinnedAgent: { id: number; name: string; agency: string } | null = null;
   let agentPrimaryArea: string | null = null;
   if (sp.agent) {
@@ -110,18 +110,18 @@ export default async function SellPage({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: "FairComparisons seller matching",
+    name: "FairComparisons agent comparison",
     provider: {
       "@type": "Organization",
       name: "FairComparisons",
       url: "https://fair-comparisons.com",
     },
     areaServed: { "@type": "Country", name: "Singapore" },
-    serviceType: "Property agent comparison and matching",
+    serviceType: "Independent property agent comparison",
     offers: {
       "@type": "Offer",
       description:
-        "Free for sellers. Agents pay only on completion of a sale referred through the platform.",
+        "Always free for sellers. FairComparisons is paid by agent subscriptions, not by sales, so its rankings are never for sale.",
       price: 0,
       priceCurrency: "SGD",
     },
@@ -130,19 +130,19 @@ export default async function SellPage({
   const FAQ: { q: string; a: string }[] = [
     {
       q: "Is it really free for sellers?",
-      a: "Yes. You never pay FairComparisons anything. Agents pay a success fee of 0.25% of the sale price plus GST, and only if you complete a sale through an agent we referred. No upfront cost, and nothing if you do not sell.",
+      a: "Yes. You never pay FairComparisons anything, and we never take a cut of your sale. We are an independent comparison platform: compare the agents, then contact the ones you choose yourself.",
     },
     {
       q: "Will agents spam me?",
-      a: "No. Your details are only shared with the agents you choose to invite, up to three. Agents you do not pick never see your contact details. The platform is PDPA-compliant.",
+      a: "No. We do not route your details to agents. You see the ranked comparison and reach out to the agents you choose, on your own terms. The platform is PDPA-compliant.",
     },
     {
       q: "How many agents will contact me?",
-      a: "Only the ones you invite, up to three. You see the ranked shortlist first and decide who to share your details with, so you stay in control.",
+      a: "Only the ones you contact first. You compare the ranked agents for your area and decide who to reach out to, so you stay fully in control.",
     },
     {
       q: "How are you paid, and does it affect the ranking?",
-      a: "Agents pay a 0.25% success fee plus GST only when a referred sale completes. We are paid the same regardless of which agent you pick, so we have no reason to favour anyone. Rankings come from CEA, URA and HDB transaction data and cannot be bought.",
+      a: "We are paid by agent subscriptions for tools, not by sales, so our rankings are never for sale. Subscriptions never influence the order. Rankings come from CEA, URA and HDB transaction data and cannot be bought.",
     },
   ];
 
@@ -170,13 +170,13 @@ export default async function SellPage({
       <header className="lp-hero">
         <div className="fc-wrap">
           <div className="lp-hero__eyebrow">Sell your property</div>
-          <h1>Get matched with the agents who <span className="accent">actually sell</span> in your area.</h1>
+          <h1>Compare the agents who <span className="accent">actually sell</span> in your area.</h1>
           <p className="lp-hero__sub">
-            Tell us about your home. We rank every CEA-licensed agent on real transaction records and shortlist the best for you. Free.
+            Tell us about your home and compare every CEA-licensed agent for your area on real transaction records. Contact the ones you choose. Always free for sellers.
           </p>
           <div className="lp-hero__tags">
             <span className="lp-hero__tag">Based on 730,000+ CEA transactions</span>
-            <span className="lp-hero__tag">No upfront cost</span>
+            <span className="lp-hero__tag">Always free for sellers</span>
             <span className="lp-hero__tag">PDPA-compliant</span>
           </div>
           <SellerProof />
@@ -202,9 +202,9 @@ export default async function SellPage({
           <div className="fc-grid-4" style={{ marginTop: 28 }}>
             {[
               { n: "01", t: "Tell us about your home", d: "Property type, area, timeline. Takes 60 seconds." },
-              { n: "02", t: "We rank the agents", d: "Top 7 agents for your area based on actual CEA records." },
-              { n: "03", t: "You invite up to 3", d: "Pick whom to share details with. They submit quotes within 24h." },
-              { n: "04", t: "Pick the winner", d: "Compare commissions and approach. Instruct one. Done." },
+              { n: "02", t: "See the ranked agents", d: "Top 7 agents for your area based on actual CEA records." },
+              { n: "03", t: "Compare on evidence", d: "Track record, area focus and sale-versus-rental mix, side by side." },
+              { n: "04", t: "Contact who you choose", d: "Reach out to the agents you want, directly. You stay in control." },
             ].map((s) => (
               <div key={s.n} className="fc-card howcard">
                 <div className="mono" style={{ color: "var(--blue)", fontSize: 13 }}>{s.n}</div>

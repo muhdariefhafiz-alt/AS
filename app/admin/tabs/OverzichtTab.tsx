@@ -17,7 +17,7 @@ export async function OverzichtTab() {
     supabase
       .from("sg_agents")
       .select("id, subscription_tier, subscription_started_at")
-      .in("subscription_tier", ["pro", "premium"])
+      .in("subscription_tier", ["verified", "professional", "elite"])
       .not("subscription_started_at", "is", null),
     supabase
       .from("sg_funnel_events")
@@ -63,7 +63,8 @@ export async function OverzichtTab() {
   const paying = (payingAgents.data ?? []) as Array<{ subscription_tier: string; subscription_started_at: string }>;
   const payingWeekly = buildWeekly(paying.map((p) => ({ created_at: p.subscription_started_at })), 8);
   const payingThisWeek = payingWeekly[payingWeekly.length - 1] || 0;
-  const mrr = paying.reduce((s, p) => s + (p.subscription_tier === "premium" ? 299 : 99), 0);
+  const TIER_PRICE: Record<string, number> = { verified: 29, professional: 69, elite: 149 };
+  const mrr = paying.reduce((s, p) => s + (TIER_PRICE[p.subscription_tier] ?? 0), 0);
 
   // Build agent name lookup for pending claims
   const agentIds = (pendingClaims.data ?? []).map((c) => c.agent_id).filter(Boolean);

@@ -4,13 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import LeadsInbox from "./LeadsInbox";
 import { titleName, cleanAgency } from "../lib/names";
+import { isPaid } from "../lib/tiers";
 
-type Tier = "free" | "pro" | "premium";
+type Tier = "free" | "verified" | "professional" | "elite";
 
 const TIER_LABELS: Record<Tier, string> = {
   free: "Free",
-  pro: "Pro",
-  premium: "Premium",
+  verified: "Verified",
+  professional: "Professional",
+  elite: "Elite",
 };
 
 export default function DashboardPage() {
@@ -150,7 +152,7 @@ export default function DashboardPage() {
     }
   }
 
-  async function handleUpgrade(tier: "pro" | "premium") {
+  async function handleUpgrade(tier: "verified" | "professional" | "elite") {
     if (!agent) return;
     setCheckoutLoading(tier);
 
@@ -179,7 +181,7 @@ export default function DashboardPage() {
       <div className="eyebrow">Agent dashboard</div>
       <h1 style={{ fontSize: "var(--t-h2)", margin: "10px 0 0" }}>Your FairComparisons account</h1>
       <p className="muted" style={{ marginTop: 8, fontSize: 15 }}>
-        Manage your profile, respond to seller leads, and track completions through to payment.
+        Manage your profile, see how sellers find you, and track your reputation and analytics.
       </p>
 
       {/* Upgrade success banner */}
@@ -270,9 +272,9 @@ export default function DashboardPage() {
           {agent.cea_registration && (
             <div>
               <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
-                <h2 style={{ fontSize: 18, margin: 0 }}>Seller leads</h2>
+                <h2 style={{ fontSize: 18, margin: 0 }}>Seller enquiries</h2>
                 <Link href="/sell" className="small" style={{ color: "var(--blue)", fontWeight: 600 }}>
-                  How matching works →
+                  How sellers compare you →
                 </Link>
               </div>
               <div style={{ marginTop: 12 }}>
@@ -284,37 +286,42 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Profile activity */}
+          {/* Profile activity. Views are shown to everyone (the upgrade hook);
+              richer analytics (clicks, and later trends) are a Verified+ tool. */}
           <div>
             <h2 style={{ fontSize: 18, margin: 0 }}>Profile activity</h2>
-            {agent.views_this_week > 0 || agent.whatsapp_clicks_this_week > 0 ? (
-              <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
-                  <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.views_this_week}</p>
-                  <p className="kicker" style={{ marginTop: 4 }}>Profile views this week</p>
-                </div>
+            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
+                <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.views_this_week}</p>
+                <p className="kicker" style={{ marginTop: 4 }}>Profile views this week</p>
+              </div>
+              {isPaid(agent.subscription_tier) ? (
                 <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
                   <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week}</p>
-                  <p className="kicker" style={{ marginTop: 4 }}>Lead-button clicks this week</p>
+                  <p className="kicker" style={{ marginTop: 4 }}>Contact-button clicks this week</p>
                 </div>
-              </div>
-            ) : (
-              <p className="muted small" style={{ marginTop: 12 }}>
-                View tracking starts after your profile is set up.
-              </p>
-            )}
+              ) : (
+                <div className="fc-card" style={{ padding: 18, textAlign: "center", background: "var(--cloud)", display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}>
+                  <p className="kicker" style={{ margin: 0, lineHeight: 1.4 }}>Contact clicks and weekly trends</p>
+                  <button onClick={() => handleUpgrade("verified")} disabled={checkoutLoading !== null} className="fc-btn fc-btn--ghost fc-btn--sm">
+                    {checkoutLoading === "verified" ? "…" : "Unlock with Verified"}
+                  </button>
+                </div>
+              )}
+            </div>
+            <p className="muted small" style={{ marginTop: 8 }}>View tracking runs once your profile is set up.</p>
           </div>
 
-          {/* How you earn — success-fee model (GetAgent-style: free listing,
-              ranked purely on record, pay only on completion). Replaces the
-              old paid-placement upsell, which contradicted "rankings cannot
-              be bought". */}
+          {/* How it works — independent comparison model: every agent is
+              listed and ranked free on their CEA record, sellers compare and
+              contact agents themselves, and FairComparisons is paid only by
+              optional subscriptions that never affect ranking. */}
           <div className="fc-card" style={{ background: "var(--blue-wash)", borderColor: "transparent", padding: "20px 22px" }}>
-            <h2 style={{ fontSize: 16, margin: 0, color: "var(--ink)" }}>How you earn through FairComparisons</h2>
+            <h2 style={{ fontSize: 16, margin: 0, color: "var(--ink)" }}>How FairComparisons works for you</h2>
             <ul style={{ marginTop: 10, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 14.5, color: "var(--ink-2)" }}>
               <li>You&apos;re listed free, ranked purely on your CEA transaction record.</li>
-              <li>Sellers in your area can invite you to quote on their sale.</li>
-              <li>You pay a 0.25% success fee + GST <strong>only when a referred sale completes</strong>. No upfront cost, no monthly fee.</li>
+              <li>Sellers compare every agent in their area and contact whoever they choose.</li>
+              <li>We never take a cut of your sales. Optional subscriptions add reputation and analytics tools, nothing more.</li>
             </ul>
             <p className="small" style={{ marginTop: 12, color: "var(--blue-deep)" }}>
               Your ranking is always earned, never bought. There is no paid placement on FairComparisons.
@@ -336,29 +343,32 @@ export default function DashboardPage() {
             return (
               <div className="fc-card" style={{ padding: 22 }}>
                 <div className="fc-row" style={{ justifyContent: "space-between" }}>
-                  <p className="kicker">Pro tools (optional)</p>
-                  <span className="serif" style={{ fontSize: 22, fontWeight: 600 }}>S$99<span className="muted" style={{ fontSize: 13, fontWeight: 400 }}>/mo</span></span>
+                  <p className="kicker">Get Verified (optional)</p>
+                  <span className="serif" style={{ fontSize: 22, fontWeight: 600 }}>S$29<span className="muted" style={{ fontSize: 13, fontWeight: 400 }}>/mo</span></span>
                 </div>
                 <ul style={{ marginTop: 12, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5 }} className="muted">
-                  <li>Weekly profile view + lead report</li>
-                  <li>Comparable-transaction data for pricing conversations</li>
-                  <li>Monthly market insights for your area</li>
+                  <li>FairComparisons Verified badge on your profile</li>
+                  <li>Profile analytics: views and clicks</li>
+                  <li>Listed above unclaimed profiles in search</li>
                 </ul>
                 <p className="small muted" style={{ marginTop: 8 }}>Tools only. Does not affect your ranking.</p>
                 <button
-                  onClick={() => handleUpgrade("pro")}
+                  onClick={() => handleUpgrade("verified")}
                   disabled={checkoutLoading !== null}
                   className="fc-btn fc-btn--ghost fc-btn--block"
                   style={{ marginTop: 16 }}
                 >
-                  {checkoutLoading === "pro" ? "Redirecting to checkout…" : "Add Pro tools"}
+                  {checkoutLoading === "verified" ? "Redirecting to checkout…" : "Get Verified"}
                 </button>
+                <p className="small muted" style={{ textAlign: "center", marginTop: 10 }}>
+                  <Link href="/for-agents" style={{ color: "var(--blue)" }}>See all plans</Link>
+                </p>
               </div>
             );
           })()}
 
           {/* Existing paid tier holders — manage/cancel */}
-          {(agent.subscription_tier === "pro" || agent.subscription_tier === "premium") && (
+          {agent.subscription_tier !== "free" && (
             <div className="fc-card fc-card--fill" style={{ padding: "14px 16px" }}>
               <p className="muted small">
                 You have {TIER_LABELS[agent.subscription_tier]} tools. To manage or cancel, email{" "}
@@ -455,7 +465,7 @@ export default function DashboardPage() {
               {/* WhatsApp */}
               <div className="fc-field">
                 <label className="fc-label">WhatsApp number</label>
-                <p className="muted small">Include country code (e.g. +6591234567). We use this to alert you the moment a seller invites you to quote.</p>
+                <p className="muted small">Include country code (e.g. +6591234567). We use this to alert you the moment a seller contacts you through your profile.</p>
                 <input
                   type="tel"
                   value={whatsapp}

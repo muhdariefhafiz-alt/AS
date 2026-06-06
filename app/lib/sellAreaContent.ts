@@ -192,9 +192,9 @@ export function buildNarrative(
 
   // Closing CTA frame
   const closers = [
-    `Below, see the top-ranked CEA-licensed agents who actually sell in ${areaLabel}, ranked on real transaction records, then get matched in under a minute.`,
-    `We rank every agent in ${areaLabel} on their actual CEA transaction history. Compare the top performers below and request a free shortlist.`,
-    `Skip the guesswork: the agents below are ranked on verified ${areaLabel} sales, not advertising spend. Get your free shortlist to start.`,
+    `Below, see the top-ranked CEA-licensed agents who actually sell in ${areaLabel}, ranked on real transaction records. Compare them free and contact whoever you choose.`,
+    `We rank every agent in ${areaLabel} on their actual CEA transaction history. Compare the top performers below and reach out directly, free.`,
+    `Skip the guesswork: the agents below are ranked on verified ${areaLabel} sales, not advertising spend. Compare them all free and contact the ones you choose.`,
   ];
   paras.push(closers[seed % closers.length]);
 

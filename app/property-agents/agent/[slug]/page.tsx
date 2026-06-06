@@ -10,6 +10,8 @@ import { titleName, givenName, cleanAgency, saleShare } from "../../../lib/names
 import ClaimBanner from "../../../components/ClaimBanner";
 import StickyMobileCta from "../../../components/StickyMobileCta";
 import AgentTransactionRecord from "../../../components/AgentTransactionRecord";
+import RelatedAgents from "../../../components/RelatedAgents";
+import ProfileCorrection from "../../../components/ProfileCorrection";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -329,6 +331,18 @@ export default async function AgentPage({ params }: Props) {
                     &#10003; Verified agent
                   </span>
                 )}
+                {/* Subscription flair. A profile adornment only: it does NOT
+                    affect ranking, which stays purely by AgentScore. */}
+                {agent.subscription_tier === "elite" && (
+                  <span className="fc-badge" title="Elite subscriber" style={{ background: "var(--warn-wash)", color: "var(--warn)" }}>
+                    &#9733; Elite agent
+                  </span>
+                )}
+                {agent.subscription_tier === "professional" && (
+                  <span className="fc-badge" title="Professional subscriber" style={{ background: "var(--blue-wash)", color: "var(--blue-deep)" }}>
+                    Professional
+                  </span>
+                )}
                 {rentalFocused && <span className="fc-badge fc-badge--warn">Mostly rentals · {salePct}% sales</span>}
                 {updated && <span className="fc-badge fc-badge--source">Updated {updated}</span>}
               </div>
@@ -344,7 +358,7 @@ export default async function AgentPage({ params }: Props) {
               )}
             </div>
             <div className="fc-col" style={{ gap: 10 }}>
-              <Link href={`/sell?agent=${slug}&utm_source=agent_profile`} className="fc-btn fc-btn--primary">Request an introduction to {given}</Link>
+              <Link href={`/sell?agent=${slug}&utm_source=agent_profile`} className="fc-btn fc-btn--primary">View {given}&apos;s profile</Link>
               <Link href="/property-agents/compare" className="fc-btn fc-btn--ghost fc-btn--sm">Compare with others</Link>
             </div>
           </div>
@@ -399,14 +413,14 @@ export default async function AgentPage({ params }: Props) {
                       <div className="serif" style={{ fontSize: 30, fontWeight: 600, color: verifiedCompletions ? "var(--ok)" : "var(--slate)" }}>
                         {verifiedCompletions || 0}
                       </div>
-                      <div className="muted small">Completions via FairComparisons</div>
+                      <div className="muted small">Sales logged on FairComparisons</div>
                     </div>
                   </div>
                   <p className="muted small" style={{ marginTop: 14 }}>
                     Sales and rentals are counted from official CEA salesperson records.{" "}
                     {verifiedCompletions
-                      ? `${verifiedCompletions} sale${verifiedCompletions === 1 ? "" : "s"} closed through a FairComparisons referral and confirmed by payment.`
-                      : "No sales have completed through a FairComparisons referral yet; this fills in as referred deals close."}
+                      ? `${verifiedCompletions} sale${verifiedCompletions === 1 ? "" : "s"} logged and confirmed on FairComparisons.`
+                      : "No sales have been logged on FairComparisons yet; this fills in as the record grows."}
                   </p>
                 </div>
 
@@ -491,6 +505,8 @@ export default async function AgentPage({ params }: Props) {
                 <p className="mono small muted" style={{ marginTop: 18 }}>AgentScore and ranking are computed from CEA, URA and HDB records only.</p>
               </>
             )}
+            <RelatedAgents agentId={agent.id} />
+            <ProfileCorrection given={given} cea={agent.cea_registration} />
           </main>
 
           {/* SIDEBAR */}
@@ -513,7 +529,7 @@ export default async function AgentPage({ params }: Props) {
                     <div className="kpi__track" style={{ gridColumn: "1 / -1" }}><div className="kpi__fill" style={{ width: "4%", background: "var(--line-2)" }} /></div>
                   </div>
                   <p className="mono" style={{ fontSize: 10, color: "var(--slate)", marginTop: 10 }}>No input can be purchased. Thin data is shown as thin, not inflated.</p>
-                  <Link href="/about" className="small" style={{ display: "block", marginTop: 10 }}>How is AgentScore calculated?</Link>
+                  <Link href="/how-we-score" className="small" style={{ display: "block", marginTop: 10 }}>How is AgentScore calculated?</Link>
                 </div>
               )}
 
@@ -532,7 +548,7 @@ export default async function AgentPage({ params }: Props) {
                 <div className="fc-card fc-card--pad" style={{ background: "var(--ink)", color: "#fff" }}>
                   <div className="kicker" style={{ color: "var(--slate-2)" }}>Are you {given}?</div>
                   <p className="small" style={{ margin: "10px 0 14px", color: "rgba(255,255,255,0.82)" }}>
-                    Claim this profile to respond to seller invitations and track leads. Free to start, pay 0.25% only on a completed sale.
+                    Claim this profile to add your photo and bio and subscribe to agent tools. Subscriptions never change your rank.
                   </p>
                   <Link href="#claim" className="fc-btn fc-btn--primary fc-btn--block">Claim your profile</Link>
                 </div>
@@ -541,7 +557,7 @@ export default async function AgentPage({ params }: Props) {
           </aside>
         </div>
       </div>
-      <StickyMobileCta href={`/sell?agent=${slug}&utm_source=agent_sticky`} label={`Request an introduction to ${given}`} />
+      <StickyMobileCta href={`/sell?agent=${slug}&utm_source=agent_sticky`} label={`View ${given}'s profile`} />
     </>
   );
 }

@@ -151,12 +151,12 @@ export default function SellForm({
           style={{ padding: "14px 16px", marginBottom: 22, background: "var(--blue-wash)", border: "1px solid var(--blue)" }}
         >
           <div style={{ fontWeight: 700, fontSize: 15, color: "var(--ink)" }}>
-            Requesting an introduction to {pinnedAgent.name}
+            Comparing {pinnedAgent.name}
           </div>
           <p className="small muted" style={{ margin: "4px 0 0", lineHeight: 1.55 }}>
             {pinnedAgent.agency}. We&apos;ll put {pinnedAgent.name.split(" ")[0]} at the top of your
-            shortlist, plus other top-ranked agents for your area so you can compare before you
-            decide who to invite. Free for sellers.
+            comparison, alongside other top-ranked agents for your area so you can compare on real
+            data and contact the ones you choose. Always free for sellers.
           </p>
         </div>
       )}
@@ -227,7 +227,7 @@ export default function SellForm({
       </div>
       <label className="fc-row" style={{ gap: 10, alignItems: "flex-start", marginTop: 18, fontSize: 13.5, color: "var(--slate)" }}>
         <input type="checkbox" checked={pdpaConsent} onChange={(e) => setPdpaConsent(e.target.checked)} style={{ marginTop: 3 }} required />
-        <span>I agree that FairComparisons may share my details with the agents I invite, under Singapore&apos;s PDPA. My data is never shared with agents I did not pick.</span>
+        <span>I agree to FairComparisons handling my details under Singapore&apos;s PDPA so I can compare and contact agents myself. My data is never sold and never shared with agents I did not choose to contact.</span>
       </label>
       <label className="fc-row" style={{ gap: 10, alignItems: "flex-start", marginTop: 10, fontSize: 13.5, color: "var(--slate)" }}>
         <input type="checkbox" checked={marketingConsent} onChange={(e) => setMarketingConsent(e.target.checked)} style={{ marginTop: 3 }} />
@@ -238,13 +238,13 @@ export default function SellForm({
 
       <button type="submit" disabled={!canSubmit || submitting} className="fc-btn fc-btn--primary fc-btn--block fc-btn--lg" style={{ marginTop: 18 }}>
         {submitting
-          ? "Matching you with top agents…"
+          ? "Building your comparison…"
           : pinnedAgent
-            ? `Request ${pinnedAgent.name.split(" ")[0]} + see my shortlist`
+            ? `Compare ${pinnedAgent.name.split(" ")[0]} + see my shortlist`
             : "See my shortlist"}
       </button>
       <p className="small muted" style={{ textAlign: "center", margin: "12px 0 0" }}>
-        Free for sellers. Agents only pay if you complete a sale through them.
+        Always free for sellers. We are paid by agent subscriptions, not by sales, so our rankings are never for sale.
       </p>
     </form>
   );

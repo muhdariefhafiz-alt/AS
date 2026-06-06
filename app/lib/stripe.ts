@@ -22,13 +22,22 @@ export const stripe = undefined as unknown as Stripe;
 
 /**
  * Price IDs - set in Vercel env vars.
- * Create these in Stripe Dashboard > Products:
- *   - Pro:     S$99/mo  recurring
- *   - Premium: S$299/mo recurring
+ * Create these recurring prices in Stripe Dashboard > Products:
+ *   - Verified:     S$29/mo  recurring  -> STRIPE_PRICE_VERIFIED
+ *   - Professional: S$69/mo  recurring  -> STRIPE_PRICE_PROFESSIONAL
+ *   - Elite:        S$149/mo recurring  -> STRIPE_PRICE_ELITE
+ * These are SaaS reputation/analytics tiers (licence-safe), NOT lead routing.
  */
 export const PRICE_IDS = {
-  pro: process.env.STRIPE_PRICE_PRO!,
-  premium: process.env.STRIPE_PRICE_PREMIUM!,
+  verified: process.env.STRIPE_PRICE_VERIFIED!,
+  professional: process.env.STRIPE_PRICE_PROFESSIONAL!,
+  elite: process.env.STRIPE_PRICE_ELITE!,
 } as const;
 
-export type Tier = "free" | "pro" | "premium";
+export type Tier = "free" | "verified" | "professional" | "elite";
+
+export const TIER_PRICE: Record<Exclude<Tier, "free">, number> = {
+  verified: 29,
+  professional: 69,
+  elite: 149,
+};

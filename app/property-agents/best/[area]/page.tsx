@@ -240,7 +240,7 @@ export default async function BestAgentsPage({ params }: Props) {
           {totalTxns > 0 && ` from ${totalTxns.toLocaleString()} URA transactions recorded in ${area.district}.`}
         </p>
         <div className="fc-row" style={{ marginTop: 24, gap: 12 }}>
-          <Link href={`/sell?type=CONDO&district=${area.district}&utm_source=best_area`} className="fc-btn fc-btn--primary">Get matched with these agents</Link>
+          <Link href={`/sell?type=CONDO&district=${area.district}&utm_source=best_area`} className="fc-btn fc-btn--primary">See ranked agents</Link>
           <Link href="/property-agents/compare" className="fc-btn fc-btn--ghost">Compare side by side</Link>
           <div style={{ marginLeft: 4 }}>
             <ShareButtons compact url={`/property-agents/best/${slug}`} title={`Best property agents in ${short} (${area.district})`} />
@@ -372,7 +372,7 @@ export default async function BestAgentsPage({ params }: Props) {
             <div className="eyebrow eyebrow--muted">Are you ranked here?</div>
             <h3 className="serif" style={{ fontSize: 22, margin: "10px 0 6px" }}>Claim your profile</h3>
             <p className="muted" style={{ fontSize: 14, marginBottom: 16 }}>
-              Add your photo and bio, and connect with sellers in {short}. Claiming never changes your rank.
+              Add your photo and bio so sellers comparing agents in {short} see your record in full. Claiming never changes your rank.
             </p>
             <Link href="/for-agents" className="fc-btn fc-btn--ink fc-btn--sm">Claim your profile</Link>
           </div>
@@ -393,7 +393,7 @@ export default async function BestAgentsPage({ params }: Props) {
         <div className="fc-wrap" style={{ textAlign: "center" }}>
           <h2 style={{ color: "#fff" }}>Selling in {short}?</h2>
           <p className="lede" style={{ margin: "12px auto 20px", textAlign: "center" }}>
-            Enter your postal code for a free shortlist of the agents who actually sell here.
+            Enter your postal code to compare the ranked agents who actually sell here, then contact the ones you choose.
           </p>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <PostcodeBox source="best_postcode" />

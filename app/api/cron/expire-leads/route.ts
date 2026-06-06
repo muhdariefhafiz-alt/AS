@@ -90,9 +90,9 @@ function reactivateHtml({ name, link }: { name: string; link: string }): string 
     <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
   </td></tr>
   <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827">${first}, your shortlist is still here.</p>
+    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827">${first}, your agent comparison is still here.</p>
     <p style="margin:0 0 24px;font-size:14px;color:#374151;line-height:1.6">
-      When you're ready to sell, your matched agents are one click away. Rankings update with the latest transaction data, so it's current.
+      When you're ready to sell, your ranked agents are one click away. Rankings update with the latest transaction data, so it's current.
     </p>
     <p style="margin:0 0 16px">
       <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">

@@ -65,8 +65,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const stats = await privateAreaStats(districtNum(d.code));
   const priceBit = stats.median ? ` Median ${fmtSgd(stats.median)}.` : "";
   return {
-    title: `Sell your condo in ${shortName} (${d.code}) — Compare top agents`,
-    description: `Selling a private property in ${shortName}, ${d.code}?${priceBit} Compare top CEA-licensed agents ranked on real URA transaction records. Free shortlist; agents pay only on completion.`,
+    title: `Sell your condo in ${shortName} (${d.code}): compare top agents`,
+    description: `Selling a private property in ${shortName}, ${d.code}?${priceBit} Compare the top CEA-licensed agents ranked on real URA transaction records, then contact the ones you choose. Always free for sellers.`,
     alternates: {
       canonical: `https://fair-comparisons.com/sell/condo/${slug}`,
     },
@@ -108,7 +108,7 @@ export default async function SellCondoDistrictPage({ params }: Props) {
           "@type": "Answer",
           text: stats.median
             ? `Recent URA private transactions in ${d.code} (${shortName}) centre on a median around ${fmtSgd(stats.median)}, across ${stats.count12mo} sales.`
-            : `Recent private transaction volume in ${shortName} is limited; request a free agent shortlist for a current estimate.`,
+            : `Recent private transaction volume in ${shortName} is limited; compare the area's ranked agents for a current estimate.`,
         },
       },
       {
@@ -116,7 +116,7 @@ export default async function SellCondoDistrictPage({ params }: Props) {
         name: `Who are the best agents to sell a condo in ${shortName}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `FairComparisons ranks CEA-licensed agents on their actual transaction record in ${d.code}. The top performers are shown here; request a free shortlist to invite them to quote.`,
+          text: `FairComparisons ranks CEA-licensed agents on their actual transaction record in ${d.code}. The top performers are shown here; compare them and contact the ones you choose.`,
         },
       },
       {
@@ -124,7 +124,7 @@ export default async function SellCondoDistrictPage({ params }: Props) {
         name: `What does it cost to use FairComparisons?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `Free for sellers. Agents pay a success fee only when a sale completes through the platform.`,
+          text: `Always free for sellers. FairComparisons is paid by agent subscriptions for tools, not by sales, so its rankings are never for sale.`,
         },
       },
     ],
@@ -240,11 +240,11 @@ export default async function SellCondoDistrictPage({ params }: Props) {
       <section className="border-t border-gray-100 bg-gray-50 py-12">
         <div className="mx-auto max-w-[680px] px-5 md:px-8">
           <h2 className="text-center text-2xl font-bold text-gray-900">
-            Get your free shortlist for {shortName}
+            Compare the ranked agents for {shortName}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             We&apos;ve pre-filled your district. Tell us a little more and see
-            your ranked agents.
+            your ranked agents, then contact the ones you choose.
           </p>
           <div className="mt-6">
             <SellForm

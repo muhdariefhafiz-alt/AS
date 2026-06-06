@@ -9,16 +9,17 @@ const supabase = createClient(
 
 /**
  * POST /api/checkout
- * Creates a Stripe Checkout session for a claimed agent upgrading to Pro or Premium.
- * Body: { email: string, tier: "pro" | "premium" }
+ * Creates a Stripe Checkout session for a claimed agent subscribing to a
+ * reputation/analytics tier (licence-safe SaaS, not lead routing).
+ * Body: { email: string, tier: "verified" | "professional" | "elite" }
  */
 export async function POST(req: Request) {
   try {
     const { email, tier } = await req.json();
 
-    if (!email || !tier || !["pro", "premium"].includes(tier)) {
+    if (!email || !tier || !["verified", "professional", "elite"].includes(tier)) {
       return NextResponse.json(
-        { error: "Valid email and tier (pro/premium) required" },
+        { error: "Valid email and tier required" },
         { status: 400 }
       );
     }

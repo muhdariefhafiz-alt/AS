@@ -68,7 +68,7 @@ export async function LiquidityTab() {
     const prev = districtSupply.get(area) || { total: 0, claimed: 0, paid: 0 };
     prev.total++;
     if (a.claimed) prev.claimed++;
-    if (a.subscription_tier === "pro" || a.subscription_tier === "premium") prev.paid++;
+    if (a.subscription_tier && a.subscription_tier !== "free") prev.paid++;
     districtSupply.set(area, prev);
   }
 

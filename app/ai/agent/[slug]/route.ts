@@ -138,7 +138,7 @@ export async function GET(_req: Request, { params }: Props) {
         : ""
     }.${rentalCaveat} Source: FairComparisons (${BASE}/property-agents/agent/${agent.slug}).`,
     actions: {
-      request_quote: `${BASE}/sell`,
+      compare_free: `${BASE}/sell`,
     },
   };
 

@@ -11,15 +11,15 @@ export const metadata: Metadata = {
 const ROUTES: { eyebrow: string; title: string; body: string; href: string; cta: string }[] = [
   {
     eyebrow: "Selling a home",
-    title: "Get matched with an agent",
-    body: "Tell us about your property and get a free shortlist of the agents who actually sell homes like yours.",
+    title: "Compare agents for your home",
+    body: "Compare the agents who actually sell homes like yours, ranked on real CEA data, then contact the ones you choose. Free, and we never take a cut of a sale.",
     href: "/sell?utm_source=contact",
-    cta: "Get my free shortlist",
+    cta: "Compare agents",
   },
   {
     eyebrow: "Property agents",
     title: "Claim or correct your profile",
-    body: "Claim your free profile to manage your details and receive seller leads. Spotted something wrong in your record? Email us.",
+    body: "Claim your free profile to manage your details and be found by sellers comparing agents. Spotted something wrong in your record? Email us.",
     href: "/for-agents",
     cta: "For agents",
   },
@@ -75,7 +75,7 @@ export default function ContactPage() {
         </div>
 
         <p className="muted small" style={{ marginTop: 22 }}>
-          Common questions about how the matching works and what it costs are answered on the{" "}
+          Common questions about how the comparison works and what it costs are answered on the{" "}
           <Link href="/sell#faq" style={{ color: "var(--blue)", fontWeight: 600 }}>
             sell-your-property FAQ
           </Link>

@@ -44,7 +44,7 @@ const faqItems = [
   {
     question: "How much does it cost compared to PropertyGuru?",
     answer:
-      "Claiming and maintaining your FairComparisons profile is free forever. Our Pro plan is S$99/mo and Premium is S$299/mo. PropertyGuru agent packages range from S$163/mo (Entry) to S$2,861/mo (Business Plus), depending on features and listing credits.",
+      "Claiming and maintaining your FairComparisons profile is free forever, and we never take a cut of a sale. Optional subscriptions add reputation and analytics tools: Verified S$29/mo, Professional S$69/mo, Elite S$149/mo. PropertyGuru agent packages range from S$163/mo (Entry) to S$2,861/mo (Business Plus), depending on features and listing credits.",
   },
   {
     question: "Can I cancel my PropertyGuru subscription if I join FairComparisons?",
@@ -194,15 +194,22 @@ export default async function PropertyGuruAlternativePage() {
                 </td>
               </tr>
               <tr className="bg-[var(--blue-wash)]">
-                <td className="px-4 py-3 font-medium text-gray-900">Pro tools</td>
-                <td className="px-4 py-3 font-bold text-[var(--blue)]">S$99</td>
+                <td className="px-4 py-3 font-medium text-gray-900">Verified</td>
+                <td className="px-4 py-3 font-bold text-[var(--blue)]">S$29</td>
                 <td className="px-4 py-3 text-gray-700">
-                  Lead + view analytics, comparable-transaction data (no placement)
+                  Verified badge, view + enquiry analytics (no placement)
                 </td>
               </tr>
               <tr className="bg-[var(--blue-wash)]">
-                <td className="px-4 py-3 font-medium text-gray-900">Premium tools</td>
-                <td className="px-4 py-3 font-bold text-[var(--blue)]">S$299</td>
+                <td className="px-4 py-3 font-medium text-gray-900">Professional</td>
+                <td className="px-4 py-3 font-bold text-[var(--blue)]">S$69</td>
+                <td className="px-4 py-3 text-gray-700">
+                  Comparable-transaction data, deeper analytics (no placement)
+                </td>
+              </tr>
+              <tr className="bg-[var(--blue-wash)]">
+                <td className="px-4 py-3 font-medium text-gray-900">Elite</td>
+                <td className="px-4 py-3 font-bold text-[var(--blue)]">S$149</td>
                 <td className="px-4 py-3 text-gray-700">
                   District analytics, dedicated support, market insights (no placement)
                 </td>
@@ -242,7 +249,7 @@ export default async function PropertyGuruAlternativePage() {
                 pg: "PropertyGuru prices rose 72% since 2019.",
                 fc: "Our Free tier stays free forever.",
                 detail:
-                  "A full claimed profile with photo, contact details, AgentScore, and seller leads costs nothing. You pay a 0.25% success fee only when a referred sale completes. Optional paid tiers add analytics, never visibility or ranking.",
+                  "A full claimed profile with photo, contact details, and AgentScore costs nothing, and we never take a cut of a sale. Optional subscriptions add reputation and analytics tools, never visibility or ranking.",
               },
             ].map((item, i) => (
               <div key={i} className="rounded-xl border border-gray-200 bg-white p-6">
@@ -291,26 +298,26 @@ export default async function PropertyGuruAlternativePage() {
 
           <div className="rounded-xl border border-gray-200 bg-white p-6">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
-              Pro and Premium add-ons
+              Optional subscription tools
             </p>
             <ul className="mt-4 space-y-3 text-sm text-gray-600">
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Seller leads in your area, matched on your record (Free)
+                <span className="text-[var(--blue)]">+</span> Verified badge on your profile (Verified)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Weekly profile view + lead analytics (Pro)
+                <span className="text-[var(--blue)]">+</span> Weekly profile view + enquiry analytics (Verified)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Comparable-transaction data for pricing (Pro)
+                <span className="text-[var(--blue)]">+</span> Comparable-transaction data for pricing (Professional)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Full district analytics dashboard (Premium)
+                <span className="text-[var(--blue)]">+</span> Full district analytics dashboard (Elite)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Dedicated account support (Premium)
+                <span className="text-[var(--blue)]">+</span> Dedicated account support (Elite)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Monthly market insights for your area (Premium)
+                <span className="text-[var(--blue)]">+</span> Monthly market insights for your area (Elite)
               </li>
             </ul>
           </div>

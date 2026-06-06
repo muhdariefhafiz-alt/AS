@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         const agentId = sub.metadata?.agent_id;
 
         if (agentId && sub.status === "active") {
-          const tier = sub.metadata?.tier || "pro";
+          const tier = sub.metadata?.tier || "verified";
           await supabase
             .from("sg_agents")
             .update({

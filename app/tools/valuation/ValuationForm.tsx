@@ -225,7 +225,7 @@ export default function ValuationForm({ hdbTowns }: { hdbTowns: string[] }) {
           )}
 
           <Link href={`/sell?utm_source=avm${areaForLink ? `&town=${encodeURIComponent(areaForLink)}` : ""}`} className="fc-btn fc-btn--ink fc-btn--block" style={{ marginTop: 18 }}>
-            Get matched with an agent to sell at the top of this range
+            Compare agents who sell at the top of this range, free
           </Link>
 
           <div style={{ marginTop: 16, borderTop: "1px solid var(--line)", paddingTop: 14 }}>

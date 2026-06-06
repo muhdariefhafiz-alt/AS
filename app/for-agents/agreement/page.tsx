@@ -10,9 +10,9 @@ import {
 } from "../../lib/agent-terms";
 
 export const metadata: Metadata = {
-  title: "Agent Agreement",
+  title: "Agent Terms",
   description:
-    "The FairComparisons Agent Agreement: a single blanket agreement covering every seller introduced through FairComparisons. 0.25% success fee on completed sales, the 2026 launch rate.",
+    "The FairComparisons Agent Terms. Your profile is free to claim, with optional subscription tools for reputation and analytics. No success fee, no commission, and we never take a cut of a sale.",
   alternates: { canonical: "https://fair-comparisons.com/for-agents/agreement" },
 };
 
@@ -27,7 +27,7 @@ export default async function AgreementPage({ searchParams }: Props) {
       <h1 style={{ margin: "10px 0 0" }}>{AGENT_TERMS_TITLE}</h1>
       <p className="lede" style={{ maxWidth: "62ch", marginTop: 12 }}>{AGENT_TERMS_INTRO}</p>
       <div className="fc-row" style={{ gap: 10, marginTop: 14 }}>
-        <span className="fc-badge fc-badge--ranked"><span className="dot" /> 0.25% · 2026 launch rate</span>
+        <span className="fc-badge fc-badge--ranked"><span className="dot" /> Free profile · Tools optional</span>
         <span className="fc-badge fc-badge--source">Version {AGENT_TERMS_VERSION}</span>
       </div>
 
@@ -41,10 +41,10 @@ export default async function AgreementPage({ searchParams }: Props) {
         <p className="mono small muted" style={{ marginTop: 16 }}>{AGENT_TERMS_FOOTNOTE}</p>
       </div>
 
-      <h2 style={{ fontSize: 24, marginTop: 36 }}>Sign the agreement</h2>
+      <h2 style={{ fontSize: 24, marginTop: 36 }}>Accept the terms</h2>
       <p className="muted small" style={{ margin: "6px 0 16px" }}>
-        We confirm your identity against your CEA record. Your typed name is your e-signature; the signed copy is
-        stored with a timestamp.
+        We confirm your identity against your CEA record. Your typed name is your e-signature; a record of your
+        acceptance is stored with a timestamp.
       </p>
       <AgreementForm presetCea={cea} />
 

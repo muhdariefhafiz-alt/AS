@@ -31,14 +31,14 @@ async function getTopAgents() {
 const STEPS: [string, string][] = [
   ["Tell us your home", "Postal code, property type, size. Thirty seconds, no account."],
   ["See ranked agents", "We rank everyone active near you on real transaction data."],
-  ["Invite and compare", "Invite your shortlist. Compare their plans and fees side by side."],
-  ["Choose on evidence", "Pick the agent whose record fits your home. Free to you."],
+  ["Compare side by side", "Compare each agent's record, areas and reviews side by side."],
+  ["Contact agents directly", "Pick the agents whose record fits your home and reach out yourself. Free to you."],
 ];
 
 const TRUST: [string, string][] = [
   ["Independent", "Rankings are computed from the CEA register, URA and HDB data. There is no paid placement, ever."],
   ["Evidence-based", "Every score traces to real government transaction records. We never invent a number."],
-  ["Free and on your side", "Sellers pay nothing. Agents pay a success fee only when a referred sale completes."],
+  ["Free and on your side", "Sellers pay nothing and we never take a cut of a sale. We are paid by agent subscriptions, not by sales, so our rankings are never for sale."],
 ];
 
 export default async function HomePage() {
@@ -86,8 +86,8 @@ export default async function HomePage() {
                 Choose your agent <span className="italic-serif">on evidence,</span> not on advertising.
               </h1>
               <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16 }}>
-                See which agents actually sell homes like yours in your area, ranked on{" "}
-                {stats.transactions.toLocaleString()}+ real government transaction records.
+                Compare every CEA-registered agent on which homes they actually sell in your area, ranked on{" "}
+                {stats.transactions.toLocaleString()}+ real government transaction records. Then contact the ones you choose.
               </p>
 
               <form
@@ -207,11 +207,11 @@ export default async function HomePage() {
         <div className="fc-wrap" style={{ textAlign: "center" }}>
           <h2 style={{ color: "#fff" }}>Ready to choose on evidence?</h2>
           <p className="lede" style={{ margin: "14px auto 28px", textAlign: "center" }}>
-            Tell us about your home and see the agents who actually sell properties like yours nearby.
+            Compare the agents who actually sell properties like yours nearby, then contact the ones you choose.
           </p>
           <div className="fc-row" style={{ justifyContent: "center", gap: 12 }}>
             <Link href="/sell" className="fc-btn fc-btn--primary fc-btn--lg">
-              Sell your property
+              Compare agents
             </Link>
             <Link href="/tools/valuation" className="fc-btn fc-btn--ghost-light fc-btn--lg">
               What is my home worth?

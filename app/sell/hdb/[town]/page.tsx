@@ -52,8 +52,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? ` Median ${fmtSgd(stats.median)}.`
     : "";
   return {
-    title: `Sell your HDB in ${titleTown} — Compare top agents`,
-    description: `Selling an HDB flat in ${titleTown}?${priceBit} Compare the top CEA-licensed agents ranked on real transaction records. Free shortlist, agents pay only on completion.`,
+    title: `Sell your HDB in ${titleTown}: compare top agents`,
+    description: `Selling an HDB flat in ${titleTown}?${priceBit} Compare the top CEA-licensed agents ranked on real transaction records, then contact the ones you choose. Always free for sellers.`,
     alternates: {
       canonical: `https://fair-comparisons.com/sell/hdb/${slug}`,
     },
@@ -98,7 +98,7 @@ export default async function SellHdbTownPage({ params }: Props) {
           "@type": "Answer",
           text: stats.median
             ? `Over the last 12 months, the median HDB resale price in ${titleTown} was around ${fmtSgd(stats.median)}, based on ${stats.count12mo} transactions.`
-            : `Recent HDB transaction volume in ${titleTown} is limited; request a free agent shortlist for a current estimate.`,
+            : `Recent HDB transaction volume in ${titleTown} is limited; compare the area's ranked agents for a current estimate.`,
         },
       },
       {
@@ -106,7 +106,7 @@ export default async function SellHdbTownPage({ params }: Props) {
         name: `Who are the best agents to sell an HDB in ${titleTown}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `FairComparisons ranks every CEA-licensed agent on their actual transaction record in ${titleTown}. The top performers are shown on this page; request a free shortlist to invite them to quote.`,
+          text: `FairComparisons ranks every CEA-licensed agent on their actual transaction record in ${titleTown}. The top performers are shown on this page; compare them and contact the ones you choose.`,
         },
       },
       {
@@ -114,7 +114,7 @@ export default async function SellHdbTownPage({ params }: Props) {
         name: `What does it cost to use FairComparisons?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `It is free for sellers. Agents pay a success fee only when a sale completes through the platform.`,
+          text: `It is always free for sellers. FairComparisons is paid by agent subscriptions for tools, not by sales, so its rankings are never for sale.`,
         },
       },
     ],
@@ -230,11 +230,11 @@ export default async function SellHdbTownPage({ params }: Props) {
       <section className="border-t border-gray-100 bg-gray-50 py-12">
         <div className="mx-auto max-w-[680px] px-5 md:px-8">
           <h2 className="text-center text-2xl font-bold text-gray-900">
-            Get your free shortlist for {titleTown}
+            Compare the ranked agents for {titleTown}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             We&apos;ve pre-filled your town. Tell us a little more and see your
-            ranked agents.
+            ranked agents, then contact the ones you choose.
           </p>
           <div className="mt-6">
             <SellForm

@@ -62,58 +62,57 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "This profile has already been claimed" }, { status: 409 });
     }
 
-    // SECURITY: the verification link is sent to the agent's ON-FILE email, not
-    // to whatever address the request supplied. The CEA number is public, so
-    // accepting an attacker-supplied destination would let anyone claim any
-    // profile to their own inbox. The submitted email is only recorded and
-    // becomes claimed_email AFTER the real agent clicks the link in their own
-    // inbox. If we have no on-file email, claiming must go through support.
-    if (!agent.email) {
-      return NextResponse.json(
-        {
-          error:
-            "We could not verify ownership automatically for this profile. Please email hello@fair-comparisons.com to claim it.",
-        },
-        { status: 422 }
-      );
-    }
-
-    // Check for existing pending claim
+    // Block duplicate in-flight requests (auto-verify pending OR manual review).
     const { data: existing } = await supabase
       .from("sg_claim_requests")
       .select("id, status")
       .eq("agent_id", agentId)
-      .eq("status", "pending")
-      .single();
+      .in("status", ["pending", "manual_review"])
+      .maybeSingle();
 
     if (existing) {
       return NextResponse.json({ error: "A claim request is already pending for this profile" }, { status: 409 });
     }
 
-    // Create claim request
     const token = generateToken();
+
+    // Two verification paths:
+    //  - On-file email exists: send a verify link there. Clicking it proves the
+    //    claimant controls the agent's inbox (the CEA number alone is public, so
+    //    it cannot be the only factor). Self-serve, status "pending".
+    //  - No on-file email (true across the whole DB right now): we cannot prove
+    //    ownership by email, so route to MANUAL ADMIN REVIEW rather than dead-
+    //    ending. Status "manual_review"; an admin approves it in /admin/claims.
+    const path: "pending" | "manual_review" = agent.email ? "pending" : "manual_review";
+
     const { error } = await supabase.from("sg_claim_requests").insert({
       agent_id: agentId,
       email,
       phone: phone || null,
       verification_token: token,
+      status: path,
     });
-
     if (error) {
       return NextResponse.json({ error: "Failed to create claim request" }, { status: 500 });
     }
 
-    // Transactional: send verification link with full HTML.
-    // Sent to the agent's ON-FILE email (agent.email), never the submitted
-    // address — this is what proves the claimant controls the agent's inbox.
+    if (path === "manual_review") {
+      return NextResponse.json({
+        success: true,
+        review: true,
+        message:
+          "Claim request received. We could not auto-verify your email, so our team will review it and confirm by email within 1 business day.",
+      });
+    }
+
+    // Auto-verify path: send the verification link to the ON-FILE email only.
     const verifyUrl = `https://fair-comparisons.com/api/claim/verify?token=${token}`;
     const verifyHtml = buildVerifyEmail(agent.name, verifyUrl);
     // Await the send: on Vercel a fire-and-forget promise is dropped once the
     // response returns (the lambda freezes), so the Klaviyo event never lands.
-    // try/catch so a Klaviyo hiccup does not fail an otherwise-valid claim.
     try {
       await sendEmail({
-        to: agent.email,
+        to: agent.email!,
         subject: `Verify your profile claim, ${givenName(agent.name)}`,
         html: verifyHtml,
         metric: "Claim Verification",

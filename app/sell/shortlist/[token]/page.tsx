@@ -133,8 +133,8 @@ export default async function ShortlistPage({ params }: Props) {
             your {propertyTypeLabel} in {area}.
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-gray-600">
-            Ranked by actual transaction record. Pick up to 3 to invite — they
-            submit a fee quote within 24 hours.
+            Ranked by actual transaction record. Compare their track records and
+            contact the ones you choose. Always free for you.
           </p>
         </div>
       </section>

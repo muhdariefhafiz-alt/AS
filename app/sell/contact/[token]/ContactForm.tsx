@@ -101,7 +101,7 @@ export default function ContactForm({
             className="mt-0.5 h-4 w-4"
           />
           <span>
-            Send me WhatsApp + email updates about my sale and matched agents.
+            Send me WhatsApp + email updates about my sale and the agents I compare.
           </span>
         </label>
       </div>

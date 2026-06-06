@@ -121,9 +121,9 @@ export default function AboutPage() {
         {/* CTA */}
         <div className="mt-6 rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6 text-center">
           <h2 className="text-xl font-bold text-gray-900">Ready to choose on evidence?</h2>
-          <p className="mt-2 text-gray-600">Get a free shortlist of the agents who actually sell homes like yours, ranked on government data.</p>
+          <p className="mt-2 text-gray-600">Compare the agents who actually sell homes like yours, ranked on government data, then contact the ones you choose. Free, and we never take a cut of a sale.</p>
           <a href="/sell?utm_source=about" className="mt-4 inline-block rounded-lg bg-[var(--blue)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
-            Get my free shortlist
+            Compare agents
           </a>
         </div>
       </div>

@@ -49,7 +49,7 @@ const faqItems = [
   {
     question: "Do I need to pay to get contacted by buyers?",
     answer:
-      "No. A free claimed profile includes your photo, WhatsApp number, full AgentScore, and seller leads matched on your transaction record. You pay a 0.25% success fee only when a referred sale completes. Optional paid tiers (S$99/mo Pro, S$299/mo Premium) add analytics and market data, but never placement or ranking position.",
+      "No. A free claimed profile includes your photo, WhatsApp number, and full AgentScore, so sellers comparing agents in your area can contact you directly. We never take a cut of a sale. Optional subscriptions add reputation and analytics tools (Verified S$29/mo, Professional S$69/mo, Elite S$149/mo) but never placement or ranking position.",
   },
   {
     question: "What types of searches does FairComparisons rank for?",
@@ -196,8 +196,8 @@ export default async function LeadGenerationPage() {
                 </tr>
                 <tr className="bg-[var(--blue-wash)]">
                   <td className="px-4 py-3 font-medium text-[var(--blue-deep)]">FairComparisons</td>
-                  <td className="px-4 py-3 font-bold text-[var(--blue)]">Free + 0.25% on completion</td>
-                  <td className="px-4 py-3 text-[var(--blue-deep)]">Free profile + seller leads, pay only when you close</td>
+                  <td className="px-4 py-3 font-bold text-[var(--blue)]">Free, or from S$29/mo</td>
+                  <td className="px-4 py-3 text-[var(--blue-deep)]">Free profile, optional subscription tools, never a cut of a sale</td>
                 </tr>
               </tbody>
             </table>

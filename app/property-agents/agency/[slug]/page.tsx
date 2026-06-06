@@ -228,9 +228,9 @@ export default async function AgencyPage({ params }: Props) {
               <div className="fc-card fc-card--pad" style={{ background: "var(--ink)", color: "#fff" }}>
                 <div className="eyebrow" style={{ color: "var(--slate-2)" }}>Selling your home?</div>
                 <p className="small" style={{ margin: "10px 0 14px", color: "rgba(255,255,255,0.82)" }}>
-                  We rank every CEA agent on real transaction records and shortlist the best for your area. Free for sellers.
+                  Compare every CEA agent on real transaction records and contact the ones you choose. Always free for sellers.
                 </p>
-                <Link href="/sell?utm_source=agency" className="fc-btn fc-btn--primary fc-btn--block">Get my free shortlist</Link>
+                <Link href="/sell?utm_source=agency" className="fc-btn fc-btn--primary fc-btn--block">Compare agents</Link>
                 <Link href="/property-agents" className="small" style={{ display: "block", marginTop: 12, textAlign: "center", color: "rgba(255,255,255,0.82)" }}>Or browse all agencies ›</Link>
               </div>
 

@@ -186,7 +186,7 @@ export default function MopTrackerForm({ hdbTowns }: Props) {
                 ))}
               </div>
               <Link href={`/sell?utm_source=mop_tracker&town=${encodeURIComponent(town)}`} className="fc-btn fc-btn--ink fc-btn--block" style={{ marginTop: 16 }}>
-                Get matched with the right agent
+                Compare every agent in {town} free
               </Link>
             </div>
           )}

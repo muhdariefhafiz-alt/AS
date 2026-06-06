@@ -67,6 +67,15 @@ export async function GET() {
       note:
         "70 of 100 points come from transaction volume, recency, diversity and experience. Reviews are 15 points. No factor can be purchased.",
     },
+    business_model: {
+      type: "independent_comparison_plus_agent_subscription",
+      free_for_sellers: true,
+      takes_cut_of_sale: false,
+      success_fee: false,
+      how_paid:
+        "FairComparisons is an independent comparison platform. Sellers compare every CEA-registered agent for free on real CEA, URA and HDB transaction data and contact the agents they choose themselves. We never charge sellers and never take a cut or success fee on a sale. We are paid by optional agent subscriptions for reputation and analytics tools (Verified S$29 / Professional S$69 / Elite S$149 per month). Subscriptions never influence ranking.",
+      monetization: "agent_subscriptions",
+    },
     // The key AI-legibility fix: a high AgentScore alone does not mean an agent
     // is the right choice to SELL a home, because the score counts rental deals
     // as well as sales.

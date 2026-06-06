@@ -320,7 +320,7 @@ export async function POST(req: Request) {
 
     sendEmail({
       to: String(email).toLowerCase().trim(),
-      subject: `Your ${shortlist.length} matched agents are ready`,
+      subject: `Your agent comparison for ${area} is ready`,
       html: confirmationHtml({
         name: full_name,
         token: lead.token,
@@ -375,13 +375,13 @@ function confirmationHtml({
     <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
   </td></tr>
   <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">${escapeHtml(name)}, your shortlist is ready.</p>
+    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">${escapeHtml(name)}, your agent comparison is ready.</p>
     <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6">
-      Based on actual CEA transaction records, we identified ${count} agents who consistently sell ${escapeHtml(propertyType)} property in ${escapeHtml(area)}. Pick up to 3 to invite. They will submit a fee quote within 24 hours.
+      Based on actual CEA transaction records, we ranked the ${count} agents who consistently sell ${escapeHtml(propertyType)} property in ${escapeHtml(area)}. Compare their track records and contact the ones you choose. Always free for sellers.
     </p>
     <p style="margin:0 0 24px">
       <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        View your shortlist
+        Compare the agents
       </a>
     </p>
     <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.5">

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { SectionHeading, StatCard, Pill } from "../shared";
 
@@ -7,66 +6,69 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+type SupplyStats = {
+  total: number;
+  claimed: number;
+  paying: number;
+  email: number;
+  phone: number;
+  cea: number;
+  google_rating: number;
+  score: number;
+  txn: number;
+  photo: number;
+  whatsapp: number;
+  bio40: number;
+  message20: number;
+  score_excellent: number;
+  score_good: number;
+  score_average: number;
+  score_basic: number;
+  districts: { name: string; total: number; claimed: number }[];
+  specializations: { name: string; n: number }[];
+};
+
 export async function SupplyTab() {
-  const [allAgents, claimRates, specCounts] = await Promise.all([
-    supabase
-      .from("sg_agents")
-      .select(
-        "id, primary_area, claimed, subscription_tier, email, phone, whatsapp, bio, message, photo_url, score, specializations, cea_registration, google_rating, google_review_count, transaction_count, years_active"
-      ),
+  // Aggregate server-side via RPC. A plain .select() caps at PostgREST's
+  // 1000-row limit, which previously made total read 1,000 (really 30,740) and
+  // every coverage % divide by the wrong denominator. The claim-requests table
+  // is tiny, so it is safe to read directly for the velocity chart.
+  const [statsRes, claimRates] = await Promise.all([
+    supabase.rpc("sg_supply_stats"),
     supabase.from("sg_claim_requests").select("status, created_at"),
-    supabase.from("sg_agents").select("specializations").not("specializations", "is", null).limit(30000),
   ]);
 
-  const agents = (allAgents.data ?? []) as Array<{
-    id: number;
-    primary_area: string | null;
-    claimed: boolean;
-    subscription_tier: string | null;
-    email: string | null;
-    phone: string | null;
-    whatsapp: string | null;
-    bio: string | null;
-    message: string | null;
-    photo_url: string | null;
-    score: number | null;
-    specializations: string[] | null;
-    cea_registration: string | null;
-    google_rating: number | null;
-    transaction_count: number | null;
-    years_active: number | null;
-  }>;
-
-  const total = agents.length;
-  const claimed = agents.filter((a) => a.claimed).length;
-  const paying = agents.filter((a) => a.subscription_tier === "pro" || a.subscription_tier === "premium").length;
+  const s = (statsRes.data ?? {}) as Partial<SupplyStats>;
+  const total = s.total ?? 0;
+  const claimed = s.claimed ?? 0;
+  const paying = s.paying ?? 0;
   const claimPct = total ? Math.round((claimed / total) * 100) : 0;
 
-  const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
-  const pctClaimed = (n: number) => (claimed ? Math.round((n / claimed) * 100) : 0);
+  const pct = (n: number | undefined) => (total ? Math.round(((n ?? 0) / total) * 100) : 0);
+  const pctClaimed = (n: number | undefined) => (claimed ? Math.round(((n ?? 0) / claimed) * 100) : 0);
 
-  const emailPct = pct(agents.filter((a) => a.email).length);
-  const phonePct = pct(agents.filter((a) => a.phone).length);
-  const ceaPct = pct(agents.filter((a) => a.cea_registration).length);
-  const ratingPct = pct(agents.filter((a) => a.google_rating != null).length);
-  const scorePct = pct(agents.filter((a) => a.score != null).length);
-  const txnPct = pct(agents.filter((a) => a.transaction_count && a.transaction_count > 0).length);
+  const emailPct = pct(s.email);
+  const phonePct = pct(s.phone);
+  const ceaPct = pct(s.cea);
+  const ratingPct = pct(s.google_rating);
+  const scorePct = pct(s.score);
+  const txnPct = pct(s.txn);
 
-  // Claimed-only completeness
-  const claimedAgents = agents.filter((a) => a.claimed);
-  const photoPct = pctClaimed(claimedAgents.filter((a) => a.photo_url).length);
-  const waPct = pctClaimed(claimedAgents.filter((a) => a.whatsapp).length);
-  const bioPct = pctClaimed(claimedAgents.filter((a) => (a.bio || "").length >= 40).length);
-  const messagePct = pctClaimed(claimedAgents.filter((a) => (a.message || "").length >= 20).length);
+  const photoPct = pctClaimed(s.photo);
+  const waPct = pctClaimed(s.whatsapp);
+  const bioPct = pctClaimed(s.bio40);
+  const messagePct = pctClaimed(s.message20);
 
-  // Score distribution
-  const withScore = agents.filter((a) => a.score != null);
-  const excellent = withScore.filter((a) => Number(a.score) >= 80).length;
-  const good = withScore.filter((a) => Number(a.score) >= 60 && Number(a.score) < 80).length;
-  const average = withScore.filter((a) => Number(a.score) >= 40 && Number(a.score) < 60).length;
-  const basic = withScore.filter((a) => Number(a.score) < 40).length;
+  const scoredCount = s.score ?? 0;
+  const excellent = s.score_excellent ?? 0;
+  const good = s.score_good ?? 0;
+  const average = s.score_average ?? 0;
+  const basic = s.score_basic ?? 0;
 
-  // Claim velocity (weekly last 8 weeks)
+  const topDistricts = s.districts ?? [];
+  const topSpecs: [string, number][] = (s.specializations ?? []).map((x) => [x.name, x.n]);
+
+  // Claim velocity (weekly last 8 weeks) — from the small claim-requests table.
   const weeklyClaims: number[] = [];
   const now = Date.now();
   for (let w = 7; w >= 0; w--) {
@@ -75,35 +77,10 @@ export async function SupplyTab() {
     weeklyClaims.push(
       (claimRates.data ?? []).filter((c) => {
         const t = new Date(c.created_at).getTime();
-        return t >= from && t < to && c.status === "verified";
+        return t >= from && t < to && (c.status === "verified" || c.status === "approved");
       }).length
     );
   }
-
-  // Coverage per district (top 20)
-  const byDistrict = new Map<string, { total: number; claimed: number }>();
-  for (const a of agents) {
-    if (!a.primary_area) continue;
-    const prev = byDistrict.get(a.primary_area) || { total: 0, claimed: 0 };
-    prev.total++;
-    if (a.claimed) prev.claimed++;
-    byDistrict.set(a.primary_area, prev);
-  }
-  const topDistricts = Array.from(byDistrict.entries())
-    .map(([name, s]) => ({ name, ...s }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 20);
-
-  // Top specializations
-  const specMap = new Map<string, number>();
-  for (const row of specCounts.data ?? []) {
-    for (const s of (row.specializations as string[] | null) ?? []) {
-      specMap.set(s, (specMap.get(s) || 0) + 1);
-    }
-  }
-  const topSpecs = Array.from(specMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
 
   return (
     <div className="space-y-8">
@@ -145,7 +122,7 @@ export async function SupplyTab() {
       </div>
 
       <div>
-        <SectionHeading title="Score distribution" hint={`Van ${withScore.length.toLocaleString()} scored agents.`} />
+        <SectionHeading title="Score distribution" hint={`Van ${scoredCount.toLocaleString()} scored agents.`} />
         <div className="grid gap-3 md:grid-cols-4">
           <StatCard title="Excellent (80+)" value={excellent} color="#059669" />
           <StatCard title="Good (60-79)" value={good} color="#2980b9" />
@@ -210,22 +187,22 @@ export async function SupplyTab() {
         </div>
       </div>
 
-      <div>
-        <SectionHeading title="Top 10 specializations" />
-        <div className="grid gap-2 sm:grid-cols-2">
-          {topSpecs.map(([spec, n]) => (
-            <div
-              key={spec}
-              className="flex items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
-            >
-              <span className="text-gray-900">{spec}</span>
-              <span className="font-semibold">{n.toLocaleString()}</span>
-            </div>
-          ))}
+      {topSpecs.length > 0 && (
+        <div>
+          <SectionHeading title="Top 10 specializations" />
+          <div className="grid gap-2 sm:grid-cols-2">
+            {topSpecs.map(([spec, n]) => (
+              <div
+                key={spec}
+                className="flex items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+              >
+                <span className="text-gray-900">{spec}</span>
+                <span className="font-semibold">{n.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      {/* Prevent unused Link import in builds */}
-      <Link href="#" className="hidden" aria-hidden />
+      )}
     </div>
   );
 }

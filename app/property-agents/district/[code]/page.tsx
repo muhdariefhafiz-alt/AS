@@ -165,10 +165,10 @@ export default async function DistrictPage({ params }: Props) {
             </svg>
             <div style={{ flex: 1, minWidth: 240 }}>
               <div className="serif" style={{ fontWeight: 600, fontSize: 21 }}>Selling a property in {area}?</div>
-              <div className="small" style={{ color: "rgba(255,255,255,0.72)" }}>Get matched with the top agents who actually close in {district.code}. Free shortlist, no obligation.</div>
+              <div className="small" style={{ color: "rgba(255,255,255,0.72)" }}>Compare the top agents who actually close in {district.code} and contact the ones you choose. Always free for sellers.</div>
             </div>
             <div className="fc-row" style={{ gap: 10 }}>
-              <Link href={`/sell?type=CONDO&district=${district.code}&utm_source=district`} className="fc-btn fc-btn--primary">Get my free shortlist</Link>
+              <Link href={`/sell?type=CONDO&district=${district.code}&utm_source=district`} className="fc-btn fc-btn--primary">Compare agents</Link>
               <Link href={`/property-agents/best/${bestSlug}`} className="fc-btn fc-btn--ghost-light">See all top agents</Link>
             </div>
           </div>
@@ -345,7 +345,7 @@ export default async function DistrictPage({ params }: Props) {
                 <div className="fc-col" style={{ gap: 6, marginTop: 10 }}>
                   <Link href="/tools/valuation" className="small" style={{ fontWeight: 600 }}>What is my home worth? ›</Link>
                   <Link href="/tools/mop-tracker" className="small" style={{ fontWeight: 600 }}>HDB MOP tracker ›</Link>
-                  <Link href="/sell" className="small" style={{ fontWeight: 600 }}>Get an agent shortlist ›</Link>
+                  <Link href="/sell" className="small" style={{ fontWeight: 600 }}>Compare agents ›</Link>
                 </div>
               </div>
 
@@ -368,7 +368,7 @@ export default async function DistrictPage({ params }: Props) {
         <div className="fc-wrap" style={{ textAlign: "center" }}>
           <h2 style={{ color: "#fff" }}>Selling in {area}?</h2>
           <p className="lede" style={{ margin: "12px auto 20px", textAlign: "center" }}>
-            Enter your postal code for a free shortlist of the agents who actually sell here.
+            Enter your postal code to compare the ranked agents who actually sell here, then contact the ones you choose.
           </p>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <PostcodeBox source="district_postcode" />

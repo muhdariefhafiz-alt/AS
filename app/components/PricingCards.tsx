@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 
+type PaidTier = "verified" | "professional" | "elite";
+
 function Tick() {
   return (
     <svg className="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -11,13 +13,83 @@ function Tick() {
   );
 }
 
+// Licence-safe SaaS tiers: reputation, visibility and analytics. No lead
+// routing and no success fee in the storefront, so the platform stays a
+// comparison/data tool, not an estate-agency "introduction" service.
+const TIERS: {
+  key: PaidTier | "free";
+  name: string;
+  price: string;
+  period: string;
+  popular?: boolean;
+  features: string[];
+  cta: string;
+}[] = [
+  {
+    key: "free",
+    name: "Free",
+    price: "S$0",
+    period: "forever",
+    features: [
+      "Claim your CEA-verified profile",
+      "Your transaction history, shown from public records",
+      "Appear in search and area rankings",
+    ],
+    cta: "Claim your profile",
+  },
+  {
+    key: "verified",
+    name: "Verified",
+    price: "S$29",
+    period: "billed monthly",
+    features: [
+      "Everything in Free, plus:",
+      "FairComparisons Verified badge on your profile",
+      "Add your photo, bio, specialisations and contact button",
+      "Your verified client reviews displayed",
+      "Profile analytics: views and clicks",
+      "Listed above unclaimed profiles in search",
+    ],
+    cta: "Get Verified",
+  },
+  {
+    key: "professional",
+    name: "Professional",
+    price: "S$69",
+    period: "billed monthly",
+    popular: true,
+    features: [
+      "Everything in Verified, plus:",
+      "Monthly performance report vs your district",
+      "Market intelligence: district demand and MOP cohorts",
+      "Featured placement on town comparison pages",
+      "Eligible for a Top 10% badge in your district",
+    ],
+    cta: "Go Professional",
+  },
+  {
+    key: "elite",
+    name: "Elite",
+    price: "S$149",
+    period: "billed monthly",
+    features: [
+      "Everything in Professional, plus:",
+      "Elite Agent badge and shareable widget",
+      "Seller-activity alerts in your areas (you reach out)",
+      "Competitive benchmarking vs peer agents",
+      "Account manager and early access to new tools",
+    ],
+    cta: "Go Elite",
+  },
+];
+
 export default function PricingCards() {
   const [email, setEmail] = useState("");
-  const [showEmailInput, setShowEmailInput] = useState<"pro" | "premium" | null>(null);
+  const [showEmailInput, setShowEmailInput] = useState<PaidTier | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleCheckout(tier: "pro" | "premium") {
+  async function handleCheckout(tier: PaidTier) {
     if (!email) { setShowEmailInput(tier); return; }
     setLoading(true); setError("");
     try {
@@ -32,44 +104,33 @@ export default function PricingCards() {
     } catch { setError("Connection error. Please try again."); setLoading(false); }
   }
 
-  const free = ["Photo and contact details", "Practice description", "Receive seller leads in your area", "Pay 0.25% only when a sale completes"];
-  const pro = ["Everything in Free", "Weekly profile view + lead report", "Comparable-transaction data for pricing", "Monthly market insights for your area"];
-  const premium = ["Everything in Pro", "Full district analytics dashboard", "Dedicated account support", "Custom market reports for your areas"];
-
   return (
     <div>
       <div className="price-grid">
-        {/* Free */}
-        <div className="fc-card price">
-          <div className="eyebrow eyebrow--muted">Free</div>
-          <div className="serif" style={{ fontWeight: 600, fontSize: 38, marginTop: 6 }}>S$0</div>
-          <div className="small muted">forever</div>
-          <ul>{free.map((t) => <li key={t}><Tick /> {t}</li>)}</ul>
-          <Link href="/search" className="fc-btn fc-btn--ghost fc-btn--block" style={{ marginTop: 18 }}>Claim your profile</Link>
-        </div>
-
-        {/* Pro */}
-        <div className="fc-card price price--pop">
-          <div className="price__tag">Popular</div>
-          <div className="eyebrow">Pro</div>
-          <div className="serif" style={{ fontWeight: 600, fontSize: 38, marginTop: 6 }}>S$99<span style={{ fontSize: 16, color: "var(--slate)", fontFamily: "var(--font-sans)" }}>/mo</span></div>
-          <div className="small muted">billed monthly</div>
-          <ul>{pro.map((t) => <li key={t}><Tick /> {t}</li>)}</ul>
-          <button onClick={() => handleCheckout("pro")} disabled={loading} className="fc-btn fc-btn--primary fc-btn--block" style={{ marginTop: 18 }}>
-            {loading && showEmailInput === "pro" ? "Redirecting…" : "Add Pro tools"}
-          </button>
-        </div>
-
-        {/* Premium */}
-        <div className="fc-card price">
-          <div className="eyebrow eyebrow--muted">Premium</div>
-          <div className="serif" style={{ fontWeight: 600, fontSize: 38, marginTop: 6 }}>S$299<span style={{ fontSize: 16, color: "var(--slate)", fontFamily: "var(--font-sans)" }}>/mo</span></div>
-          <div className="small muted">billed monthly</div>
-          <ul>{premium.map((t) => <li key={t}><Tick /> {t}</li>)}</ul>
-          <button onClick={() => handleCheckout("premium")} disabled={loading} className="fc-btn fc-btn--ghost fc-btn--block" style={{ marginTop: 18 }}>
-            {loading && showEmailInput === "premium" ? "Redirecting…" : "Add Premium tools"}
-          </button>
-        </div>
+        {TIERS.map((t) => (
+          <div key={t.key} className={"fc-card price" + (t.popular ? " price--pop" : "")}>
+            {t.popular && <div className="price__tag">Popular</div>}
+            <div className={"eyebrow" + (t.popular ? "" : " eyebrow--muted")}>{t.name}</div>
+            <div className="serif" style={{ fontWeight: 600, fontSize: 38, marginTop: 6 }}>
+              {t.price}
+              {t.key !== "free" && <span style={{ fontSize: 16, color: "var(--slate)", fontFamily: "var(--font-sans)" }}>/mo</span>}
+            </div>
+            <div className="small muted">{t.period}</div>
+            <ul>{t.features.map((f) => <li key={f}><Tick /> {f}</li>)}</ul>
+            {t.key === "free" ? (
+              <Link href="/search" className="fc-btn fc-btn--ghost fc-btn--block" style={{ marginTop: 18 }}>{t.cta}</Link>
+            ) : (
+              <button
+                onClick={() => handleCheckout(t.key as PaidTier)}
+                disabled={loading}
+                className={"fc-btn fc-btn--block " + (t.popular ? "fc-btn--primary" : "fc-btn--ghost")}
+                style={{ marginTop: 18 }}
+              >
+                {loading && showEmailInput === t.key ? "Redirecting…" : t.cta}
+              </button>
+            )}
+          </div>
+        ))}
       </div>
 
       {showEmailInput && (
@@ -89,7 +150,7 @@ export default function PricingCards() {
       )}
 
       <p className="mono small muted" style={{ textAlign: "center", marginTop: 18 }}>
-        Paid tiers are tools only and never influence ranking position. Your AgentScore is computed from public data, and seller leads are matched on transaction record, not payment.
+        Subscriptions are visibility and analytics tools only. They never influence ranking position: your AgentScore is computed from public CEA, URA and HDB data and cannot be bought.
       </p>
     </div>
   );

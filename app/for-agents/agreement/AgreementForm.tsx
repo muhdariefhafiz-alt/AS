@@ -24,7 +24,7 @@ export default function AgreementForm({ presetCea }: { presetCea?: string }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!accept) { setMessage("Please tick the box to accept the agreement."); setStatus("error"); return; }
+    if (!accept) { setMessage("Please tick the box to accept the terms."); setStatus("error"); return; }
     setStatus("loading"); setMessage("");
     try {
       const res = await fetch("/api/agent/agreement", {
@@ -33,7 +33,7 @@ export default function AgreementForm({ presetCea }: { presetCea?: string }) {
         body: JSON.stringify({ ceaRegistration: cea.trim(), email: email.trim(), signatoryName: name.trim(), accept: true, source: "self-serve" }),
       });
       const d = await res.json();
-      if (res.ok && d.ok) { setStatus("done"); setMessage(d.alreadySigned ? "You have already signed the current agreement." : "Signed. A copy is on file."); }
+      if (res.ok && d.ok) { setStatus("done"); setMessage(d.alreadySigned ? "You have already accepted the current terms." : "Accepted. A copy is on file."); }
       else { setStatus("error"); setMessage(d.error || "Something went wrong."); }
     } catch {
       setStatus("error"); setMessage("Connection error. Please try again.");
@@ -43,9 +43,9 @@ export default function AgreementForm({ presetCea }: { presetCea?: string }) {
   if (already || status === "done") {
     return (
       <div className="fc-card fc-card--pad" style={{ borderColor: "var(--ok)", background: "var(--ok-wash)" }}>
-        <div style={{ fontWeight: 700, color: "var(--ok)" }}>Agreement signed</div>
+        <div style={{ fontWeight: 700, color: "var(--ok)" }}>Terms accepted</div>
         <p className="muted small" style={{ marginTop: 6 }}>
-          {message || (already ? `Signed${already.name ? ` by ${already.name}` : ""}.` : "Signed.")} A copy is stored against your CEA registration.
+          {message || (already ? `Accepted${already.name ? ` by ${already.name}` : ""}.` : "Accepted.")} A copy is stored against your CEA registration.
         </p>
       </div>
     );
@@ -67,11 +67,11 @@ export default function AgreementForm({ presetCea }: { presetCea?: string }) {
       </div>
       <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14 }}>
         <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} style={{ marginTop: 3 }} />
-        <span>I have read and agree to the FairComparisons Agent Agreement above, including the {`0.25%`} success fee on completed sales from FairComparisons introductions.</span>
+        <span>I have read and agree to the FairComparisons Agent Terms above.</span>
       </label>
       {message && <p className="small" style={{ color: status === "error" ? "var(--danger)" : "var(--ok)" }}>{message}</p>}
       <button type="submit" className="fc-btn fc-btn--primary" disabled={status === "loading"}>
-        {status === "loading" ? "Signing…" : "Sign agreement"}
+        {status === "loading" ? "Accepting…" : "Accept terms"}
       </button>
     </form>
   );

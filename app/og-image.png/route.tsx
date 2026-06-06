@@ -54,7 +54,7 @@ export async function GET() {
             lineHeight: 1.4,
           }}
         >
-          Compare 30,000+ property agents in Singapore
+          Compare Singapore property agents
         </div>
         <div
           style={{
@@ -63,7 +63,7 @@ export async function GET() {
             marginTop: "16px",
           }}
         >
-          Independent ratings based on CEA transaction records
+          Ranked on 730,000+ CEA transactions · No paid placement
         </div>
       </div>
     ),

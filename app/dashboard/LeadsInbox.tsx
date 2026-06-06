@@ -145,10 +145,10 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <p className="text-sm font-semibold text-gray-900">No leads yet.</p>
+        <p className="text-sm font-semibold text-gray-900">No enquiries yet.</p>
         <p className="mt-1 text-sm text-gray-600">
-          When a homeowner picks you, we&apos;ll email and show the lead here.
-          You can submit a fee quote within 24 hours.
+          When a homeowner contacts you after comparing agents, we&apos;ll email
+          you and show the enquiry here.
         </p>
       </div>
     );
@@ -432,7 +432,8 @@ function QuoteForm({
         {submitting ? "Submitting…" : "Submit quote"}
       </button>
       <p className="mt-2 text-xs text-gray-500">
-        Platform fee: 0.25% of sale + GST, due only on completion.
+        Your quote goes straight to the seller. FairComparisons never takes a
+        cut of your sale.
       </p>
     </form>
   );
@@ -648,15 +649,15 @@ function CompletionStepper({
               {submitting ? "Saving…" : "Save OTP"}
             </button>
             <p className="mt-2 text-xs text-gray-500">
-              Logging OTP activates your verified-completion badge on your
-              public profile once payment is confirmed.
+              Logging the OTP adds to your verified-completion badge on your
+              public profile once the sale is confirmed.
             </p>
           </li>
         )}
 
         <StageRow
           n={3}
-          label="Completed + invoiced"
+          label="Sale completed"
           done={hasCompletion}
           subline={
             completion?.completion_date
@@ -725,12 +726,12 @@ function CompletionStepper({
               }
             >
               {submitting
-                ? "Generating invoice…"
-                : "Log completion & generate invoice"}
+                ? "Saving…"
+                : "Log completed sale"}
             </button>
             <p className="mt-2 text-xs text-gray-500">
-              We&apos;ll email you a PayNow + bank-transfer invoice for 0.25%
-              of the sale + GST. Due in 14 days.
+              Logging a completed sale adds it to your verified track record on
+              your public profile. FairComparisons never takes a cut of the sale.
             </p>
           </li>
         )}

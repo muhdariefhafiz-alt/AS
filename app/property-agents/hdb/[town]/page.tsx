@@ -167,11 +167,11 @@ export default async function HdbTownPage({ params }: Props) {
               Selling an HDB flat in {display}?
             </p>
             <p className="text-xs text-[var(--blue-deep)]">
-              Get matched with the top agents who actually close here. Free shortlist.
+              Compare the top agents who actually close here and contact the ones you choose. Always free for sellers.
             </p>
           </div>
           <span className="rounded-lg bg-[var(--blue)] px-4 py-2 text-sm font-semibold text-white">
-            See top agents →
+            Compare agents →
           </span>
         </a>
       </div>

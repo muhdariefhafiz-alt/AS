@@ -291,7 +291,7 @@ export default function SearchPage() {
                   className="fc-btn fc-btn--primary fc-btn--block"
                   style={{ marginTop: 14 }}
                 >
-                  Get matched with these agents, free
+                  Compare these agents, free for sellers
                 </Link>
               </div>
             )}

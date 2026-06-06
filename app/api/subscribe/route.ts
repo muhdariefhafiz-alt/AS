@@ -145,7 +145,7 @@ function buildWelcomeEmail(districtTag: string | null): string {
     </ul>
 
     <a href="https://fair-comparisons.com/sell?utm_source=welcome&utm_medium=email" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-      Get matched with a top agent
+      Compare top agents
     </a>
   </td></tr>
 

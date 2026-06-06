@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-// Mobile-only sticky "get matched" bar for discovery pages (agent, district,
+// Mobile-only sticky "compare agents" bar for discovery pages (agent, district,
 // best-area). SG property search is mobile-first and the convert action scrolls
 // away. Hides on desktop (md:hidden) and auto-hides near the page bottom so it
 // never covers the footer.
 export default function StickyMobileCta({
   href,
-  label = "Get my free shortlist",
+  label = "Compare agents",
 }: {
   href: string;
   label?: string;
