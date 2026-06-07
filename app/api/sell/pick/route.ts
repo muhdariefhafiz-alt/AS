@@ -149,7 +149,7 @@ function pickedAgentHtml({
       ${sellerName} picked you at <strong>${commissionPct.toFixed(2)}%</strong> commission.
     </p>
     <p style="margin:0 0 24px;font-size:14px;color:#4b5563;line-height:1.6">
-      Platform fee of 0.25% of sale price + GST is due on completion. Log the OTP signing date and completion date in your dashboard once they occur.
+      There is no platform fee or commission on this sale, it is entirely yours. Manage your profile and tools any time from your dashboard.
     </p>
     <p style="margin:0 0 16px">
       <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">

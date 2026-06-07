@@ -4,6 +4,8 @@ Prepared 3 Jun 2026. Four experiments to drive CEA agent signups (profile claims
 
 The defensible asset behind all four: roughly 10,594 agents already have a live profile and a public AgentScore they do not control. These experiments turn that into signups.
 
+**Strategy context (read first):** `../growth/incumbent-playbook.md` (what PropertyGuru and 99.co's early growth teaches us, and the priority order: programmatic SEO + the claim motion) and `../press/ai-citation-plan.md` (paid PR vs earned, AI-citation plan). The claim hook below (Exp 1) is the on-ramp for the "profile-claim motion" that note prioritizes.
+
 | # | Experiment | Type | Build status | File |
 |---|-----------|------|--------------|------|
 | 1 | "You're already ranked" claim hook | On-site CRO | BUILT + live (ClaimBanner variant B with real rank/score/area/views; A/B by agent_id; ?ref attribution) | [exp-01-claim-hook.md](exp-01-claim-hook.md) |

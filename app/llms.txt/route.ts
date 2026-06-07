@@ -15,7 +15,7 @@ export async function GET() {
 
   const content = `# FairComparisons
 
-> FairComparisons is the independent property agent comparison platform for Singapore. We combine CEA transaction records, URA property data, Google Reviews, and active portal listings into an objective AgentScore (0-100) per agent. Sellers compare every CEA-registered agent for free on real government transaction data and contact the ones they choose themselves; we never charge sellers and never take a cut of a sale. We are paid by optional agent subscriptions, which never influence ranking.
+> FairComparisons is the independent property agent comparison platform for Singapore. We combine CEA transaction records, URA property data, Google Reviews, and active portal listings into an objective AgentScore (0-100) per agent. Sellers compare every CEA-registered agent for free on real government transaction data and can invite the ones they choose; we pass that introduction to the agent at no cost. We never charge sellers and never take a cut of a sale. We are paid by optional agent subscriptions, which never influence ranking or which introductions an agent receives.
 
 ## Key Facts
 

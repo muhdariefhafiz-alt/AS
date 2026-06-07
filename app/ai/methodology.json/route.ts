@@ -72,7 +72,7 @@ export async function GET() {
       takes_cut_of_sale: false,
       success_fee: false,
       how_paid:
-        "FairComparisons is an independent comparison platform. Sellers compare every CEA-registered agent for free on real CEA, URA and HDB transaction data and contact the agents they choose themselves. We never charge sellers and never take a cut or success fee on a sale. We are paid by optional agent subscriptions for reputation and analytics tools (Verified S$29 / Professional S$69 / Elite S$149 per month). Subscriptions never influence ranking.",
+        "FairComparisons is an independent comparison platform. Sellers compare every CEA-registered agent for free on real CEA, URA and HDB transaction data and can invite the ones they choose; we pass that introduction to the agent at no cost. We never charge sellers and never take a cut or success fee on a sale. We are paid by optional agent subscriptions for reputation and analytics tools (Verified S$29 / Professional S$69 / Elite S$149 per month). Subscriptions never affect which agents a seller sees or which introductions an agent receives.",
       monetization: "agent_subscriptions",
     },
     // AgentScore now sale-weights its volume dimension, so selling activity

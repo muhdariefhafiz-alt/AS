@@ -178,7 +178,7 @@ export default function TermsPage() {
             <li>A verified badge on your profile</li>
             <li>Ability to add a professional photo and biography</li>
             <li>Display of your contact details on your profile</li>
-            <li>Featured placement in relevant search results</li>
+            <li>Profile analytics, review tools and area market data</li>
           </ul>
           <p className="mt-2">Subscription terms:</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">

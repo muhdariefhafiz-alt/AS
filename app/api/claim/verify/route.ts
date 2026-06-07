@@ -54,9 +54,10 @@ export async function GET(req: Request) {
     .eq("id", claim.agent_id)
     .single();
 
-  // Record the blanket agent agreement. Clicking the email-verified claim link
-  // is the e-signature: identity is confirmed (CEA match at request time +
-  // verified email here). This is the binding success-fee contract, stored.
+  // Record the agent's acceptance of the platform terms (subscription model, no
+  // success fee). Clicking the email-verified claim link is the e-signature:
+  // identity is confirmed (CEA match at request time + verified email here).
+  // fee_pct is recorded as 0 (see lib/fee.ts) for an accurate audit trail.
   await supabase.from("sg_agent_agreements").insert({
     agent_id: claim.agent_id,
     cea_registration: agentFull?.cea_registration ?? null,

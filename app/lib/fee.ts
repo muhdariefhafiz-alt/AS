@@ -1,10 +1,10 @@
-// Single source of truth for the platform success fee.
-//
-// 2026 launch rate: 0.25% (down from 0.5%) to be aggressive on market entry.
-// The fee is stored per-completion at invoice time, so changing this only
-// affects NEW invoices; historical invoices keep their recorded rate.
+// Subscription model (2026): there is NO success fee. FairComparisons is a
+// licence-safe comparison/data platform paid only by optional agent tool
+// subscriptions, never by a cut of any sale. This constant is kept at 0 so any
+// remaining completion/invoice code records no fee. That success-fee subsystem
+// is dormant under the subscription model and slated for removal.
 
-export const PLATFORM_FEE_PCT = 0.25;
-export const GST_PCT = 9; // Singapore GST, 2026
-export const FEE_RATE_NAME = "2026 launch rate";
-export const FEE_PCT_DISPLAY = "0.25%";
+export const PLATFORM_FEE_PCT = 0;
+export const GST_PCT = 9; // Singapore GST, retained for subscription invoicing
+export const FEE_RATE_NAME = "no success fee (subscription model)";
+export const FEE_PCT_DISPLAY = "0%";

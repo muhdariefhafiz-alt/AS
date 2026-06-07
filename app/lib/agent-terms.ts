@@ -1,8 +1,10 @@
 // Versioned platform terms for agents. Bump AGENT_TERMS_VERSION whenever the
 // substance changes; agents are re-prompted to accept the new version.
 // Subscription model: free profile + optional tool subscriptions. No success
-// fee, no introductions, no lead routing (licence-safe comparison platform).
-export const AGENT_TERMS_VERSION = "2026-06b";
+// fee. When a seller selects an agent we pass that introduction free; the
+// subscription never gates leads or seller-facing placement (licence-safe: no
+// reward is tied to the introduction or the sale).
+export const AGENT_TERMS_VERSION = "2026-06c";
 export const AGENT_TERMS_TITLE = "FairComparisons Agent Terms";
 
 export const AGENT_TERMS_INTRO =
@@ -23,16 +25,17 @@ export const AGENT_TERMS_CLAUSES: Clause[] = [
   {
     h: "2. We never take a cut of your sales",
     body:
-      "FairComparisons charges no success fee, no commission and no per-lead fee. We do not introduce sellers to you " +
-      "or route their details to you. Sellers compare the ranked agents and contact whoever they choose, themselves. " +
-      "Any sale you close is entirely yours.",
+      "FairComparisons charges no success fee, no commission and no per-lead fee. When a seller comparing agents chooses " +
+      "to invite you, we pass you that introduction at no cost, and any sale you close is entirely yours. Your " +
+      "subscription, if any, never changes whether, when or how many seller introductions you receive, nor your " +
+      "position in seller-facing results, which are set by public data alone.",
   },
   {
     h: "3. Optional subscriptions",
     body:
       "You may subscribe for tools only: Verified at S$29 per month, Professional at S$69 per month, or Elite at S$149 per month. " +
-      "These add a verified badge, profile analytics, market data and featured placement. Subscriptions are billed monthly via " +
-      "Stripe and you can cancel at any time.",
+      "These add a verified badge, profile and branding tools, your verified reviews, profile analytics and area market data. " +
+      "Subscriptions are billed monthly via Stripe and you can cancel at any time.",
   },
   {
     h: "4. Subscriptions never affect your ranking",

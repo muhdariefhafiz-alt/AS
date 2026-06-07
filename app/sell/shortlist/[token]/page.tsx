@@ -51,8 +51,19 @@ export default async function ShortlistPage({ params }: Props) {
   let areaRowsByAgent = new Map<number, AreaRow>();
   if (agentIds.length > 0) {
     const areaType = lead.property_type === "HDB" ? "town" : "district";
-    const areaName =
-      areaType === "town" ? lead.town ?? "" : lead.district_code ?? "";
+    // sg_area_top_agents stores districts by DESCRIPTIVE NAME (e.g.
+    // "Katong/ Joo Chiat/ Amber Road"), never by code. Resolve the district
+    // code the same way buildShortlist() does; otherwise every private-property
+    // shortlist matches zero area rows and renders 0 deals / 0% area focus.
+    let areaName = areaType === "town" ? lead.town ?? "" : "";
+    if (areaType === "district" && lead.district_code) {
+      const { data: d } = await sb
+        .from("sg_districts")
+        .select("name")
+        .eq("code", lead.district_code)
+        .maybeSingle();
+      if (d?.name) areaName = String(d.name).replace(/,\s*/g, "/ ");
+    }
     if (areaName) {
       const { data: ar } = await sb
         .from("sg_area_top_agents")
@@ -80,7 +91,9 @@ export default async function ShortlistPage({ params }: Props) {
       agent_name: String(a.name ?? ""),
       agent_slug: (a.slug as string) ?? null,
       agency_name: String(a.agency_name ?? ""),
-      score: Number(s.score_at_shortlist ?? a.score ?? 0),
+      // Display the canonical AgentScore (0-100), not the internal composite
+      // ranking value in score_at_shortlist, which can exceed 100.
+      score: Number(a.score ?? s.score_at_shortlist ?? 0),
       rank: Number(s.rank),
       total_txns: Number(a.transaction_count ?? 0),
       area_txns: Number(ar?.area_txns ?? 0),

@@ -320,7 +320,7 @@ export default function DashboardPage() {
             <h2 style={{ fontSize: 16, margin: 0, color: "var(--ink)" }}>How FairComparisons works for you</h2>
             <ul style={{ marginTop: 10, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 14.5, color: "var(--ink-2)" }}>
               <li>You&apos;re listed free, ranked purely on your CEA transaction record.</li>
-              <li>Sellers compare every agent in their area and contact whoever they choose.</li>
+              <li>Sellers compare every agent in their area and invite the ones they choose; we pass you that introduction free.</li>
               <li>We never take a cut of your sales. Optional subscriptions add reputation and analytics tools, nothing more.</li>
             </ul>
             <p className="small" style={{ marginTop: 12, color: "var(--blue-deep)" }}>
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                 <ul style={{ marginTop: 12, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5 }} className="muted">
                   <li>FairComparisons Verified badge on your profile</li>
                   <li>Profile analytics: views and clicks</li>
-                  <li>Listed above unclaimed profiles in search</li>
+                  <li>Reply publicly to your client reviews</li>
                 </ul>
                 <p className="small muted" style={{ marginTop: 8 }}>Tools only. Does not affect your ranking.</p>
                 <button

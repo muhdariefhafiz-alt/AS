@@ -13,9 +13,10 @@ function Tick() {
   );
 }
 
-// Licence-safe SaaS tiers: reputation, visibility and analytics. No lead
-// routing and no success fee in the storefront, so the platform stays a
-// comparison/data tool, not an estate-agency "introduction" service.
+// Licence-safe SaaS tiers: reputation, presentation and analytics only. No tier
+// gates seller leads or buys seller-facing placement, and there is no success
+// fee. Introductions from the comparison funnel are free to every agent;
+// payment never affects which introductions an agent gets or their ranking.
 const TIERS: {
   key: PaidTier | "free";
   name: string;
@@ -48,7 +49,7 @@ const TIERS: {
       "Add your photo, bio, specialisations and contact button",
       "Your verified client reviews displayed",
       "Profile analytics: views and clicks",
-      "Listed above unclaimed profiles in search",
+      "Reply publicly to your client reviews",
     ],
     cta: "Get Verified",
   },
@@ -62,7 +63,7 @@ const TIERS: {
       "Everything in Verified, plus:",
       "Monthly performance report vs your district",
       "Market intelligence: district demand and MOP cohorts",
-      "Featured placement on town comparison pages",
+      "Review-collection tools to grow your verified reviews",
       "Eligible for a Top 10% badge in your district",
     ],
     cta: "Go Professional",
@@ -75,7 +76,7 @@ const TIERS: {
     features: [
       "Everything in Professional, plus:",
       "Elite Agent badge and shareable widget",
-      "Seller-activity alerts in your areas (you reach out)",
+      "Aggregate area market-activity reports (published data)",
       "Competitive benchmarking vs peer agents",
       "Account manager and early access to new tools",
     ],
