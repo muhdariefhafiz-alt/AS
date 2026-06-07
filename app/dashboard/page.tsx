@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import LeadsInbox from "./LeadsInbox";
 import { titleName, cleanAgency } from "../lib/names";
@@ -17,11 +17,12 @@ const TIER_LABELS: Record<Tier, string> = {
 
 export default function DashboardPage() {
   const [email, setEmail] = useState("");
-  const [lookupStatus, setLookupStatus] = useState<"idle" | "loading" | "found" | "not_found" | "error">("idle");
+  const [lookupStatus, setLookupStatus] = useState<"checking" | "idle" | "loading" | "found" | "not_found" | "error" | "link_sent">("checking");
   const [agent, setAgent] = useState<{
     id: number;
     name: string;
     slug: string;
+    email: string | null;
     bio: string | null;
     photo_url: string | null;
     whatsapp: string | null;
@@ -55,32 +56,48 @@ export default function DashboardPage() {
     ? new URLSearchParams(window.location.search).get("upgraded")
     : null;
 
-  async function handleLookup(e: React.FormEvent) {
+  // On mount, load the dashboard from the session cookie. No email is sent; the
+  // signed cookie is the only credential. 401 -> show the sign-in form.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/dashboard/lookup", { method: "POST" });
+        if (cancelled) return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.agent) {
+            setAgent(data.agent);
+            setEmail(data.agent.email || "");
+            setBio(data.agent.bio || "");
+            setPhotoUrl(data.agent.photo_url || "");
+            setWhatsapp(data.agent.whatsapp || "");
+            setMessage(data.agent.message || "");
+            setMarketingName(data.agent.marketing_name || "");
+            setLookupStatus("found");
+            return;
+          }
+        }
+        setLookupStatus("idle");
+      } catch {
+        if (!cancelled) setLookupStatus("idle");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Sign in via magic link: we email a one-time link to the claimed address.
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
     setLookupStatus("loading");
-
     try {
-      const res = await fetch("/api/dashboard/lookup", {
+      await fetch("/api/agent/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = await res.json();
-
-      if (res.ok && data.agent) {
-        setAgent(data.agent);
-        setBio(data.agent.bio || "");
-        setPhotoUrl(data.agent.photo_url || "");
-        setWhatsapp(data.agent.whatsapp || "");
-        setMessage(data.agent.message || "");
-        setMarketingName(data.agent.marketing_name || "");
-        setLookupStatus("found");
-      } else if (res.status === 404) {
-        setLookupStatus("not_found");
-      } else {
-        setLookupStatus("error");
-      }
+      setLookupStatus("link_sent");
     } catch {
       setLookupStatus("error");
     }
@@ -191,9 +208,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Step 1: Email lookup */}
-      {lookupStatus !== "found" && (
-        <form onSubmit={handleLookup} className="lp-panel" style={{ marginTop: 28, padding: "26px 26px" }}>
+      {/* Initial cookie check */}
+      {lookupStatus === "checking" && (
+        <p className="muted small" style={{ marginTop: 28 }}>Loading your dashboard…</p>
+      )}
+
+      {/* Sign in via one-time magic link */}
+      {(lookupStatus === "idle" || lookupStatus === "loading" || lookupStatus === "error") && (
+        <form onSubmit={handleSignIn} className="lp-panel" style={{ marginTop: 28, padding: "26px 26px" }}>
           <div className="form-step">Sign in</div>
           <div className="fc-field" style={{ marginTop: 14 }}>
             <label className="fc-label">Enter the email you used to claim your profile</label>
@@ -201,7 +223,7 @@ export default function DashboardPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); setLookupStatus("idle"); }}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
                 className="fc-input"
@@ -213,24 +235,26 @@ export default function DashboardPage() {
                 className="fc-btn fc-btn--primary"
                 style={{ flexShrink: 0 }}
               >
-                {lookupStatus === "loading" ? "…" : "Find profile"}
+                {lookupStatus === "loading" ? "…" : "Email me a sign-in link"}
               </button>
             </div>
-          </div>
-
-          {lookupStatus === "not_found" && (
-            <p className="muted small" style={{ marginTop: 12 }}>
-              No claimed profile found for this email.{" "}
-              <Link href="/for-agents" style={{ color: "var(--blue)", fontWeight: 600 }}>
-                Claim your profile first
-              </Link>
+            <p className="muted small" style={{ marginTop: 10 }}>
+              We&apos;ll email a one-time sign-in link to your claimed address. Not claimed yet?{" "}
+              <Link href="/for-agents" style={{ color: "var(--blue)", fontWeight: 600 }}>Claim your profile first</Link>.
             </p>
-          )}
+          </div>
 
           {lookupStatus === "error" && (
             <p className="small" style={{ marginTop: 12, color: "var(--danger)" }}>Something went wrong. Please try again.</p>
           )}
         </form>
+      )}
+
+      {/* Sign-in link sent (anti-enumeration: same message regardless) */}
+      {lookupStatus === "link_sent" && (
+        <div className="fc-alert fc-alert--ok" style={{ marginTop: 28 }}>
+          Check your email. If a claimed profile uses that address, we&apos;ve sent a one-time sign-in link that opens your dashboard.
+        </div>
       )}
 
       {/* Step 2: Dashboard */}

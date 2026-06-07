@@ -8,6 +8,7 @@ import {
   makeInvoiceReference,
 } from "../../../../lib/invoice";
 import { PLATFORM_FEE_PCT, GST_PCT } from "../../../../lib/fee";
+import { getAgentSession } from "../../../../lib/agent-auth";
 
 // Agents log instruction → OTP → completion. Each step is a separate POST so
 // the agent can stop anywhere without losing earlier state.
@@ -16,8 +17,7 @@ import { PLATFORM_FEE_PCT, GST_PCT } from "../../../../lib/fee";
 // stage="otp"         payload: { otp_signed_at }
 // stage="completion"  payload: { completion_date, sale_price }
 //
-// Auth = cea_registration + agent_email match against sg_agents (same loose
-// pattern as /api/sell/quote and /api/dashboard/lookup).
+// Auth = signed agent session cookie; identity is never taken from the body.
 
 const STAGES = new Set(["instruction", "otp", "completion"]);
 
@@ -30,11 +30,14 @@ const TYPE_LABEL: Record<string, string> = {
 
 export async function POST(req: Request) {
   try {
+    const session = await getAgentSession();
+    if (!session) {
+      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       token,
-      cea_registration,
-      agent_email,
       stage,
       instruction_signed_at,
       otp_signed_at,
@@ -49,36 +52,16 @@ export async function POST(req: Request) {
     if (!STAGES.has(stage)) {
       return NextResponse.json({ error: "Invalid stage." }, { status: 400 });
     }
-    if (!cea_registration || !agent_email) {
-      return NextResponse.json(
-        { error: "CEA reg + email required." },
-        { status: 400 }
-      );
-    }
 
     const sb = supabaseAdmin();
 
     const { data: agent, error: agentErr } = await sb
       .from("sg_agents")
-      .select("id, name, email, claimed_email, slug")
-      .eq("cea_registration", String(cea_registration).trim())
+      .select("id, name, slug, cea_registration")
+      .eq("id", session.agentId)
       .single();
     if (agentErr || !agent) {
       return NextResponse.json({ error: "Agent not found." }, { status: 404 });
-    }
-    const emailLc = String(agent_email).toLowerCase().trim();
-    // Once an agent has claimed (verified email ownership), ONLY their
-    // claimed_email authenticates; the scraped public email no longer works,
-    // which closes impersonation of claimed agents. Unclaimed agents may still
-    // use their on-file email to participate.
-    const matches = agent.claimed_email
-      ? String(agent.claimed_email).toLowerCase() === emailLc
-      : !!agent.email && String(agent.email).toLowerCase() === emailLc;
-    if (!matches) {
-      return NextResponse.json(
-        { error: "Email does not match this CEA registration." },
-        { status: 403 }
-      );
     }
 
     const { data: lead } = await sb
@@ -257,13 +240,13 @@ export async function POST(req: Request) {
 
     // Fire-and-forget agent invoice.
     sendEmail({
-      to: emailLc,
+      to: session.email,
       subject: `Invoice ${reference} · ${fmtSgd(totals.total_due)} due`,
       html: buildInvoiceHtml({
         reference,
         agent_name: agent.name ?? "",
-        agent_cea_reg: String(cea_registration).trim(),
-        agent_email: emailLc,
+        agent_cea_reg: agent.cea_registration ? String(agent.cea_registration).trim() : "",
+        agent_email: session.email,
         property_summary: propertySummary,
         sale_price: salePrice,
         platform_fee_pct: PLATFORM_FEE_PCT,

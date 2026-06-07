@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getAgentSession } from "../../lib/agent-auth";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
@@ -19,16 +20,18 @@ const supabase = createClient(
  */
 export async function POST(req: Request) {
   try {
+    // Session-gated: the agent is derived from the signed session cookie.
+    const session = await getAgentSession();
+    if (!session) {
+      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+    }
+    const agentId = String(session.agentId);
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const agentId = formData.get("agentId") as string | null;
-    const email = formData.get("email") as string | null;
 
-    if (!file || !agentId || !email) {
-      return NextResponse.json(
-        { error: "File, agent ID, and email are required" },
-        { status: 400 }
-      );
+    if (!file) {
+      return NextResponse.json({ error: "File is required" }, { status: 400 });
     }
 
     // Validate file type
@@ -44,24 +47,6 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "File too large. Maximum size is 5MB" },
         { status: 400 }
-      );
-    }
-
-    // Verify ownership: email must match claimed_email
-    const { data: agent } = await supabase
-      .from("sg_agents")
-      .select("id, claimed, claimed_email")
-      .eq("id", agentId)
-      .single();
-
-    if (!agent) {
-      return NextResponse.json({ error: "Agent not found" }, { status: 404 });
-    }
-
-    if (!agent.claimed || agent.claimed_email !== email.toLowerCase().trim()) {
-      return NextResponse.json(
-        { error: "Not authorized to upload for this profile" },
-        { status: 403 }
       );
     }
 

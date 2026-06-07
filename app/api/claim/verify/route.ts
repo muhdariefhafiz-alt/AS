@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../../lib/email";
 import { AGENT_TERMS_VERSION } from "../../../lib/agent-terms";
 import { PLATFORM_FEE_PCT } from "../../../lib/fee";
 import { givenName } from "../../../lib/names";
+import { issueAgentSession, AGENT_COOKIE, AGENT_SESSION_TTL_MS } from "../../../lib/agent-auth";
 
 // Service role: reads/writes agent email + claimed_email during claim
 // verification. Those columns are REVOKEd from the anon role.
@@ -99,6 +101,20 @@ export async function GET(req: Request) {
     });
   } catch (err) {
     console.error("[claim/verify] Klaviyo welcome event failed:", err);
+  }
+
+  // Log the freshly-claimed agent straight in: their email is now verified.
+  try {
+    const store = await cookies();
+    store.set(AGENT_COOKIE, issueAgentSession(claim.email), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: Math.floor(AGENT_SESSION_TTL_MS / 1000),
+    });
+  } catch (err) {
+    console.error("[claim/verify] session cookie set failed", err);
   }
 
   // Redirect to success page

@@ -2,19 +2,21 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
 import { sendWaAsync } from "../../../lib/whatsapp";
+import { getAgentSession } from "../../../lib/agent-auth";
 
-// Agent submits a quote on a lead they were invited to.
-// Authenticated by (cea_registration + email) match on sg_agents — same loose
-// pattern the existing dashboard lookup uses. Replace with proper auth in a
-// follow-up if needed.
+// Agent submits a quote on a lead they were invited to. Authenticated by the
+// signed agent session cookie; identity is never taken from the request body.
 
 export async function POST(req: Request) {
   try {
+    const session = await getAgentSession();
+    if (!session) {
+      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       token,
-      cea_registration,
-      agent_email,
       commission_pct,
       est_timeline_weeks,
       est_value_low,
@@ -25,12 +27,6 @@ export async function POST(req: Request) {
 
     if (typeof token !== "string" || token.length < 8 || token.length > 64) {
       return NextResponse.json({ error: "Invalid token." }, { status: 400 });
-    }
-    if (!cea_registration || !agent_email) {
-      return NextResponse.json(
-        { error: "CEA reg + email required." },
-        { status: 400 }
-      );
     }
     const pct = Number(commission_pct);
     if (!Number.isFinite(pct) || pct <= 0 || pct > 10) {
@@ -56,25 +52,11 @@ export async function POST(req: Request) {
 
     const { data: agent, error: agentErr } = await sb
       .from("sg_agents")
-      .select("id, name, email, claimed_email")
-      .eq("cea_registration", String(cea_registration).trim())
+      .select("id, name")
+      .eq("id", session.agentId)
       .single();
     if (agentErr || !agent) {
       return NextResponse.json({ error: "Agent not found." }, { status: 404 });
-    }
-    const emailLc = String(agent_email).toLowerCase().trim();
-    // Once an agent has claimed (verified email ownership), ONLY their
-    // claimed_email authenticates; the scraped public email no longer works,
-    // which closes impersonation of claimed agents. Unclaimed agents may still
-    // use their on-file email to participate in quoting.
-    const matches = agent.claimed_email
-      ? String(agent.claimed_email).toLowerCase() === emailLc
-      : !!agent.email && String(agent.email).toLowerCase() === emailLc;
-    if (!matches) {
-      return NextResponse.json(
-        { error: "Email does not match this CEA registration." },
-        { status: 403 }
-      );
     }
 
     const { data: lead } = await sb

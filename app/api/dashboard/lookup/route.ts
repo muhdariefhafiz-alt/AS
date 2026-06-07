@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
+import { getAgentSession } from "../../../lib/agent-auth";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,29 +11,19 @@ const supabase = createClient(
  * Lookup a claimed agent by email.
  * Returns agent profile data if email matches a claimed agent.
  */
-export async function POST(req: Request) {
+export async function POST() {
   try {
-    // Auth here is email-only, so throttle to stop enumeration of which
-    // agents are claimed (and harvesting of their CEA numbers).
-    const ip = clientIp(req);
-    const { limited } = await checkRateLimit(`dash-lookup:${ip}`, 10, 60 * 60 * 1000);
-    if (limited) {
-      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    // Session-gated: the agent must hold a valid signed session cookie minted
+    // from a verified magic link. We never trust an email from the request body.
+    const session = await getAgentSession();
+    if (!session) {
+      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
     }
-
-    const { email } = await req.json();
-
-    if (!email || typeof email !== "string") {
-      return NextResponse.json({ error: "Email required" }, { status: 400 });
-    }
-
-    const normalized = email.toLowerCase().trim();
 
     const { data: agent } = await supabase
       .from("sg_agents")
       .select("id, name, slug, bio, photo_url, whatsapp, message, marketing_name, score, agency_name, claimed, claimed_email, cea_registration, subscription_tier, claimed_at")
-      .eq("claimed", true)
-      .eq("claimed_email", normalized)
+      .eq("id", session.agentId)
       .single();
 
     if (!agent) {
@@ -84,6 +74,7 @@ export async function POST(req: Request) {
         cea_registration: agent.cea_registration,
         subscription_tier: agent.subscription_tier || "free",
         claimed_at: agent.claimed_at || null,
+        email: agent.claimed_email || null,
         views_this_week: viewsResult.count ?? 0,
         whatsapp_clicks_this_week: clicksResult.count ?? 0,
       },

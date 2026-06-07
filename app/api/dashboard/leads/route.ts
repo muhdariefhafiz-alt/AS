@@ -1,31 +1,21 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
-import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
+import { getAgentSession } from "../../../lib/agent-auth";
 
-// List invited leads for an agent. Auth = email match against claimed_email,
-// same pattern as /api/dashboard/lookup.
-export async function POST(req: Request) {
+// List invited leads for the signed-in agent. Derived from the session cookie,
+// never from a request-body email. Returns seller PII + lead tokens.
+export async function POST() {
   try {
-    // Auth is email-only and this returns seller PII (names) + lead tokens, so
-    // throttle to stop enumeration of claimed agents and their pipelines.
-    const ip = clientIp(req);
-    const { limited } = await checkRateLimit(`dash-leads:${ip}`, 10, 60 * 60 * 1000);
-    if (limited) {
-      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    const session = await getAgentSession();
+    if (!session) {
+      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
     }
-
-    const { email } = await req.json();
-    if (!email || typeof email !== "string") {
-      return NextResponse.json({ error: "Email required" }, { status: 400 });
-    }
-    const normalized = email.toLowerCase().trim();
     const sb = supabaseAdmin();
 
     const { data: agent } = await sb
       .from("sg_agents")
       .select("id, cea_registration")
-      .eq("claimed", true)
-      .eq("claimed_email", normalized)
+      .eq("id", session.agentId)
       .single();
     if (!agent) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });

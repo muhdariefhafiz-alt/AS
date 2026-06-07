@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
-import { checkRateLimit, clientIp } from "../../lib/rateLimit";
+import { getAgentSession } from "../../lib/agent-auth";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,17 +15,15 @@ const supabase = createClient(
  */
 export async function POST(req: Request) {
   try {
-    // Auth is email-only; throttle to blunt brute-forcing claimed_email values.
-    const { limited } = await checkRateLimit(`profile:${clientIp(req)}`, 20, 60 * 60 * 1000);
-    if (limited) {
-      return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    // Session-gated: the agent is derived from the signed session cookie; we do
+    // not trust an agentId/email from the request body.
+    const session = await getAgentSession();
+    if (!session) {
+      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
     }
+    const agentId = session.agentId;
 
-    const { agentId, email, bio, photoUrl, whatsapp, message, marketingName } = await req.json();
-
-    if (!agentId || !email) {
-      return NextResponse.json({ error: "Agent ID and email required" }, { status: 400 });
-    }
+    const { bio, photoUrl, whatsapp, message, marketingName } = await req.json();
 
     const { data: agent } = await supabase
       .from("sg_agents")
@@ -35,10 +33,6 @@ export async function POST(req: Request) {
 
     if (!agent) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
-    }
-
-    if (!agent.claimed || agent.claimed_email !== email.toLowerCase().trim()) {
-      return NextResponse.json({ error: "Not authorized to edit this profile" }, { status: 403 });
     }
 
     if (bio && typeof bio === "string" && bio.length > 1000) {
