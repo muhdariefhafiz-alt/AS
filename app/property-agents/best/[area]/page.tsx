@@ -282,9 +282,9 @@ export default async function BestAgentsPage({ params }: Props) {
       <section className="fc-wrap" style={{ padding: "40px 40px 24px" }}>
         <h2 style={{ fontSize: "clamp(26px,3vw,34px)" }}>Top {topAgents.length} agents in {short}</h2>
         <p className="muted small" style={{ margin: "8px 0 0", maxWidth: "70ch" }}>
-          Agents on the same AgentScore are ordered by local transaction volume. The score counts all CEA
-          activity, sales and rentals, so if you are selling, check each agent&apos;s sale-versus-rental mix on
-          their profile.
+          Agents on the same AgentScore are ordered by local transaction volume. The score sale-weights volume,
+          so agents who sell homes for owners rank higher; you can still see each agent&apos;s sale-versus-rental
+          mix on their profile.
         </p>
 
         {topAgents.map((a, i) => {

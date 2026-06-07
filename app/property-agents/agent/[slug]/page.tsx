@@ -199,6 +199,20 @@ export default async function AgentPage({ params }: Props) {
   const areaFocusPct = hasTxns && total ? Math.round((areas[0]?.count ?? 0) / total * 100) : 0;
   const topProp = propEntries[0] ? { label: propTypeLabel(propEntries[0][0]), pct: Math.round(propEntries[0][1] / total * 100) } : null;
   const primaryShort = primaryArea ? titleName(primaryArea.split("/")[0].split(",")[0].trim()) : null;
+
+  // "Compare with others" should land on this agent's AREA (other agents there),
+  // not a blank compare tool. Resolve the agent's top area (slash format) to its
+  // district-page slug via sg_districts (which stores the name in comma format).
+  let compareHref = "/property-agents";
+  if (primaryArea) {
+    const { data: dist } = await supabase
+      .from("sg_districts")
+      .select("slug")
+      .eq("name", primaryArea.replace(/\/\s*/g, ", "))
+      .maybeSingle();
+    if (dist?.slug) compareHref = `/property-agents/district/${dist.slug}`;
+  }
+
   const updated = fmtMonthYear(agent.score_updated_at) || fmtMonthYear(agent.created_at);
 
   // Sale vs rental mix. A "best agent to sell" who mostly leases rentals would
@@ -359,7 +373,7 @@ export default async function AgentPage({ params }: Props) {
             </div>
             <div className="fc-col" style={{ gap: 10 }}>
               <Link href={`/sell?agent=${slug}&utm_source=agent_profile`} className="fc-btn fc-btn--primary">View {given}&apos;s profile</Link>
-              <Link href="/property-agents/compare" className="fc-btn fc-btn--ghost fc-btn--sm">Compare with others</Link>
+              <Link href={compareHref} className="fc-btn fc-btn--ghost fc-btn--sm">Compare with others{primaryShort ? ` in ${primaryShort}` : ""}</Link>
             </div>
           </div>
         </div>

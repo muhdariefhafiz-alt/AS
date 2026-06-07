@@ -22,8 +22,8 @@ export const metadata: Metadata = {
 const CHECKS: [string, string][] = [
   ["CEA registration", "Every property agent in Singapore must be registered with the Council for Estate Agencies (CEA). We build on the public register, so you can confirm an agent is currently registered and which agency they work under."],
   ["Real transaction record", "See how many transactions the agent has actually been recorded on, what property types, and which areas, drawn from CEA transaction data rather than self-reported claims."],
-  ["AgentScore", "An independent 0 to 100 score from transaction volume, recency, market diversity, experience, and the agency's Google reviews. It cannot be bought."],
-  ["Sale vs rental mix", "We flag agents whose recorded deals are mostly rentals, so if you are selling you are not misled by a high score built on leasing activity."],
+  ["AgentScore", "An independent 0 to 100 score from sale-weighted transaction volume (completed sales count most, rentals least), recency, market diversity, experience, and the agency's Google reviews. It cannot be bought."],
+  ["Sale vs rental mix", "We flag agents whose recorded deals are mostly rentals, so if you are selling you can quickly see who focuses on leasing rather than selling homes."],
 ];
 
 const FAQ: [string, string][] = [

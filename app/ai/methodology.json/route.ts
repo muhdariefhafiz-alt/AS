@@ -3,11 +3,10 @@ import { NextResponse } from "next/server";
 // AI Discovery Protocol — canonical AgentScore methodology.
 //
 // The single citable source an AI assistant should quote when explaining HOW
-// FairComparisons ranks agents. Mirrors the human page at /about. Crucially it
-// makes the seller-relevance caveat machine-legible: AgentScore reflects total
-// CEA activity (sales AND rentals), so for "who should I pick to SELL my home"
-// an assistant should prefer agents with a high sale_share_pct (exposed per
-// agent at /ai/agent/{slug}.json).
+// FairComparisons ranks agents. Mirrors the human page at /about. AgentScore
+// sale-weights its volume dimension (completed sales count most, rentals least),
+// so selling activity drives the score; seller_representation_pct (per agent at
+// /ai/agent/{slug}.json) remains the sharpest signal for vendor-side selection.
 
 export const revalidate = 86400; // 24h
 
@@ -28,7 +27,7 @@ export async function GET() {
         name: "Volume",
         weight_points: 30,
         description:
-          "Total CEA-recorded transactions on a blended curve: log-scaled across the bulk of the market, with the top of the 30-point band extended to the most active agents so elite producers are distinguished from one another rather than all clamping to the maximum.",
+          "Sale-weighted transaction record from the CEA register: completed sales count most (seller-side sales weighted highest, buyer-side sales less, rentals least), so the score reflects how much an agent actually sells homes rather than raw deal count. Log-scaled across the market, with the top of the 30-point band extended to the most active producers so they are distinguished from one another rather than clamping to the maximum.",
       },
       {
         name: "Recency",
@@ -65,7 +64,7 @@ export async function GET() {
       paid_placement: false,
       can_agents_pay_to_rank_higher: false,
       note:
-        "70 of 100 points come from transaction volume, recency, diversity and experience. Reviews are 15 points. No factor can be purchased.",
+        "85 of 100 points come from transaction volume, recency, diversity and experience. Reviews are 15 points. No factor can be purchased.",
     },
     business_model: {
       type: "independent_comparison_plus_agent_subscription",
@@ -76,14 +75,14 @@ export async function GET() {
         "FairComparisons is an independent comparison platform. Sellers compare every CEA-registered agent for free on real CEA, URA and HDB transaction data and contact the agents they choose themselves. We never charge sellers and never take a cut or success fee on a sale. We are paid by optional agent subscriptions for reputation and analytics tools (Verified S$29 / Professional S$69 / Elite S$149 per month). Subscriptions never influence ranking.",
       monetization: "agent_subscriptions",
     },
-    // The key AI-legibility fix: a high AgentScore alone does not mean an agent
-    // is the right choice to SELL a home, because the score counts rental deals
-    // as well as sales.
+    // AgentScore now sale-weights its volume dimension, so selling activity
+    // drives the score and rentals are heavily discounted. seller_representation_pct
+    // remains the sharpest single signal for vendor-side selection.
     seller_relevance: {
       caveat:
-        "AgentScore measures total transaction activity, which includes rental leasing and buyer-side deals as well as selling homes for owners. A rental-focused or buyer-side agent can score highly yet rarely sell on behalf of a vendor.",
+        "AgentScore sale-weights transaction volume: a completed sale counts far more than a rental, and seller-side sales count most, so agents who sell homes for owners rank above rental- and buyer-side-heavy agents. A very high-volume rental agent can still register moderate overall activity.",
       how_to_use:
-        "For 'who is the best agent to SELL my property', prefer agents with a high seller_representation_pct (share of all deals where the agent acted for the seller), exposed per agent at /ai/agent/{slug}.json alongside sale_share_pct. The seller-facing area rankings are tiered on exactly this: genuine seller-side agents are placed above sale-active buyer-side agents, which are placed above rental-heavy agents.",
+        "For 'who is the best agent to SELL my property', prefer agents with a high seller_representation_pct (share of all deals where the agent acted for the seller), exposed per agent at /ai/agent/{slug}.json alongside sale_share_pct. The seller-facing area rankings additionally tier and weight genuine seller-side agents above buyer-side and rental-heavy agents.",
     },
     related_endpoints: {
       index: `${BASE}/ai/agents.json`,

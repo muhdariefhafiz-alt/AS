@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { postalToDistrictCode, looksLikePostal } from "../lib/postal";
 
@@ -10,16 +10,19 @@ import { postalToDistrictCode, looksLikePostal } from "../lib/postal";
 export default function PostcodeBox({ source = "ranking" }: { source?: string }) {
   const router = useRouter();
   const [pc, setPc] = useState("");
+  // Pending state so the button gives feedback while Next navigates + renders
+  // /sell (server-rendered with a DB lookup); otherwise it looks frozen.
+  const [pending, startTransition] = useTransition();
 
   function go(e: React.FormEvent) {
     e.preventDefault();
+    if (pending) return;
     const q = pc.trim();
     const code = looksLikePostal(q) ? postalToDistrictCode(q) : null;
-    router.push(
-      code
-        ? `/sell?type=CONDO&district=${code}&utm_source=${source}`
-        : `/sell?utm_source=${source}`,
-    );
+    const href = code
+      ? `/sell?type=CONDO&district=${code}&utm_source=${source}`
+      : `/sell?utm_source=${source}`;
+    startTransition(() => router.push(href));
   }
 
   return (
@@ -30,9 +33,10 @@ export default function PostcodeBox({ source = "ranking" }: { source?: string })
         placeholder="Enter your postal code"
         inputMode="numeric"
         aria-label="Postal code"
+        disabled={pending}
       />
-      <button type="submit" className="fc-btn fc-btn--primary">
-        Compare agents
+      <button type="submit" className="fc-btn fc-btn--primary" disabled={pending} aria-busy={pending}>
+        {pending ? "Finding agents…" : "Compare agents"}
       </button>
     </form>
   );

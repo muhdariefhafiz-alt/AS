@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About AgentScore - How We Rate Property Agents",
-  description: "AgentScore rates Singapore property agents on transaction volume, recency, market diversity, experience, and Google reviews. Independent and data-driven.",
+  description: "AgentScore rates Singapore property agents on sale-weighted transaction volume, recency, market diversity, experience, and Google reviews. Independent and data-driven.",
 };
 
 export default function AboutPage() {
@@ -58,7 +58,7 @@ export default function AboutPage() {
           </p>
           <div className="mt-4 space-y-3">
             {[
-              { name: "Volume", weight: "30 points", desc: "Total number of CEA-recorded transactions. More transactions indicate a more active and experienced agent." },
+              { name: "Volume", weight: "30 points", desc: "Sale-weighted CEA transactions: completed sales count most (seller-side sales highest), rentals least, so the score reflects an agent's record of actually selling homes, not raw deal count." },
               { name: "Recency", weight: "25 points", desc: "How recently the agent has completed transactions. Recent activity is weighted higher than historical volume." },
               { name: "Diversity", weight: "15 points", desc: "Range of property types (HDB, condo, landed) and transaction types (sale, purchase, rental) handled." },
               { name: "Experience", weight: "15 points", desc: "Years of CEA registration and consistency of transaction activity over time." },

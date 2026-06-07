@@ -143,8 +143,9 @@ export default async function TrustPage() {
               <div className="eyebrow">How we score</div>
               <h2 style={{ marginTop: 10, fontSize: 24 }}>The AgentScore, in full.</h2>
               <p className="muted" style={{ marginTop: 8, fontSize: 14.5 }}>
-                A 0 to 100 score from transaction volume, recency, market diversity, experience and agency reviews. For
-                sellers, the ranking also weights whether an agent actually represents the seller, not just transacts.
+                A 0 to 100 score from sale-weighted transaction volume (completed sales count most, rentals least), recency,
+                market diversity, experience and agency reviews. For sellers, the ranking also weights whether an agent
+                actually represents the seller, not just transacts.
               </p>
               <div className="fc-row" style={{ gap: 12, marginTop: 14 }}>
                 <Link href="/about" className="fc-btn fc-btn--quiet fc-btn--sm">Read the methodology</Link>

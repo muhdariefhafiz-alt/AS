@@ -90,7 +90,7 @@ export default async function ForAgentsPage() {
             The AgentScore is fully automated. Payment does not influence your ranking. The only way to improve your score is to close more transactions and deliver better service.
           </p>
           <div className="fc-grid-4" style={{ marginTop: 28 }}>
-            {[["30", "Volume", "Total CEA transactions"], ["25", "Recency", "Recent activity weighted higher"], ["15", "Diversity", "Property and transaction types"], ["15", "Experience", "Years registered and consistency"]].map(([n, t, d]) => (
+            {[["30", "Volume", "Sale-weighted CEA transactions"], ["25", "Recency", "Recent activity weighted higher"], ["15", "Diversity", "Property and transaction types"], ["15", "Experience", "Years registered and consistency"]].map(([n, t, d]) => (
               <div key={t} className="fc-card fc-card--pad" style={{ textAlign: "center" }}>
                 <div className="serif" style={{ fontWeight: 600, fontSize: 34, color: "var(--blue)" }}>{n}</div>
                 <div style={{ fontWeight: 700, marginTop: 4 }}>{t}</div>

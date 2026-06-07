@@ -21,7 +21,7 @@ const DIMENSIONS = [
   {
     name: "Volume",
     pts: 30,
-    body: "Total CEA-recorded transactions on a blended curve: log-scaled across the bulk of the market, with the top of the band extended so the most active producers are distinguished from one another rather than all clamping to the maximum.",
+    body: "Sale-weighted transaction record from the CEA register. A completed sale counts most (seller-side sales weighted highest, buyer-side sales less, rentals least), so the score reflects how much an agent actually sells homes, not raw deal count. Log-scaled across the market, with the top of the band extended so the most active producers are distinguished rather than clamped together.",
   },
   {
     name: "Recency",
@@ -56,11 +56,11 @@ const DATA_SOURCES = [
 const FAQ = [
   {
     q: "Can an agent pay to rank higher?",
-    a: "No. There is no paid placement and no factor can be purchased. 70 of the 100 points come from transaction volume, recency, diversity and experience, all drawn from government records. Reviews are 15 points and reflect the agency's public Google rating.",
+    a: "No. There is no paid placement and no factor can be purchased. 85 of the 100 points come from transaction volume, recency, diversity and experience, all drawn from government records. Reviews are 15 points and reflect the agency's public Google rating.",
   },
   {
     q: "Does a high AgentScore mean an agent is the right one to sell my home?",
-    a: "Not on its own. AgentScore measures total transaction activity, which includes rental leasing and buyer-side deals as well as selling homes for owners. A rental-focused or buyer-side agent can score highly yet rarely sell on behalf of a vendor. For selling, prefer agents with a high share of seller-side sales. Our seller-facing area rankings already tier genuine seller-side agents above buyer-side and rental-heavy ones.",
+    a: "Largely, yes, more than it used to. AgentScore now sale-weights its volume dimension: a completed sale counts far more than a rental, and seller-side sales count most, so agents who sell homes for owners rank above rental- and buyer-side-heavy agents. For the sharpest signal, still check an agent's share of seller-side sales, shown on every profile, and our seller-facing area rankings additionally tier genuine seller-side agents above buyer-side and rental-heavy ones.",
   },
   {
     q: "How often is it recalculated?",

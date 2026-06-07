@@ -173,7 +173,7 @@ export default async function TopAgents2026Page() {
           <h2 className="text-xl font-bold text-gray-900">How we rank agents</h2>
           <p className="mt-3 text-[15px] leading-relaxed text-gray-600">
             Every agent is scored using the AgentScore algorithm, which weighs four factors from public CEA data:
-            transaction volume (30pts), recent activity (25pts), market diversity (15pts), and years of experience (15pts).
+            sale-weighted transaction volume (30pts; completed sales count most, rentals least), recent activity (25pts), market diversity (15pts), and years of experience (15pts).
             Agents cannot pay to improve their position. The only way to rank higher is to close more transactions and
             maintain consistent activity across property types.
           </p>

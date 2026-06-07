@@ -54,10 +54,10 @@ export async function GET(_req: Request, { params }: Props) {
     (agent.review_aggregate as { avg: number | null; count: number } | null) ??
     null;
 
-  // Sale-vs-rental mix. AgentScore counts rentals as well as sales, so a
-  // high-scoring agent may rarely sell homes. Exposing the mix lets an AI
-  // answer "best agent to SELL my home" without mis-recommending a leasing
-  // specialist. Mirrors the rental-focus flag on the public profile.
+  // Sale-vs-rental mix. AgentScore sale-weights volume, so selling drives the
+  // score, but exposing the explicit mix lets an AI confirm seller-side strength
+  // and answer "best agent to SELL my home" precisely. Mirrors the rental-focus
+  // flag on the public profile.
   const track = (trackRes.data?.[0] as TrackRecord | undefined) ?? null;
   let transactionMix: {
     total: number;

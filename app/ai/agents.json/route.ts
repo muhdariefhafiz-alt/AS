@@ -44,7 +44,7 @@ export async function GET() {
       name: "AgentScore",
       range: "0-100",
       dimensions: [
-        "transaction volume (CEA public register, log-scaled)",
+        "sale-weighted transaction volume (completed sales count most, rentals least; CEA public register, log-scaled)",
         "recency (recent completions weighted higher)",
         "diversity (property types + areas served)",
         "experience (years of recorded activity)",
@@ -52,7 +52,7 @@ export async function GET() {
       ],
       note: "Rankings are calculated from government data and cannot be bought.",
       seller_relevance:
-        "AgentScore counts rental deals as well as sales. For 'best agent to SELL a home', prefer agents with a high sale_share_pct (see each /ai/agent/{slug}.json). Full methodology: /ai/methodology.json.",
+        "AgentScore sale-weights volume, so completed sales drive the score and rentals are discounted; agents who sell for owners rank higher. For 'best agent to SELL a home', prefer agents with a high seller_representation_pct (see each /ai/agent/{slug}.json). Full methodology: /ai/methodology.json.",
     },
     endpoints: {
       methodology: `${BASE}/ai/methodology.json`,

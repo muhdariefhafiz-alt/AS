@@ -75,11 +75,17 @@ function typeBonus(
 
 // Higher area_focus_pct = agent is concentrated here, not scattered. Trust
 // premium for local specialists.
+// Reward agents who are concentrated in THIS area over city-wide agents with
+// only token presence. Weighted to matter against the base AgentScore (0-90),
+// so a genuine local specialist can out-rank a higher-scored generalist, while
+// the relevance floor below removes negligible-presence agents entirely.
 function localityBonus(area_focus_pct: number | null): number {
   const p = area_focus_pct ?? 0;
-  if (p >= 70) return 6;
-  if (p >= 50) return 4;
-  if (p >= 30) return 2;
+  if (p >= 60) return 18;
+  if (p >= 40) return 13;
+  if (p >= 25) return 9;
+  if (p >= 12) return 5;
+  if (p >= 5) return 2;
   return 0;
 }
 
@@ -101,16 +107,32 @@ export async function buildShortlist(
   limit = 7
 ): Promise<ShortlistedAgent[]> {
   const town = normaliseTown(criteria.town);
-  const district = normaliseDistrict(criteria.district_code);
+  const districtCode = normaliseDistrict(criteria.district_code);
 
   const sb = supabaseAdmin();
+
+  // sg_area_top_agents stores districts by DESCRIPTIVE NAME in slash format
+  // (e.g. "Katong/ Joo Chiat/ Amber Road"), never by code. A seller arriving
+  // from a postcode carries only the code ("D15"), so matching on the code
+  // silently returns zero agents. sg_districts maps code -> name (comma format),
+  // so resolve code -> slash-name here. Without this the postcode -> shortlist
+  // flow finds nothing for every district.
+  let districtArea: string | null = null;
+  if (districtCode) {
+    const { data: d } = await sb
+      .from("sg_districts")
+      .select("name")
+      .eq("code", districtCode)
+      .maybeSingle();
+    if (d?.name) districtArea = String(d.name).replace(/,\s*/g, "/ ");
+  }
 
   // Prefer HDB town for HDB; prefer district for private. Always fall back to
   // the other if the primary yields nothing.
   const primary = criteria.property_type === "HDB" ? "town" : "district";
-  const primaryName = primary === "town" ? town : district;
+  const primaryName = primary === "town" ? town : districtArea;
   const fallback = primary === "town" ? "district" : "town";
-  const fallbackName = fallback === "town" ? town : district;
+  const fallbackName = fallback === "town" ? town : districtArea;
 
   const fetchArea = async (areaType: string, areaName: string | null) => {
     if (!areaName) return [];
@@ -143,12 +165,25 @@ export async function buildShortlist(
     return { row: r, base, tb, lb, composite };
   });
 
-  scored.sort((a, b) => {
+  // Relevance floor: a seller searching an area wants agents who actually work
+  // it, not high-volume generalists with token presence (e.g. an agent with 2%
+  // of their deals in the area). Keep agents with real local presence; relax
+  // back to the full pool only if too few qualify, so we never return empty.
+  const MIN_AREA_TXNS = 3;
+  const MIN_FOCUS_PCT = 5;
+  const relevant = scored.filter(
+    (s) =>
+      Number(s.row.area_txns ?? 0) >= MIN_AREA_TXNS ||
+      Number(s.row.area_focus_pct ?? 0) >= MIN_FOCUS_PCT
+  );
+  const pool = relevant.length >= limit ? relevant : scored;
+
+  pool.sort((a, b) => {
     if (b.composite !== a.composite) return b.composite - a.composite;
     return (b.row.area_txns ?? 0) - (a.row.area_txns ?? 0);
   });
 
-  return scored.slice(0, limit).map((s, i) => ({
+  return pool.slice(0, limit).map((s, i) => ({
     agent_id: Number(s.row.agent_id),
     agent_name: String(s.row.agent_name ?? ""),
     agent_slug: String(s.row.agent_slug ?? ""),

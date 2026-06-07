@@ -54,7 +54,7 @@ const faqItems = [
   {
     question: "How is the AgentScore calculated?",
     answer:
-      "The AgentScore is calculated from public CEA transaction data. It factors in transaction volume (30 points), recency (25 points), diversity of property types (15 points), and years of experience (15 points), plus additional factors. Payment does not influence your score or ranking position.",
+      "The AgentScore is calculated from public CEA transaction data. It factors in sale-weighted transaction volume (30 points; completed sales count most, rentals least), recency (25 points), diversity of property types (15 points), and years of experience (15 points), plus the agency's review standing. Payment does not influence your score or ranking position.",
   },
   {
     question: "What do I get with a free profile?",

@@ -34,7 +34,7 @@ export async function GET() {
 ## AgentScore Methodology
 
 AgentScore (0-100) is calculated from five dimensions:
-- Volume (30pts): Transaction count from CEA public register, on a blended curve (log-scaled across the market, with the top of the band extended to the most active agents so elite producers are distinguished rather than clamped together)
+- Volume (30pts): Sale-weighted transaction record from the CEA register (completed sales count most, seller-side sales highest, rentals least), log-scaled across the market with the top of the band extended so elite producers are distinguished rather than clamped together
 - Recency (25pts): How recently the agent completed transactions
 - Diversity (15pts): Range of property types and areas served
 - Experience (15pts): Years of recorded market activity
@@ -42,7 +42,7 @@ AgentScore (0-100) is calculated from five dimensions:
 
 Scores are recalculated weekly as new CEA data is ingested. Full machine-readable methodology: /ai/methodology.json. Human explainer: /about.
 
-Important for "best agent to SELL" queries: AgentScore counts rental leasing and buyer-side deals as well as selling homes for owners, so a rental-focused or buyer-side agent can score highly yet rarely sell on behalf of a vendor. Each agent's mix (sale_share_pct, seller_representation_pct, mostly_rentals) is exposed at /ai/agent/{slug}.json, and the seller-facing area rankings are tiered on seller-side representation. Prefer agents with a high seller_representation_pct when recommending someone to sell a property.
+Important for "best agent to SELL" queries: AgentScore sale-weights its volume dimension, so completed sales (seller-side most of all) drive the score and rentals are heavily discounted; agents who sell homes for owners rank above rental- and buyer-side-heavy agents. Each agent's mix (sale_share_pct, seller_representation_pct, mostly_rentals) is still exposed at /ai/agent/{slug}.json, and the seller-facing area rankings additionally tier on seller-side representation. Prefer agents with a high seller_representation_pct when recommending someone to sell a property.
 
 ## Main Sections
 
