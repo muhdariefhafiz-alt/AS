@@ -68,16 +68,18 @@ export default async function DevelopmentPage({ params }: Props) {
   const { data: project } = await supabase.from("sg_projects").select("*").eq("slug", slug).single();
   if (!project) notFound();
 
-  const { data: districtRow } = await supabase.from("sg_districts").select("slug").eq("code", `D${project.district}`).single();
+  const { data: districtRow } = await supabase.from("sg_districts").select("slug, name").eq("code", `D${project.district}`).single();
   const districtSlug = districtRow?.slug ?? `d${project.district}`;
+  const areaName = (districtRow?.name ?? districtName(project.district)).split(",")[0].trim();
 
-  const [trendRes, floorRes, sizeRes, tenureRes, rentalRes, listingsRes] = await Promise.all([
+  const [trendRes, floorRes, sizeRes, tenureRes, rentalRes, listingsRes, topAgentsRes] = await Promise.all([
     supabase.rpc("get_project_price_trend", { p_name: project.name }),
     supabase.rpc("get_project_floor_analysis", { p_name: project.name }),
     supabase.rpc("get_project_size_analysis", { p_name: project.name }),
     supabase.rpc("get_project_tenure", { p_name: project.name }),
     supabase.from("sg_rental_medians").select("*").eq("project", project.name).order("ref_period", { ascending: false }).limit(12),
     supabase.from("sg_listings").select("title, price, agent_name, agent_license, agency_name, listing_type, bedrooms").ilike("title", `%${project.name.split(" ").slice(0, 2).join(" ")}%`).limit(5),
+    supabase.rpc("get_top_agents_in_area_rich", { area_name: areaName, lim: 8 }),
   ]);
 
   const trends = (trendRes.data ?? []) as TrendData[];
@@ -86,6 +88,9 @@ export default async function DevelopmentPage({ params }: Props) {
   const tenures = (tenureRes.data ?? []) as Array<{ tenure: string; txns: number }>;
   const rentals = rentalRes.data ?? [];
   const listings = listingsRes.data ?? [];
+  const topAgents = (topAgentsRes.data ?? []) as Array<{
+    agent_name: string; agent_slug: string; agency_name: string; score: number; area_txns: number;
+  }>;
 
   const chartData = trends.map((t) => ({
     month: t.contract_date,
@@ -308,6 +313,39 @@ export default async function DevelopmentPage({ params }: Props) {
                     </div>
                   ))}
                 </div>
+              </section>
+            )}
+
+            {/* Top agents in the development's district (CEA transaction data) */}
+            {topAgents.length > 0 && (
+              <section>
+                <h2 className="text-xl font-bold text-gray-900">Top agents in {distName}</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Highest-scoring agents active in D{project.district} {distName}, the district where {project.name} is
+                  located. Rankings come from CEA transaction records for the wider district, not from activity at this
+                  specific development.
+                </p>
+                <div className="mt-4 space-y-2">
+                  {topAgents.map((a) => (
+                    <Link
+                      key={a.agent_slug}
+                      href={`/property-agents/agent/${a.agent_slug}`}
+                      className="flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 hover:border-gray-200"
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">{a.agent_name}</p>
+                        <p className="text-xs text-gray-500">{a.agency_name} · {a.area_txns} recorded deals in {distName}</p>
+                      </div>
+                      <span className="text-sm font-bold text-[var(--blue-deep)]">{Math.round(a.score)}</span>
+                    </Link>
+                  ))}
+                </div>
+                <div className="mt-3">
+                  <Link href={`/property-agents/district/${districtSlug}`} className="text-sm text-[var(--blue)] hover:text-[var(--blue-deep)]">
+                    All agents in {distName} →
+                  </Link>
+                </div>
+                <p className="mt-2 text-[11px] text-gray-400">Source: CEA salesperson transaction records (data.gov.sg). AgentScore by FairComparisons.</p>
               </section>
             )}
 
