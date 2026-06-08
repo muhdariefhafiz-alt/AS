@@ -41,7 +41,7 @@ export default function ClaimBanner({
   const [email, setEmail] = useState("");
   const [ceaNumber, setCeaNumber] = useState("");
   const [consent, setConsent] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "review" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const bannerRef = useRef<HTMLDivElement>(null);
   const hasTrackedView = useRef(false);
@@ -112,7 +112,11 @@ export default function ClaimBanner({
       if (res.ok) {
         trackEvent("claim_submit", { agent_id: agentId, agent_name: agentName });
         trackFunnel("claim_submit", agentId, meta());
-        setStatus("success");
+        // Two server outcomes: auto-verify (email on file → link sent) vs
+        // manual review (no on-file email → admin approves, no email sent).
+        // The server signals the latter with `review: true`; show the matching
+        // message so we never tell someone to check an inbox we did not email.
+        setStatus(data.review ? "review" : "success");
       } else {
         setStatus("error");
         setErrorMsg(data.error || "Something went wrong");
@@ -121,6 +125,25 @@ export default function ClaimBanner({
       setStatus("error");
       setErrorMsg("Network error. Please try again.");
     }
+  }
+
+  if (status === "review") {
+    return (
+      <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+        <div className="flex items-center gap-2">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--blue)] text-[11px] text-white">
+            &#10003;
+          </span>
+          <p className="font-semibold text-[var(--blue-deep)]">Claim received. We are reviewing it.</p>
+        </div>
+        <p className="mt-2 text-sm text-[var(--blue-deep)]">
+          We do not have a verified email on file for this profile, so our team reviews this claim by hand to protect against impersonation. We will confirm to <strong>{email}</strong> within 1 business day.
+        </p>
+        <p className="mt-2 text-xs text-[var(--blue)]">
+          No further action needed from you right now.
+        </p>
+      </div>
+    );
   }
 
   if (status === "success") {
