@@ -4,7 +4,7 @@ import SellCtaBand from "../../components/SellCtaBand";
 
 export const metadata: Metadata = {
   title: "Property Agent Commission Rates in Singapore (2026 Guide)",
-  description: "How much do property agents charge in Singapore? Standard commission rates for HDB, condo, and landed property. Buyer vs seller commission, what is included, and how to negotiate.",
+  description: "How much do property agents charge in Singapore? Sellers typically pay 1% for HDB and 1-2% for private property; rentals run 0.5 to 1 month's rent. Full rates by property type, worked dollar examples, GST, and how to negotiate.",
   alternates: { canonical: "https://fair-comparisons.com/guides/property-agent-commission" },
 };
 
@@ -134,6 +134,11 @@ export default function PropertyAgentCommissionPage() {
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 There is no legally fixed property agent commission rate in Singapore. The Council for Estate Agencies (CEA) does not set rates. The percentages below are market norms that have been stable for years, but they are always negotiable between agent and client. Always agree on the rate in writing before signing an agency agreement.
               </p>
+              <p className="mt-3 text-[15px] leading-[1.75] text-gray-600">
+                One thing worth knowing before you pick on price alone: most agents rarely sell. Our{" "}
+                <Link href="/insights/property-agent-statistics-singapore" className="font-medium text-[var(--blue)] underline">study of 730,000 CEA transactions</Link>{" "}
+                found the median agent who does sell closes about one home a year, so who you hire matters far more than shaving 0.25% off the rate.
+              </p>
             </div>
 
             {/* Commission Table */}
@@ -157,6 +162,41 @@ export default function PropertyAgentCommissionPage() {
                   </div>
                 ))}
               </div>
+            </section>
+
+            {/* Worked examples */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900">How Much Will You Actually Pay?</h2>
+              <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
+                Because commission is a percentage of the price, the dollar amount scales with your property. Here is what a seller typically pays at current market rates, before GST:
+              </p>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-gray-400">
+                      <th className="pb-2 pr-4">Property</th>
+                      <th className="pb-2 pr-4 text-right">Sale price</th>
+                      <th className="pb-2 pr-4 text-right">Typical rate</th>
+                      <th className="pb-2 text-right">Seller commission</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    <tr><td className="py-2.5 pr-4 font-medium text-gray-900">HDB flat</td><td className="py-2.5 pr-4 text-right text-gray-600">S$500,000</td><td className="py-2.5 pr-4 text-right text-gray-600">1%</td><td className="py-2.5 text-right font-bold text-gray-900">S$5,000</td></tr>
+                    <tr><td className="py-2.5 pr-4 font-medium text-gray-900">HDB flat</td><td className="py-2.5 pr-4 text-right text-gray-600">S$700,000</td><td className="py-2.5 pr-4 text-right text-gray-600">1%</td><td className="py-2.5 text-right font-bold text-gray-900">S$7,000</td></tr>
+                    <tr><td className="py-2.5 pr-4 font-medium text-gray-900">Condo</td><td className="py-2.5 pr-4 text-right text-gray-600">S$1,200,000</td><td className="py-2.5 pr-4 text-right text-gray-600">1.5%</td><td className="py-2.5 text-right font-bold text-gray-900">S$18,000</td></tr>
+                    <tr><td className="py-2.5 pr-4 font-medium text-gray-900">Landed</td><td className="py-2.5 pr-4 text-right text-gray-600">S$2,500,000</td><td className="py-2.5 pr-4 text-right text-gray-600">1.5%</td><td className="py-2.5 text-right font-bold text-gray-900">S$37,500</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-4 text-[15px] leading-[1.75] text-gray-600">
+                <strong>Rental agent fee:</strong> for a residential lease, the landlord typically pays 1 month&apos;s rent on a 2-year lease (0.5 month on a 1-year lease), and the tenant may pay 0.5 to 1 month. On a S$3,500 per month flat, that is about S$3,500 for the landlord on a 2-year lease. If the agency is GST-registered, add 9% GST on top of any commission.
+              </p>
+              <p className="mt-3 text-[15px] leading-[1.75] text-gray-600">
+                You can run your own numbers with our free{" "}
+                <Link href="/tools/commission-calculator" className="font-medium text-[var(--blue)] underline">commission calculator</Link>, or{" "}
+                <Link href="/sell" className="font-medium text-[var(--blue)] underline">get a free shortlist</Link>{" "}
+                of agents who each quote their own commission so you compare real figures side by side.
+              </p>
             </section>
 
             {/* What's Included */}
@@ -250,6 +290,7 @@ export default function PropertyAgentCommissionPage() {
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
                 <li><Link href="/tools/commission-calculator" className="text-sm font-semibold text-[var(--blue)] hover:underline">Commission calculator (free tool)</Link></li>
+                <li><Link href="/insights/property-agent-statistics-singapore" className="text-sm text-[var(--blue)] hover:underline">Singapore agent statistics study</Link></li>
                 <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-[var(--blue)] hover:underline">How to choose an agent</Link></li>
                 <li><Link href="/guides/property-agent-vs-diy" className="text-sm text-[var(--blue)] hover:underline">Selling without an agent</Link></li>
                 <li><Link href="/guides/hdb-resale-process" className="text-sm text-[var(--blue)] hover:underline">HDB resale process</Link></li>

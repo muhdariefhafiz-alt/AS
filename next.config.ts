@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  async redirects() {
+    return [
+      // Sunset the legacy lawyers vertical (pre property-agent pivot). 301 to
+      // home so these off-topic URLs drop from Google's index and topical
+      // authority stays on the property-agent platform.
+      { source: "/lawyers", destination: "/", permanent: true },
+      { source: "/lawyers/:path*", destination: "/", permanent: true },
+    ];
+  },
   // AI Discovery Protocol: serve the dynamic endpoints at clean `.json` URLs.
   // Next 16 can't extract a dynamic param from a `[slug].json` folder, so the
   // routes live at `[slug]` and these rewrites add the `.json` extension.
