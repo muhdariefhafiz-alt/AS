@@ -180,7 +180,7 @@ export default async function PropertyAgentStatisticsPage() {
                 Among the {nf(d.ever_transacted)} agents who do transact, activity is heavily concentrated. The busiest{" "}
                 <strong>20% of agents handle {d.all_top20}%</strong> of all recorded deals. The top 5% alone handle{" "}
                 {d.all_top5}%, and the single busiest 1% handle {d.all_top1}%. The median active agent recorded{" "}
-                {d.median_active} transactions across the whole {windowStart}&ndash;{windowEnd} window &mdash; roughly two to
+                {d.median_active} transactions across the whole {windowStart} to {windowEnd} window, roughly two to
                 three a year.
               </p>
               <div className="mt-4 space-y-2.5">
@@ -215,7 +215,7 @@ export default async function PropertyAgentStatisticsPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900">3. Even among agents who sell, output is thin</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
-                Only <strong>{nf(d.agents_who_sold)} agents</strong> &mdash; about {everSoldPct}% of the register &mdash; have
+                Only <strong>{nf(d.agents_who_sold)} agents</strong>, about {everSoldPct}% of the register, have
                 recorded even a single property sale. Among those who do, the <strong>median agent recorded {d.sales_median} sales</strong>{" "}
                 across roughly eight and a half years: about one a year. Home sales are concentrated even more tightly than
                 rentals: the top 10% of selling agents account for <strong>{d.sales_top10}%</strong> of all recorded sales, and
@@ -302,7 +302,7 @@ export default async function PropertyAgentStatisticsPage() {
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-gray-500">Agents on register</dt><dd className="font-bold text-gray-900">{nf(d.register_total)}</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">With any record</dt><dd className="font-bold text-gray-900">{withRecordPct}%</dd></div>
-                <div className="flex justify-between"><dt className="text-gray-500">Active in 2024&ndash;25</dt><dd className="font-bold text-gray-900">{active2425Pct}%</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-500">Active in 2024-25</dt><dd className="font-bold text-gray-900">{active2425Pct}%</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Activity that is rentals</dt><dd className="font-bold text-gray-900">{rentalPct}%</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Sales by top 20%</dt><dd className="font-bold text-gray-900">{d.sales_top20}%</dd></div>
               </dl>
