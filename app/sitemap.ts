@@ -42,34 +42,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const typeSlugs = ["hdb", "condo", "landed", "executive-condo", "apartment", "rental"];
 
   // District comparison pairs
-  const districtCodes = districts.map(d => {
-    const m = d.slug.match(/^d(\d{2})/);
-    return m ? `d${m[1]}` : null;
-  }).filter(Boolean) as string[];
-  const districtComparePairs: string[] = [];
-  for (let i = 0; i < districtCodes.length - 1; i++) {
-    districtComparePairs.push(`${districtCodes[i]}-vs-${districtCodes[i + 1]}`);
-  }
-  const popularDists = ["d01", "d09", "d10", "d15", "d05", "d03", "d19", "d20", "d11", "d21"];
-  for (let i = 0; i < popularDists.length; i++) {
-    for (let j = i + 1; j < popularDists.length; j++) {
-      const pair = `${popularDists[i]}-vs-${popularDists[j]}`;
-      if (!districtComparePairs.includes(pair)) districtComparePairs.push(pair);
-    }
-  }
-
-  // HDB comparison pairs
-  const hdbComparePairs: string[] = [];
-  for (let i = 0; i < HDB_TOWNS.length - 1; i++) {
-    hdbComparePairs.push(`${HDB_TOWNS[i].slug}-vs-${HDB_TOWNS[i + 1].slug}`);
-  }
-  const popularTowns = ["ang-mo-kio", "bedok", "tampines", "woodlands", "punggol", "sengkang", "bishan", "queenstown", "bukit-merah", "toa-payoh"];
-  for (let i = 0; i < popularTowns.length; i++) {
-    for (let j = i + 1; j < popularTowns.length; j++) {
-      const pair = `${popularTowns[i]}-vs-${popularTowns[j]}`;
-      if (!hdbComparePairs.includes(pair)) hdbComparePairs.push(pair);
-    }
-  }
+  // district-compare / hdb-compare are noindexed (low-demand town/district
+  // permutations), so they are intentionally excluded from the sitemap.
+  // Agency comparisons stay (high-intent brand queries like "PropNex vs ERA").
 
   return [
     // === HIGH PRIORITY: Core pages (lastModified = today because daily cron revalidates) ===
@@ -118,9 +93,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...typeSlugs.map(slug => ({ url: `${BASE}/property-agents/best-by-type/${slug}`, lastModified: today(), changeFrequency: "daily" as const, priority: 0.85 })),
     ...[2020, 2021, 2022, 2023, 2024, 2025].map(y => ({ url: `${BASE}/property-agents/market/${y}`, changeFrequency: "monthly" as const, priority: 0.8 })),
 
-    // === Comparisons ===
-    ...districtComparePairs.map(p => ({ url: `${BASE}/property-agents/district-compare/${p}`, changeFrequency: "monthly" as const, priority: 0.75 })),
-    ...hdbComparePairs.map(p => ({ url: `${BASE}/property-agents/hdb-compare/${p}`, changeFrequency: "monthly" as const, priority: 0.75 })),
+    // === Comparisons (agency only; district/hdb compare are noindexed) ===
     // Agency comparisons (high-intent: "PropNex vs ERA", "Huttons vs OrangeTee")
     ...(() => {
       const agencySlugs = ["propnex-realty-pte-ltd", "era-realty-network-pte-ltd", "huttons-asia-pte-ltd", "orangetee-tie-pte-ltd", "sri-pte-ltd", "c-h-properties-pte-ltd", "sn-real-estate-pte-ltd", "century-21-pte-ltd"];

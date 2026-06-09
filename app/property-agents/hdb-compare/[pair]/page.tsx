@@ -62,6 +62,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `HDB Prices: ${nameA} vs ${nameB} - Resale Price Comparison`,
     description: `Compare HDB resale prices in ${nameA} and ${nameB}. Median prices by flat type, price trends, storey premiums, and transaction volumes. Based on HDB resale transaction data.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/hdb-compare/${pair}` },
+    // Low-demand permutation page: crawlable for users + internal links
+    // (follow), but kept out of the index to focus equity on demand pages.
+    robots: { index: false, follow: true },
   };
 }
 

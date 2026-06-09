@@ -93,6 +93,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${a.short} vs ${b.short} - Property Price Comparison (${a.code} vs ${b.code})`,
     description: `Compare property prices in ${a.short} (${a.code}) and ${b.short} (${b.code}). Median condo prices, transaction volumes, top developments, rental yields, and agent activity. Based on URA data.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/district-compare/${pair}` },
+    // Low-demand permutation page: crawlable for users + internal links
+    // (follow), but kept out of the index to focus equity on demand pages.
+    robots: { index: false, follow: true },
   };
 }
 
