@@ -12,6 +12,21 @@ export const metadata: Metadata = {
   description:
     "A study of Singapore's property agents from CEA transaction records. 66% of registered agents have no transaction on file, 63% of activity is rentals not sales, and the top 20% handle 70% of home sales.",
   alternates: { canonical: "https://fair-comparisons.com/insights/property-agent-statistics-singapore" },
+  openGraph: {
+    title: "Most Singapore property agents barely sell. The data proves it.",
+    description:
+      "66% of registered agents have no transaction on file. 63% of all activity is rentals, not sales. The top 20% handle 70% of home sales. A study of 730,000 CEA transaction records.",
+    url: "https://fair-comparisons.com/insights/property-agent-statistics-singapore",
+    type: "article",
+    images: ["https://fair-comparisons.com/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Most Singapore property agents barely sell. The data proves it.",
+    description:
+      "66% of registered agents have no transaction on file. 63% of activity is rentals. The top 20% handle 70% of home sales.",
+    images: ["https://fair-comparisons.com/og-image.png"],
+  },
 };
 
 type Study = {
