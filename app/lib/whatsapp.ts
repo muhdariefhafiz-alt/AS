@@ -45,21 +45,13 @@ type MopAlertVars = {
   link: string;
 };
 
-type AgentInvoiceReminderVars = {
-  agent_first_name: string;
-  invoice_reference: string;
-  amount_sgd: string;           // pre-formatted, e.g. "S$3,260"
-  link: string;
-};
-
 // Discriminated union: each template name pins its variable shape.
 export type WaSend =
   | { template: "agent_invite"; variables: AgentInviteVars }
   | { template: "seller_quote_ready"; variables: SellerQuoteReadyVars }
   | { template: "seller_completion_review"; variables: SellerCompletionReviewVars }
   | { template: "seller_shortlist_ready"; variables: SellerShortlistReadyVars }
-  | { template: "mop_alert"; variables: MopAlertVars }
-  | { template: "agent_invoice_reminder"; variables: AgentInvoiceReminderVars };
+  | { template: "mop_alert"; variables: MopAlertVars };
 
 export type WaSendOpts = WaSend & {
   to: string;                            // E.164, e.g. +6591234567
@@ -115,13 +107,6 @@ function templateParameters(send: WaSend): { type: "text"; text: string }[] {
       return [
         { type: "text", text: send.variables.town },
         { type: "text", text: send.variables.median_price_sgd },
-        { type: "text", text: send.variables.link },
-      ];
-    case "agent_invoice_reminder":
-      return [
-        { type: "text", text: send.variables.agent_first_name },
-        { type: "text", text: send.variables.invoice_reference },
-        { type: "text", text: send.variables.amount_sgd },
         { type: "text", text: send.variables.link },
       ];
   }

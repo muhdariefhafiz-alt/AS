@@ -1,16 +1,17 @@
 import { supabase } from "../lib/supabase";
 
 // Activity-based social proof, gated on REAL data. Shows the count of sales
-// actually logged on FairComparisons, and only once it crosses a meaningful
-// threshold. Below that it renders nothing rather than fabricate a number
-// (no-fake-data rule). Auto-activates as real sales are logged.
+// verified against public transaction records (verification_status = matched),
+// and only once it crosses a meaningful threshold. Below that it renders
+// nothing rather than fabricate a number (no-fake-data rule). Auto-activates as
+// real sales are verified.
 const THRESHOLD = 10;
 
 export default async function SellerProof() {
   const { count } = await supabase
     .from("sg_lead_completions")
     .select("id", { count: "exact", head: true })
-    .eq("fee_status", "paid");
+    .eq("verification_status", "matched");
 
   const completed = count ?? 0;
   if (completed < THRESHOLD) return null;
@@ -21,7 +22,7 @@ export default async function SellerProof() {
   return (
     <div className="fc-row" style={{ justifyContent: "center", marginTop: 18 }}>
       <span className="fc-badge fc-badge--ranked">
-        <span className="dot" /> {floor.toLocaleString()}+ sales logged on FairComparisons
+        <span className="dot" /> {floor.toLocaleString()}+ verified sales on FairComparisons
       </span>
     </div>
   );

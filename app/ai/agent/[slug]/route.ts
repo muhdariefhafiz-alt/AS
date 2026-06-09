@@ -45,7 +45,7 @@ export async function GET(_req: Request, { params }: Props) {
       .from("sg_lead_completions")
       .select("id", { count: "exact", head: true })
       .eq("agent_id", agent.id)
-      .eq("fee_status", "paid"),
+      .eq("verification_status", "matched"),
     supabase.rpc("get_agent_track_record", { reg_num: agent.cea_registration }),
   ]);
   const verifiedCompletions = completionsRes.count;

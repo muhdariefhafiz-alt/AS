@@ -173,7 +173,7 @@ export default async function AgentPage({ params }: Props) {
     .from("sg_lead_completions")
     .select("id", { count: "exact", head: true })
     .eq("agent_id", agent.id)
-    .eq("fee_status", "paid");
+    .eq("verification_status", "matched");
 
   const hasTxns = !!(track && track.total_txns > 0);
   const hasListings = listings.length > 0;

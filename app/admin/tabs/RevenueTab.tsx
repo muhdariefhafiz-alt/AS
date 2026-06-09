@@ -74,58 +74,8 @@ export async function RevenueTab() {
   const checkoutCount = checkoutEvents.count ?? 0;
   const cancelCount = cancelEvents.count ?? 0;
 
-  // Success-fee pipeline (seller funnel).
-  const { data: completions } = await supabase
-    .from("sg_lead_completions")
-    .select("platform_fee_amt, fee_status, paid_at");
-  const feeRows = (completions ?? []) as Array<{
-    platform_fee_amt: number | null;
-    fee_status: string;
-    paid_at: string | null;
-  }>;
-  const sumBy = (status: string) =>
-    feeRows
-      .filter((r) => r.fee_status === status)
-      .reduce((s, r) => s + Number(r.platform_fee_amt ?? 0), 0);
-  const feePaid = sumBy("paid");
-  const feeInvoiced = sumBy("invoiced");
-  const feeDisputed = sumBy("disputed");
-  const fmtFee = (n: number) =>
-    new Intl.NumberFormat("en-SG", {
-      style: "currency",
-      currency: "SGD",
-      maximumFractionDigits: 0,
-    }).format(n);
-
   return (
     <div className="space-y-8">
-      <div>
-        <SectionHeading
-          title="Success-fee pipeline"
-          hint="0.25% completion fee — the GetAgent-model revenue line."
-        />
-        <div className="grid gap-3 md:grid-cols-3">
-          <StatCard
-            title="Collected (all time)"
-            value={fmtFee(feePaid)}
-            sub={`${feeRows.filter((r) => r.fee_status === "paid").length} paid`}
-            color="#059669"
-          />
-          <StatCard
-            title="Outstanding"
-            value={fmtFee(feeInvoiced)}
-            sub={`${feeRows.filter((r) => r.fee_status === "invoiced").length} invoiced`}
-            href="/admin?tab=invoices"
-          />
-          <StatCard
-            title="Disputed"
-            value={fmtFee(feeDisputed)}
-            danger={feeDisputed > 0}
-            sub={`${feeRows.filter((r) => r.fee_status === "disputed").length} flagged`}
-          />
-        </div>
-      </div>
-
       <div>
         <SectionHeading title="Recurring revenue" hint="Pro (S$99) + Premium (S$299) subscriptions." />
         <div className="grid gap-3 md:grid-cols-4">
