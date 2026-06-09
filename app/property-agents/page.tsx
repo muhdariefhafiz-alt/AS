@@ -121,6 +121,9 @@ export default async function PropertyAgentsHub() {
             </Link>
           ))}
         </div>
+        <Link href="/property-agents/agencies" className="small" style={{ display: "inline-block", marginTop: 20, fontWeight: 700, color: "var(--blue)" }}>
+          Compare all Singapore property agencies &rsaquo;
+        </Link>
       </section>
 
       <SellCtaBand source="agents_hub" heading="Selling your home?" sub="Skip the browsing. Get a free shortlist of the agents who actually sell properties like yours, ranked on the same government data." />
