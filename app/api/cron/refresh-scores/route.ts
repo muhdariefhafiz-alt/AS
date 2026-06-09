@@ -136,6 +136,19 @@ export async function GET(req: Request) {
     results.top_movers = "previous_score column may not exist yet";
   }
 
+  // --- 6. Refresh the agent market study snapshot (insights page) ---
+  // The aggregate scans the full transaction table, so it is precomputed here
+  // (service role, no anon statement timeout) into a cached single-row table.
+  try {
+    const { error } = await supabase.rpc("refresh_agent_market_stats");
+    results.agent_market_stats = error ? { error: error.message } : { ok: true };
+  } catch (err) {
+    results.agent_market_stats = {
+      skipped: true,
+      reason: err instanceof Error ? err.message : "RPC not available",
+    };
+  }
+
   const duration = Date.now() - started;
 
   // Log the cron run

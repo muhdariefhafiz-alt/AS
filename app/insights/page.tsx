@@ -4,11 +4,18 @@ import SellCtaBand from "../components/SellCtaBand";
 
 export const metadata: Metadata = {
   title: "Property Market Insights - Data-Driven Analysis",
-  description: "Data-driven insights on Singapore's property market. Freehold premiums, million-dollar HDB flats, court case statistics, and more. Based on URA, HDB, and eLitigation data.",
+  description: "Data-driven insights on Singapore's property market: property agent statistics, freehold premiums, million-dollar HDB flats, and more. Based on CEA, URA, and HDB data.",
   alternates: { canonical: "https://fair-comparisons.com/insights" },
 };
 
 const articles = [
+  {
+    slug: "property-agent-statistics-singapore",
+    title: "Singapore Property Agent Statistics",
+    description: "What 730,000 CEA transactions reveal: most registered agents have no record on file, 63% of activity is rentals, and the top 20% handle 70% of home sales.",
+    tag: "Agent Market Study",
+    tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
+  },
   {
     slug: "million-dollar-hdb",
     title: "Million-Dollar HDB Tracker",
