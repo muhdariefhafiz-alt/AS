@@ -64,10 +64,6 @@ export async function POST() {
         completion_date: string | null;
         sale_price: number | null;
         commission_pct_final: number | null;
-        platform_fee_amt: number | null;
-        fee_status: string;
-        invoice_reference: string | null;
-        invoice_due_at: string | null;
       }
     >();
     if (leadIds.length > 0) {
@@ -97,7 +93,7 @@ export async function POST() {
       const { data: c } = await sb
         .from("sg_lead_completions")
         .select(
-          "id, lead_id, instruction_signed_at, otp_signed_at, completion_date, sale_price, commission_pct_final, platform_fee_amt, fee_status, invoice_reference, invoice_due_at"
+          "id, lead_id, instruction_signed_at, otp_signed_at, completion_date, sale_price, commission_pct_final"
         )
         .eq("agent_id", agent.id)
         .in("lead_id", leadIds);
@@ -111,10 +107,6 @@ export async function POST() {
             completion_date: x.completion_date ?? null,
             sale_price: x.sale_price ?? null,
             commission_pct_final: x.commission_pct_final ?? null,
-            platform_fee_amt: x.platform_fee_amt ?? null,
-            fee_status: String(x.fee_status ?? "pending"),
-            invoice_reference: x.invoice_reference ?? null,
-            invoice_due_at: x.invoice_due_at ?? null,
           },
         ])
       );

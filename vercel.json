@@ -37,10 +37,6 @@
       "schedule": "15 2 * * *"
     },
     {
-      "path": "/api/cron/invoice-reminders",
-      "schedule": "15 3 * * *"
-    },
-    {
       "path": "/api/cron/verify-completions",
       "schedule": "0 4 * * *"
     },

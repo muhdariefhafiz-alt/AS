@@ -36,10 +36,6 @@ type Completion = {
   completion_date: string | null;
   sale_price: number | null;
   commission_pct_final: number | null;
-  platform_fee_amt: number | null;
-  fee_status: string;
-  invoice_reference: string | null;
-  invoice_due_at: string | null;
 };
 
 type Row = {
@@ -457,7 +453,6 @@ function CompletionStepper({
   const hasInstruction = Boolean(completion?.instruction_signed_at);
   const hasOtp = Boolean(completion?.otp_signed_at);
   const hasCompletion = Boolean(completion?.completion_date);
-  const feeStatus = completion?.fee_status ?? "pending";
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -514,12 +509,6 @@ function CompletionStepper({
     <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="text-sm font-semibold text-gray-900">Completion log</p>
-        <FeeStatusPill
-          status={feeStatus}
-          amount={completion?.platform_fee_amt ?? null}
-          ref={completion?.invoice_reference ?? null}
-          due={completion?.invoice_due_at ?? null}
-        />
       </div>
 
       <ol className="mt-3 space-y-2 text-sm">
@@ -877,46 +866,3 @@ function WithdrawButton({
   );
 }
 
-function FeeStatusPill({
-  status,
-  amount,
-  ref,
-  due,
-}: {
-  status: string;
-  amount: number | null;
-  ref: string | null;
-  due: string | null;
-}) {
-  const labels: Record<string, { label: string; cls: string }> = {
-    pending: { label: "Awaiting completion", cls: "bg-gray-100 text-gray-700" },
-    invoiced: { label: "Invoice sent", cls: "bg-amber-100 text-amber-800" },
-    paid: { label: "Paid · verified", cls: "bg-emerald-100 text-emerald-800" },
-    waived: { label: "Waived", cls: "bg-gray-100 text-gray-600" },
-    disputed: { label: "Disputed", cls: "bg-red-100 text-red-700" },
-  };
-  const pill = labels[status] ?? { label: status, cls: "bg-gray-100 text-gray-600" };
-  return (
-    <div className="flex flex-wrap items-center gap-2 text-xs">
-      {amount !== null && status !== "pending" && (
-        <span className="font-semibold text-gray-700">
-          {fmtPrice(amount)}
-        </span>
-      )}
-      {ref && <span className="text-gray-500">{ref}</span>}
-      {due && status === "invoiced" && (
-        <span className="text-gray-500">
-          due {new Date(due).toLocaleDateString()}
-        </span>
-      )}
-      <span
-        className={
-          "inline-flex rounded-full px-2 py-0.5 text-xs font-semibold " +
-          pill.cls
-        }
-      >
-        {pill.label}
-      </span>
-    </div>
-  );
-}

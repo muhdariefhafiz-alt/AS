@@ -6,9 +6,10 @@ import { supabaseAdmin } from "../../../lib/supabase";
 //
 // We can't do exact record matching (CEA completions don't carry block+unit),
 // so this is PLAUSIBILITY matching: does a comparable transaction exist in the
-// same geography, near the same date, at roughly the reported price? That is
-// enough to catch the fraud case the original design flagged (agent reports
-// sale_price = $1 to dodge the 0.25% fee) without false-accusing honest agents.
+// same geography, near the same date, at roughly the reported price? Under the
+// subscription model there is no fee to dodge; this protects the integrity of
+// the agent's public sold-record (a fabricated or wildly-off self-report would
+// distort their track record) without false-accusing honest agents.
 //
 // verification_status transitions:
 //   unverified -> matched      (comps found, reported price plausible)

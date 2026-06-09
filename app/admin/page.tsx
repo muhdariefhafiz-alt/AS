@@ -10,7 +10,6 @@ import { SupplyTab } from "./tabs/SupplyTab";
 import { SeoTab } from "./tabs/SeoTab";
 import { OpsTab } from "./tabs/OpsTab";
 import { RevenueTab } from "./tabs/RevenueTab";
-import { InvoicesTab } from "./tabs/InvoicesTab";
 import { ContractsTab } from "./tabs/ContractsTab";
 import { LoopsTab } from "./tabs/LoopsTab";
 
@@ -36,7 +35,7 @@ export default async function AdminPage({ searchParams }: Props) {
   const active = TABS.find((t) => t.id === tab)?.id || "overzicht";
 
   // Sidebar badge counts (cheap queries)
-  const [pendingClaims, feedbackNew, emailFailed, pendingMessages, pendingPhotos, pendingBios, openInvoices] = await Promise.all([
+  const [pendingClaims, feedbackNew, emailFailed, pendingMessages, pendingPhotos, pendingBios] = await Promise.all([
     supabase.from("sg_claim_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("dashboard_feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
     supabase.from("email_queue").select("id", { count: "exact", head: true }).eq("status", "failed"),
@@ -55,10 +54,6 @@ export default async function AdminPage({ searchParams }: Props) {
       .select("id", { count: "exact", head: true })
       .eq("bio_status", "pending")
       .not("bio", "is", null),
-    supabase
-      .from("sg_lead_completions")
-      .select("id", { count: "exact", head: true })
-      .in("fee_status", ["invoiced", "disputed"]),
   ]);
 
   const modTotal = (pendingMessages.count ?? 0) + (pendingPhotos.count ?? 0) + (pendingBios.count ?? 0);
@@ -71,7 +66,6 @@ export default async function AdminPage({ searchParams }: Props) {
   const badges: Record<string, number> = {
     overzicht: pendingClaims.count ?? 0,
     ops: (emailFailed.count ?? 0) + (feedbackNew.count ?? 0),
-    invoices: openInvoices.count ?? 0,
     revenue: 0,
     liquidity: 0,
     funnel: 0,
@@ -107,7 +101,6 @@ export default async function AdminPage({ searchParams }: Props) {
           {active === "loops" && <LoopsTab />}
           {active === "supply" && <SupplyTab />}
           {active === "seo" && <SeoTab />}
-          {active === "invoices" && <InvoicesTab />}
           {active === "contracts" && <ContractsTab />}
           {active === "ops" && <OpsTab />}
           {active === "revenue" && <RevenueTab />}

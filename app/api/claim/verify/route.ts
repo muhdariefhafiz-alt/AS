@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../../lib/email";
 import { AGENT_TERMS_VERSION } from "../../../lib/agent-terms";
-import { PLATFORM_FEE_PCT } from "../../../lib/fee";
 import { givenName } from "../../../lib/names";
 import { issueAgentSession, AGENT_COOKIE, AGENT_SESSION_TTL_MS } from "../../../lib/agent-auth";
 
@@ -59,12 +58,12 @@ export async function GET(req: Request) {
   // Record the agent's acceptance of the platform terms (subscription model, no
   // success fee). Clicking the email-verified claim link is the e-signature:
   // identity is confirmed (CEA match at request time + verified email here).
-  // fee_pct is recorded as 0 (see lib/fee.ts) for an accurate audit trail.
+  // fee_pct is recorded as 0: the subscription model takes no cut of any sale.
   await supabase.from("sg_agent_agreements").insert({
     agent_id: claim.agent_id,
     cea_registration: agentFull?.cea_registration ?? null,
     terms_version: AGENT_TERMS_VERSION,
-    fee_pct: PLATFORM_FEE_PCT,
+    fee_pct: 0,
     signatory_name: agentFull?.name ?? null,
     signatory_email: claim.email,
     ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,

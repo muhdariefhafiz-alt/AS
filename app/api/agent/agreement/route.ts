@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
 import { AGENT_TERMS_VERSION } from "../../../lib/agent-terms";
-import { PLATFORM_FEE_PCT } from "../../../lib/fee";
 
 // Records a signed blanket agent agreement. One row per signing (audit trail).
 // Identity = cea_registration + email match against sg_agents (same loose
@@ -97,7 +96,7 @@ export async function POST(req: Request) {
       agent_id: agent.id,
       cea_registration: ceaRegistration,
       terms_version: AGENT_TERMS_VERSION,
-      fee_pct: PLATFORM_FEE_PCT,
+      fee_pct: 0,
       signatory_name: signatoryName,
       signatory_email: email,
       ip,
@@ -107,7 +106,7 @@ export async function POST(req: Request) {
     await sb.from("sg_lead_events").insert({
       agent_id: agent.id,
       event_type: "agent_agreement_signed",
-      meta: { terms_version: AGENT_TERMS_VERSION, fee_pct: PLATFORM_FEE_PCT, source },
+      meta: { terms_version: AGENT_TERMS_VERSION, fee_pct: 0, source },
     });
 
     return NextResponse.json({ ok: true, version: AGENT_TERMS_VERSION, acceptedAt });

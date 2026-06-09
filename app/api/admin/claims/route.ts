@@ -4,7 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 import { getAdminSession } from "../../../lib/admin-auth";
 import { sendEmail } from "../../../lib/email";
 import { AGENT_TERMS_VERSION } from "../../../lib/agent-terms";
-import { PLATFORM_FEE_PCT } from "../../../lib/fee";
 import { givenName } from "../../../lib/names";
 import { escapeHtml } from "../../../lib/escapeHtml";
 
@@ -89,7 +88,7 @@ export async function POST(req: Request) {
       agent_id: agent.id,
       cea_registration: agent.cea_registration ?? null,
       terms_version: AGENT_TERMS_VERSION,
-      fee_pct: PLATFORM_FEE_PCT,
+      fee_pct: 0,
       signatory_name: agent.name ?? null,
       signatory_email: claim.email,
       ip: null,

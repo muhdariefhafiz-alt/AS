@@ -6,10 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const sgd = (n: number) =>
-  new Intl.NumberFormat("en-SG", { style: "currency", currency: "SGD", maximumFractionDigits: 0 }).format(n || 0);
-
-const uniq = <T,>(rows: T[] | null | undefined, key: keyof T) =>
+const uniq =<T,>(rows: T[] | null | undefined, key: keyof T) =>
   new Set((rows ?? []).map((r) => r[key]).filter(Boolean)).size;
 
 async function countEvent(event: string, since?: string): Promise<number> {
@@ -52,7 +49,7 @@ export async function LoopsTab() {
     profilesRes, scoredRes, claimedRes, completeRes, leads30Res,
     pv30, srch30, self30, email30,
   ] = await Promise.all([
-    supabase.from("sg_lead_completions").select("agent_id, fee_status, platform_fee_amt, instruction_signed_at, completion_date, invoice_due_at, paid_at, invoice_sent_at"),
+    supabase.from("sg_lead_completions").select("agent_id, instruction_signed_at, completion_date"),
     supabase.from("sg_leads").select("id", { count: "exact", head: true }),
     supabase.from("sg_lead_shortlist").select("lead_id, agent_id").limit(20000),
     supabase.from("sg_lead_quotes").select("lead_id, agent_id").limit(20000),
@@ -80,20 +77,6 @@ export async function LoopsTab() {
   const quotes = quotesRes.data ?? [];
   const reviews = reviewsRes.data ?? [];
 
-  // Monetization (North Star)
-  const isPaid = (c: { fee_status: string | null }) => c.fee_status === "paid";
-  const isInvoiced = (c: { fee_status: string | null }) => ["invoiced", "disputed", "paid", "overdue"].includes(c.fee_status ?? "");
-  const feesCollected = comps.filter(isPaid).reduce((s, c) => s + Number(c.platform_fee_amt || 0), 0);
-  const feesOutstanding = comps.filter((c) => isInvoiced(c) && !isPaid(c)).reduce((s, c) => s + Number(c.platform_fee_amt || 0), 0);
-  const compsLogged = comps.length;
-  const compsInvoiced = comps.filter(isInvoiced).length;
-  const compsPaid = comps.filter(isPaid).length;
-  const overdue = comps.filter((c) => isInvoiced(c) && !isPaid(c) && c.invoice_due_at && new Date(c.invoice_due_at).getTime() < now).length;
-  const paidWithDates = comps.filter((c) => isPaid(c) && c.paid_at && c.invoice_sent_at);
-  const avgDaysToPay = paidWithDates.length
-    ? Math.round(paidWithDates.reduce((s, c) => s + (new Date(c.paid_at!).getTime() - new Date(c.invoice_sent_at!).getTime()) / MS_DAY, 0) / paidWithDates.length)
-    : null;
-
   // Seller demand funnel (state-derived)
   const shortlistedLeads = uniq(shortlist, "lead_id");
   const quotedLeads = uniq(quotes, "lead_id");
@@ -113,39 +96,20 @@ export async function LoopsTab() {
   const reviews30 = reviews.filter((r) => r.created_at && new Date(r.created_at).getTime() > now - 30 * MS_DAY).length;
 
   // Newly instrumented first-class events (30d), proving the loop fires.
-  const [evShortlistEmpty, evLeadReceived, evResponded, evReviewed, evPaid, evOverdue] = await Promise.all([
+  const [evShortlistEmpty, evLeadReceived, evResponded, evReviewed] = await Promise.all([
     countLeadEvent("shortlist_empty", d30),
     countLeadEvent("lead_received", d30),
     countLeadEvent("agent_submit_quote", d30),
     countLeadEvent("submit_review", d30),
-    countLeadEvent("invoice_paid", d30),
-    countLeadEvent("invoice_overdue", d30),
   ]);
 
   return (
     <div className="space-y-8">
       <p className="text-sm text-gray-500">
-        The constellation: the North Star (collected success fees) and the input loops that drive it. Counts are
-        all-time and state-derived, so they are reliable even when event volume is thin. Step % is conversion from the
-        stage above; red flags a leak.
+        The constellation: the seller demand funnel, the agent supply loop, and the reviews moat that compound into a
+        defensible marketplace. Counts are all-time and state-derived, so they are reliable even when event volume is
+        thin. Step % is conversion from the stage above; red flags a leak.
       </p>
-
-      {/* North Star */}
-      <div>
-        <SectionHeading title="North Star — monetization" hint="Collected fees are the realised output of the whole model." />
-        <div className="mt-3 grid gap-4 sm:grid-cols-4">
-          <StatCard title="Fees collected" value={sgd(feesCollected)} sub={`${compsPaid} paid`} />
-          <StatCard title="Fees outstanding" value={sgd(feesOutstanding)} sub={`${overdue} overdue`} danger={overdue > 0} />
-          <StatCard title="Completed sales" value={completed} sub="referred + logged" />
-          <StatCard title="Avg days to pay" value={avgDaysToPay ?? "—"} sub="invoice → paid" />
-        </div>
-        <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Collection funnel</p>
-          <Stage label="Completions logged" n={compsLogged} top={compsLogged} />
-          <Stage label="Invoiced" n={compsInvoiced} top={compsLogged} prev={compsLogged} />
-          <Stage label="Paid" n={compsPaid} top={compsLogged} prev={compsInvoiced} />
-        </div>
-      </div>
 
       {/* Seller demand funnel */}
       <div>
@@ -203,17 +167,15 @@ export async function LoopsTab() {
 
       <div>
         <SectionHeading title="Instrumented events (30d)" hint="First-class funnel/loop events now firing at the source — time-series + attribution, not just state." />
-        <div className="mt-3 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Shortlist empty" value={evShortlistEmpty} sub="demand, no supply" danger={evShortlistEmpty > 0} />
           <StatCard title="Lead received" value={evLeadReceived} sub="per agent" />
           <StatCard title="Agent responded" value={evResponded} sub="quote sent" />
           <StatCard title="Review submitted" value={evReviewed} sub="moat input" />
-          <StatCard title="Invoice paid" value={evPaid} sub="North Star" />
-          <StatCard title="Invoice overdue" value={evOverdue} sub="collection risk" danger={evOverdue > 0} />
         </div>
         <p className="mt-2 text-[11px] text-gray-400">
-          New events wired at the source: <code>shortlist_empty</code>, <code>lead_received</code>, <code>invoice_paid</code>,
-          <code> invoice_overdue</code>, plus <code>source</code>/<code>utm_campaign</code> on <code>submit_form</code>.
+          New events wired at the source: <code>shortlist_empty</code>, <code>lead_received</code>, plus
+          <code> source</code>/<code>utm_campaign</code> on <code>submit_form</code>.
           <code> agent_submit_quote</code> and <code>submit_review</code> already existed. They flow into the Funnel tab too.
         </p>
       </div>

@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { sendEmail } from "../../../../lib/email";
-import {
-  buildInvoiceHtml,
-  computeInvoiceTotals,
-  fmtSgd,
-  makeInvoiceReference,
-} from "../../../../lib/invoice";
-import { PLATFORM_FEE_PCT, GST_PCT } from "../../../../lib/fee";
 import { getAgentSession } from "../../../../lib/agent-auth";
 
 // Agents log instruction → OTP → completion. Each step is a separate POST so
@@ -21,12 +14,13 @@ import { getAgentSession } from "../../../../lib/agent-auth";
 
 const STAGES = new Set(["instruction", "otp", "completion"]);
 
-const TYPE_LABEL: Record<string, string> = {
-  HDB: "HDB",
-  CONDO: "Condo",
-  EC: "EC",
-  LANDED: "Landed",
-};
+function fmtSgd(n: number): string {
+  return new Intl.NumberFormat("en-SG", {
+    style: "currency",
+    currency: "SGD",
+    maximumFractionDigits: 0,
+  }).format(n);
+}
 
 export async function POST(req: Request) {
   try {
@@ -78,7 +72,7 @@ export async function POST(req: Request) {
     const { data: completion } = await sb
       .from("sg_lead_completions")
       .select(
-        "id, agent_id, quote_id, instruction_signed_at, otp_signed_at, completion_date, sale_price, fee_status, invoice_reference, commission_pct_final"
+        "id, agent_id, quote_id, instruction_signed_at, otp_signed_at, completion_date, sale_price, commission_pct_final"
       )
       .eq("lead_id", lead.id)
       .single();
@@ -192,24 +186,12 @@ export async function POST(req: Request) {
       ? salePrice * (Number(finalPct) / 100)
       : null;
 
-    const totals = computeInvoiceTotals(salePrice, PLATFORM_FEE_PCT, GST_PCT);
-    const reference =
-      completion.invoice_reference ?? makeInvoiceReference(completionDate);
-    const dueAt = new Date(completionDate.getTime() + 14 * 86_400_000);
-
     await sb
       .from("sg_lead_completions")
       .update({
         completion_date: completionDate.toISOString().slice(0, 10),
         sale_price: salePrice,
         agent_commission_amt: agentCommissionAmt,
-        platform_fee_pct: PLATFORM_FEE_PCT,
-        platform_fee_amt: totals.platform_fee_amt,
-        fee_status: "invoiced",
-        invoice_reference: reference,
-        invoice_payment_method: "paynow",
-        invoice_sent_at: nowIso,
-        invoice_due_at: dueAt.toISOString(),
       })
       .eq("id", completion.id);
 
@@ -224,46 +206,12 @@ export async function POST(req: Request) {
       event_type: "log_completion",
       meta: {
         sale_price: salePrice,
-        platform_fee_amt: totals.platform_fee_amt,
-        reference,
       },
     });
 
-    const propertySummary = [
-      lead.bedrooms ? `${lead.bedrooms}-rm` : "",
-      TYPE_LABEL[lead.property_type] ?? lead.property_type,
-      "in",
-      lead.town ?? lead.district_code ?? "Singapore",
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-    // Fire-and-forget agent invoice.
-    sendEmail({
-      to: session.email,
-      subject: `Invoice ${reference} · ${fmtSgd(totals.total_due)} due`,
-      html: buildInvoiceHtml({
-        reference,
-        agent_name: agent.name ?? "",
-        agent_cea_reg: agent.cea_registration ? String(agent.cea_registration).trim() : "",
-        agent_email: session.email,
-        property_summary: propertySummary,
-        sale_price: salePrice,
-        platform_fee_pct: PLATFORM_FEE_PCT,
-        platform_fee_amt: totals.platform_fee_amt,
-        gst_pct: GST_PCT,
-        total_due: totals.total_due,
-        due_at: dueAt.toISOString(),
-      }),
-      metric: "Agent Invoice",
-      properties: {
-        lead_token: token,
-        invoice_reference: reference,
-        amount_sgd: totals.total_due,
-      },
-    }).catch((e) => console.error("[completion/log] invoice email failed", e));
-
-    // Fire-and-forget seller "sale completed" + review request prompt.
+    // The completion feeds the agent's verified track record. The subscription
+    // model takes no cut of any sale, so no invoice is raised here. Only the
+    // seller "sale completed, leave a review" prompt fires.
     if (lead.email) {
       const site =
         process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
@@ -290,8 +238,6 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       stage,
-      reference,
-      total_due: totals.total_due,
     });
   } catch (err) {
     console.error("[completion/log] unexpected", err);
