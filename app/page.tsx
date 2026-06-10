@@ -116,6 +116,15 @@ export default async function HomePage() {
                   <Seal size={15} variant="light" /> Rankings cannot be bought
                 </span>
               </div>
+
+              {/* Front door for the casual, high-frequency use case: looking up a
+                  single agent by name (the one who flyered you, a friend named, or
+                  is on a billboard) without starting the full sell funnel. */}
+              <p style={{ marginTop: 14 }}>
+                <Link href="/property-agents/check" className="mono" style={{ color: "var(--blue-wash)", fontSize: 13 }}>
+                  Already have an agent in mind? Look them up on the record &rarr;
+                </Link>
+              </p>
             </div>
 
             <div className="fc-card" style={{ background: "#fff", padding: 22, width: 240, flex: "0 0 auto" }}>

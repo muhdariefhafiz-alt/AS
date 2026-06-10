@@ -306,6 +306,16 @@ export default async function PropertyAgentStatisticsPage() {
                   concentration relative to the full register. This is observational data, not a judgement of any individual
                   agent. Agents can request corrections against the official record on their profile page.
                 </p>
+                <p>
+                  Two limits shape how to read these figures. Agents often work in teams, and a deal can be logged under a
+                  team leader rather than the colleague who closed it, which concentrates recorded volume at the very top:
+                  the data here includes single agents with more resale deals in one month than any individual could close
+                  alone. Separately, some private sales are self-submitted to the register and a few are missing or delayed,
+                  and the raw counts can include commercial and new-launch activity. So the true number of active
+                  home-sellers may be modestly higher than the matched figure, while top-end concentration is, if anything,
+                  slightly overstated by team attribution. We set out every limitation, and how we handle each, on our{" "}
+                  <Link href="/trust" className="font-semibold text-[var(--blue)]">trust and data page</Link>.
+                </p>
                 <p>Source: CEA salesperson transaction records and public register. Analysis by FairComparisons.</p>
               </div>
             </section>

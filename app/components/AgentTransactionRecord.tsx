@@ -20,8 +20,14 @@ type Rec = {
   seller_sales: number;
   buyer_sales: number;
   rentals: number;
+  max_month_sales: number;
   recent: Row[] | null;
 };
+
+// One person cannot personally close more than ~12 resale/sub-sale deals in a
+// single calendar month. Above that is almost always team transactions logged
+// under a team leader. We disclose it on the profile and cap it in the score.
+const PARKING_THRESHOLD = 12;
 
 const MONTHS: Record<string, string> = {
   JAN: "Jan", FEB: "Feb", MAR: "Mar", APR: "Apr", MAY: "May", JUN: "Jun",
@@ -71,6 +77,7 @@ export default async function AgentTransactionRecord({ cea, given }: { cea: stri
   const lastDeal = recent[0]?.month;
   const ago = monthsAgo(lastDeal);
   const dormant = ago != null && ago > 24; // 2 years: conservative, allows for the ~3-month data lag
+  const parked = (rec.max_month_sales ?? 0) > PARKING_THRESHOLD;
 
   return (
     <section style={{ marginTop: 40 }}>
@@ -154,6 +161,34 @@ export default async function AgentTransactionRecord({ cea, given }: { cea: stri
           <p className="muted small" style={{ marginTop: 12 }}>
             Showing the {recent.length} most recent of {rec.total.toLocaleString()} recorded transactions.
           </p>
+        )}
+
+        {/* Team-attribution flag. We surface implausible single-month resale
+            volume openly rather than hide it: in Singapore, team deals are often
+            logged under one leader, so a count no individual could close alone is
+            a signal, not a brag. The AgentScore caps this so it cannot inflate a
+            ranking. */}
+        {parked && (
+          <div
+            style={{
+              marginTop: 16,
+              padding: "14px 16px",
+              borderRadius: "var(--r-md)",
+              background: "var(--warn-wash)",
+              border: "1px solid var(--warn)",
+            }}
+          >
+            <div className="fc-row" style={{ gap: 8, alignItems: "center" }}>
+              <span className="fc-badge fc-badge--warn">Team-attributed volume</span>
+            </div>
+            <p className="small" style={{ margin: "8px 0 0", color: "var(--ink)", maxWidth: "70ch" }}>
+              This record includes a single month with <strong>{rec.max_month_sales} resale deals</strong> logged under{" "}
+              {who === "This agent" ? "this agent" : who}, more than one person can personally close alone. In Singapore,
+              team transactions are often recorded under a team leader, so part of this volume may reflect colleagues&apos;
+              deals. We cap implausible single-month volumes in the AgentScore so they cannot inflate the ranking, and we
+              show it here so you can judge for yourself.
+            </p>
+          </div>
         )}
       </div>
 

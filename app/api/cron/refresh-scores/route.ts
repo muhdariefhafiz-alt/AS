@@ -7,16 +7,16 @@ const supabase = createClient(
 );
 
 /**
- * Daily score refresh cron.
- * Recalculates AgentScores using the latest transaction data.
- * Runs daily at 2am SGT (6pm UTC previous day), before revalidation.
+ * Daily score-refresh observability endpoint.
  *
- * Flow: refresh-scores (2am) -> revalidate (3am) -> ping-google (4am)
- *
- * This ensures:
- * 1. Scores reflect the latest CEA transaction data
- * 2. Pages show updated scores after revalidation
- * 3. Google gets pinged with the freshest content
+ * The heavy refresh (calculate_agent_scores -> refresh_area_top_agents ->
+ * refresh_agent_market_stats) now runs INSIDE Postgres via the pg_cron job
+ * "daily-score-refresh" at 18:00 UTC. Those functions scan the full 730k-row
+ * transaction table and were timing out under the PostgREST statement limit when
+ * called over HTTP, so scores silently went stale. They were moved in-DB, where
+ * there is no such timeout. This endpoint no longer triggers them; it records how
+ * fresh the scores are and surfaces notable rank moves for the weekly digest. The
+ * Vercel revalidate cron (19:00 UTC) re-renders pages after the in-DB refresh.
  */
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
@@ -25,91 +25,25 @@ export async function GET(req: Request) {
   }
 
   const started = Date.now();
-  const results: Record<string, unknown> = {};
+  const results: Record<string, unknown> = {
+    refresh: "owned by pg_cron job 'daily-score-refresh' (in-database, runs 18:00 UTC)",
+  };
 
-  // --- 1. Refresh AgentScores via Supabase RPC ---
-  // This calls the calculate_agent_scores() function in Supabase
-  // which recalculates scores from sg_transactions data
+  // Freshness check: how recently did the in-DB job last update scores?
   try {
-    const { data, error } = await supabase.rpc("calculate_agent_scores");
-    if (error) {
-      results.score_refresh = { error: error.message };
-    } else {
-      results.score_refresh = { ok: true, result: data };
-    }
-  } catch (err) {
-    // If the RPC doesn't exist yet, we fall back to a simpler approach
-    results.score_refresh = {
-      skipped: true,
-      reason: err instanceof Error ? err.message : "RPC not available",
-    };
+    const { data } = await supabase
+      .from("sg_agents")
+      .select("score_updated_at")
+      .not("score_updated_at", "is", null)
+      .order("score_updated_at", { ascending: false })
+      .limit(1)
+      .single();
+    results.scores_last_updated = data?.score_updated_at ?? null;
+  } catch {
+    results.scores_last_updated = null;
   }
 
-  // --- 2. Update percentile rankings ---
-  // Recalculate where each agent sits relative to all others
-  try {
-    const { data, error } = await supabase.rpc("update_agent_percentiles");
-    if (error) {
-      results.percentile_update = { error: error.message };
-    } else {
-      results.percentile_update = { ok: true, result: data };
-    }
-  } catch (err) {
-    results.percentile_update = {
-      skipped: true,
-      reason: err instanceof Error ? err.message : "RPC not available",
-    };
-  }
-
-  // --- 3. Refresh area top agents materialized view ---
-  try {
-    const { data, error } = await supabase.rpc("refresh_area_top_agents");
-    if (error) {
-      results.area_refresh = { error: error.message };
-    } else {
-      results.area_refresh = { ok: true, result: data };
-    }
-  } catch (err) {
-    results.area_refresh = {
-      skipped: true,
-      reason: err instanceof Error ? err.message : "RPC not available",
-    };
-  }
-
-  // --- 4. Update transaction counts (fast, always works) ---
-  try {
-    const { error } = await supabase.rpc("update_transaction_counts");
-    if (error) {
-      // Fallback: direct SQL update
-      const { error: fallbackErr } = await supabase.rpc("exec_sql", {
-        query: `
-          UPDATE sg_agents a
-          SET transaction_count = sub.cnt,
-              updated_at = NOW()
-          FROM (
-            SELECT agent_registration, COUNT(*) as cnt
-            FROM sg_transactions
-            GROUP BY agent_registration
-          ) sub
-          WHERE a.cea_registration = sub.agent_registration
-            AND (a.transaction_count IS NULL OR a.transaction_count != sub.cnt)
-        `,
-      });
-      results.txn_count_update = fallbackErr
-        ? { error: fallbackErr.message }
-        : { ok: true, method: "fallback_sql" };
-    } else {
-      results.txn_count_update = { ok: true };
-    }
-  } catch (err) {
-    results.txn_count_update = {
-      skipped: true,
-      reason: err instanceof Error ? err.message : "RPC not available",
-    };
-  }
-
-  // --- 5. Detect and log ranking changes ---
-  // Useful for the weekly digest: "Agent X moved up 5 spots"
+  // Read-only: notable rank moves for the weekly digest (harmless if previous_score is unset).
   try {
     const { data: topMovers } = await supabase
       .from("sg_agents")
@@ -136,30 +70,12 @@ export async function GET(req: Request) {
     results.top_movers = "previous_score column may not exist yet";
   }
 
-  // --- 6. Refresh the agent market study snapshot (insights page) ---
-  // The aggregate scans the full transaction table, so it is precomputed here
-  // (service role, no anon statement timeout) into a cached single-row table.
-  try {
-    const { error } = await supabase.rpc("refresh_agent_market_stats");
-    results.agent_market_stats = error ? { error: error.message } : { ok: true };
-  } catch (err) {
-    results.agent_market_stats = {
-      skipped: true,
-      reason: err instanceof Error ? err.message : "RPC not available",
-    };
-  }
-
   const duration = Date.now() - started;
 
-  // Log the cron run
   await supabase.from("sg_funnel_events").insert({
     event: "cron_refresh_scores",
     metadata: { ...results, duration_ms: duration },
   });
 
-  return NextResponse.json({
-    ok: true,
-    duration_ms: duration,
-    ...results,
-  });
+  return NextResponse.json({ ok: true, duration_ms: duration, ...results });
 }

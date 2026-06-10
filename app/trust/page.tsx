@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "../lib/supabase";
+import DataLimits from "../components/DataLimits";
 
 export const revalidate = 43200; // 12h
 
@@ -31,12 +32,6 @@ const GUARANTEES: [string, string][] = [
   ["Rankings cannot be bought", "There is no paid placement, anywhere, ever. An agent cannot pay to rank higher. The agent subscription tools are clearly non-ranking."],
   ["We are paid by subscriptions, not by sales", "Agents may subscribe for reputation and analytics tools, and that is how we make money. We never take a cut of a sale, so our rankings are never for sale and we have no reason to favour anyone."],
   ["Free for sellers", "You never pay FairComparisons and we never take any cut of a sale. You compare every agent and contact the ones you choose yourself."],
-];
-
-const LIMITS: string[] = [
-  "Scores reflect transactions in the public record. Off-market deals and very recent transactions may not appear yet.",
-  "Government data is published with a lag, so an agent's most recent activity can take time to show.",
-  "Google ratings are a minority input (15 of 100 points) and are corrected for review volume; they are not a measure of selling skill.",
 ];
 
 export default async function TrustPage() {
@@ -165,17 +160,16 @@ export default async function TrustPage() {
         </div>
       </section>
 
-      {/* Honest limitations */}
-      <section className="fc-wrap" style={{ padding: "56px 40px", maxWidth: 820 }}>
-        <div className="eyebrow">What we do not claim</div>
-        <h2 style={{ marginTop: 12 }}>The limits, stated plainly.</h2>
-        <ul style={{ marginTop: 18, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 10 }} className="muted">
-          {LIMITS.map((l) => (
-            <li key={l} style={{ fontSize: 14.5, lineHeight: 1.6 }}>{l}</li>
-          ))}
-        </ul>
-        <p className="muted small" style={{ marginTop: 18 }}>
-          Spotted something wrong in our data? <Link href="/contact" style={{ color: "var(--blue)", fontWeight: 600 }}>Tell us</Link> and we will check it against the source.
+      {/* Honest limitations — consolidated "what this data can and cannot see" */}
+      <DataLimits />
+
+      {/* Google-rating caveat is specific to the score, not the raw record, so it
+          stays here rather than in the shared data-limits panel. */}
+      <section className="fc-wrap" style={{ padding: "0 40px 56px", maxWidth: 880 }}>
+        <p className="muted small" style={{ maxWidth: "70ch" }}>
+          One more limit on the score itself: Google ratings are a minority input, capped at 15 of 100 points and
+          corrected for review volume. They reflect client sentiment, not selling skill, and they can never move an agent
+          ahead of the transaction record.
         </p>
       </section>
 
