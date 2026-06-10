@@ -44,6 +44,17 @@ export async function GET(req: Request) {
     }
   }
 
+  // Revalidate all agent profile pages. Scores and the transaction record change
+  // daily, and without this they only refresh on-request every 12h, so a stale or
+  // transiently-empty render (e.g. a heavy agent whose track RPC blipped during a
+  // build) can persist. This is a cache purge; pages regenerate on next request.
+  try {
+    revalidatePath("/property-agents/agent/[slug]", "page");
+    revalidated.push("/property-agents/agent/[slug] (all)");
+  } catch (err) {
+    errors.push(`agent/[slug]: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
   // Revalidate all area "best agent" pages (28 areas)
   // These are the money pages for SEO - agent rankings per area
   try {
