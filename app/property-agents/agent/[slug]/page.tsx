@@ -256,6 +256,11 @@ export default async function AgentPage({ params }: Props) {
 
   // Real AgentScore components, normalised to 0-100 against each dimension's max.
   const SB = (agent.score_breakdown ?? {}) as Record<string, number>;
+  // Team-parking signal: highest resale count in any single month. Above ~12 is
+  // implausible for one person and usually means team deals logged under a leader.
+  // Surfaced as a header badge so it is seen without scrolling to the record below.
+  const maxMonthSales = Number(SB.max_month_sales ?? 0);
+  const teamAttributed = maxMonthSales > 12;
   const scoreDims = [
     { label: "Transaction volume", key: "volume", max: 30 },
     { label: "Recent activity", key: "recency", max: 25 },
@@ -358,6 +363,14 @@ export default async function AgentPage({ params }: Props) {
                   </span>
                 )}
                 {rentalFocused && <span className="fc-badge fc-badge--warn">Mostly rentals · {salePct}% sales</span>}
+                {teamAttributed && (
+                  <span
+                    className="fc-badge fc-badge--warn"
+                    title={`One month shows ${maxMonthSales} resale deals logged under this agent, more than one person can close alone. Likely team deals, capped in the AgentScore. See the record below.`}
+                  >
+                    Team-attributed volume
+                  </span>
+                )}
                 {updated && <span className="fc-badge fc-badge--source">Updated {updated}</span>}
               </div>
               {rentalFocused && (
