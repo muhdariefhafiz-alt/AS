@@ -33,7 +33,7 @@ type Study = {
   register_total: number;
   ever_transacted: number;
   register_matched: number;
-  active_24_25: number;
+  active_last12: number;
   total_txns: number;
   rental_rows: number;
   sale_rows: number;
@@ -77,7 +77,7 @@ export default async function PropertyAgentStatisticsPage() {
 
   const withRecordPct = pct(d.register_matched, d.register_total);
   const noRecordPct = 100 - withRecordPct;
-  const active2425Pct = pct(d.active_24_25, d.register_total);
+  const activeRecentPct = pct(d.active_last12, d.register_total);
   const everSoldPct = pct(d.agents_who_sold, d.register_total);
   const rentalPct = pct(d.rental_rows, d.total_txns);
   const salePct = 100 - rentalPct;
@@ -98,7 +98,7 @@ export default async function PropertyAgentStatisticsPage() {
     },
     {
       q: "What percentage of property agents actually sell homes?",
-      a: `Only ${nf(d.agents_who_sold)} agents (about ${everSoldPct}% of the register) have recorded at least one property sale in the CEA data we cover. Among those who do sell, the median agent recorded just ${d.sales_median} sales across roughly eight and a half years, or about one a year.`,
+      a: `Only ${nf(d.agents_who_sold)} agents (about ${everSoldPct}% of the register) have recorded at least one property sale in the CEA data we cover. Among those who do sell, the median agent recorded just ${d.sales_median} sales over the period covered, or about one a year.`,
     },
     {
       q: "Do property agents in Singapore mostly sell or rent?",
@@ -177,8 +177,8 @@ export default async function PropertyAgentStatisticsPage() {
           <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
             Singapore has <strong>{nf(d.register_total)} property salespersons</strong> on the public CEA register. Yet only{" "}
             <strong>{nf(d.register_matched)} of them (about {withRecordPct}%)</strong> appear anywhere in the public CEA
-            transaction record between {windowStart} and {windowEnd}. Just <strong>{nf(d.active_24_25)} ({active2425Pct}% of the register)</strong>{" "}
-            recorded a transaction in 2024 or 2025. The market runs on a small, active minority, and the headline agent count
+            transaction record between {windowStart} and {windowEnd}. Just <strong>{nf(d.active_last12)} ({activeRecentPct}% of the register)</strong>{" "}
+            recorded a transaction in the most recent 12 months of data. The market runs on a small, active minority, and the headline agent count
             tells you almost nothing about who actually closes deals.
           </p>
         </div>
@@ -232,7 +232,7 @@ export default async function PropertyAgentStatisticsPage() {
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 Only <strong>{nf(d.agents_who_sold)} agents</strong>, about {everSoldPct}% of the register, have
                 recorded even a single property sale. Among those who do, the <strong>median agent recorded {d.sales_median} sales</strong>{" "}
-                across roughly eight and a half years: about one a year. Home sales are concentrated even more tightly than
+                over the period covered: about one a year. Home sales are concentrated even more tightly than
                 rentals: the top 10% of selling agents account for <strong>{d.sales_top10}%</strong> of all recorded sales, and
                 the top 20% account for <strong>{d.sales_top20}%</strong>.
               </p>
@@ -317,7 +317,7 @@ export default async function PropertyAgentStatisticsPage() {
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-gray-500">Agents on register</dt><dd className="font-bold text-gray-900">{nf(d.register_total)}</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">With any record</dt><dd className="font-bold text-gray-900">{withRecordPct}%</dd></div>
-                <div className="flex justify-between"><dt className="text-gray-500">Active in 2024-25</dt><dd className="font-bold text-gray-900">{active2425Pct}%</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-500">Active (last 12 months)</dt><dd className="font-bold text-gray-900">{activeRecentPct}%</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Activity that is rentals</dt><dd className="font-bold text-gray-900">{rentalPct}%</dd></div>
                 <div className="flex justify-between"><dt className="text-gray-500">Sales by top 20%</dt><dd className="font-bold text-gray-900">{d.sales_top20}%</dd></div>
               </dl>
