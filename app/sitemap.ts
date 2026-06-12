@@ -61,6 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/insights/freehold-premium`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/insights/top-agents-2026`, lastModified: today(), changeFrequency: "daily", priority: 0.95 },
     { url: `${BASE}/insights/property-agent-statistics-singapore`, lastModified: today(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${BASE}/insights/property-agent-league-tables-singapore`, lastModified: today(), changeFrequency: "weekly", priority: 0.9 },
     // === Guides ===
     { url: `${BASE}/guides`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/guides/how-to-choose-property-agent`, changeFrequency: "monthly", priority: 0.85 },

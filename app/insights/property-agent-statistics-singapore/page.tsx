@@ -352,6 +352,7 @@ export default async function PropertyAgentStatisticsPage() {
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>
               <div className="mt-3 space-y-2">
+                <Link href="/insights/property-agent-league-tables-singapore" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Why the &ldquo;top producer&rdquo; label misleads</Link>
                 <Link href="/guides/property-agent-commission" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Property agent commission rates</Link>
                 <Link href="/insights/million-dollar-hdb" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Million-Dollar HDB Tracker</Link>
                 <Link href="/insights/freehold-premium" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Freehold Premium by District</Link>
