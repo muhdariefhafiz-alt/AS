@@ -13,6 +13,7 @@ import { getDistrictMarketData } from "../../lib/districtData";
  */
 export const revalidate = 43200; // 12h
 
+type Flag = { t: string; pct?: number };
 type TopAgent = {
   name: string;
   agency: string | null;
@@ -21,6 +22,7 @@ type TopAgent = {
   saleShare: number | null;
   slug: string | null;
   rank: number;
+  flags: Flag[];
 };
 
 export async function GET(req: Request) {
@@ -53,6 +55,15 @@ export async function GET(req: Request) {
       .eq("area_name", area.name),
   ]);
 
+  // Integrity/relevance flags for the shown agents (team-attributed, buyer-side,
+  // new-launch, mostly-rentals), so the SERP can warn before a wasted click.
+  const slugs = (agentsRes.data ?? []).map((a) => a.agent_slug).filter(Boolean) as string[];
+  const flagMap: Record<string, Flag[]> = {};
+  if (slugs.length) {
+    const { data: fl } = await supabase.from("sg_agents").select("slug, agent_flags").in("slug", slugs);
+    for (const r of fl ?? []) flagMap[r.slug as string] = (r.agent_flags as Flag[]) ?? [];
+  }
+
   const topAgents: TopAgent[] = (agentsRes.data ?? []).map((a) => ({
     name: a.agent_name,
     agency: a.agency_name,
@@ -61,6 +72,7 @@ export async function GET(req: Request) {
     saleShare: a.sale_share != null ? Number(a.sale_share) : null,
     slug: a.agent_slug,
     rank: a.rank,
+    flags: (a.agent_slug && flagMap[a.agent_slug]) || [],
   }));
 
   // Market medians. Heavier (several RPCs); best-effort so a slow/missing

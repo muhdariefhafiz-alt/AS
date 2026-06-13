@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AgentFlags from "./AgentFlags";
 
 /* FairComparisons brand primitives — "The Record" design system.
    Server-renderable (no client hooks). Ported from the design kit. */
@@ -182,6 +183,7 @@ export function RankRow({
   score,
   verified,
   href,
+  flags,
 }: {
   pos: number;
   name: string;
@@ -189,6 +191,7 @@ export function RankRow({
   score: number | null;
   verified?: boolean;
   href?: string;
+  flags?: { t: string; pct?: number }[];
 }) {
   const initials = name
     .split(" ")
@@ -208,6 +211,11 @@ export function RankRow({
       <div className="fc-rank__main">
         <div className="fc-rank__name">{name}</div>
         <div className="fc-rank__sub">{sub}</div>
+        {flags && flags.length > 0 && (
+          <div style={{ marginTop: 6 }}>
+            <AgentFlags flags={flags} size="sm" />
+          </div>
+        )}
       </div>
       {verified && <VerifiedBadge sm>Verified</VerifiedBadge>}
       {score !== null && (

@@ -21,7 +21,7 @@ async function getStats() {
 async function getTopAgents() {
   const { data } = await supabase
     .from("sg_agents")
-    .select("name, slug, score, agency_name, primary_area, claimed")
+    .select("name, slug, score, agency_name, primary_area, claimed, agent_flags")
     .not("score", "is", null)
     .order("score", { ascending: false })
     .limit(5);
@@ -199,6 +199,7 @@ export default async function HomePage() {
                 score={a.score}
                 verified={!!a.claimed}
                 href={a.slug ? `/property-agents/agent/${a.slug}` : undefined}
+                flags={a.agent_flags as { t: string; pct?: number }[] | undefined}
               />
             ))}
           </div>

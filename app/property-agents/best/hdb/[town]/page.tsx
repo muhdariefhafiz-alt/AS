@@ -4,6 +4,7 @@ import { supabase } from "../../../../lib/supabase";
 import { HDB_TOWNS, townFromSlug, townDisplayName } from "../../../../lib/hdbData";
 import { formatPrice } from "../../../../lib/narrativeHelpers";
 import EmailCapture from "../../../../components/EmailCapture";
+import AgentFlags from "../../../../components/AgentFlags";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -19,6 +20,7 @@ type TopAgent = {
   txn_count: number;
   primary_type: string;
   subscription_tier: string;
+  flags: { t: string; pct?: number }[];
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -54,11 +56,13 @@ export default async function BestHdbAgentsPage({ params }: Props) {
   // Fetch subscription tiers for these agents
   const agentSlugs = (agents ?? []).map(a => a.agent_slug);
   const { data: tierData } = agentSlugs.length > 0
-    ? await supabase.from("sg_agents").select("slug, subscription_tier").in("slug", agentSlugs)
+    ? await supabase.from("sg_agents").select("slug, subscription_tier, agent_flags").in("slug", agentSlugs)
     : { data: [] };
   const tierMap: Record<string, string> = {};
-  (tierData ?? []).forEach((t: { slug: string; subscription_tier: string | null }) => {
+  const flagMap: Record<string, { t: string; pct?: number }[]> = {};
+  (tierData ?? []).forEach((t: { slug: string; subscription_tier: string | null; agent_flags?: { t: string; pct?: number }[] }) => {
     tierMap[t.slug] = t.subscription_tier ?? "free";
+    flagMap[t.slug] = t.agent_flags ?? [];
   });
 
   // Ranking is purely by AgentScore/rank — paid tiers never reorder the list.
@@ -68,6 +72,7 @@ export default async function BestHdbAgentsPage({ params }: Props) {
     agency_name: a.agency_name, score: Number(a.score), txn_count: a.area_txns,
     primary_type: a.area_property_types || "",
     subscription_tier: tierMap[a.agent_slug] ?? "free",
+    flags: flagMap[a.agent_slug] ?? [],
   }));
 
   // HDB market context
@@ -174,6 +179,9 @@ export default async function BestHdbAgentsPage({ params }: Props) {
                           <p className="font-semibold text-gray-900 group-hover:text-[var(--blue)]">{a.agent_name}</p>
                         </div>
                         <p className="text-xs text-gray-500 truncate">{a.agency_name} · {a.txn_count} HDB transactions in {display}</p>
+                        {a.flags.length > 0 && (
+                          <div className="mt-1.5"><AgentFlags flags={a.flags} size="sm" /></div>
+                        )}
                       </div>
                       <div className="flex flex-col items-center rounded-lg border border-[var(--line)] bg-[var(--blue-wash)] px-3 py-1.5">
                         <span className="text-lg font-extrabold text-[var(--blue)]">{Math.round(a.score)}</span>

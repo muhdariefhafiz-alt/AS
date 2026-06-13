@@ -10,6 +10,7 @@ import { titleName, givenName, cleanAgency, saleShare } from "../../../lib/names
 import ClaimBanner from "../../../components/ClaimBanner";
 import StickyMobileCta from "../../../components/StickyMobileCta";
 import AgentTransactionRecord from "../../../components/AgentTransactionRecord";
+import FlagBadge from "../../../components/FlagBadge";
 import RelatedAgents from "../../../components/RelatedAgents";
 import ProfileCorrection from "../../../components/ProfileCorrection";
 import type { Metadata } from "next";
@@ -230,6 +231,23 @@ export default async function AgentPage({ params }: Props) {
     : 0;
   const rentalCount = hasTxns ? Math.max(0, total - saleCount) : 0;
 
+  // Buyer-side padding + new-launch concentration. Both are relevance signals for
+  // a seller, derived from the CEA represented-role and transaction-type mix.
+  // Buyer-side: the agent mostly represents the BUYER on sales, so they rarely win
+  // the listing (norm is ~35% buyer-side). New-launch: mostly developer launch
+  // units, a different job from selling a resale home. Thresholds are deliberately
+  // conservative so only clear cases flag.
+  const sellerSideCt = hasTxns ? (track!.represented_roles?.["SELLER"] ?? 0) : 0;
+  const buyerSideCt = hasTxns ? (track!.represented_roles?.["BUYER"] ?? 0) : 0;
+  const sideSales = sellerSideCt + buyerSideCt;
+  const buyerSidePct = sideSales > 0 ? Math.round((buyerSideCt / sideSales) * 100) : null;
+  const buyerSideHeavy = sideSales >= 20 && buyerSideCt / sideSales >= 0.7;
+  const newSaleCt = hasTxns
+    ? Object.entries(track!.transaction_types).reduce((s, [k, n]) => s + (/new\s*sale/i.test(k) ? n : 0), 0)
+    : 0;
+  const newLaunchPct = saleCount > 0 ? Math.round((newSaleCt / saleCount) * 100) : null;
+  const newLaunchHeavy = saleCount >= 20 && newSaleCt / saleCount >= 0.6;
+
   // Exp 1 claim-hook enrichment: real rank in the agent's primary area, area
   // size, and recent profile views, for the ego/loss-aversion claim prompt.
   // A/B by agent id. Only computed for unclaimed profiles.
@@ -362,14 +380,32 @@ export default async function AgentPage({ params }: Props) {
                     Professional
                   </span>
                 )}
-                {rentalFocused && <span className="fc-badge fc-badge--warn">Mostly rentals · {salePct}% sales</span>}
+                {rentalFocused && (
+                  <FlagBadge label={`Mostly rentals · ${salePct}% sales`} tone="warn">
+                    Most of {given}&apos;s recorded deals are rentals, not home sales. A busy rental practice does not mean
+                    someone regularly sells homes like yours. The full split is in the record below.
+                  </FlagBadge>
+                )}
+                {buyerSideHeavy && (
+                  <FlagBadge label={`Mostly buyer-side · ${buyerSidePct}%`} tone="warn">
+                    On about {buyerSidePct}% of {given}&apos;s sales they represented the buyer, not the seller, so they
+                    rarely win the listing themselves (the typical agent is around 35%). If you are selling, you usually
+                    want someone who regularly represents sellers.
+                  </FlagBadge>
+                )}
+                {newLaunchHeavy && (
+                  <FlagBadge label={`Mostly new launches · ${newLaunchPct}%`} tone="info">
+                    About {newLaunchPct}% of {given}&apos;s sales are new project launches, not resale homes. Selling a
+                    launch unit for a developer is a different job from selling your existing flat or condo on the open
+                    market.
+                  </FlagBadge>
+                )}
                 {teamAttributed && (
-                  <span
-                    className="fc-badge fc-badge--warn"
-                    title={`One month shows ${maxMonthSales} resale deals logged under this agent, more than one person can close alone. Likely team deals, capped in the AgentScore. See the record below.`}
-                  >
-                    Team-attributed volume
-                  </span>
+                  <FlagBadge label="Team-attributed volume" tone="warn">
+                    {given}&apos;s record includes a single month with {maxMonthSales} resale deals, more than one person
+                    can close alone. In Singapore, team deals are often logged under one leader&apos;s name, so some of
+                    this may be colleagues&apos; work. We cap it in the AgentScore so it cannot inflate the ranking.
+                  </FlagBadge>
                 )}
                 {updated && <span className="fc-badge fc-badge--source">Updated {updated}</span>}
               </div>

@@ -7,6 +7,7 @@ import ShareButtons from "../../../components/ShareButtons";
 import StickyMobileCta from "../../../components/StickyMobileCta";
 import PostcodeBox from "../../../components/PostcodeBox";
 import { bandFor } from "../../../components/Brand";
+import AgentFlags from "../../../components/AgentFlags";
 import { titleName, cleanAgency } from "../../../lib/names";
 import type { Metadata } from "next";
 
@@ -63,6 +64,7 @@ type RichAgent = {
   area_txn_types: string;
   sale_share: number | null;
   subscription_tier: string;
+  flags: { t: string; pct?: number }[];
 };
 
 function formatTypes(types: string): string {
@@ -143,11 +145,13 @@ export default async function BestAgentsPage({ params }: Props) {
   // Fetch subscription tiers for these agents
   const agentSlugs = (agents ?? []).map(a => a.agent_slug);
   const { data: tierData } = agentSlugs.length > 0
-    ? await supabase.from("sg_agents").select("slug, subscription_tier").in("slug", agentSlugs)
+    ? await supabase.from("sg_agents").select("slug, subscription_tier, agent_flags").in("slug", agentSlugs)
     : { data: [] };
   const tierMap: Record<string, string> = {};
-  (tierData ?? []).forEach((t: { slug: string; subscription_tier: string | null }) => {
+  const flagMap: Record<string, { t: string; pct?: number }[]> = {};
+  (tierData ?? []).forEach((t: { slug: string; subscription_tier: string | null; agent_flags?: { t: string; pct?: number }[] }) => {
     tierMap[t.slug] = t.subscription_tier ?? "free";
+    flagMap[t.slug] = t.agent_flags ?? [];
   });
 
   // Ranking is purely by AgentScore/rank — paid tiers never reorder the list.
@@ -160,6 +164,7 @@ export default async function BestAgentsPage({ params }: Props) {
     area_txn_types: a.area_txn_types || "",
     sale_share: a.sale_share != null ? Number(a.sale_share) : null,
     subscription_tier: tierMap[a.agent_slug] ?? "free",
+    flags: flagMap[a.agent_slug] ?? [],
   }));
 
   const districtNum = area.district.replace("D", "").padStart(2, "0");
@@ -301,9 +306,7 @@ export default async function BestAgentsPage({ params }: Props) {
                     <span className="statchip">{a.area_txns} local txns</span>
                     <span className="statchip">{a.area_focus_pct}% area focus</span>
                     <span className="statchip">{a.total_txns} career total</span>
-                    {a.sale_share != null && a.sale_share < 0.4 && (
-                      <span className="fc-badge fc-badge--warn">Mostly rentals · {Math.round(a.sale_share * 100)}% sales</span>
-                    )}
+                    <AgentFlags flags={a.flags} size="sm" max={3} />
                   </div>
                 </div>
                 <div className="score-box" style={{ borderTopColor: band.color }}>

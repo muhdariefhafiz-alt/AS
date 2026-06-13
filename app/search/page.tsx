@@ -7,6 +7,7 @@ import { HDB_TOWNS, townDisplayName } from "../lib/hdbData";
 import { trackEvent } from "../lib/analytics";
 import { postalToDistrictCode, looksLikePostal } from "../lib/postal";
 import { titleName, cleanAgency } from "../lib/names";
+import AgentFlags from "../components/AgentFlags";
 
 type District = { code: string; name: string; slug: string };
 
@@ -26,6 +27,7 @@ type TopAgent = {
   saleShare: number | null;
   slug: string | null;
   rank: number;
+  flags?: { t: string; pct?: number }[];
 };
 type AreaPreview = {
   district: { code: string; name: string; shortName: string; slug: string | null };
@@ -266,17 +268,15 @@ export default function SearchPage() {
                         {initials(a.name)}
                       </span>
                       <div className="fc-rank__main">
-                        <div className="fc-rank__name">
-                          {titleName(a.name)}
-                          {a.saleShare != null && a.saleShare < 0.4 && (
-                            <span className="fc-badge fc-badge--warn" style={{ marginLeft: 8, fontSize: 11, padding: "1px 7px", verticalAlign: "middle" }}>
-                              Mostly rentals
-                            </span>
-                          )}
-                        </div>
+                        <div className="fc-rank__name">{titleName(a.name)}</div>
                         <div className="fc-rank__sub">
                           {[a.agency ? cleanAgency(a.agency) : null, `${a.areaTxns} deals in ${preview.district.code}`].filter(Boolean).join(" · ")}
                         </div>
+                        {a.flags && a.flags.length > 0 && (
+                          <div style={{ marginTop: 6 }}>
+                            <AgentFlags flags={a.flags} size="sm" />
+                          </div>
+                        )}
                       </div>
                       {a.score != null && (
                         <span className="fc-rank__score" style={{ color: a.score >= 75 ? "var(--ink)" : "var(--slate)" }}>
