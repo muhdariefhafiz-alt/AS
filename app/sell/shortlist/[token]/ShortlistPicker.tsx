@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import AgentFlags from "../../../components/AgentFlags";
 
 export type ShortlistRow = {
   shortlist_id: number;
@@ -21,6 +22,7 @@ export type ShortlistRow = {
   google_review_count: number | null;
   photo_url: string | null;
   claimed: boolean;
+  agent_flags?: { t: string; pct?: number }[] | null;
   invite_status: string;
 };
 
@@ -159,6 +161,11 @@ export default function ShortlistPicker({
                   <p className="mt-0.5 text-sm text-gray-600">
                     {a.agency_name}
                   </p>
+                  {a.agent_flags && a.agent_flags.length > 0 && (
+                    <div className="mt-2">
+                      <AgentFlags flags={a.agent_flags} size="sm" max={3} />
+                    </div>
+                  )}
 
                   <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-700">
                     <span>

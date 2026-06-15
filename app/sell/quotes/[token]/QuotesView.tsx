@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import AgentFlags from "../../../components/AgentFlags";
 
 export type QuoteRow = {
   quote_id: number;
@@ -11,6 +12,7 @@ export type QuoteRow = {
   agent_slug: string | null;
   agency_name: string;
   agent_score: number;
+  agent_flags?: { t: string; pct?: number }[] | null;
   commission_pct: number;
   est_timeline_weeks: number | null;
   est_value_low: number | null;
@@ -148,6 +150,11 @@ export default function QuotesView({
                     </>
                   )}
                 </p>
+                {q.agent_flags && q.agent_flags.length > 0 && (
+                  <div className="mt-2">
+                    <AgentFlags flags={q.agent_flags} size="sm" max={3} />
+                  </div>
+                )}
               </div>
               {isWinner && (
                 <span className="inline-flex items-center rounded-full bg-[var(--blue)] px-3 py-1 text-xs font-semibold text-white">

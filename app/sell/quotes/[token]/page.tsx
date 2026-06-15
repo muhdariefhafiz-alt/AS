@@ -34,7 +34,7 @@ export default async function QuotesPage({ params }: Props) {
   const { data: quotes } = await sb
     .from("sg_lead_quotes")
     .select(
-      "id, agent_id, commission_pct, est_timeline_weeks, est_value_low, est_value_high, marketing_plan, note, status, submitted_at, sg_agents!inner(id, name, slug, agency_name, score)"
+      "id, agent_id, commission_pct, est_timeline_weeks, est_value_low, est_value_high, marketing_plan, note, status, submitted_at, sg_agents!inner(id, name, slug, agency_name, score, agent_flags)"
     )
     .eq("lead_id", lead.id)
     .neq("status", "withdrawn")
@@ -54,6 +54,7 @@ export default async function QuotesPage({ params }: Props) {
       agent_slug: (a.slug as string) ?? null,
       agency_name: String(a.agency_name ?? ""),
       agent_score: Number(a.score ?? 0),
+      agent_flags: (a.agent_flags as { t: string; pct?: number }[] | null) ?? [],
       commission_pct: Number(q.commission_pct),
       est_timeline_weeks: q.est_timeline_weeks ?? null,
       est_value_low: q.est_value_low ?? null,

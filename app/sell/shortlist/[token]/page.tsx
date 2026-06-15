@@ -35,7 +35,7 @@ export default async function ShortlistPage({ params }: Props) {
   const { data: shortlist } = await sb
     .from("sg_lead_shortlist")
     .select(
-      "id, agent_id, rank, score_at_shortlist, status, sg_agents!inner(id, name, slug, agency_name, score, transaction_count, primary_area, google_rating, google_review_count, photo_url, claimed)"
+      "id, agent_id, rank, score_at_shortlist, status, sg_agents!inner(id, name, slug, agency_name, score, transaction_count, primary_area, google_rating, google_review_count, photo_url, claimed, agent_flags)"
     )
     .eq("lead_id", lead.id)
     .order("rank");
@@ -110,6 +110,7 @@ export default async function ShortlistPage({ params }: Props) {
           : 0,
       photo_url: (a.photo_url as string) ?? null,
       claimed: Boolean(a.claimed),
+      agent_flags: (a.agent_flags as { t: string; pct?: number }[] | null) ?? [],
       invite_status: String(s.status ?? "suggested"),
     };
   });
