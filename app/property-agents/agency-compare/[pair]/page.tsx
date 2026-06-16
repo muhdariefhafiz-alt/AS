@@ -156,8 +156,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const b = shortName(resB.data.name);
 
   return {
-    title: `${a} vs ${b} - Agency Comparison Singapore`,
-    description: `Compare ${a} and ${b} property agencies in Singapore. Agent count, average AgentScore, transaction volume, specializations, and top-performing agents. Based on CEA data.`,
+    title: `${a} vs ${b}: Which Agency Is Better? | CEA Data`,
+    description: `${a} or ${b}? Compare both Singapore agencies on real CEA data: agent count, average AgentScore, transaction volume and top-performing agents. Decide on evidence, not advertising.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/agency-compare/${pair}` },
   };
 }

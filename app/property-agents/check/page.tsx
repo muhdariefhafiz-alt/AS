@@ -5,13 +5,13 @@ import SellCtaBand from "../../components/SellCtaBand";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Check a Property Agent in Singapore | CEA Status + Real Record",
+  title: "Property Agent Checker Singapore | Verify CEA Status + Record",
   description:
-    "Check any Singapore property agent in seconds. Verify CEA registration, see their actual transaction record, areas, and AgentScore. Free, based on government data.",
+    "Free property agent checker for Singapore. Check any agent's CEA registration, real transaction record, areas and AgentScore in seconds. Built on government data, not marketing.",
   alternates: { canonical: "https://fair-comparisons.com/property-agents/check" },
   openGraph: {
-    title: "Check a Property Agent in Singapore",
-    description: "Verify CEA registration and see an agent's real transaction record and AgentScore. Free.",
+    title: "Property Agent Checker Singapore",
+    description: "Check any agent's CEA registration and real transaction record and AgentScore. Free.",
     url: "https://fair-comparisons.com/property-agents/check",
     type: "website",
     locale: "en_SG",
@@ -31,6 +31,7 @@ const FAQ: [string, string][] = [
   ["What is a CEA registration number?", "It is the unique identifier every registered Singapore property agent holds, usually starting with R followed by digits and a letter (for example R012345A). You can use it to look up a specific agent and avoid confusing two people with the same name."],
   ["Can I check an agent's track record before hiring them?", "Yes. Each agent profile shows the transactions they have actually been recorded on, the property types and areas they work in, and their AgentScore, so you can judge them on evidence rather than marketing."],
   ["Is it free to check an agent?", "Yes, checking any agent is free. If you are selling, you can also get a free shortlist of the top-ranked agents for your area and have them quote their own fee."],
+  ["Is there a free property agent checker in Singapore?", "Yes, this is one. Use the property agent checker above to search any agent by name or CEA registration number, then check their CEA status, real transaction record, areas and AgentScore. It is free and built on public government data, not on agent marketing."],
 ];
 
 export default function CheckAgentPage() {
@@ -57,12 +58,12 @@ export default function CheckAgentPage() {
       {/* HERO */}
       <section style={{ background: "var(--ink)", color: "#fff" }}>
         <div className="fc-wrap" style={{ padding: "64px 40px 56px" }}>
-          <div className="eyebrow" style={{ color: "var(--slate-2)", marginBottom: 18 }}>Check a property agent</div>
+          <div className="eyebrow" style={{ color: "var(--slate-2)", marginBottom: 18 }}>Property agent checker</div>
           <h1 style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0, maxWidth: "18ch" }}>
             Check any agent <span className="italic-serif">on the record,</span> before you sign.
           </h1>
-          <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16, maxWidth: "60ch" }}>
-            Verify CEA registration and see an agent&apos;s real transaction history and AgentScore. Search by name or CEA registration number.
+          <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16, maxWidth: "62ch" }}>
+            A free property agent checker built on the CEA register. Verify an agent&apos;s registration and see their real transaction history and AgentScore. Search by name or CEA registration number.
           </p>
 
           <form action="/search" method="GET" className="fc-search" style={{ marginTop: 26 }}>
