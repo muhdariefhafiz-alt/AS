@@ -9,6 +9,7 @@ export const TABS: Tab[] = [
   { id: "loops", label: "Loops", hint: "Constellation: funnel + growth loops" },
   { id: "supply", label: "Supply", hint: "Agent-side health" },
   { id: "seo", label: "SEO", hint: "First-party traffic + organic" },
+  { id: "ai-search", label: "AI Search", hint: "SOV in AI answers: ChatGPT, Perplexity, Google AIO" },
   { id: "contracts", label: "Contracts", hint: "Signed agent agreements" },
   { id: "ops", label: "Ops", hint: "Queues + crons + audit" },
   { id: "revenue", label: "Revenue", hint: "Premium + pipeline" },
