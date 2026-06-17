@@ -20,13 +20,52 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { type, agentId, decision } = await req.json();
+    const { type, agentId, decision, reviewId } = await req.json();
 
-    if (!["message", "photo", "bio"].includes(type)) {
-      return NextResponse.json({ ok: false, error: "Invalid type" }, { status: 400 });
-    }
     if (!["approve", "reject"].includes(decision)) {
       return NextResponse.json({ ok: false, error: "Invalid decision" }, { status: 400 });
+    }
+
+    // Community-review moderation lane (separate from agent profile content).
+    // Approve publishes the review + refreshes the agent aggregate; reject hides it.
+    if (type === "review") {
+      if (typeof reviewId !== "number") {
+        return NextResponse.json({ ok: false, error: "Invalid reviewId" }, { status: 400 });
+      }
+      const { data: rev, error: revErr } = await supabase
+        .from("sg_agent_reviews")
+        .update({
+          status: decision === "approve" ? "published" : "rejected",
+          approved: decision === "approve",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", reviewId)
+        .eq("status", "pending")
+        .select("agent_id")
+        .single();
+      if (revErr) {
+        console.error("[admin/moderation] review update error:", revErr);
+        return NextResponse.json({ ok: false, error: "Update failed" }, { status: 500 });
+      }
+      if (rev?.agent_id) {
+        if (decision === "approve") await refreshReviewAggregate(rev.agent_id);
+        const slug = await agentSlugById(rev.agent_id);
+        if (slug) {
+          try { revalidatePath(`/property-agents/agent/${slug}`); } catch (e) { console.error(e); }
+        }
+      }
+      await supabase.from("admin_audit_log").insert({
+        admin_identifier: session.email,
+        action: `moderation_${decision}_review`,
+        target_type: "sg_agent_reviews",
+        target_id: String(reviewId),
+        detail: { decision },
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (!["message", "photo", "bio", "marketing_name"].includes(type)) {
+      return NextResponse.json({ ok: false, error: "Invalid type" }, { status: 400 });
     }
     if (typeof agentId !== "number") {
       return NextResponse.json({ ok: false, error: "Invalid agentId" }, { status: 400 });
@@ -80,4 +119,28 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
   }
+}
+
+// Recompute the agent's published-review average + count after an approve.
+async function refreshReviewAggregate(agentId: number): Promise<void> {
+  const { data } = await supabase
+    .from("sg_agent_reviews")
+    .select("rating_overall")
+    .eq("agent_id", agentId)
+    .eq("status", "published");
+  const ratings = (data ?? [])
+    .map((r) => Number(r.rating_overall))
+    .filter((n) => Number.isFinite(n) && n >= 1 && n <= 5);
+  const avg = ratings.length > 0
+    ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+    : null;
+  await supabase
+    .from("sg_agents")
+    .update({ review_aggregate: { avg, count: ratings.length, last_reviewed_at: new Date().toISOString() } })
+    .eq("id", agentId);
+}
+
+async function agentSlugById(agentId: number): Promise<string> {
+  const { data } = await supabase.from("sg_agents").select("slug").eq("id", agentId).single();
+  return data?.slug ?? "";
 }

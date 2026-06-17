@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Metadata } from "next";
 import { getAdminSession } from "../../lib/admin-auth";
 import { ModerationQueue } from "./ModerationQueue";
+import { ReviewModeration, type PendingReview } from "./ReviewModeration";
 
 export const metadata: Metadata = {
   title: "Moderation Queue",
@@ -51,6 +52,32 @@ export default async function AdminModerationPage() {
       .limit(100),
   ]);
 
+  // Community (open) reviews that confirmed their email and await moderation.
+  const { data: reviewRows } = await supabase
+    .from("sg_agent_reviews")
+    .select("id, reviewer_name, rating_overall, transaction_type, comment, created_at, sg_agents!inner(name, slug, agency_name)")
+    .eq("status", "pending")
+    .eq("verified_completion", false)
+    .order("created_at", { ascending: true })
+    .limit(100);
+
+  const pendingReviews: PendingReview[] = (reviewRows ?? []).map((r) => {
+    const j = (Array.isArray(r.sg_agents) ? r.sg_agents[0] : r.sg_agents) as
+      | { name?: string; slug?: string | null; agency_name?: string | null }
+      | undefined;
+    return {
+      id: Number(r.id),
+      agent_name: j?.name ?? "",
+      agent_slug: j?.slug ?? null,
+      agency_name: j?.agency_name ?? null,
+      reviewer_name: String(r.reviewer_name ?? ""),
+      rating_overall: Number(r.rating_overall ?? 0),
+      transaction_type: (r.transaction_type as string | null) ?? null,
+      comment: String(r.comment ?? ""),
+      created_at: (r.created_at as string | null) ?? null,
+    };
+  });
+
   return (
     <div className="mx-auto min-h-screen max-w-[1200px] bg-gray-50 px-5 py-8 md:px-10">
       <div className="mb-6 flex items-baseline justify-between">
@@ -69,6 +96,13 @@ export default async function AdminModerationPage() {
           Back to dashboard
         </a>
       </div>
+
+      <section className="mb-8">
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-gray-500">
+          Community reviews ({pendingReviews.length})
+        </h2>
+        <ReviewModeration reviews={pendingReviews} />
+      </section>
 
       <ModerationQueue
         messages={(msgRes.data ?? []) as Array<{

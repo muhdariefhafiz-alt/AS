@@ -26,11 +26,11 @@ export async function GET(req: Request) {
     return NextResponse.redirect(`${site}/?review=invalid`);
   }
 
-  // Already verified — be idempotent.
-  if (review.status === "published") {
+  // Idempotent: anything past awaiting_email was already confirmed.
+  if (review.status !== "awaiting_email") {
     const slug = await agentSlug(sb, review.agent_id);
     return NextResponse.redirect(
-      `${site}/property-agents/agent/${slug}?review=confirmed#reviews`
+      `${site}/property-agents/agent/${slug}?review=received#reviews`
     );
   }
 
@@ -41,22 +41,21 @@ export async function GET(req: Request) {
     return NextResponse.redirect(`${site}/?review=expired`);
   }
 
+  // Email confirmed: move to the moderation queue, not public yet. An admin
+  // approves it before it appears, so reviews about named agents are checked
+  // (defamation risk). Approval publishes it and refreshes the aggregate.
   await sb
     .from("sg_agent_reviews")
     .update({
-      status: "published",
-      approved: true,
+      status: "pending",
       verify_token: null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", review.id);
 
-  // Refresh the agent's review aggregate.
-  await refreshAggregate(sb, review.agent_id);
-
   const slug = await agentSlug(sb, review.agent_id);
   return NextResponse.redirect(
-    `${site}/property-agents/agent/${slug}?review=confirmed#reviews`
+    `${site}/property-agents/agent/${slug}?review=received#reviews`
   );
 }
 
@@ -70,33 +69,4 @@ async function agentSlug(
     .eq("id", agentId)
     .single();
   return data?.slug ?? "";
-}
-
-async function refreshAggregate(
-  sb: ReturnType<typeof supabaseAdmin>,
-  agentId: number
-): Promise<void> {
-  const { data } = await sb
-    .from("sg_agent_reviews")
-    .select("rating_overall")
-    .eq("agent_id", agentId)
-    .eq("status", "published");
-  const ratings = (data ?? [])
-    .map((r) => Number(r.rating_overall))
-    .filter((n) => Number.isFinite(n) && n >= 1 && n <= 5);
-  const avg =
-    ratings.length > 0
-      ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) /
-        10
-      : null;
-  await sb
-    .from("sg_agents")
-    .update({
-      review_aggregate: {
-        avg,
-        count: ratings.length,
-        last_reviewed_at: new Date().toISOString(),
-      },
-    })
-    .eq("id", agentId);
 }

@@ -146,7 +146,7 @@ export async function POST(request: Request) {
       comment: String(comment).trim(),
       seller_initials: initialsOf(String(reviewerName)),
       verified_completion: false,
-      status: "pending", // hidden by RLS until email confirmed
+      status: "awaiting_email", // hidden until the reviewer confirms their email
       approved: false,
       verify_token: token,
       verify_expires: new Date(Date.now() + 7 * 86_400_000).toISOString(),
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message:
-        "Almost done — check your email and click the confirmation link to publish your review.",
+        "Almost done. Check your email and click the confirmation link. We review every submission before it goes live.",
     });
   } catch (err) {
     console.error("[reviews] unexpected", err);
@@ -226,11 +226,11 @@ function confirmHtml({
   <tr><td style="padding:32px">
     <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827">Confirm your review of ${agentName}</p>
     <p style="margin:0 0 20px;font-size:14px;color:#374151;line-height:1.6">
-      One click and your review goes live. This stops fake reviews — only people with a real email can publish.
+      One click confirms your review. We check every submission before it appears, so only genuine reviews from a real email get published.
     </p>
     <p style="margin:0 0 16px">
       <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        Confirm and publish my review
+        Confirm my review
       </a>
     </p>
     <p style="margin:16px 0 0;font-size:12px;color:#9ca3af">
