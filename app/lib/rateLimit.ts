@@ -89,10 +89,21 @@ export async function checkRateLimit(
 }
 
 // Convenience: derive a client IP from the request headers.
+//
+// On Vercel this is defense-in-depth, not a spoofing patch: the platform
+// overwrites x-forwarded-for with the real client IP and does NOT forward
+// client-supplied values (Vercel's documented anti-spoofing), so the header is a
+// single trusted IP, not an attacker-controlled list. We prefer
+// x-vercel-forwarded-for because — unlike x-forwarded-for — it survives a proxy
+// placed on top of Vercel and is set by the edge (not client-forwardable);
+// x-real-ip is an equivalent fallback. Take the FIRST value: the client per
+// standard X-Forwarded-For ordering, and the only value on plain Vercel. Fall
+// back to a constant so the limiter degrades to one shared bucket rather than
+// minting a fresh per-request bucket for a missing/garbage header.
 export function clientIp(req: Request): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+  const candidate =
+    req.headers.get("x-vercel-forwarded-for") ||
     req.headers.get("x-real-ip") ||
-    "unknown"
-  );
+    req.headers.get("x-forwarded-for");
+  return candidate?.split(",")[0]?.trim() || "unknown";
 }
