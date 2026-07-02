@@ -17,7 +17,7 @@ export default function robots(): MetadataRoute.Robots {
       // CCBot, Google-Extended) get the site into model knowledge; the
       // search/citation bots (OAI-SearchBot, ChatGPT-User, Claude-SearchBot,
       // Claude-User, PerplexityBot) are what actually fetch pages when an
-      // assistant CITES a source — blocking those means zero citations.
+      // assistant CITES a source, blocking those means zero citations.
       { userAgent: "GPTBot", allow: "/" },
       { userAgent: "OAI-SearchBot", allow: "/" },
       { userAgent: "ChatGPT-User", allow: "/" },

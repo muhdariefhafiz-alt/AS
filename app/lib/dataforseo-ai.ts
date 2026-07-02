@@ -178,7 +178,7 @@ export async function fetchLlmResponse(
     }>;
   };
   // DataForSEO returns HTTP 200 with a task-level error code on bad requests.
-  // Throw instead of silently recording a false "no answer" run — a failed
+  // Throw instead of silently recording a false "no answer" run, a failed
   // call is not the same measurement as zero citations.
   const taskStatus = json.tasks?.[0]?.status_code ?? 0;
   if (taskStatus !== 20000) {

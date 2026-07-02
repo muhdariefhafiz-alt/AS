@@ -68,7 +68,7 @@ async function redisCheck(
 
 /**
  * Returns { limited: true } when the caller has exceeded `max` requests in the
- * rolling `windowMs`. Fails OPEN (never blocks) if the Redis backend errors —
+ * rolling `windowMs`. Fails OPEN (never blocks) if the Redis backend errors:
  * a rate limiter should never take the site down.
  */
 export async function checkRateLimit(
@@ -94,7 +94,7 @@ export async function checkRateLimit(
 // overwrites x-forwarded-for with the real client IP and does NOT forward
 // client-supplied values (Vercel's documented anti-spoofing), so the header is a
 // single trusted IP, not an attacker-controlled list. We prefer
-// x-vercel-forwarded-for because — unlike x-forwarded-for — it survives a proxy
+// x-vercel-forwarded-for because, unlike x-forwarded-for, it survives a proxy
 // placed on top of Vercel and is set by the edge (not client-forwardable);
 // x-real-ip is an equivalent fallback. Take the FIRST value: the client per
 // standard X-Forwarded-For ordering, and the only value on plain Vercel. Fall
