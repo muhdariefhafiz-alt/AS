@@ -66,6 +66,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // === Guides ===
     { url: `${BASE}/guides`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE}/guides/how-to-choose-property-agent`, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE}/guides/how-to-check-property-agent-record`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/guides/hdb-resale-process`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/guides/property-agent-commission`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/guides/condo-vs-hdb-investment`, changeFrequency: "monthly", priority: 0.85 },

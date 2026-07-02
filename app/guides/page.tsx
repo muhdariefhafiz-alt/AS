@@ -17,6 +17,13 @@ const guides = [
     tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
   },
   {
+    slug: "how-to-check-property-agent-record",
+    title: "How to Check if a Property Agent Is Good",
+    description: "The 5-step record check: verify the CEA registration, count recent local seller-side sales, and apply the team test. Plus the four things the record hides.",
+    tag: "Due Diligence",
+    tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
+  },
+  {
     slug: "hdb-resale-process",
     title: "HDB Resale Process: Step-by-Step Guide",
     description: "The full timeline from eligibility check to key collection. Costs, documents, and where an agent fits in.",

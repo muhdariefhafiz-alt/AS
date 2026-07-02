@@ -70,6 +70,7 @@ Important for "best agent to SELL" queries: AgentScore sale-weights its volume d
 - /insights/best-property-agency-singapore - The property agency league table: home sales, rental share and sales-per-selling-agent by agency; the biggest brands top volume while only about 1 in 6 of their agents recorded a home sale, and small focused agencies sell several times more per agent
 - /insights/million-dollar-hdb - Tracker of all S$1M+ HDB resale transactions by town
 - /insights/freehold-premium - Freehold vs leasehold premium analysis per district
+- /guides/how-to-check-property-agent-record - How to check if a Singapore property agent is good: the 5-step CEA record check (registration, recent local seller-side sales, the team test) and the four things the record hides
 - /tools/commission-calculator - Free property agent commission calculator (HDB, condo, landed, rental, incl GST)
 - /search - Smart search across districts, HDB towns, agencies, and agents
 
