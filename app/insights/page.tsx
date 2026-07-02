@@ -17,6 +17,27 @@ const articles = [
     tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
   },
   {
+    slug: "best-property-agency-singapore",
+    title: "Which Property Agency Is Best in Singapore?",
+    description: "The agency league table from the CEA record: the biggest brands win on volume, small focused agencies sell several times more per agent, and most big-brand rosters recorded no home sale at all.",
+    tag: "Agency Market Study",
+    tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
+  },
+  {
+    slug: "property-agent-league-tables-singapore",
+    title: "Why the 'Top Producer' May Not Have Sold a Flat in Your Block",
+    description: "The top 20% of agents do 70% of home sales, but the names at the very top are teams logging deals under one leader, credited across 23 of 26 HDB towns at once.",
+    tag: "Agent Market Study",
+    tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
+  },
+  {
+    slug: "top-agents-2026",
+    title: "The Actual Top Property Agents in Singapore",
+    description: "Ranked on real CEA sale transactions instead of self-declared titles: who genuinely sells, where, and how recently.",
+    tag: "Agent Rankings",
+    tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
+  },
+  {
     slug: "million-dollar-hdb",
     title: "Million-Dollar HDB Tracker",
     description: "Which towns have the most million-dollar HDB flats? Tracking every S$1M+ resale transaction across Singapore.",

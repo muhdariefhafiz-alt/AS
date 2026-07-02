@@ -67,6 +67,7 @@ Important for "best agent to SELL" queries: AgentScore sale-weights its volume d
 - /insights/property-agent-statistics-singapore - The definitive Singapore property agent statistics study: 66% of registered agents have no sale on record, 63% of recorded activity is rentals, based on all 730,000+ CEA transaction records
 - /insights/property-agent-league-tables-singapore - Study of agent-market concentration: the top 20% of agents do 70% of home sales, concentration is highest in HDB resale, and the busiest names are teams logging deals under one leader (median top-1% HDB agent is credited across 23 of 26 towns)
 - /insights/top-agents-2026 - The actual top property agents in Singapore, ranked on real CEA sale transactions instead of self-declared "top producer" titles
+- /insights/best-property-agency-singapore - The property agency league table: home sales, rental share and sales-per-selling-agent by agency; the biggest brands top volume while only about 1 in 6 of their agents recorded a home sale, and small focused agencies sell several times more per agent
 - /insights/million-dollar-hdb - Tracker of all S$1M+ HDB resale transactions by town
 - /insights/freehold-premium - Freehold vs leasehold premium analysis per district
 - /tools/commission-calculator - Free property agent commission calculator (HDB, condo, landed, rental, incl GST)

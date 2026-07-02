@@ -59,10 +59,14 @@ export default async function LeagueTablesStudy() {
   // served from a cached single-row table refreshed by the daily cron.
   const { data: row } = await supabase
     .from("agent_concentration_stats")
-    .select("data")
+    .select("data, updated_at")
     .eq("id", 1)
     .single();
   const d = (row?.data ?? {}) as Conc;
+  // The cache is refreshed by the daily cron, so the study's dateModified is
+  // real: the numbers on this page genuinely update. Fall back to the publish
+  // date if the cache row is somehow missing.
+  const refreshedAt = row?.updated_at ? String(row.updated_at).slice(0, 10) : "2026-06-12";
 
   const all = d.all ?? ({ top20: 70, sales: 273099 } as Seg);
   const segs = d.segments ?? [];
@@ -111,7 +115,7 @@ export default async function LeagueTablesStudy() {
       headline: TITLE,
       description: metadata.description,
       datePublished: "2026-06-12",
-      dateModified: "2026-06-12",
+      dateModified: refreshedAt,
       author: { "@type": "Organization", name: "FairComparisons" },
       publisher: { "@type": "Organization", name: "FairComparisons" },
       isBasedOn: "CEA public salesperson transaction records",
@@ -332,7 +336,10 @@ export default async function LeagueTablesStudy() {
                   AgentScore and flagged on profiles. We set out every limitation on our{" "}
                   <Link href="/trust" className="font-medium text-[var(--blue)] underline">trust and data page</Link>.
                 </p>
-                <p>Source: CEA salesperson transaction records and public register. Analysis by FairComparisons.</p>
+                <p>
+                  Source: CEA salesperson transaction records and public register. Analysis by FairComparisons.
+                  Figures recomputed from the live record on {refreshedAt}.
+                </p>
               </div>
             </section>
           </div>
