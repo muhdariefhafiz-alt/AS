@@ -53,8 +53,20 @@
       "schedule": "30 5 * * *"
     },
     {
-      "path": "/api/cron/ai-tracker-scan",
+      "path": "/api/cron/ai-tracker-scan?surface=google_aio",
       "schedule": "0 7 * * 1"
+    },
+    {
+      "path": "/api/cron/ai-tracker-scan?surface=chatgpt",
+      "schedule": "10 7 * * 1"
+    },
+    {
+      "path": "/api/cron/ai-tracker-scan?surface=perplexity",
+      "schedule": "20 7 * * 1"
+    },
+    {
+      "path": "/api/cron/ai-tracker-scan?surface=claude",
+      "schedule": "30 7 * * 1"
     }
   ]
 }

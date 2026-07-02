@@ -1,9 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Share of voice in AI answers (Google AI Overview, ChatGPT, Perplexity): is
-// FairComparisons cited/mentioned vs the agencies and portals. Reads the
-// sg_ai_tracker_sov_latest view (latest run per query per surface). Dormant until
-// DATAFORSEO creds are set and the cron has run.
+// Share of voice in AI answers (Google AI Overview, ChatGPT, Claude,
+// Perplexity): is FairComparisons cited/mentioned vs the agencies and portals.
+// Reads the sg_ai_tracker_sov_latest view (latest run per query per surface).
+// Dormant until DATAFORSEO creds are set and the cron has run.
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,8 +25,9 @@ const SURFACE_LABEL: Record<string, string> = {
   google_aio: "Google AI Overview",
   chatgpt: "ChatGPT",
   perplexity: "Perplexity",
+  claude: "Claude",
 };
-const SURFACE_ORDER = ["chatgpt", "perplexity", "google_aio"];
+const SURFACE_ORDER = ["chatgpt", "claude", "perplexity", "google_aio"];
 
 export async function AiSearchTab() {
   const [{ data: sov }, { data: brands }, { count: queryCount }] = await Promise.all([

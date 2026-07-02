@@ -13,11 +13,23 @@ export default function robots(): MetadataRoute.Robots {
         // Keeps the domain's topical signal tight on property agents.
         disallow: ["/api/", "/admin", "/search", "/claim"],
       },
+      // AI crawlers, explicitly allowed. Training bots (GPTBot, ClaudeBot,
+      // CCBot, Google-Extended) get the site into model knowledge; the
+      // search/citation bots (OAI-SearchBot, ChatGPT-User, Claude-SearchBot,
+      // Claude-User, PerplexityBot) are what actually fetch pages when an
+      // assistant CITES a source — blocking those means zero citations.
       { userAgent: "GPTBot", allow: "/" },
+      { userAgent: "OAI-SearchBot", allow: "/" },
+      { userAgent: "ChatGPT-User", allow: "/" },
       { userAgent: "ClaudeBot", allow: "/" },
+      { userAgent: "Claude-SearchBot", allow: "/" },
+      { userAgent: "Claude-User", allow: "/" },
       { userAgent: "PerplexityBot", allow: "/" },
+      { userAgent: "Perplexity-User", allow: "/" },
       { userAgent: "Google-Extended", allow: "/" },
+      { userAgent: "CCBot", allow: "/" },
       { userAgent: "Applebot", allow: "/" },
+      { userAgent: "Applebot-Extended", allow: "/" },
     ],
     sitemap: "https://fair-comparisons.com/sitemap.xml",
   };

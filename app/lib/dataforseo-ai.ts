@@ -3,14 +3,14 @@ import { supabaseAdmin } from "./supabase";
 /**
  * DataForSEO AI-answer tracking for SG. Same cost discipline as the NL sibling
  * (kill-switch + monthly cap + real-cost ledger in the shared dataforseo_usage
- * table). Three surfaces:
+ * table). Four surfaces:
  *   - google_aio : SERP organic live/advanced + load_async_ai_overview. Citations
  *     in items[].references[] (.domain/.url), text in items[].markdown. Logged as
  *     api='serp_ai'.
- *   - chatgpt / perplexity : AI Optimization LLM Responses live. Answer in
- *     result[].items[].sections[].text, citations in sections[].annotations[].url
- *     (ChatGPT needs web_search; Perplexity is grounded by default). Logged as
- *     api='ai_optimization'.
+ *   - chatgpt / perplexity / claude : AI Optimization LLM Responses live. Answer
+ *     in result[].items[].sections[].text, citations in
+ *     sections[].annotations[].url (ChatGPT and Claude need web_search;
+ *     Perplexity is grounded by default). Logged as api='ai_optimization'.
  *
  * SG spend is scoped by job='sg_ai_tracker' so the cap is per-app even though the
  * ledger is shared with NL.
@@ -22,7 +22,7 @@ const JOB = "sg_ai_tracker";
 
 export const AI_TRACKER_DISABLED = process.env.DATAFORSEO_AI_DISABLED === "true";
 export const AI_MONTHLY_CAP_USD = Number(process.env.DATAFORSEO_AI_MONTHLY_CAP_USD || 10);
-export const AI_SURFACES = ["google_aio", "chatgpt", "perplexity"] as const;
+export const AI_SURFACES = ["google_aio", "chatgpt", "perplexity", "claude"] as const;
 
 export class AiBudgetError extends Error {
   constructor(message: string) {
@@ -136,20 +136,32 @@ export async function fetchAiOverview(keyword: string): Promise<AiSurfaceResult>
 type LlmSection = { text?: string; annotations?: Array<Record<string, unknown>> | null };
 type LlmItem = { sections?: LlmSection[] };
 
-/** ChatGPT / Perplexity answer (web-grounded) for one prompt, SG. */
+// Consumer-default model per platform (what a typical user of each assistant
+// gets). Verified against /v3/ai_optimization/<platform>/llm_responses/models.
+const LLM_MODEL: Record<string, string> = {
+  chat_gpt: "gpt-4o",
+  perplexity: "sonar",
+  claude: "claude-sonnet-4-6",
+};
+
+/** ChatGPT / Perplexity / Claude answer (web-grounded) for one prompt, SG. */
 export async function fetchLlmResponse(
-  platform: "chat_gpt" | "perplexity",
+  platform: "chat_gpt" | "perplexity" | "claude",
   prompt: string
 ): Promise<AiSurfaceResult> {
   await guard();
   const task: Record<string, unknown> = {
     user_prompt: prompt.slice(0, 500),
-    model_name: platform === "perplexity" ? "sonar" : "gpt-4o",
-    web_search_country_iso_code: "SG",
+    model_name: LLM_MODEL[platform],
     max_output_tokens: 1024,
     tag: "sg-ai-tracker",
   };
-  if (platform === "chat_gpt") task.web_search = true;
+  // Perplexity is web-grounded by default; ChatGPT and Claude need the flag to
+  // search (and therefore to produce citation annotations at all). The claude
+  // endpoint rejects web_search_country_iso_code (40501 Invalid Field), so the
+  // SG scoping is only sent where supported.
+  if (platform === "chat_gpt" || platform === "claude") task.web_search = true;
+  if (platform !== "claude") task.web_search_country_iso_code = "SG";
 
   const res = await fetch(`https://api.dataforseo.com/v3/ai_optimization/${platform}/llm_responses/live`, {
     method: "POST",
@@ -159,8 +171,19 @@ export async function fetchLlmResponse(
   if (!res.ok) throw new Error(`DataForSEO ${platform}/llm_responses: ${res.status} ${await res.text().catch(() => "")}`);
   const json = (await res.json()) as {
     cost?: number;
-    tasks?: Array<{ result?: Array<{ items?: LlmItem[]; money_spent?: number }> | null }>;
+    tasks?: Array<{
+      status_code?: number;
+      status_message?: string;
+      result?: Array<{ items?: LlmItem[]; money_spent?: number }> | null;
+    }>;
   };
+  // DataForSEO returns HTTP 200 with a task-level error code on bad requests.
+  // Throw instead of silently recording a false "no answer" run — a failed
+  // call is not the same measurement as zero citations.
+  const taskStatus = json.tasks?.[0]?.status_code ?? 0;
+  if (taskStatus !== 20000) {
+    throw new Error(`DataForSEO ${platform} task ${taskStatus}: ${json.tasks?.[0]?.status_message ?? "unknown"}`);
+  }
   const result = json.tasks?.[0]?.result?.[0];
   const cost = Number(json.cost || result?.money_spent || 0);
   await logUsage("ai_optimization", `${platform}/llm_responses/live`, cost);
@@ -185,5 +208,6 @@ export async function fetchSurface(surface: string, query: string): Promise<AiSu
   if (surface === "google_aio") return fetchAiOverview(query);
   if (surface === "chatgpt") return fetchLlmResponse("chat_gpt", query);
   if (surface === "perplexity") return fetchLlmResponse("perplexity", query);
+  if (surface === "claude") return fetchLlmResponse("claude", query);
   throw new Error(`Unknown surface: ${surface}`);
 }
