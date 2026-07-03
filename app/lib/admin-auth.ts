@@ -37,6 +37,21 @@ export function isAdminEmail(email: string): boolean {
   return getAdminEmails().has(email.toLowerCase().trim());
 }
 
+/**
+ * Constant-time check of a submitted password against ADMIN_PASSWORD. Both sides
+ * are SHA-256'd first so the comparison is fixed-length (no length leak, no
+ * early return) and timingSafeEqual never throws on length mismatch. Returns
+ * false when ADMIN_PASSWORD is unset or too short, so the password path is
+ * simply unavailable until the operator configures it.
+ */
+export function verifyAdminPassword(password: string | undefined | null): boolean {
+  const expected = process.env.ADMIN_PASSWORD;
+  if (!expected || expected.length < 8) return false;
+  if (typeof password !== "string" || password.length === 0) return false;
+  const h = (s: string) => crypto.createHash("sha256").update(s).digest();
+  return crypto.timingSafeEqual(h(password), h(expected));
+}
+
 /** @deprecated Use isAdminEmail / getAdminEmails. Kept for back-compat. */
 export function getAdminEmail(): string {
   const first = [...getAdminEmails()][0];
