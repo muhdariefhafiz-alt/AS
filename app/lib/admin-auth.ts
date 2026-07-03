@@ -39,17 +39,30 @@ export function isAdminEmail(email: string): boolean {
 
 /**
  * Constant-time check of a submitted password against ADMIN_PASSWORD. Both sides
- * are SHA-256'd first so the comparison is fixed-length (no length leak, no
- * early return) and timingSafeEqual never throws on length mismatch. Returns
- * false when ADMIN_PASSWORD is unset or too short, so the password path is
- * simply unavailable until the operator configures it.
+ * are trimmed (a trailing newline pasted into the Vercel env var is the classic
+ * "correct password rejected" cause) then SHA-256'd so the comparison is
+ * fixed-length and timingSafeEqual never throws on length mismatch. Returns
+ * false when ADMIN_PASSWORD is unset/blank, so the password path is simply
+ * unavailable until the operator configures it (fails closed).
  */
 export function verifyAdminPassword(password: string | undefined | null): boolean {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected || expected.length < 8) return false;
-  if (typeof password !== "string" || password.length === 0) return false;
+  const expected = (process.env.ADMIN_PASSWORD ?? "").trim();
+  if (!expected) return false;
+  if (typeof password !== "string") return false;
+  const given = password.trim();
+  if (!given) return false;
   const h = (s: string) => crypto.createHash("sha256").update(s).digest();
-  return crypto.timingSafeEqual(h(password), h(expected));
+  return crypto.timingSafeEqual(h(given), h(expected));
+}
+
+/** Runtime state of the password path, for diagnostics only (no secret value). */
+export function adminPasswordDiag(): {
+  configured: boolean;
+  length: number;
+  adminEmails: number;
+} {
+  const p = (process.env.ADMIN_PASSWORD ?? "").trim();
+  return { configured: p.length > 0, length: p.length, adminEmails: getAdminEmails().size };
 }
 
 /** @deprecated Use isAdminEmail / getAdminEmails. Kept for back-compat. */

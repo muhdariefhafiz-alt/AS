@@ -1,21 +1,28 @@
 import { NextResponse } from "next/server";
 import {
-  isAdminEmail,
   verifyAdminPassword,
+  getAdminEmail,
   issueSession,
+  adminPasswordDiag,
   COOKIE_NAME,
   SESSION_TTL_MS,
 } from "../../../lib/admin-auth";
 import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
 
 /**
- * POST /api/admin/password-login
- * Body: { email, password }
- * Self-contained admin sign-in that does not depend on email delivery. On a
- * match (email in ADMIN_EMAILS AND password == ADMIN_PASSWORD) it sets the same
- * HMAC session cookie the magic link would have. Rate-limited per IP because a
- * password endpoint is brute-forceable.
+ * Password-only admin sign-in. No email delivery involved.
+ *
+ * POST { password } -> if it matches ADMIN_PASSWORD, set the HMAC session cookie
+ * for the primary admin identity (first ADMIN_EMAILS entry) so the existing
+ * getAdminSession allowlist check still passes. Rate-limited per IP.
+ *
+ * GET -> diagnostic only: reports whether ADMIN_PASSWORD reached this runtime
+ * (boolean + length, never the value). Remove once login is confirmed working.
  */
+export async function GET() {
+  return NextResponse.json(adminPasswordDiag());
+}
+
 export async function POST(req: Request) {
   const ip = clientIp(req);
   const { limited } = await checkRateLimit(`admin-login:${ip}`, 10, 15 * 60 * 1000);
@@ -26,29 +33,32 @@ export async function POST(req: Request) {
     );
   }
 
-  let email = "";
   let password = "";
   try {
     const body = await req.json();
-    email = typeof body?.email === "string" ? body.email : "";
     password = typeof body?.password === "string" ? body.password : "";
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const normalized = email.toLowerCase().trim();
-  // Evaluate both checks unconditionally so response timing does not reveal
-  // whether the email or the password was the wrong one (anti-enumeration).
-  const emailOk = isAdminEmail(normalized);
-  const passOk = verifyAdminPassword(password);
-  if (!emailOk || !passOk) {
-    return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+  if (!verifyAdminPassword(password)) {
+    return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
+  }
+
+  // Session identity = the first configured admin email, so getAdminSession's
+  // allowlist check still passes. ADMIN_EMAILS must have at least one entry.
+  const email = getAdminEmail();
+  if (!email) {
+    return NextResponse.json(
+      { error: "Admin not configured (ADMIN_EMAILS empty)" },
+      { status: 500 }
+    );
   }
 
   const res = NextResponse.json({ success: true });
   res.cookies.set({
     name: COOKIE_NAME,
-    value: issueSession(normalized),
+    value: issueSession(email),
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
