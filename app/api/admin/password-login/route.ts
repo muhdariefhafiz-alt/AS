@@ -3,7 +3,7 @@ import {
   verifyAdminPassword,
   getAdminEmail,
   issueSession,
-  adminPasswordDiag,
+  adminAuthDiag,
   COOKIE_NAME,
   SESSION_TTL_MS,
 } from "../../../lib/admin-auth";
@@ -20,7 +20,7 @@ import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
  * (boolean + length, never the value). Remove once login is confirmed working.
  */
 export async function GET() {
-  return NextResponse.json(adminPasswordDiag());
+  return NextResponse.json(adminAuthDiag());
 }
 
 export async function POST(req: Request) {
@@ -55,10 +55,23 @@ export async function POST(req: Request) {
     );
   }
 
+  // issueSession() reads ADMIN_SECRET; if that env var is missing or too short
+  // it throws. Catch it and report the real cause as JSON instead of letting the
+  // function 500 with an opaque HTML page (which the UI shows as "Sign in failed").
+  let token: string;
+  try {
+    token = issueSession(email);
+  } catch {
+    return NextResponse.json(
+      { error: "Server auth is misconfigured: ADMIN_SECRET is missing or under 16 chars." },
+      { status: 500 }
+    );
+  }
+
   const res = NextResponse.json({ success: true });
   res.cookies.set({
     name: COOKIE_NAME,
-    value: issueSession(email),
+    value: token,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
