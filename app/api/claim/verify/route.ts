@@ -13,6 +13,10 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// Bump when the contact-consent wording materially changes, so we can tell who
+// consented under which text.
+const CONTACT_CONSENT_VERSION = "2026-07-v1";
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get("token");
@@ -24,7 +28,7 @@ export async function GET(req: Request) {
   // Find claim request
   const { data: claim } = await supabase
     .from("sg_claim_requests")
-    .select("id, agent_id, email, status")
+    .select("id, agent_id, email, status, contact_consent")
     .eq("verification_token", token)
     .single();
 
@@ -45,7 +49,17 @@ export async function GET(req: Request) {
   // Mark agent as claimed
   await supabase
     .from("sg_agents")
-    .update({ claimed: true, claimed_email: claim.email, claimed_at: new Date().toISOString() })
+    .update({
+      claimed: true,
+      claimed_email: claim.email,
+      claimed_at: new Date().toISOString(),
+      ...(claim.contact_consent
+        ? {
+            contact_consent_at: new Date().toISOString(),
+            contact_consent_version: CONTACT_CONSENT_VERSION,
+          }
+        : {}),
+    })
     .eq("id", claim.agent_id);
 
   // Fetch agent details for the welcome email payload

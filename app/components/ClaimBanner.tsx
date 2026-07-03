@@ -41,6 +41,7 @@ export default function ClaimBanner({
   const [email, setEmail] = useState("");
   const [ceaNumber, setCeaNumber] = useState("");
   const [consent, setConsent] = useState(false);
+  const [contactConsent, setContactConsent] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "review" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const bannerRef = useRef<HTMLDivElement>(null);
@@ -100,13 +101,13 @@ export default function ClaimBanner({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !ceaNumber || !consent) return;
+    if (!email || !ceaNumber || !consent || !contactConsent) return;
     setStatus("loading");
     try {
       const res = await fetch("/api/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agentId, email, ceaNumber }),
+        body: JSON.stringify({ agentId, email, ceaNumber, contactConsent }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -266,11 +267,23 @@ export default function ClaimBanner({
                 Free to claim. Optional tool subscriptions never influence ranking, and FairComparisons never takes a cut of a sale.
               </span>
             </label>
+            <label className="mt-2.5 flex items-start gap-2 text-[12px] leading-snug text-gray-600">
+              <input
+                type="checkbox"
+                checked={contactConsent}
+                onChange={(e) => setContactConsent(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                required
+              />
+              <span>
+                I agree that FairComparisons may contact me by email and WhatsApp about seller leads matched to me and about my profile. I can opt out anytime.
+              </span>
+            </label>
             {status === "error" && <p className="mt-3 text-sm text-red-600">{errorMsg}</p>}
             <div className="mt-3 flex items-center justify-between gap-3">
               <button
                 type="submit"
-                disabled={status === "loading" || !consent}
+                disabled={status === "loading" || !consent || !contactConsent}
                 className="rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {status === "loading" ? "Sending..." : "Send verification link"}

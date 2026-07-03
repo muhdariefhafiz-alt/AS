@@ -30,10 +30,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const { agentId, email, phone, ceaNumber } = await req.json();
+    const { agentId, email, phone, ceaNumber, contactConsent } = await req.json();
 
     if (!agentId || !email || !ceaNumber) {
       return NextResponse.json({ error: "Agent ID, email, and CEA registration number are required" }, { status: 400 });
+    }
+    if (contactConsent !== true) {
+      return NextResponse.json(
+        { error: "You must agree to be contacted to claim your profile." },
+        { status: 400 }
+      );
     }
 
     // Check agent exists
@@ -91,6 +97,7 @@ export async function POST(req: Request) {
       phone: phone || null,
       verification_token: token,
       status: path,
+      contact_consent: true,
     });
     if (error) {
       return NextResponse.json({ error: "Failed to create claim request" }, { status: 500 });
