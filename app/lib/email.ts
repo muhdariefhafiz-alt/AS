@@ -69,6 +69,12 @@ async function trackEvent(
   }
 }
 
+// Prefer a real transactional provider (Resend) when configured. Klaviyo only
+// fires an EVENT and relies on a per-metric Flow to actually send, so any email
+// whose metric has no live Flow is silently dropped. That broke admin login,
+// claim verification, and agent invites. Resend sends the HTML directly. When
+// RESEND_API_KEY is unset we fall back to the legacy Klaviyo path unchanged, so
+// shipping this is a no-op until the key + a verified sending domain are set.
 export async function sendEmail({
   to,
   subject,
@@ -82,14 +88,50 @@ export async function sendEmail({
   metric?: string;
   properties?: Record<string, unknown>;
 }) {
+  if (process.env.RESEND_API_KEY) {
+    return sendViaResend({ to, subject, html });
+  }
+
   if (!getKey()) {
-    console.log(`[email-skip] No KLAVIYO_API_KEY. Would send to ${to}: ${subject}`);
+    console.log(
+      `[email-skip] No RESEND_API_KEY or KLAVIYO_API_KEY. Would send to ${to}: ${subject}`
+    );
     return { id: "dry-run" };
   }
 
   await upsertProfile(to);
   await trackEvent(to, metric, { subject, html, ...properties });
   return { id: "klaviyo-event-queued" };
+}
+
+// Direct HTML send via Resend (https://resend.com). Requires RESEND_API_KEY and
+// a verified sending domain; RESEND_FROM overrides the default From address.
+async function sendViaResend({
+  to,
+  subject,
+  html,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const from =
+    process.env.RESEND_FROM ?? "FairComparisons <noreply@fair-comparisons.com>";
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ from, to, subject, html }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.error("[email/resend] send failed", res.status, text);
+    throw new Error(`Resend ${res.status}`);
+  }
+  const json = (await res.json().catch(() => ({}))) as { id?: string };
+  return { id: json.id ?? "resend" };
 }
 
 export async function sendBatchEmails(
