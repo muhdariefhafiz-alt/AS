@@ -55,25 +55,6 @@ export function verifyAdminPassword(password: string | undefined | null): boolea
   return crypto.timingSafeEqual(h(given), h(expected));
 }
 
-/** Runtime state of the admin auth env, for diagnostics only (no secret values). */
-export function adminAuthDiag(): {
-  admin_password_configured: boolean;
-  admin_password_length: number;
-  admin_secret_configured: boolean;
-  admin_secret_length_ok: boolean;
-  admin_emails: number;
-} {
-  const p = (process.env.ADMIN_PASSWORD ?? "").trim();
-  const s = (process.env.ADMIN_SECRET ?? "").trim();
-  return {
-    admin_password_configured: p.length > 0,
-    admin_password_length: p.length,
-    admin_secret_configured: s.length > 0,
-    admin_secret_length_ok: s.length >= 16,
-    admin_emails: getAdminEmails().size,
-  };
-}
-
 /** @deprecated Use isAdminEmail / getAdminEmails. Kept for back-compat. */
 export function getAdminEmail(): string {
   const first = [...getAdminEmails()][0];

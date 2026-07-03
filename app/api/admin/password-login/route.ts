@@ -3,7 +3,6 @@ import {
   verifyAdminPassword,
   getAdminEmail,
   issueSession,
-  adminAuthDiag,
   COOKIE_NAME,
   SESSION_TTL_MS,
 } from "../../../lib/admin-auth";
@@ -15,14 +14,7 @@ import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
  * POST { password } -> if it matches ADMIN_PASSWORD, set the HMAC session cookie
  * for the primary admin identity (first ADMIN_EMAILS entry) so the existing
  * getAdminSession allowlist check still passes. Rate-limited per IP.
- *
- * GET -> diagnostic only: reports whether ADMIN_PASSWORD reached this runtime
- * (boolean + length, never the value). Remove once login is confirmed working.
  */
-export async function GET() {
-  return NextResponse.json(adminAuthDiag());
-}
-
 export async function POST(req: Request) {
   const ip = clientIp(req);
   const { limited } = await checkRateLimit(`admin-login:${ip}`, 10, 15 * 60 * 1000);
