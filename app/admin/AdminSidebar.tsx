@@ -86,6 +86,12 @@ export function AdminSidebar({
               </span>
             )}
           </Link>
+          <Link
+            href="/admin/impersonate"
+            className="flex items-center justify-between rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-800 hover:bg-indigo-100"
+          >
+            <span>Impersonate agent</span>
+          </Link>
         </div>
         <form action="/api/admin/logout" method="POST">
           <button

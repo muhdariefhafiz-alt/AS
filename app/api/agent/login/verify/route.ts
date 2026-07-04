@@ -14,7 +14,9 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get("token");
   const session = verifyAgentToken(token);
-  if (!session) {
+  // Reject impersonation tokens here: they must never be upgraded into a clean
+  // 30-day agent session (that would strip the imp flag, banner, and audit).
+  if (!session || session.impersonatedBy) {
     return NextResponse.redirect(new URL("/dashboard?login=invalid", req.url));
   }
 

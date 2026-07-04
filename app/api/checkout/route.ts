@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe, PRICE_IDS } from "../../lib/stripe";
+import { getAgentSession } from "../../lib/agent-auth";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,12 +16,32 @@ const supabase = createClient(
  */
 export async function POST(req: Request) {
   try {
+    // Safety: an admin impersonating an agent must not be able to start a paid
+    // subscription on the agent's behalf. Profile/photo setup stays enabled.
+    const sess = await getAgentSession();
+    if (sess?.impersonatedBy) {
+      return NextResponse.json(
+        { error: "Billing changes are disabled during admin impersonation." },
+        { status: 403 }
+      );
+    }
+
     const { email, tier } = await req.json();
 
     if (!email || !tier || !["verified", "professional", "elite"].includes(tier)) {
       return NextResponse.json(
         { error: "Valid email and tier required" },
         { status: 400 }
+      );
+    }
+
+    // A signed-in agent may only subscribe their OWN profile. Without this, a
+    // logged-in agent could drive a checkout bound to another agent's email.
+    // The public pricing page (no agent session) still uses the body email.
+    if (sess && sess.email && sess.email.toLowerCase().trim() !== String(email).toLowerCase().trim()) {
+      return NextResponse.json(
+        { error: "You can only subscribe your own profile." },
+        { status: 403 }
       );
     }
 

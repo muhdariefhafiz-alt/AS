@@ -28,6 +28,12 @@ export async function POST(req: Request) {
     if (!session) {
       return NextResponse.json({ error: "Not signed in" }, { status: 401 });
     }
+    if (session.impersonatedBy) {
+      return NextResponse.json(
+        { error: "This action is disabled during admin impersonation." },
+        { status: 403 }
+      );
+    }
 
     const body = await req.json();
     const {
