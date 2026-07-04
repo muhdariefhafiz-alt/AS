@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-type Summary = { win: string; pv: number; organic: number; direct: number; referral: number; internal: number; distinct_pages: number; mobile: number };
+type Summary = { win: string; pv: number; organic: number; direct: number; referral: number; internal: number; distinct_pages: number; mobile: number; bot: number };
 type Bar = { k: string; n: number };
 
 function delta(cur: number, prev: number): { text: string; dir: "up" | "down" | "flat" } {
@@ -137,7 +137,10 @@ export async function SeoTab() {
       ) : (
         <>
           <div>
-            <SectionHeading title="Traffic (last 30 days)" hint="FairComparisons only, from our own log." />
+            <SectionHeading
+              title="Traffic (last 30 days)"
+              hint={`FairComparisons only, from our own log.${n(cur, "bot") > 0 ? ` Excluding ${n(cur, "bot").toLocaleString()} bot views (form-spam heuristic).` : ""}`}
+            />
             <div className="mt-3 grid gap-4 sm:grid-cols-4">
               <StatCard title="Page views 30d" value={pv30.toLocaleString()} delta={delta(pv30, pvPrior)} sparkline={daily} color="#2980b9" />
               <StatCard title="Organic (search) 30d" value={organic30.toLocaleString()} delta={delta(organic30, n(prior, "organic"))} sub="Google, Bing, etc." color="#059669" />

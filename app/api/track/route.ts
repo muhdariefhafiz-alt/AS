@@ -5,7 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { path, referrer, event, utm_source, utm_medium, utm_campaign } = await req.json();
+    const { path, referrer, event, session_id, utm_source, utm_medium, utm_campaign } = await req.json();
+    // Anonymous per-tab session id from PageTracker (see there). Sanitized to a
+    // UUID-shaped string so this open endpoint cannot stuff junk into the column.
+    const sessionId =
+      typeof session_id === "string" && /^[0-9a-f-]{16,64}$/i.test(session_id) ? session_id : null;
     // Service-role write: the anon client silently fails RLS-protected inserts,
     // which is why first-party page_views stopped collecting. supabaseAdmin fixes it.
     const supabase = supabaseAdmin();
@@ -46,6 +50,7 @@ export async function POST(req: NextRequest) {
           host,
           user_agent: ua || null,
           event: event || null,
+          session_id: sessionId,
           utm_source: utm_source || null,
           utm_medium: utm_medium || null,
           utm_campaign: utm_campaign || null,
