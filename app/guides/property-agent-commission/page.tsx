@@ -3,8 +3,9 @@ import type { Metadata } from "next";
 import SellCtaBand from "../../components/SellCtaBand";
 
 export const metadata: Metadata = {
-  title: "Property Agent Commission Rates in Singapore (2026 Guide)",
-  description: "How much do property agents charge in Singapore? Sellers typically pay 1% for HDB and 1-2% for private property; rentals run 0.5 to 1 month's rent. Full rates by property type, worked dollar examples, GST, and how to negotiate.",
+  title: { absolute: "Property Agent Commission Singapore (2026) | FairComparisons" },
+  description:
+    "How much is property agent commission in Singapore? HDB about 1%, private 1 to 2%, rentals 0.5 to 1 month. Rates by property type, worked examples and GST.",
   alternates: { canonical: "https://fair-comparisons.com/guides/property-agent-commission" },
 };
 
@@ -75,6 +76,10 @@ const faqItems = [
   {
     q: "Is GST charged on agent commission?",
     a: "It depends on whether the agent's agency is GST-registered. Larger agencies are typically GST-registered, meaning 9% GST is added on top of the commission. A 1% commission on a S$600,000 flat would be S$6,000 + S$540 GST = S$6,540 total. Check with your agent whether GST applies.",
+  },
+  {
+    q: "What is the 99.co or PropertyGuru agent fee?",
+    a: "That is the fee agents pay the listing portals to advertise and boost their listings, not a fee you pay. PropertyGuru's agent packages run roughly S$1,949 to S$34,322 per year. It is separate from the commission you pay your own agent (1% for HDB, 1 to 2% for private). Portal fees do not reduce your commission, but they do influence which agents appear first, since higher spend buys higher placement.",
   },
 ];
 
@@ -235,6 +240,23 @@ export default function PropertyAgentCommissionPage() {
                 </p>
                 <p>
                   <strong>Co-broking:</strong> When both buyer and seller have agents, the two agents co-broke the deal. Each agent is paid by their respective client. The agents coordinate the transaction between them.
+                </p>
+              </div>
+            </section>
+
+            {/* Portal fees vs commission */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900">Portal Fees vs Agent Commission: What Is the 99.co or PropertyGuru Fee?</h2>
+              <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
+                <p>
+                  Two different costs get mixed up here. The <strong>commission</strong> is what you pay your own agent when a deal completes, the 1% to 2% covered above. The <strong>portal fee</strong> is separate: it is what agents themselves pay listing portals like PropertyGuru and 99.co to advertise and to push their listings up the results.
+                </p>
+                <p>
+                  So a search for the &quot;99.co agent fee&quot; or &quot;PropertyGuru agent fee&quot; is really about the agent&apos;s advertising cost, not a fee you pay. PropertyGuru&apos;s agent packages run roughly S$1,949 to S$34,322 per year. Those fees do not come out of your commission directly, but they do shape which agents you see first, because paying more buys higher placement.
+                </p>
+                <p>
+                  That pay-for-placement model is exactly why we rank agents on their actual CEA transaction records instead. FairComparisons is free for sellers and takes no cut of any sale. If you are an agent weighing portal spend, see our{" "}
+                  <Link href="/for-agents/propertyguru-alternative" className="font-medium text-[var(--blue)] underline">PropertyGuru alternative</Link>{" "}breakdown.
                 </p>
               </div>
             </section>

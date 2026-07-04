@@ -212,6 +212,30 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ---------- GUIDES & RANKINGS (internal link equity) ---------- */}
+      <section style={{ background: "var(--cloud)" }}>
+        <div className="fc-wrap" style={{ padding: "56px 40px" }}>
+          <h2 style={{ margin: 0 }}>Guides and rankings</h2>
+          <p className="muted" style={{ marginTop: 8, fontSize: 14, maxWidth: 560 }}>
+            Popular reads for Singapore home sellers, all built on the same government data.
+          </p>
+          <div className="fc-grid-3" style={{ marginTop: 24 }}>
+            <Link href="/guides/property-agent-commission" className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 17 }}>Property agent commission in Singapore</div>
+              <p className="muted" style={{ margin: "6px 0 0", fontSize: 13 }}>What sellers pay by property type, worked examples and GST.</p>
+            </Link>
+            <Link href="/property-agents/best-by-type/hdb" className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 17 }}>Best HDB agents in Singapore</div>
+              <p className="muted" style={{ margin: "6px 0 0", fontSize: 13 }}>Ranked on verified HDB resale transaction records.</p>
+            </Link>
+            <Link href="/guides/how-to-choose-property-agent" className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 17 }}>How to choose a property agent</div>
+              <p className="muted" style={{ margin: "6px 0 0", fontSize: 13 }}>What the data says to look for before you commit.</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ---------- CLOSING CTA ---------- */}
       <section className="fc-section fc-section--dark">
         <div className="fc-wrap" style={{ textAlign: "center" }}>

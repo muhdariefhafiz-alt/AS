@@ -18,22 +18,25 @@ const TOP_AGENCIES = [
   { slug: "c-h-properties-pte-ltd", short: "C&H" },
   { slug: "sn-real-estate-pte-ltd", short: "SN Real Estate" },
   { slug: "century-21-pte-ltd", short: "Century 21" },
+  { slug: "knight-frank-pte-ltd", short: "Knight Frank" },
+  { slug: "plb-realty-pte-ltd", short: "PropertyLimBrothers" },
+  { slug: "cbre-pte-ltd", short: "CBRE" },
+  { slug: "realstar-premier-group-private-limited", short: "Realstar" },
+  { slug: "mindlink-groups-pte-ltd", short: "Mindlink" },
+  { slug: "jones-lang-lasalle-property-consultants-pte-ltd", short: "JLL" },
 ];
 
-function generatePairs(): [string, string][] {
-  const pairs: [string, string][] = [];
-  // All combinations of top agencies
-  for (let i = 0; i < TOP_AGENCIES.length; i++) {
-    for (let j = i + 1; j < TOP_AGENCIES.length; j++) {
-      pairs.push([TOP_AGENCIES[i].slug, TOP_AGENCIES[j].slug]);
-    }
-  }
-  return pairs;
-}
-
+// Pre-render only the core (top-8 agency) pairs to keep deploy build time
+// bounded. Pairs involving the long-tail agencies render on demand
+// (dynamicParams=true) and cache thereafter, so all pairs stay reachable and in
+// the sitemap without pre-building ~90 data-heavy pages on every deploy.
 export async function generateStaticParams() {
-  const pairs = generatePairs();
-  return pairs.map(([a, b]) => ({ pair: `${a}-vs-${b}` }));
+  // Render all pairs on demand (dynamicParams=true) and cache thereafter.
+  // Pre-generating these aggregation-heavy pages queries Supabase for every pair
+  // during the deploy build, which times out static generation when the DB is
+  // under concurrent build load. On-demand rendering hits the DB one page at a
+  // time, off the critical build path. All pairs remain in the sitemap.
+  return [];
 }
 
 function parseSlug(pair: string): { slugA: string; slugB: string } | null {

@@ -239,6 +239,15 @@ export default async function AgencyPage({ params }: Props) {
               </div>
 
               <div className="fc-card fc-card--pad">
+                <div className="eyebrow eyebrow--muted">Guides</div>
+                <div className="fc-col" style={{ gap: 8, marginTop: 10 }}>
+                  <Link href="/guides/property-agent-commission" className="small" style={{ fontWeight: 600 }}>Property agent commission rates &rsaquo;</Link>
+                  <Link href="/property-agents/best-by-type/hdb" className="small" style={{ fontWeight: 600 }}>Best HDB agents in Singapore &rsaquo;</Link>
+                  <Link href="/guides/how-to-choose-property-agent" className="small" style={{ fontWeight: 600 }}>How to choose an agent &rsaquo;</Link>
+                </div>
+              </div>
+
+              <div className="fc-card fc-card--pad">
                 <div className="eyebrow eyebrow--muted">Compare with</div>
                 <div className="fc-col" style={{ gap: 8, marginTop: 10 }}>
                   {[

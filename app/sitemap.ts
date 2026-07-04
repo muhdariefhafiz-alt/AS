@@ -101,7 +101,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // === Comparisons (agency only; district/hdb compare are noindexed) ===
     // Agency comparisons (high-intent: "PropNex vs ERA", "Huttons vs OrangeTee")
     ...(() => {
-      const agencySlugs = ["propnex-realty-pte-ltd", "era-realty-network-pte-ltd", "huttons-asia-pte-ltd", "orangetee-tie-pte-ltd", "sri-pte-ltd", "c-h-properties-pte-ltd", "sn-real-estate-pte-ltd", "century-21-pte-ltd"];
+      const agencySlugs = ["propnex-realty-pte-ltd", "era-realty-network-pte-ltd", "huttons-asia-pte-ltd", "orangetee-tie-pte-ltd", "sri-pte-ltd", "c-h-properties-pte-ltd", "sn-real-estate-pte-ltd", "century-21-pte-ltd", "knight-frank-pte-ltd", "plb-realty-pte-ltd", "cbre-pte-ltd", "realstar-premier-group-private-limited", "mindlink-groups-pte-ltd", "jones-lang-lasalle-property-consultants-pte-ltd"];
       const pairs: string[] = [];
       for (let i = 0; i < agencySlugs.length; i++) {
         for (let j = i + 1; j < agencySlugs.length; j++) {
