@@ -46,7 +46,10 @@ function townSlug(name: string): string {
 }
 
 export async function generateStaticParams() {
-  const pairs = generatePairs();
+  // Pre-render only a small core; the rest render on demand (dynamicParams=true)
+  // and cache. These pages are noindexed, so lazy rendering has no SEO cost and
+  // keeps deploy build time bounded (was ~325 data-heavy pages).
+  const pairs = generatePairs().slice(0, 0);
   return pairs.map(([a, b]) => ({
     pair: `${townSlug(a)}-vs-${townSlug(b)}`,
   }));
