@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import LeadsInbox from "./LeadsInbox";
+import StandingPanel, { type Standing } from "./StandingPanel";
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid } from "../lib/tiers";
 
@@ -33,9 +34,11 @@ export default function DashboardPage() {
     cea_registration: string | null;
     subscription_tier: Tier;
     claimed_at: string | null;
+    primary_area: string | null;
     views_this_week: number;
     whatsapp_clicks_this_week: number;
   } | null>(null);
+  const [standing, setStanding] = useState<Standing>(null);
 
   // Edit form state
   const [bio, setBio] = useState("");
@@ -68,6 +71,7 @@ export default function DashboardPage() {
           const data = await res.json();
           if (data.agent) {
             setAgent(data.agent);
+            setStanding(data.standing ?? null);
             setEmail(data.agent.email || "");
             setBio(data.agent.bio || "");
             setPhotoUrl(data.agent.photo_url || "");
@@ -274,12 +278,11 @@ export default function DashboardPage() {
             </span>
           </div>
 
+          {/* Your standing (hero). AgentScore is absorbed into this panel. */}
+          <StandingPanel standing={standing} primaryArea={agent.primary_area} score={agent.score} />
+
           {/* Stats row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-            <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
-              <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.score ? Math.round(Number(agent.score)) : "—"}</p>
-              <p className="kicker" style={{ marginTop: 4 }}>AgentScore</p>
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
               <p className="serif" style={{ fontSize: 30, fontWeight: 600 }}>{TIER_LABELS[agent.subscription_tier]}</p>
               <p className="kicker" style={{ marginTop: 4 }}>Current plan</p>
