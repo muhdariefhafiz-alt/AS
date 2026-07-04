@@ -196,7 +196,31 @@ async function loadStaging() {
   console.log(JSON.stringify({ staged: loaded }));
 }
 
+async function truncateStaging() {
+  const { error } = await sb.rpc("truncate_staging_transactions");
+  if (error) throw new Error("truncate staging: " + error.message);
+  console.log(JSON.stringify({ truncated: true }));
+}
+
+// Guarded swap of staging -> live (see promote_staging_transactions). Exits
+// non-zero if the guard refuses (partial load), so a CI pipeline fails loudly.
+async function promote() {
+  const { data, error } = await sb.rpc("promote_staging_transactions");
+  if (error) throw new Error("promote: " + error.message);
+  console.log(JSON.stringify(data));
+  if (data && data.ok === false) process.exit(2);
+}
+
 const mode = process.argv[2];
-const run = { reconcile, agents: syncAgents, "load-staging": loadStaging }[mode];
-if (!run) { console.error("Usage: node scripts/sync-cea-datagovsg.mjs <reconcile|agents|load-staging>"); process.exit(1); }
+const run = {
+  reconcile,
+  agents: syncAgents,
+  "load-staging": loadStaging,
+  "truncate-staging": truncateStaging,
+  promote,
+}[mode];
+if (!run) {
+  console.error("Usage: node scripts/sync-cea-datagovsg.mjs <reconcile|agents|truncate-staging|load-staging|promote>");
+  process.exit(1);
+}
 run().then(() => process.exit(0)).catch((e) => { console.error("FAILED:", e.message); process.exit(1); });

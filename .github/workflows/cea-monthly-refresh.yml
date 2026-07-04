@@ -1,0 +1,45 @@
+name: Monthly CEA data refresh
+
+# Pulls the latest CEA open data (agents + transactions) from data.gov.sg and
+# promotes it into the live tables. This cannot run as a Vercel cron because the
+# full ~1.3M-row transaction pull exceeds the serverless time limit.
+#
+# One-time setup: add repo secrets SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
+# (Settings -> Secrets and variables -> Actions). The service role key is
+# sensitive; GitHub encrypts it and it is never printed by the script.
+#
+# After promote, the in-DB daily-score-refresh (pg_cron, 18:00 UTC) recomputes
+# scores; the monthly snapshot pg_cron then records standing; the Vercel
+# standing-digest cron emails agents. So this job only refreshes the data.
+
+on:
+  schedule:
+    - cron: "0 0 1 * *" # 1st of the month, 00:00 UTC
+  workflow_dispatch: {}
+
+concurrency:
+  group: cea-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --no-audit --no-fund
+      - name: Refresh agents + transactions
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -e
+          node scripts/sync-cea-datagovsg.mjs reconcile
+          node scripts/sync-cea-datagovsg.mjs agents
+          node scripts/sync-cea-datagovsg.mjs truncate-staging
+          node scripts/sync-cea-datagovsg.mjs load-staging
+          node scripts/sync-cea-datagovsg.mjs promote
+          node scripts/sync-cea-datagovsg.mjs reconcile
