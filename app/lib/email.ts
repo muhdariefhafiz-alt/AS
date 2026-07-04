@@ -117,21 +117,29 @@ async function sendViaResend({
 }) {
   const from =
     process.env.RESEND_FROM ?? "FairComparisons <noreply@fair-comparisons.com>";
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from, to, subject, html }),
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    console.error("[email/resend] send failed", res.status, text);
-    throw new Error(`Resend ${res.status}`);
+  // Best-effort: never throw. Callers invoke sendEmail fire-and-forget (no
+  // await/catch), so a provider failure must not become an unhandled rejection
+  // or roll back the caller's request. Failures are logged and returned.
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ from, to, subject, html }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error("[email/resend] send failed", res.status, text);
+      return { id: "resend-error", error: `Resend ${res.status}` };
+    }
+    const json = (await res.json().catch(() => ({}))) as { id?: string };
+    return { id: json.id ?? "resend" };
+  } catch (err) {
+    console.error("[email/resend] send threw", err);
+    return { id: "resend-error", error: String(err) };
   }
-  const json = (await res.json().catch(() => ({}))) as { id?: string };
-  return { id: json.id ?? "resend" };
 }
 
 export async function sendBatchEmails(
@@ -143,8 +151,26 @@ export async function sendBatchEmails(
     properties?: Record<string, unknown>;
   }[]
 ) {
+  // Prefer Resend when configured (matches sendEmail). Klaviyo only fires an
+  // event and needs a per-metric Flow to actually send, so batch sends were
+  // silently dropped whenever RESEND_API_KEY was the configured provider.
+  if (process.env.RESEND_API_KEY) {
+    const results: { to: string; ok: boolean }[] = [];
+    const concurrency = 5;
+    for (let i = 0; i < emails.length; i += concurrency) {
+      const slice = emails.slice(i, i + concurrency);
+      const settled = await Promise.all(
+        slice.map((e) => sendViaResend({ to: e.to, subject: e.subject, html: e.html }))
+      );
+      settled.forEach((r, idx) => {
+        results.push({ to: slice[idx].to, ok: !(r as { error?: string }).error });
+      });
+    }
+    return results;
+  }
+
   if (!getKey()) {
-    console.log(`[email-skip] No KLAVIYO_API_KEY. Would send ${emails.length} emails.`);
+    console.log(`[email-skip] No RESEND_API_KEY or KLAVIYO_API_KEY. Would send ${emails.length} emails.`);
     return [];
   }
 
