@@ -15,9 +15,13 @@ export type Standing = {
   agent_area_txns: number | null;
   above_txns: number | null;
   top_txns: number | null;
+  movement?: { delta: number; prev_month: string; prev_pct: number | null } | null;
 } | null;
 
 const fmt = (n: number | null | undefined) => (n == null ? "" : n.toLocaleString("en-SG"));
+const MONTHS = ["", "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"];
+const monthName = (d: string) => MONTHS[Number((d || "").slice(5, 7))] || "";
 const tc = (s: string) =>
   s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\bHdb\b/g, "HDB").replace(/\bMrt\b/g, "MRT");
 
@@ -93,6 +97,15 @@ export default function StandingPanel({
       ) : (
         <p className="muted" style={{ margin: "4px 0 0", fontSize: 13 }}>
           You are active in {area}. Keep closing seller-side deals to climb the board.
+        </p>
+      )}
+      {showRank && s.movement && (
+        <p style={{ margin: "8px 0 0", fontSize: 14, fontWeight: 600, color: s.movement.delta > 0 ? "var(--blue-deep)" : "var(--ink)" }}>
+          {s.movement.delta > 0
+            ? `Up ${s.movement.delta} ${s.movement.delta === 1 ? "place" : "places"} since ${monthName(s.movement.prev_month)}.`
+            : s.movement.delta < 0
+            ? `Down ${Math.abs(s.movement.delta)} ${Math.abs(s.movement.delta) === 1 ? "place" : "places"} since ${monthName(s.movement.prev_month)}.`
+            : `You held your position since ${monthName(s.movement.prev_month)}.`}
         </p>
       )}
       {showGap && (

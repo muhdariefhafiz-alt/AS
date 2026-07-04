@@ -32,8 +32,14 @@ export async function POST() {
 
     // Count profile views in the last 7 days
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    // First of the current month (UTC): movement compares live rank against the
+    // most recent snapshot from a PRIOR month, so it is always real month-over-month.
+    const now = new Date();
+    const firstOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+      .toISOString()
+      .slice(0, 10);
 
-    const [viewsResult, clicksResult, standingResult] = await Promise.all([
+    const [viewsResult, clicksResult, standingResult, priorSnapResult] = await Promise.all([
       supabase
         .from("sg_funnel_events")
         .select("id", { count: "exact", head: true })
@@ -51,9 +57,39 @@ export async function POST() {
       agent.cea_registration
         ? supabase.rpc("get_agent_standing", { p_reg: agent.cea_registration })
         : Promise.resolve({ data: null }),
+      // Most recent snapshot from a prior month, for honest month-over-month movement.
+      agent.cea_registration
+        ? supabase
+            .from("sg_agent_standing_snapshots")
+            .select("snapshot_month, agent_rank, agent_pct, area_name, area_type")
+            .eq("cea_registration", agent.cea_registration)
+            .lt("snapshot_month", firstOfMonth)
+            .order("snapshot_month", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
-    const standing = Array.isArray(standingResult?.data) ? standingResult.data[0] ?? null : null;
+    const standingRow = Array.isArray(standingResult?.data) ? standingResult.data[0] ?? null : null;
+    // Movement is only meaningful when the prior snapshot is in the SAME area
+    // (a changed primary area makes rank deltas apples-to-oranges).
+    const prior = priorSnapResult?.data ?? null;
+    let movement: { delta: number; prev_month: string; prev_pct: number | null } | null = null;
+    if (
+      standingRow &&
+      prior &&
+      prior.area_name === standingRow.area_name &&
+      prior.area_type === standingRow.area_type &&
+      typeof prior.agent_rank === "number" &&
+      typeof standingRow.agent_rank === "number"
+    ) {
+      movement = {
+        delta: prior.agent_rank - standingRow.agent_rank, // positive = moved up
+        prev_month: prior.snapshot_month,
+        prev_pct: prior.agent_pct ?? null,
+      };
+    }
+    const standing = standingRow ? { ...standingRow, movement } : null;
 
     // Fire-and-forget funnel events. standing_view instruments activation
     // (reached standing in a session) and habit (>=3 opens in 14 days).
