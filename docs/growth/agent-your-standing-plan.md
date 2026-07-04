@@ -253,3 +253,39 @@ tabs, paid climb plan, monthly digest, snapshot table/cron.
 NOW MEASURING (query sg_funnel_events): activation = share of claims that fire standing_view
 in session 1 (target >=60%); habit = share opening standing_view >=3x in 14 days (target
 >=25%). Do not build the Phase-2 engine until these clear.
+
+---
+
+## OPERATIONAL LOOP (2026-07-04, same day)
+Lex: "Can we make this operational though? Instead of a painted door." Scope chosen: full
+loop including the email digest. The painted-door scaffolding (fake-door digest, dead WTP
+gate) is replaced by a real, running system:
+
+1. DATA (the unlock): the live table had 730,000 of 1,341,539 CEA transactions (54%) and
+   nothing after Feb 2026. Full dataset loaded to staging and promoted via the new guarded
+   promote_staging_transactions() RPC (refuses partial loads). Data now runs through Jun 2026.
+   Scores recomputed in-DB: scored agents 12,960 -> 29,687. A monthly GitHub Action
+   (.github/workflows/cea-monthly-refresh.yml, 1st 00:00 UTC) keeps it fresh
+   (needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY repo secrets, a manual owner step).
+2. SNAPSHOT: sg_agent_standing_snapshots (RLS locked, service-role only) + set-based
+   snapshot_agent_standing() computing every scored agent's rank in their primary area in one
+   pass. Baseline written for all 29,687 agents (2026-07-01). pg_cron
+   monthly-standing-snapshot runs 1st 19:30 UTC (after the 18:00 in-DB score refresh).
+3. MOVEMENT: lookup returns a delta vs the latest PRIOR-month same-area snapshot;
+   StandingPanel renders "Up N places since June" / "held your position". Null until August
+   by design (no fabricated movement at baseline). Verified end to end with a temporary
+   prior-month row (delta +29 computed and rendered), then removed.
+4. DIGEST: /api/cron/standing-digest (Vercel cron, 2nd 08:00 UTC) emails claimed, opted-in
+   agents their standing + movement via Resend. ?dry=1 inspection mode. /unsubscribe now
+   actually exists (old links were dangling) and sets email_opt_out_at.
+
+Monthly cadence chain: 1st 00:00 CEA refresh -> 1st 18:00 score recompute -> 1st 19:30
+snapshot -> 2nd 08:00 digest.
+
+Notable side effect of the data completion: ranks re-based site-wide (more agents, fuller
+records). Candy R027687E: #560/4,152 -> #1,171/9,031, pct HELD at 87 (Top 25%). The
+percentile-band-first design (T1) absorbed the re-basing exactly as intended.
+
+Still true: no paid climb plan until the rentals-as-sales score defect is fixed (T2). The
+30-day activation/habit gate still governs Phase-2 paid features; what changed is that the
+loop now runs on real data instead of a static one-time screen.
