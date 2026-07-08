@@ -19,3 +19,12 @@ export function isBotUA(ua: string | null | undefined): boolean {
   if (!ua) return false;
   return BOT_UA_RE.test(ua.toLowerCase());
 }
+
+// Internal surfaces (admin console, agent dashboard) are operator/customer
+// tooling, not marketing traffic. Single source of truth so the homebuilt
+// tracker (PageTracker + /api/track) and the GA4 gate (Analytics) can never
+// disagree about what counts as a visitor — the exact drift that otherwise
+// reintroduces "our own sessions show up as visitors".
+export function isInternalPath(path: string | null | undefined): boolean {
+  return typeof path === "string" && (path.startsWith("/admin") || path.startsWith("/dashboard"));
+}

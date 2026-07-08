@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Newsreader, Hanken_Grotesk, Spline_Sans_Mono } from "next/font/google";
-import Script from "next/script";
 import Link from "next/link";
 import "./globals.css";
+import Analytics from "./components/Analytics";
 import PageTracker from "./components/PageTracker";
 import EmailCapture from "./components/EmailCapture";
 import ChromeGate from "./components/ChromeGate";
@@ -201,14 +201,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-SG" className={`${newsreader.variable} ${hanken.variable} ${spline.variable} antialiased`}>
       <head />
-      <Script src="https://www.googletagmanager.com/gtag/js?id=G-K4D8EQ6D9G" strategy="afterInteractive" />
-      <Script
-        id="gtag-init"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-K4D8EQ6D9G');`,
-        }}
-      />
+      <Analytics />
       <body className="min-h-screen">
         <ChromeGate><Header /></ChromeGate>
         <main>{children}</main>

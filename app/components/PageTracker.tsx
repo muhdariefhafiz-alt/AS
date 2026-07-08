@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { isBotUA } from "../lib/isBot";
+import { isBotUA, isInternalPath } from "../lib/isBot";
 
 export default function PageTracker() {
   const pathname = usePathname();
@@ -18,7 +18,7 @@ export default function PageTracker() {
     try { if (localStorage.getItem("fc_notrack") === "1") return; } catch {}
 
     // Internal surfaces are not marketing traffic.
-    if (pathname.startsWith("/admin") || pathname.startsWith("/dashboard")) return;
+    if (isInternalPath(pathname)) return;
 
     // Skip bots / headless / AI crawlers (shared list in lib/isBot — catches
     // HeadlessChrome + Playwright QA, GPTBot/ClaudeBot training scrapers, and

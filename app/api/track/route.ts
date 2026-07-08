@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "../../lib/supabase";
-import { isBotUA } from "../../lib/isBot";
+import { isBotUA, isInternalPath } from "../../lib/isBot";
 import { checkRateLimit, clientIp } from "../../lib/rateLimit";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -31,10 +31,7 @@ export async function POST(req: NextRequest) {
     // corporate mail gateways, antivirus link-checkers) fetch magic-link URLs
     // like /claim/verify with no User-Agent; those are not human page views.
     const hasUa = ua.trim().length > 0;
-    // Internal surfaces are not marketing traffic.
-    const isInternalPath = typeof path === "string" && (path.startsWith("/admin") || path.startsWith("/dashboard"));
-
-    if (path && hasUa && !isBot && !isInternalPath) {
+    if (path && hasUa && !isBot && !isInternalPath(path)) {
       // Generous per-IP flood cap: stops anyone hammering this open endpoint to
       // inflate an agent's view counts / bloat the table, without dropping real
       // multi-page browsing sessions.
