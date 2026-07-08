@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendBatchEmails } from "../../../lib/email";
+import { unsubscribeUrl } from "../../../lib/unsubscribe";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -105,7 +106,7 @@ export async function GET(req: Request) {
   <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
     <p style="margin:0;font-size:11px;color:#9ca3af">
       Sent to ${agent.claimed_email} because you claimed your profile on FairComparisons.
-      <a href="https://fair-comparisons.com/unsubscribe?email=${encodeURIComponent(agent.claimed_email)}" style="color:#9ca3af">Unsubscribe</a>
+      <a href="${unsubscribeUrl(agent.claimed_email)}" style="color:#9ca3af">Unsubscribe</a>
     </p>
   </td></tr>
 
