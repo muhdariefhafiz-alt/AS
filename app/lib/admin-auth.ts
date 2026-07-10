@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
+import { b64url, resolveSecret, sign as hmacSign, verifyTimingSafe } from "./hmac";
 
 /**
  * Minimal magic-link auth for the admin dashboard.
@@ -18,9 +19,7 @@ const MAGIC_LINK_TTL_MS = 24 * 60 * 60 * 1000;
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 function getSecret(): string {
-  const s = process.env.ADMIN_SECRET;
-  if (!s || s.length < 16) throw new Error("ADMIN_SECRET not configured");
-  return s;
+  return resolveSecret("ADMIN_SECRET");
 }
 
 export function getAdminEmails(): Set<string> {
@@ -61,12 +60,8 @@ export function getAdminEmail(): string {
   return first ?? "";
 }
 
-function b64url(input: Buffer | string): string {
-  return Buffer.from(input).toString("base64url");
-}
-
 function sign(payload: string): string {
-  return b64url(crypto.createHmac("sha256", getSecret()).update(payload).digest());
+  return hmacSign(payload, getSecret());
 }
 
 function issueToken(email: string, ttlMs: number): string {
@@ -90,10 +85,7 @@ export function verifyToken(token: string | undefined | null): { email: string }
     if (parts.length !== 2) return null;
     const [payloadB64, sig] = parts;
     const expected = sign(payloadB64);
-    // Constant-time comparison
-    const a = Buffer.from(sig);
-    const b = Buffer.from(expected);
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+    if (!verifyTimingSafe(sig, expected)) return null;
     const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString());
     if (typeof payload.exp !== "number" || payload.exp < Date.now()) return null;
     if (typeof payload.email !== "string") return null;

@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import { resolveSecret, sign as hmacSign, verifyTimingSafe } from "./hmac";
 
 // Signed one-click unsubscribe. The link is public (it ships in every email and
 // agent emails are semi-public), so the email alone must never be enough to opt
@@ -8,25 +8,15 @@ import crypto from "crypto";
 // only (GET renders a confirm page) so link-prefetchers / mail scanners that
 // fetch the URL on delivery cannot auto-unsubscribe the recipient.
 
-function getSecret(): string {
-  const s = process.env.ADMIN_SECRET;
-  if (!s || s.length < 16) throw new Error("ADMIN_SECRET not configured");
-  return s;
-}
-
 const norm = (email: string) => email.toLowerCase().trim();
 
 export function signUnsubscribe(email: string): string {
-  return crypto.createHmac("sha256", getSecret()).update(`unsub:${norm(email)}`).digest("base64url");
+  return hmacSign(`unsub:${norm(email)}`, resolveSecret("ADMIN_SECRET"));
 }
 
 export function verifyUnsubscribe(email: string, token: string | null | undefined): boolean {
   if (!email || !token) return false;
-  const expected = signUnsubscribe(email);
-  const a = Buffer.from(token);
-  const b = Buffer.from(expected);
-  // Length-guard first: timingSafeEqual throws on unequal lengths.
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
+  return verifyTimingSafe(token, signUnsubscribe(email));
 }
 
 // Canonical unsubscribe URL for emails. Single source of truth so every sender

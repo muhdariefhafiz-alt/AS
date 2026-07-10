@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import { b64url, resolveSecret, sign as hmacSign, verifyTimingSafe } from "./hmac";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "./supabase";
 import { isAdminEmail } from "./admin-auth";
@@ -23,18 +23,14 @@ export const AGENT_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 // Admin-help impersonation sessions are deliberately short-lived.
 export const IMPERSONATION_TTL_MS = 2 * 60 * 60 * 1000;
 
+// Agent sessions prefer a dedicated AGENT_SESSION_SECRET, falling back to
+// ADMIN_SECRET (the shared default). Preference order passed to resolveSecret.
 function getSecret(): string {
-  const s = process.env.AGENT_SESSION_SECRET || process.env.ADMIN_SECRET;
-  if (!s || s.length < 16) throw new Error("AGENT_SESSION_SECRET/ADMIN_SECRET not configured");
-  return s;
-}
-
-function b64url(input: Buffer | string): string {
-  return Buffer.from(input).toString("base64url");
+  return resolveSecret("AGENT_SESSION_SECRET", "ADMIN_SECRET");
 }
 
 function sign(payload: string): string {
-  return b64url(crypto.createHmac("sha256", getSecret()).update(payload).digest());
+  return hmacSign(payload, getSecret());
 }
 
 function issueToken(email: string, ttlMs: number): string {
@@ -76,9 +72,7 @@ export function verifyAgentToken(
     if (parts.length !== 2) return null;
     const [payloadB64, sig] = parts;
     const expected = sign(payloadB64);
-    const a = Buffer.from(sig);
-    const b = Buffer.from(expected);
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+    if (!verifyTimingSafe(sig, expected)) return null;
     const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString());
     if (payload.kind !== "agent") return null;
     if (typeof payload.exp !== "number" || payload.exp < Date.now()) return null;
