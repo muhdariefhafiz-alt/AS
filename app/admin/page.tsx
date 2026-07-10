@@ -6,6 +6,7 @@ import { AdminSidebar, TABS } from "./AdminSidebar";
 import { OverzichtTab } from "./tabs/OverzichtTab";
 import { LiquidityTab } from "./tabs/LiquidityTab";
 import { FunnelTab } from "./tabs/FunnelTab";
+import { LeadsTab } from "./tabs/LeadsTab";
 import { SupplyTab } from "./tabs/SupplyTab";
 import { SeoTab } from "./tabs/SeoTab";
 import { AiSearchTab } from "./tabs/AiSearchTab";
@@ -64,12 +65,18 @@ export default async function AdminPage({ searchParams }: Props) {
     .select("id", { count: "exact", head: true })
     .eq("status", "manual_review");
 
+  const { count: leads7d } = await supabase
+    .from("sg_leads")
+    .select("id", { count: "exact", head: true })
+    .gte("created_at", new Date(Date.now() - 7 * 86_400_000).toISOString());
+
   const badges: Record<string, number> = {
     overzicht: pendingClaims.count ?? 0,
     ops: (emailFailed.count ?? 0) + (feedbackNew.count ?? 0),
     revenue: 0,
     liquidity: 0,
     funnel: 0,
+    leads: leads7d ?? 0,
     supply: 0,
     seo: 0,
     moderation: modTotal,
@@ -99,6 +106,7 @@ export default async function AdminPage({ searchParams }: Props) {
           {active === "overzicht" && <OverzichtTab />}
           {active === "liquidity" && <LiquidityTab />}
           {active === "funnel" && <FunnelTab />}
+          {active === "leads" && <LeadsTab />}
           {active === "loops" && <LoopsTab />}
           {active === "supply" && <SupplyTab />}
           {active === "seo" && <SeoTab />}

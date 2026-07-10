@@ -6,6 +6,7 @@ export const TABS: Tab[] = [
   { id: "overzicht", label: "Overzicht", hint: "Constellation + alerts" },
   { id: "liquidity", label: "Liquidity", hint: "Supply x demand per district" },
   { id: "funnel", label: "Funnel", hint: "Consumer + agent dropoff" },
+  { id: "leads", label: "Leads", hint: "Seller leads generated + per-agent" },
   { id: "loops", label: "Loops", hint: "Constellation: funnel + growth loops" },
   { id: "supply", label: "Supply", hint: "Agent-side health" },
   { id: "seo", label: "SEO", hint: "First-party traffic + organic" },
