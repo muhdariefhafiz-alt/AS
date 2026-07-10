@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { sendBatchEmails } from "../../../lib/email";
-import { unsubscribeUrl } from "../../../lib/unsubscribe";
+import { emailShell, p, muted } from "../../../lib/email-layout";
 
 /**
  * Monthly "Your standing" digest.
@@ -23,7 +23,7 @@ const tc = (s: string) =>
   (s || "").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
     .replace(/\bHdb\b/g, "HDB").replace(/\bMrt\b/g, "MRT");
 const band = (pct: number) =>
-  pct >= 90 ? "the top 10%" : pct >= 75 ? "the top 25%" : pct >= 50 ? "the top half" : "your area";
+  pct >= 90 ? "the top 10%" : pct >= 75 ? "the top 25%" : pct >= 50 ? "the top half" : "the active pool";
 
 type Snap = {
   cea_registration: string;
@@ -101,38 +101,27 @@ export async function GET(req: Request) {
         ? `You moved up ${delta} in ${areaBase} this month`
         : `Your standing in ${areaBase}: ${band(cur.agent_pct)}`;
 
-    const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f5f6f8"><tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="520" style="background:#fff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#fff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 6px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280">Your standing in ${areaBase}</p>
-    <p style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1f44ff">You are in ${band(cur.agent_pct)} in ${areaBase}</p>
-    <p style="margin:0 0 4px;font-size:15px;font-weight:600;color:#111827">${movementLine}</p>
-    <p style="margin:0 0 24px;font-size:13px;color:#6b7280">Ranked #${cur.agent_rank.toLocaleString("en-SG")} of ${cur.agent_total.toLocaleString("en-SG")} scored agents active in ${areaFull}, on AgentScore.</p>
-    <table cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="padding-right:8px">
-        <a href="${dashboardUrl}" style="display:inline-block;background:#1f44ff;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">View your dashboard</a>
-      </td>
-      <td>
-        <a href="${profileUrl}" style="display:inline-block;border:1px solid #d1d5db;color:#374151;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:500;font-size:14px">Public page</a>
-      </td>
-    </tr></table>
-    <p style="margin:24px 0 0;font-size:12px;color:#9ca3af">Computed from official CEA transaction records. Movement is measured month over month.</p>
-  </td></tr>
-  <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
-    <p style="margin:0;font-size:11px;color:#9ca3af">
-      Sent to ${agent.claimed_email} because you claimed your profile on FairComparisons.
-      <a href="${unsubscribeUrl(agent.claimed_email as string)}" style="color:#9ca3af">Unsubscribe</a>
-    </p>
-  </td></tr>
-</table>
-</td></tr></table>
-</body></html>`;
+    const html = emailShell({
+      preheader: `Where you stand this month, and what moves it.`,
+      heading: `You are in ${band(cur.agent_pct)} in ${areaBase}`,
+      bodyHtml:
+        p(
+          `On the CEA record for ${areaBase}, you are in <strong>${band(cur.agent_pct)}</strong> of active agents this month.`
+        ) +
+        p(movementLine) +
+        muted(
+          `Ranked #${cur.agent_rank.toLocaleString("en-SG")} of ${cur.agent_total.toLocaleString("en-SG")} scored agents active in ${areaFull}, on AgentScore.`
+        ) +
+        p(
+          `What lifts standing: recent seller-side sales in your area, and responding fast to the leads you receive. Both are things you already do. We just make them visible to sellers.`
+        ) +
+        muted(
+          `<a href="${profileUrl}" style="color:#6b7280;text-decoration:underline">See your public page</a>`
+        ),
+      cta: { label: "See your standing", href: dashboardUrl },
+      footerNote: `Sent to ${agent.claimed_email} because you claimed your profile on FairComparisons.`,
+      unsubscribeEmail: agent.claimed_email as string,
+    });
 
     return [{
       to: agent.claimed_email as string,

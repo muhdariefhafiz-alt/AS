@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
+import { emailShell, p } from "../../../lib/email-layout";
 import { sendWaAsync } from "../../../lib/whatsapp";
 import { checkRateLimit } from "../../../lib/rateLimit";
 
@@ -104,10 +105,12 @@ export async function POST(req: Request) {
     // Notify agents who were invited (email + WhatsApp in parallel).
     const { data: agents } = await sb
       .from("sg_agents")
-      .select("id, name, email, whatsapp, claimed, slug")
+      .select(
+        "id, name, email, whatsapp, claimed, slug, claimed_email, subscription_tier, stripe_subscription_id, email_opt_out_at"
+      )
       .in("id", picked);
+    const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
     for (const a of agents ?? []) {
-      const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
       const link = `${site}/dashboard?token=${token}&utm_source=notify&utm_medium=agent_invite`;
       const area = lead.town ?? lead.district_code ?? "your area";
       // WhatsApp lands in seconds; email is the durable record.
@@ -128,13 +131,15 @@ export async function POST(req: Request) {
       if (!a.email) continue;
       sendEmail({
         to: a.email,
-        subject: `New seller in ${area} — quote within 24h`,
+        subject: `New seller in ${area}: quote within 24h`,
         html: agentInviteHtml({
           agentName: a.name ?? "",
           propertyType: lead.property_type,
           area,
           bedrooms: lead.bedrooms ?? null,
           timeline: lead.timeline,
+          estValueLow: lead.est_value_low ?? null,
+          estValueHigh: lead.est_value_high ?? null,
           link,
         }),
         metric: "Agent Notification",
@@ -144,6 +149,73 @@ export async function POST(req: Request) {
           property_type: lead.property_type,
         },
       }).catch((e) => console.error("[sell/invite] agent email failed", e));
+    }
+
+    // E1 upgrade prompt (docs/email-lifecycle.md): once a free agent has been
+    // invited by 3+ sellers lifetime, send a one-time "see plans" nudge.
+    // Best-effort: this hook must never fail the invite response.
+    try {
+      for (const a of agents ?? []) {
+        const isFree =
+          a.subscription_tier == null || a.subscription_tier === "free";
+        if (!isFree || a.stripe_subscription_id) continue;
+        // Marketing send: honour the unsubscribe flag (app/unsubscribe sets it).
+        if (a.email_opt_out_at) continue;
+        const to = a.claimed_email ?? a.email;
+        if (!to) continue;
+
+        const { count } = await sb
+          .from("sg_lead_shortlist")
+          .select("id", { count: "exact", head: true })
+          .eq("agent_id", a.id)
+          .not("invited_at", "is", null);
+        const leadCount = count ?? 0;
+        if (leadCount < 3) continue;
+
+        const { data: prior } = await sb
+          .from("sg_funnel_events")
+          .select("id")
+          .eq("event", "upgrade_prompt_sent")
+          .eq("agent_id", a.id)
+          .limit(1);
+        if (prior && prior.length > 0) continue;
+
+        // Record the send BEFORE sending: if the insert fails we skip (no
+        // orphan duplicates from concurrent invites); if the send then fails
+        // we err toward never re-nagging rather than double-sending.
+        const { error: markErr } = await sb
+          .from("sg_funnel_events")
+          .insert({ event: "upgrade_prompt_sent", agent_id: a.id });
+        if (markErr) continue;
+
+        const firstName = (a.name ?? "").split(" ")[0] || "";
+        const pricingUrl = `${site}/for-agents?utm_source=notify&utm_medium=agent_upgrade#pricing`;
+        await sendEmail({
+          to,
+          subject: firstName
+            ? `You have received ${leadCount} seller leads, ${firstName}`
+            : `You have received ${leadCount} seller leads`,
+          html: emailShell({
+            preheader: "Upgrade to respond faster and show sellers more.",
+            heading: `You have received ${leadCount} seller leads`,
+            bodyHtml:
+              p(
+                `Sellers keep picking you: <strong>${leadCount}</strong> have invited you to quote so far.`
+              ) +
+              p(
+                `A subscription never changes your ranking. Your rank is earned on the CEA record and cannot be bought, for anyone. A subscription just gives you better tools to win the sellers who already found you.`
+              ),
+            cta: { label: "See plans", href: pricingUrl },
+            footerNote:
+              "You are receiving this because sellers on FairComparisons invited you to quote.",
+            unsubscribeEmail: to,
+          }),
+          metric: "Agent Upgrade",
+          properties: { agent_id: a.id, lead_count: leadCount },
+        });
+      }
+    } catch (e) {
+      console.error("[sell/invite] upgrade prompt failed", e);
     }
 
     return NextResponse.json({
@@ -156,12 +228,15 @@ export async function POST(req: Request) {
   }
 }
 
+// B1 Agent new seller lead (docs/email-lifecycle.md). Transactional: no unsubscribe.
 function agentInviteHtml({
   agentName,
   propertyType,
   area,
   bedrooms,
   timeline,
+  estValueLow,
+  estValueHigh,
   link,
 }: {
   agentName: string;
@@ -169,43 +244,52 @@ function agentInviteHtml({
   area: string;
   bedrooms: number | null;
   timeline: string | null;
+  estValueLow: number | null;
+  estValueHigh: number | null;
   link: string;
 }): string {
   const tlLabel: Record<string, string> = {
     asap: "ASAP",
-    "1_3m": "Within 1–3 months",
-    "3_6m": "Within 3–6 months",
-    "6_12m": "Within 6–12 months",
+    "1_3m": "Within 1-3 months",
+    "3_6m": "Within 3-6 months",
+    "6_12m": "Within 6-12 months",
     exploring: "Exploring",
   };
+  const timelineLabel = timeline ? (tlLabel[timeline] ?? timeline) : null;
+  const fmt = (n: number) => `S$${Math.round(n).toLocaleString("en-SG")}`;
+  const low = Number(estValueLow);
+  const high = Number(estValueHigh);
+  const estValueRange =
+    Number.isFinite(low) && low > 0 && Number.isFinite(high) && high > 0
+      ? `${fmt(low)} to ${fmt(high)}`
+      : Number.isFinite(low) && low > 0
+        ? fmt(low)
+        : Number.isFinite(high) && high > 0
+          ? fmt(high)
+          : null;
   const beds = bedrooms ? `${bedrooms}-bed ` : "";
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">${agentName}, you have been shortlisted.</p>
-    <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6">
-      A homeowner selected you to quote on selling their ${beds}${propertyType} in ${area}.
-    </p>
-    <p style="margin:0 0 24px;font-size:14px;color:#4b5563;line-height:1.6">
-      Timeline: <strong>${tlLabel[timeline ?? "exploring"] ?? timeline ?? "Exploring"}</strong><br>
-      Submit a fee quote within 24 hours to stay in the running. No platform fee until completion.
-    </p>
-    <p style="margin:0 0 16px">
-      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        Submit your quote
-      </a>
-    </p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
+
+  const preheaderParts = [propertyType];
+  if (estValueRange) preheaderParts.push(estValueRange);
+  if (timelineLabel) preheaderParts.push(`timeline ${timelineLabel}`);
+
+  const detailParts: string[] = [];
+  if (timelineLabel) detailParts.push(`Timeline: <strong>${timelineLabel}</strong>.`);
+  if (estValueRange) detailParts.push(`Estimated value: ${estValueRange}.`);
+
+  return emailShell({
+    preheader: `${preheaderParts.join(", ")}.`,
+    heading: agentName
+      ? `${agentName}, you have been shortlisted.`
+      : "You have been shortlisted.",
+    bodyHtml:
+      p(
+        `A homeowner selected you to quote on selling their ${beds}${propertyType} in ${area}.`
+      ) +
+      (detailParts.length > 0 ? p(detailParts.join(" ")) : "") +
+      p(
+        "Send a fee quote within 24 hours to stay in the running. No platform fee until completion."
+      ),
+    cta: { label: "Submit your quote", href: link },
+  });
 }

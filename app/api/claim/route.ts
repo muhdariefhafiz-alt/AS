@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../lib/email";
+import { emailShell, p, muted } from "../../lib/email-layout";
 import { givenName, titleName } from "../../lib/names";
 import { checkRateLimit, clientIp } from "../../lib/rateLimit";
 
@@ -143,51 +144,15 @@ export async function POST(req: Request) {
 }
 
 function buildVerifyEmail(agentName: string, verifyUrl: string): string {
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
+  const bodyHtml =
+    p(
+      `You asked to claim the FairComparisons profile for <strong>${titleName(agentName)}</strong>. Confirm it is you and your profile goes live in seconds.`
+    ) + muted("If you did not request this, ignore this email. No changes will be made.");
 
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">Confirm your profile claim</p>
-
-    <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6">
-      You requested to claim the profile for <strong>${titleName(agentName)}</strong> on FairComparisons. Click below to verify this is you.
-    </p>
-
-    <div style="text-align:center;margin:28px 0;">
-      <a href="${verifyUrl}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px">
-        Verify and claim profile
-      </a>
-    </div>
-
-    <p style="margin:0 0 8px;font-size:13px;color:#6b7280;line-height:1.5">
-      The link expires in 24 hours. If the button does not work, copy this URL:
-    </p>
-    <p style="margin:0 0 16px;font-size:12px;color:#9ca3af;word-break:break-all;">
-      ${verifyUrl}
-    </p>
-
-    <p style="margin:16px 0 0;font-size:14px;color:#374151;line-height:1.6;padding-top:16px;border-top:1px solid #f3f4f6;">
-      Once verified, you can add your photo, a short bio, and start receiving seller leads in your area through your dashboard.
-    </p>
-  </td></tr>
-
-  <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
-    <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5">
-      If you did not request this, ignore this email. No changes will be made.
-    </p>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body></html>`;
+  return emailShell({
+    preheader: "One click confirms this profile is yours. Link expires in 24h.",
+    heading: `Verify your profile claim, ${givenName(agentName)}`,
+    bodyHtml,
+    cta: { label: "Verify and claim profile", href: verifyUrl },
+  });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { issueMagicLink, isAdminEmail, getAdminEmails } from "../../../lib/admin-auth";
 import { sendEmail } from "../../../lib/email";
+import { emailShell, p, muted } from "../../../lib/email-layout";
 
 /**
  * POST /api/admin/login
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
     }
 
     if (!isAdminEmail(normalized)) {
-      // Silent failure — anti-enumeration.
+      // Silent failure, anti-enumeration.
       return NextResponse.json({ success: true });
     }
 
@@ -38,37 +39,15 @@ export async function POST(req: Request) {
     // allowlist-gated, so this leaks nothing beyond the admin's own ability.
     console.log(`[admin/login] magic link issued for ${normalized}: ${link}`);
 
-    const html = `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="520" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#fff">FairComparisons Admin</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827">Sign in to the admin dashboard</p>
-    <p style="margin:0 0 20px;font-size:14px;color:#374151;line-height:1.6">
-      Click the button below to sign in. This link expires in 24 hours and can only be used once.
-    </p>
-    <div style="text-align:center;margin:24px 0">
-      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        Open dashboard
-      </a>
-    </div>
-    <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;word-break:break-all">
-      Or paste this URL into your browser: ${link}
-    </p>
-    <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;padding-top:16px;border-top:1px solid #f3f4f6">
-      If you did not request this, ignore the email. No action will be taken.
-    </p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
+    const html = emailShell({
+      preheader: "One click signs you in. Link expires in 24 hours and can only be used once.",
+      heading: "Sign in to the admin dashboard",
+      bodyHtml:
+        p("Click the button below to sign in. This link expires in 24 hours and can only be used once.") +
+        muted(`Or paste this URL into your browser: ${link}`) +
+        muted("If you did not request this, ignore the email. No action will be taken."),
+      cta: { label: "Open dashboard", href: link },
+    });
 
     await sendEmail({
       to: normalized,

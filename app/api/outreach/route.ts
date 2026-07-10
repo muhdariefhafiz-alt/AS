@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     // This endpoint sends agent-facing emails and reads agent PII. It must
     // never be public: gate it behind an admin session (manual use from the
     // admin UI) OR a valid CRON_SECRET bearer (automated runs). Previously
-    // unauthenticated — anyone could enumerate agentId and email-bomb agents.
+    // unauthenticated: anyone could enumerate agentId and email-bomb agents.
     const session = await getAdminSession();
     const authHeader = request.headers.get("authorization");
     const cronOk =
@@ -69,6 +69,10 @@ export async function POST(request: Request) {
 
     // ---- Generate email from template ----
 
+    // Marketing sends carry a signed unsubscribe link for the recipient.
+    // Empty string when no email on file: nothing is sent, only previewed.
+    const recipientEmail: string = agent.email || "";
+
     let email: { subject: string; html: string };
 
     switch (template) {
@@ -79,7 +83,7 @@ export async function POST(request: Request) {
             { status: 400 }
           );
         }
-        email = TEMPLATES.weeklyNudge(agent, views);
+        email = TEMPLATES.weeklyNudge(agent, views, recipientEmail);
         break;
 
       case "areaLeader":
@@ -89,11 +93,11 @@ export async function POST(request: Request) {
             { status: 400 }
           );
         }
-        email = TEMPLATES.areaLeader(agent, rank, townOrArea);
+        email = TEMPLATES.areaLeader(agent, rank, townOrArea, recipientEmail);
         break;
 
       default:
-        email = TEMPLATES[template](agent);
+        email = TEMPLATES[template](agent, recipientEmail);
     }
 
     // ---- Send via Klaviyo ----

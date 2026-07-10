@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
+import { emailShell, p } from "../../../lib/email-layout";
 import { sendWaAsync } from "../../../lib/whatsapp";
 
 // Daily cron: find sg_lead_completions whose OTP was signed 7 days ago and
@@ -44,7 +45,9 @@ export async function GET(req: Request) {
 
       const { data: lead } = await sb
         .from("sg_leads")
-        .select("token, full_name, email, whatsapp, marketing_consent")
+        .select(
+          "token, full_name, email, whatsapp, marketing_consent, property_type, town, district_code"
+        )
         .eq("id", c.lead_id)
         .single();
       if (!lead || !lead.email) continue;
@@ -56,6 +59,8 @@ export async function GET(req: Request) {
         .single();
       const agentName = agent?.name ?? "your agent";
       const firstName = (lead.full_name ?? "").split(" ")[0] || "Hi";
+      const propertyType = lead.property_type || "property";
+      const area = lead.town || lead.district_code || "your area";
 
       const site =
         process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
@@ -77,11 +82,20 @@ export async function GET(req: Request) {
 
       await sendEmail({
         to: String(lead.email),
-        subject: `How did ${agentName} do? 2 minutes to leave a review`,
-        html: reviewRequestHtml({
-          name: firstName,
-          agentName,
-          link,
+        subject: `Congratulations on selling your ${propertyType}`,
+        html: emailShell({
+          preheader: `One quick thing that helps the next seller in ${area}.`,
+          heading: `Congratulations on selling your ${propertyType}`,
+          bodyHtml: [
+            p(
+              `Congratulations on completing the sale of your ${propertyType} in ${area}.`
+            ),
+            p(
+              `Would you take 60 seconds to review ${agentName}? Verified reviews from real sellers are the single most useful thing for the next person choosing an agent here, and yours is verified because we saw the transaction.`
+            ),
+          ].join(""),
+          cta: { label: "Leave a verified review", href: link },
+          unsubscribeEmail: String(lead.email),
         }),
         metric: "Seller Review Request",
         properties: { lead_token: lead.token },
@@ -97,41 +111,4 @@ export async function GET(req: Request) {
     sent,
     scanned: completions.length,
   });
-}
-
-function reviewRequestHtml({
-  name,
-  agentName,
-  link,
-}: {
-  name: string;
-  agentName: string;
-  link: string;
-}): string {
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">${name}, how did ${agentName} do?</p>
-    <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6">
-      Two minutes. Public reviews show initials only. Your review helps the
-      next seller in your area pick well.
-    </p>
-    <p style="margin:0 0 16px">
-      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        Leave a review
-      </a>
-    </p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
 }

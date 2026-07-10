@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "../../../lib/stripe";
+import { sendEmail } from "../../../lib/email";
+import { emailShell, p } from "../../../lib/email-layout";
+import { givenName } from "../../../lib/names";
+import { escapeHtml } from "../../../lib/escapeHtml";
 import type Stripe from "stripe";
 
 const supabase = createClient(
@@ -123,6 +127,77 @@ export async function POST(req: Request) {
               metadata: { subscription_id: subId },
             });
           }
+        }
+
+        // E2 dunning email (docs/email-lifecycle.md). Transactional: no
+        // unsubscribe. Wrapped so a send failure never 500s the webhook
+        // (Stripe retries on 5xx and would re-deliver the whole event).
+        try {
+          const customerId =
+            typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+
+          if (customerId) {
+            const { data: dunningAgent } = await supabase
+              .from("sg_agents")
+              .select("id, name, claimed_email, email, subscription_tier")
+              .eq("stripe_customer_id", customerId)
+              .single();
+
+            const to = (dunningAgent?.claimed_email || dunningAgent?.email) as
+              | string
+              | null
+              | undefined;
+
+            if (dunningAgent && to) {
+              const firstRaw = givenName(dunningAgent.name ?? "") || "there";
+              const first = escapeHtml(firstRaw);
+              const tier = dunningAgent.subscription_tier as string | null;
+              const planLabel =
+                tier && tier !== "free" ? tier.charAt(0).toUpperCase() + tier.slice(1) : null;
+
+              const nextAttempt = (invoice as unknown as { next_payment_attempt?: number | null })
+                .next_payment_attempt;
+              const graceEndDate =
+                typeof nextAttempt === "number" && nextAttempt > 0
+                  ? new Date(nextAttempt * 1000).toLocaleDateString("en-SG", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : null;
+
+              const billingUrl =
+                "https://fair-comparisons.com/dashboard?utm_source=dunning&utm_medium=email";
+
+              const subject = `Your card could not be charged, ${firstRaw}`;
+              const html = emailShell({
+                preheader: planLabel
+                  ? `Update it to keep your ${planLabel} tools active.`
+                  : "Update it to keep your subscription tools active.",
+                heading: subject,
+                bodyHtml: p(
+                  `We could not process your ${planLabel ? `${planLabel} subscription` : "subscription"}. ` +
+                    `Your public profile and ranking are unaffected (those are always free), but your subscription tools will pause ` +
+                    `${graceEndDate ? `on ${graceEndDate} ` : ""}unless the card is updated.`
+                ),
+                cta: { label: "Update payment", href: billingUrl },
+              });
+
+              await sendEmail({
+                to,
+                subject,
+                html,
+                metric: "Agent Dunning",
+                properties: {
+                  agent_id: dunningAgent.id,
+                  subscription_id: subId ?? "",
+                  source: "stripe_webhook",
+                },
+              });
+            }
+          }
+        } catch (err) {
+          console.error("[stripe-webhook] dunning email failed:", err);
         }
         break;
       }

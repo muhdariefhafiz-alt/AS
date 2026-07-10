@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
+import { emailShell, p } from "../../../lib/email-layout";
 
 // Homeowner picks a winning agent → creates the instruction row in sg_lead_completions.
 export async function POST(req: Request) {
@@ -101,14 +102,24 @@ export async function POST(req: Request) {
       const site =
         process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
       const link = `${site}/dashboard?token=${token}`;
+      const sellerLabel = lead.full_name ?? "Seller";
+      const commissionPct = Number(quote.commission_pct);
+      const bodyParts = [
+        p(
+          `${sellerLabel} picked you at <strong>${commissionPct.toFixed(2)}%</strong> commission.`
+        ),
+        p(
+          "There is no platform fee or commission on this sale, it is entirely yours. Manage your profile and tools any time from your dashboard."
+        ),
+      ];
       sendEmail({
         to: agent.email,
-        subject: `You won the instruction — ${lead.full_name ?? "Seller"}`,
-        html: pickedAgentHtml({
-          agentName: agent.name ?? "",
-          sellerName: lead.full_name ?? "",
-          commissionPct: Number(quote.commission_pct),
-          link,
+        subject: `You won the instruction: ${sellerLabel} picked you`,
+        html: emailShell({
+          preheader: `${sellerLabel} picked you at ${commissionPct.toFixed(2)}% commission.`,
+          heading: `${agent.name ? `${agent.name}, you` : "You"} have been instructed.`,
+          bodyHtml: bodyParts.join(""),
+          cta: { label: "Open dashboard", href: link },
         }),
         metric: "Agent Notification",
         properties: { lead_token: token, kind: "picked" },
@@ -120,45 +131,4 @@ export async function POST(req: Request) {
     console.error("[sell/pick] unexpected", err);
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
-}
-
-function pickedAgentHtml({
-  agentName,
-  sellerName,
-  commissionPct,
-  link,
-}: {
-  agentName: string;
-  sellerName: string;
-  commissionPct: number;
-  link: string;
-}): string {
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">${agentName}, you have been instructed.</p>
-    <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6">
-      ${sellerName} picked you at <strong>${commissionPct.toFixed(2)}%</strong> commission.
-    </p>
-    <p style="margin:0 0 24px;font-size:14px;color:#4b5563;line-height:1.6">
-      There is no platform fee or commission on this sale, it is entirely yours. Manage your profile and tools any time from your dashboard.
-    </p>
-    <p style="margin:0 0 16px">
-      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        Open dashboard
-      </a>
-    </p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
 }

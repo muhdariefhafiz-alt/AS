@@ -4,6 +4,7 @@ import { sendEmail } from "../../../lib/email";
 import { issueAgentMagicLink } from "../../../lib/agent-auth";
 import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
 import { escapeHtml } from "../../../lib/escapeHtml";
+import { emailShell, p, muted } from "../../../lib/email-layout";
 
 // Agent dashboard sign-in. Emails a magic link to a CLAIMED agent's on-file
 // claimed_email. Anti-enumeration: always returns success.
@@ -34,10 +35,19 @@ export async function POST(req: Request) {
       const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
       const link = `${site}/api/agent/login/verify?token=${encodeURIComponent(token)}`;
       try {
+        const firstRaw = (agent.name ?? "").split(" ")[0] || "there";
+        const first = escapeHtml(firstRaw);
         await sendEmail({
           to: normalized,
-          subject: "Your FairComparisons dashboard sign-in link",
-          html: signInHtml(agent.name ?? "", link),
+          subject: `${firstRaw}, here is your sign-in link`,
+          html: emailShell({
+            preheader: "Click to open your agent dashboard. Link expires in 24 hours.",
+            heading: `${first}, here is your sign-in link.`,
+            bodyHtml:
+              p("Click to open your agent dashboard. The link expires in 24 hours and can be used once.") +
+              muted("If you did not request this, ignore this email."),
+            cta: { label: "Open my dashboard", href: link },
+          }),
           metric: "Agent Login Link",
           properties: { agent_id: agent.id },
         });
@@ -50,26 +60,4 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
-}
-
-function signInHtml(name: string, link: string): string {
-  const first = escapeHtml((name || "").split(" ")[0] || "there");
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="520" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px"><p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p></td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827">${first}, here is your sign-in link.</p>
-    <p style="margin:0 0 22px;font-size:14px;color:#374151;line-height:1.6">Click to open your agent dashboard. The link expires in 24 hours and can be used once.</p>
-    <p style="margin:0 0 8px"><a href="${link}" style="display:inline-block;background:#1f44ff;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">Open my dashboard</a></p>
-    <p style="margin:18px 0 0;font-size:12px;color:#9ca3af;line-height:1.5">If you did not request this, ignore this email.</p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
 }

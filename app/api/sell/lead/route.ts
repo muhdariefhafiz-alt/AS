@@ -6,6 +6,7 @@ import { sendEmail } from "../../../lib/email";
 import { sendWaAsync } from "../../../lib/whatsapp";
 import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
 import { escapeHtml } from "../../../lib/escapeHtml";
+import { emailShell, p } from "../../../lib/email-layout";
 
 // Per-IP rate limit: 5 lead submissions / hour (Redis-backed when configured).
 const RATE_LIMIT = 5;
@@ -127,7 +128,7 @@ export async function POST(req: Request) {
 
     const sb = supabaseAdmin();
 
-    // Build shortlist BEFORE the insert — if we can't match, no point creating a lead.
+    // Build shortlist BEFORE the insert, if we can't match, no point creating a lead.
     let shortlist = await buildShortlist({
       property_type,
       town: town ?? null,
@@ -144,13 +145,13 @@ export async function POST(req: Request) {
     if (requestedId) {
       const existing = shortlist.find((a) => a.agent_id === requestedId);
       if (existing) {
-        // Already matched for this area — float them to the top.
+        // Already matched for this area, float them to the top.
         shortlist = [
           existing,
           ...shortlist.filter((a) => a.agent_id !== requestedId),
         ];
       } else {
-        // Not in the area shortlist — inject from sg_agents so the seller still
+        // Not in the area shortlist, inject from sg_agents so the seller still
         // gets the agent they asked for, plus area agents to compare against.
         const { data: ra } = await sb
           .from("sg_agents")
@@ -183,7 +184,7 @@ export async function POST(req: Request) {
             ...shortlist,
           ].slice(0, 8); // requested agent + up to 7 area agents to compare
         } else {
-          // Invalid/unknown agent id — ignore the pin, fall back to area match.
+          // Invalid/unknown agent id, ignore the pin, fall back to area match.
           requestedId = null;
         }
       }
@@ -266,7 +267,7 @@ export async function POST(req: Request) {
       .insert(shortlistRows);
     if (shortlistErr) {
       console.error("[sell/lead] shortlist insert failed", shortlistErr);
-      // Don't fail the request — the seller can still see results from the
+      // Don't fail the request, the seller can still see results from the
       // returned shortlist; we'll log the gap.
     }
 
@@ -318,15 +319,24 @@ export async function POST(req: Request) {
       });
     }
 
+    const sellerEmail = String(email).toLowerCase().trim();
+    const sellerFirstName = String(full_name).split(" ")[0] || "there";
+
     sendEmail({
-      to: String(email).toLowerCase().trim(),
-      subject: `Your agent comparison for ${area} is ready`,
-      html: confirmationHtml({
-        name: full_name,
-        token: lead.token,
-        propertyType: property_type,
-        area,
-        count: shortlist.length,
+      to: sellerEmail,
+      subject: `${sellerFirstName}, your ${property_type} shortlist is ready`,
+      html: emailShell({
+        preheader: `${shortlist.length} agents ranked on real sales in ${escapeHtml(area)}.`,
+        heading: `${escapeHtml(sellerFirstName)}, your ${escapeHtml(property_type)} shortlist is ready`,
+        bodyHtml:
+          p(
+            `We ranked the agents who actually sell ${escapeHtml(property_type)} in ${escapeHtml(area)} on their CEA record. Your shortlist of ${shortlist.length} is ready.`
+          ) +
+          p(
+            "Pick up to 3 and we will ask them to send you a fee quote. No obligation, and you only ever hear from the ones you choose."
+          ),
+        cta: { label: "View your shortlist", href: shortlistLink },
+        unsubscribeEmail: sellerEmail,
       }),
       metric: "Seller Shortlist Ready",
       properties: {
@@ -346,50 +356,4 @@ export async function POST(req: Request) {
     console.error("[sell/lead] unexpected", err);
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
-}
-
-function confirmationHtml({
-  name,
-  token,
-  propertyType,
-  area,
-  count,
-}: {
-  name: string;
-  token: string;
-  propertyType: string;
-  area: string;
-  count: number;
-}): string {
-  const site =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
-  const link = `${site}/sell/shortlist/${token}?utm_source=email&utm_medium=transactional`;
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">${escapeHtml(name)}, your agent comparison is ready.</p>
-    <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6">
-      Based on actual CEA transaction records, we ranked the ${count} agents who consistently sell ${escapeHtml(propertyType)} property in ${escapeHtml(area)}. Compare their track records and contact the ones you choose. Always free for sellers.
-    </p>
-    <p style="margin:0 0 24px">
-      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        Compare the agents
-      </a>
-    </p>
-    <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.5">
-      Free for sellers. Agents only pay if you complete a sale through them.
-    </p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
 }

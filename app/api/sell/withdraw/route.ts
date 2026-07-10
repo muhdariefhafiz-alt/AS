@@ -3,6 +3,7 @@ import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
 import { sendWaAsync } from "../../../lib/whatsapp";
 import { getAgentSession } from "../../../lib/agent-auth";
+import { emailShell, p } from "../../../lib/email-layout";
 
 // Agent withdraws a submitted quote (before the seller picks). Authenticated by
 // the signed agent session cookie; identity is never taken from the request body.
@@ -101,13 +102,20 @@ export async function POST(req: Request) {
       });
     }
     if (lead.email) {
+      const first = (lead.full_name ?? "").split(" ")[0] || "";
+      const heading = first
+        ? `${first}, ${agent.name} withdrew their quote.`
+        : `${agent.name} withdrew their quote.`;
       sendEmail({
         to: lead.email,
         subject: `${agent.name} withdrew their quote`,
-        html: withdrawHtml({
-          name: lead.full_name ?? "",
-          agentName: agent.name ?? "",
-          link,
+        html: emailShell({
+          preheader: "No action needed. You still have other quotes to compare.",
+          heading,
+          bodyHtml: p(
+            "No problem. You still have other quotes to compare, or you can ask us to suggest more agents."
+          ),
+          cta: { label: "View your quotes", href: link },
         }),
         metric: "Seller Quote Ready",
         properties: { lead_token: lead.token, kind: "withdraw" },
@@ -119,41 +127,4 @@ export async function POST(req: Request) {
     console.error("[sell/withdraw] unexpected", err);
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
-}
-
-function withdrawHtml({
-  name,
-  agentName,
-  link,
-}: {
-  name: string;
-  agentName: string;
-  link: string;
-}): string {
-  const first = name.split(" ")[0] || "";
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827">${first}, ${agentName} withdrew their quote.</p>
-    <p style="margin:0 0 24px;font-size:14px;color:#374151;line-height:1.6">
-      No problem. You still have other quotes to compare, or you can ask us to suggest more agents.
-    </p>
-    <p style="margin:0 0 16px">
-      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        View your quotes
-      </a>
-    </p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
 }

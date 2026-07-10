@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../../lib/email";
+import { emailShell, p, rows, statCard } from "../../../lib/email-layout";
 import { AGENT_TERMS_VERSION } from "../../../lib/agent-terms";
 import { givenName } from "../../../lib/names";
 import { issueAgentSession, AGENT_COOKIE, AGENT_SESSION_TTL_MS } from "../../../lib/agent-auth";
@@ -100,7 +101,9 @@ export async function GET(req: Request) {
   try {
     await sendEmail({
       to: claim.email,
-      subject: "Your profile is claimed. Here's what to do next.",
+      subject: agentFull?.name
+        ? `${givenName(agentFull.name)}, your profile is live. 3 things to finish it.`
+        : "Your profile is live. 3 things to finish it.",
       html: claimedHtml,
       metric: "Agent Claimed",
       properties: {
@@ -141,76 +144,29 @@ function buildClaimedEmail(
   dashboardUrl: string,
 ): string {
   const firstName = givenName(name);
-  const scoreSection = score
-    ? `
-    <div style="background:#eef2fb;border:2px solid #0a1733;border-radius:12px;padding:20px;text-align:center;margin:20px 0;">
-      <div style="font-size:48px;font-weight:800;color:#0a1733;">${score}</div>
-      <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:2px;">Your AgentScore</div>
-    </div>`
-    : "";
+  const bodyHtml = [
+    p(
+      `Your profile is live and sellers in your area can now invite you to quote.${
+        score ? " Your AgentScore is computed only from your CEA record." : ""
+      }`,
+    ),
+    score ? statCard(String(score), "Your AgentScore") : "",
+    p("Agents who complete these three convert far more of the sellers who view them:"),
+    rows(
+      [
+        "Add a professional photo",
+        "Add your WhatsApp number (this is how seller leads reach you fastest)",
+        "Write two lines on how you work",
+      ],
+      true,
+    ),
+  ].join("");
 
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">${firstName}, your profile is live.</p>
-
-    ${scoreSection}
-
-    <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.6">
-      Sellers in your area looking for an agent can now find your profile and invite you to quote. Three things to do now:
-    </p>
-
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 24px;">
-      <tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;">
-        <span style="display:inline-block;width:24px;height:24px;background:#1f44ff;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;margin-right:10px;">1</span>
-        <span style="font-size:14px;color:#374151;font-weight:500;">Add a professional photo</span>
-      </td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #f3f4f6;">
-        <span style="display:inline-block;width:24px;height:24px;background:#1f44ff;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;margin-right:10px;">2</span>
-        <span style="font-size:14px;color:#374151;font-weight:500;">Add your WhatsApp number</span>
-      </td></tr>
-      <tr><td style="padding:10px 0;">
-        <span style="display:inline-block;width:24px;height:24px;background:#1f44ff;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700;margin-right:10px;">3</span>
-        <span style="font-size:14px;color:#374151;font-weight:500;">Write a short practice description</span>
-      </td></tr>
-    </table>
-
-    <table cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="padding-right:8px">
-        <a href="${dashboardUrl}?utm_source=claimed&utm_medium=email" style="display:inline-block;background:#1f44ff;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-          Complete your profile
-        </a>
-      </td>
-      <td>
-        <a href="${profileUrl}?utm_source=claimed&utm_medium=email" style="display:inline-block;border:1px solid #d1d5db;color:#374151;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:500;font-size:14px">
-          View public page
-        </a>
-      </td>
-    </tr></table>
-
-    <p style="margin:24px 0 0;font-size:13px;color:#6b7280;line-height:1.5;padding-top:16px;border-top:1px solid #f3f4f6;">
-      You will receive a weekly report on your seller leads and profile activity. You can unsubscribe from those at any time.
-    </p>
-  </td></tr>
-
-  <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
-    <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5">
-      FairComparisons. Rankings based on CEA transaction data, not advertising.
-    </p>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body></html>`;
+  return emailShell({
+    preheader: "Add your photo and WhatsApp so sellers know who they are picking.",
+    heading: `${firstName}, your profile is live. 3 things to finish it.`,
+    bodyHtml,
+    cta: { label: "Complete your profile", href: `${dashboardUrl}?utm_source=claimed&utm_medium=email` },
+    footerNote: "You will get a short weekly report on your leads and views. Manage or turn off anytime.",
+  });
 }

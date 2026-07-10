@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendBatchEmails } from "../../../lib/email";
-import { unsubscribeUrl } from "../../../lib/unsubscribe";
+import { emailShell, p, statCard } from "../../../lib/email-layout";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -55,65 +55,30 @@ export async function GET(req: Request) {
       const profileUrl = `https://fair-comparisons.com/property-agents/agent/${agent.slug}?utm_source=notification&utm_medium=email`;
       const dashboardUrl = `https://fair-comparisons.com/dashboard?utm_source=notification&utm_medium=email`;
 
-      const html = `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="520" style="background:#ffffff;border-radius:12px;overflow:hidden">
+      const bodyHtml = [
+        p(
+          `This week on your FairComparisons profile: <strong>${views}</strong> buyer${views === 1 ? "" : "s"} viewed it.`
+        ),
+        agent.score ? statCard(String(Math.round(Number(agent.score))), "Your AgentScore") : "",
+        p(
+          `These are real buyers researching agents in your area. Profiles with a photo, bio, and WhatsApp number get contacted. Incomplete profiles get skipped.`
+        ),
+        p(
+          `<a href="${profileUrl}" style="color:#1f44ff;text-decoration:none;font-weight:500">View your public page</a>`
+        ),
+      ].join("");
 
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#fff">FairComparisons</p>
-  </td></tr>
-
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 24px;font-size:22px;font-weight:800;color:#111827">
-      <span style="color:#1f44ff">${views}</span> buyer${views === 1 ? "" : "s"} viewed your profile this week
-    </p>
-
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eef1ff;border-radius:8px">
-    <tr>
-      <td style="padding:16px" width="50%" align="center">
-        <p style="margin:0;font-size:28px;font-weight:800;color:#1f44ff">${views}</p>
-        <p style="margin:4px 0 0;font-size:11px;color:#6b7280">Profile views</p>
-      </td>
-      <td style="padding:16px" width="50%" align="center">
-        <p style="margin:0;font-size:28px;font-weight:800;color:#111827">${agent.score ? Math.round(Number(agent.score)) : "-"}</p>
-        <p style="margin:4px 0 0;font-size:11px;color:#6b7280">Your AgentScore</p>
-      </td>
-    </tr>
-    </table>
-
-    <p style="margin:24px 0 16px;font-size:14px;color:#374151;line-height:1.6">
-      These are real buyers researching agents in your area. Profiles with a photo, bio, and WhatsApp number get contacted. Incomplete profiles get skipped.
-    </p>
-
-    <table cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="padding-right:8px">
-        <a href="${dashboardUrl}" style="display:inline-block;background:#1f44ff;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-          Edit your profile
-        </a>
-      </td>
-      <td>
-        <a href="${profileUrl}" style="display:inline-block;border:1px solid #d1d5db;color:#374151;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:500;font-size:14px">
-          View public page
-        </a>
-      </td>
-    </tr></table>
-  </td></tr>
-
-  <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
-    <p style="margin:0;font-size:11px;color:#9ca3af">
-      Sent to ${agent.claimed_email} because you claimed your profile on FairComparisons.
-      <a href="${unsubscribeUrl(agent.claimed_email)}" style="color:#9ca3af">Unsubscribe</a>
-    </p>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body></html>`;
+      const html = emailShell({
+        preheader: `This week's top agents on the CEA record.`,
+        heading: `${views} buyer${views === 1 ? "" : "s"} viewed your profile this week`,
+        bodyHtml,
+        cta: {
+          label: "Edit your profile",
+          href: dashboardUrl,
+        },
+        footerNote: `Sent to ${agent.claimed_email} because you claimed your profile on FairComparisons.`,
+        unsubscribeEmail: agent.claimed_email,
+      });
 
       return {
         to: agent.claimed_email,

@@ -3,6 +3,7 @@ import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
 import { sendWaAsync } from "../../../lib/whatsapp";
 import { getAgentSession } from "../../../lib/agent-auth";
+import { emailShell, p } from "../../../lib/email-layout";
 
 // Agent submits a quote on a lead they were invited to. Authenticated by the
 // signed agent session cookie; identity is never taken from the request body.
@@ -130,7 +131,7 @@ export async function POST(req: Request) {
       meta: { commission_pct: pct, est_timeline_weeks: est_timeline_weeks ?? null },
     });
 
-    // Notify the homeowner — WhatsApp + email in parallel.
+    // Notify the homeowner, WhatsApp + email in parallel.
     const site =
       process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
     const link = `${site}/sell/quotes/${lead.token}?utm_source=notify`;
@@ -148,13 +149,26 @@ export async function POST(req: Request) {
       });
     }
     if (lead.email) {
+      const agentName = agent.name ?? "";
+      const propertyType = lead.property_type ?? "";
+      const area = lead.town ?? "";
+      const bodyHtml = [
+        p(
+          `${agentName} has sent a fee quote for your ${propertyType ?? "home"}${area ? ` in ${area}` : ""}.`
+        ),
+        p(
+          "Compare them on fee, marketing plan and, most importantly, each agent's real sales record in your area."
+        ),
+      ].join("");
       sendEmail({
         to: lead.email,
-        subject: `${agent.name} sent you a quote`,
-        html: quoteReadyHtml({
-          name: lead.full_name ?? "",
-          agentName: agent.name ?? "",
-          link,
+        subject: `${agentName} sent you a quote`,
+        html: emailShell({
+          preheader: "Compare fees, plans and records side by side.",
+          heading: `${agentName} sent you a quote`,
+          bodyHtml,
+          cta: { label: "Compare your quotes", href: link },
+          unsubscribeEmail: lead.email,
         }),
         metric: "Seller Quote Ready",
         properties: { lead_token: lead.token, agent_id: agent.id },
@@ -166,41 +180,4 @@ export async function POST(req: Request) {
     console.error("[sell/quote] unexpected", err);
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
-}
-
-function quoteReadyHtml({
-  name,
-  agentName,
-  link,
-}: {
-  name: string;
-  agentName: string;
-  link: string;
-}): string {
-  const first = name.split(" ")[0] || "";
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">${first}, ${agentName} sent you a quote.</p>
-    <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6">
-      View commission, timeline and marketing approach. You can pick a winning agent any time.
-    </p>
-    <p style="margin:0 0 16px">
-      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        See the quote
-      </a>
-    </p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
 }

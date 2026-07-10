@@ -3,11 +3,12 @@ import { createHash } from "crypto";
 import { supabase, supabaseAdmin } from "../../lib/supabase";
 import { checkRateLimit, clientIp } from "../../lib/rateLimit";
 import { sendEmail } from "../../lib/email";
+import { emailShell, p, muted } from "../../lib/email-layout";
 
 // Open (community) agent reviews with anti-spam:
 //   1. Honeypot field (bots fill it; humans don't).
 //   2. Per-IP rate limit (3 review submissions / hour).
-//   3. Email double-opt-in — review stays status='pending' (hidden by RLS)
+//   3. Email double-opt-in, review stays status='pending' (hidden by RLS)
 //      until the reviewer clicks the verification link.
 //   4. One review per email per agent (DB unique index).
 //   5. Min comment length + length caps.
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
       rating,
       transactionType,
       comment,
-      website, // honeypot — must be empty
+      website, // honeypot, must be empty
     } = body ?? {};
 
     // Honeypot: a real user never fills this hidden field.
@@ -164,10 +165,22 @@ export async function POST(request: Request) {
     const site =
       process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
     const link = `${site}/api/reviews/verify?token=${token}`;
+    const agentName = agent.name ?? "";
+    const confirmHtml = emailShell({
+      preheader: "One click confirms your review. Link expires in 7 days.",
+      heading: `Confirm your review of ${agentName}`,
+      bodyHtml: [
+        p(
+          "One click confirms your review. We check every submission before it appears, so only genuine reviews from a real email get published."
+        ),
+        muted("Didn't write this review? Ignore this email and nothing will be published."),
+      ].join(""),
+      cta: { label: "Confirm my review", href: link },
+    });
     sendEmail({
       to: emailLc,
-      subject: `Confirm your review of ${agent.name}`,
-      html: confirmHtml({ agentName: agent.name ?? "", link }),
+      subject: `Confirm your review of ${agentName}`,
+      html: confirmHtml,
       metric: "Review Confirmation",
       properties: { agent_id: agent.id },
     }).catch((e) => console.error("[reviews] confirm email failed", e));
@@ -204,41 +217,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Could not fetch reviews" }, { status: 500 });
   }
   return NextResponse.json({ reviews: data ?? [] });
-}
-
-function confirmHtml({
-  agentName,
-  link,
-}: {
-  agentName: string;
-  link: string;
-}): string {
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="520" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827">Confirm your review of ${agentName}</p>
-    <p style="margin:0 0 20px;font-size:14px;color:#374151;line-height:1.6">
-      One click confirms your review. We check every submission before it appears, so only genuine reviews from a real email get published.
-    </p>
-    <p style="margin:0 0 16px">
-      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        Confirm my review
-      </a>
-    </p>
-    <p style="margin:16px 0 0;font-size:12px;color:#9ca3af">
-      Didn't write this review? Ignore this email and nothing will be published.
-    </p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
 }

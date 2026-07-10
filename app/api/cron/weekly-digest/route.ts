@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendBatchEmails } from "../../../lib/email";
-import { unsubscribeUrl } from "../../../lib/unsubscribe";
+import { emailShell, p, muted, rows } from "../../../lib/email-layout";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -64,105 +64,64 @@ export async function GET(req: Request) {
     }
   }
 
-  // Build emails
-  const emails = subscribers.map((sub) => {
-    const districtSection = sub.district_tag && districtLeaders[sub.district_tag]
-      ? `
-        <tr><td style="padding:20px 0 0">
-          <p style="margin:0 0 8px;font-size:13px;color:#6b7280">TOP AGENT IN YOUR AREA</p>
-          <p style="margin:0;font-size:15px">
-            <a href="https://fair-comparisons.com/property-agents/agent/${districtLeaders[sub.district_tag].slug}?utm_source=digest&utm_medium=email" style="color:#1f44ff;text-decoration:none;font-weight:600">${districtLeaders[sub.district_tag].name}</a>
-            <span style="color:#9ca3af"> - Score: ${Math.round(districtLeaders[sub.district_tag].score)}</span>
-          </p>
-        </td></tr>`
-      : "";
+  // Build emails. All-zero suppression (doc B2): if every metric line for a
+  // recipient is zero or absent, skip that recipient entirely. Never email "0 views".
+  const emails = subscribers.flatMap((sub) => {
+    const leader = sub.district_tag ? districtLeaders[sub.district_tag] : undefined;
+    const hasTopAgents = (topAgents ?? []).length > 0;
+    const hasViews = !!weeklyViews && weeklyViews > 0;
+    if (!hasTopAgents && !hasViews && !leader) return [];
 
-    const agentRows = (topAgents ?? [])
-      .map(
-        (a, i) => `
-        <tr>
-          <td style="padding:8px 0;border-bottom:1px solid #f3f4f6">
-            <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-              <td width="30" style="font-size:14px;font-weight:700;color:${i < 3 ? "#1f44ff" : "#9ca3af"}">${i + 1}</td>
-              <td>
-                <a href="https://fair-comparisons.com/property-agents/agent/${a.slug}?utm_source=digest&utm_medium=email" style="color:#111827;text-decoration:none;font-weight:600;font-size:14px">${a.name}</a>
-                <br><span style="font-size:12px;color:#6b7280">${a.agency_name} - ${a.transaction_count} transactions</span>
-              </td>
-              <td width="50" align="right" style="font-size:18px;font-weight:800;color:#1f44ff">${Math.round(Number(a.score))}</td>
-            </tr></table>
-          </td>
-        </tr>`
-      )
-      .join("");
+    const agentItems = (topAgents ?? []).map((a) => {
+      const detail = [
+        a.agency_name ? String(a.agency_name) : "",
+        a.transaction_count ? `${a.transaction_count} transactions` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+      return `<a href="https://fair-comparisons.com/property-agents/agent/${a.slug}?utm_source=digest&utm_medium=email" style="color:#111827;text-decoration:none;font-weight:600">${a.name}</a><span style="float:right;font-size:16px;font-weight:800;color:#1f44ff">${Math.round(Number(a.score))}</span>${detail ? `<br><span style="font-size:12px;color:#6b7280;font-weight:400">${detail}</span>` : ""}`;
+    });
 
-    const html = `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
+    const bodyHtml = [
+      p(
+        "This week's highest-scoring property agents in Singapore, ranked on CEA transaction data. No paid placements."
+      ),
+      weeklyViews
+        ? p(
+            `<strong>${weeklyViews.toLocaleString()}</strong> agent profiles researched this week by Singapore buyers.`
+          )
+        : "",
+      hasTopAgents ? rows(agentItems, true) : "",
+      leader
+        ? p(
+            `Top agent in your area: <a href="https://fair-comparisons.com/property-agents/agent/${leader.slug}?utm_source=digest&utm_medium=email" style="color:#1f44ff;text-decoration:none;font-weight:600">${leader.name}</a>, score ${Math.round(leader.score)}.`
+          )
+        : "",
+      muted(
+        `Are you a property agent? Your profile is already public. <a href="https://fair-comparisons.com/for-agents?utm_source=digest&utm_medium=email" style="color:#1f44ff;text-decoration:none;font-weight:500">Claim it</a> to add your photo, WhatsApp, and bio. Free.`
+      ),
+    ].join("");
 
-  <!-- Header -->
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-    <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.7)">Singapore Property Agent Rankings</p>
-  </td></tr>
+    const html = emailShell({
+      preheader: "Singapore's highest-scoring agents this week, ranked on real CEA data.",
+      heading: "This week's top agents",
+      bodyHtml,
+      cta: {
+        label: "See full rankings",
+        href: "https://fair-comparisons.com/insights/top-agents-2026?utm_source=digest&utm_medium=email",
+      },
+      footerNote: "You subscribed on fair-comparisons.com.",
+      unsubscribeEmail: sub.email,
+    });
 
-  <!-- Body -->
-  <tr><td style="padding:24px 32px">
-    <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6">
-      This week's highest-scoring property agents in Singapore, ranked on CEA transaction data. No paid placements.
-    </p>
-
-    ${weeklyViews ? `<p style="margin:0 0 20px;font-size:13px;color:#0a1733;background:#eef1ff;padding:10px 14px;border-radius:8px">
-      <strong>${weeklyViews.toLocaleString()}</strong> agent profiles researched this week by Singapore buyers.
-    </p>` : ""}
-
-    <!-- Top 5 -->
-    <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em">THIS WEEK'S TOP 5</p>
-    <table cellpadding="0" cellspacing="0" border="0" width="100%">
-      ${agentRows}
-    </table>
-
-    ${districtSection}
-
-    <!-- CTA -->
-    <tr><td style="padding:24px 0">
-      <a href="https://fair-comparisons.com/insights/top-agents-2026?utm_source=digest&utm_medium=email" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        See full rankings
-      </a>
-    </td></tr>
-
-    <!-- Agent CTA -->
-    <tr><td style="padding:16px 0 0;border-top:1px solid #f3f4f6">
-      <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#111827">Are you a property agent?</p>
-      <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.5">
-        Your profile is already public. <a href="https://fair-comparisons.com/for-agents?utm_source=digest&utm_medium=email" style="color:#1f44ff;text-decoration:none;font-weight:500">Claim it</a> to add your photo, WhatsApp, and bio. Free.
-      </p>
-    </td></tr>
-
-  </td></tr>
-
-  <!-- Footer -->
-  <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
-    <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5">
-      You subscribed on fair-comparisons.com. Rankings based on CEA data, not ads.
-      <a href="${unsubscribeUrl(sub.email)}" style="color:#9ca3af;text-decoration:underline">Unsubscribe</a>
-    </p>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body></html>`;
-
-    return {
-      to: sub.email,
-      subject: `Singapore's top 5 agents this week (CEA data)`,
-      html,
-      metric: "Weekly Digest",
-    };
+    return [
+      {
+        to: sub.email,
+        subject: `Singapore's top 5 agents this week (CEA data)`,
+        html,
+        metric: "Weekly Digest",
+      },
+    ];
   });
 
   // Send in batches of 50

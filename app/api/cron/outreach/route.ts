@@ -145,6 +145,10 @@ export async function GET(req: Request) {
   }
 
   // --- 3. Generate emails using lib templates ---
+  // Placeholder until we have agent emails. Also signs the unsubscribe link,
+  // so it must match the `to` address exactly.
+  const OUTREACH_RECIPIENT = "hello@fair-comparisons.com";
+
   const emailBatch = toSend.map(({ agent, template, rank, area }) => {
     const agentData = {
       name: agent.name,
@@ -161,24 +165,24 @@ export async function GET(req: Request) {
 
     switch (template) {
       case "initialOutreach":
-        email = initialOutreach(agentData);
+        email = initialOutreach(agentData, OUTREACH_RECIPIENT);
         break;
       case "competitorComparison":
-        email = competitorComparison(agentData);
+        email = competitorComparison(agentData, OUTREACH_RECIPIENT);
         break;
       case "costComparison":
-        email = costComparison(agentData);
+        email = costComparison(agentData, OUTREACH_RECIPIENT);
         break;
       case "areaLeader":
-        email = areaLeader(agentData, rank, area);
+        email = areaLeader(agentData, rank, area, OUTREACH_RECIPIENT);
         break;
       default:
-        email = initialOutreach(agentData);
+        email = initialOutreach(agentData, OUTREACH_RECIPIENT);
     }
 
     return {
       ...email,
-      to: "hello@fair-comparisons.com", // Placeholder until we have agent emails
+      to: OUTREACH_RECIPIENT,
       metric: "Agent Outreach",
       properties: {
         agent_id: agent.id,

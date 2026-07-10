@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { getAdminSession } from "../../../lib/admin-auth";
 import { sendEmail } from "../../../lib/email";
+import { emailShell, p, rows, statCard } from "../../../lib/email-layout";
 import { AGENT_TERMS_VERSION } from "../../../lib/agent-terms";
 import { givenName } from "../../../lib/names";
 import { escapeHtml } from "../../../lib/escapeHtml";
@@ -98,10 +99,50 @@ export async function POST(req: Request) {
 
     // Notify the agent at the (now admin-vetted) submitted email.
     try {
+      const first = escapeHtml(givenName(agent.name ?? "") || "there");
+      const dashboardUrl = "https://fair-comparisons.com/dashboard?utm_source=claim_approved&utm_medium=email";
+      const profileUrl = agent.slug
+        ? `https://fair-comparisons.com/property-agents/agent/${agent.slug}?utm_source=claim_approved&utm_medium=email`
+        : null;
+
+      const bodyParts = [
+        p(
+          "Your profile is live and sellers can now invite you to quote." +
+            (profileUrl ? ` You can view your public page <a href="${profileUrl}">here</a>.` : "")
+        ),
+      ];
+      if (typeof agent.score === "number") {
+        bodyParts.push(statCard(String(Math.round(Number(agent.score))), "AgentScore"));
+        bodyParts.push(p("Your AgentScore is computed only from your CEA record."));
+      }
+      bodyParts.push(
+        p(
+          "Agents who complete these three convert far more of the sellers who view them:"
+        )
+      );
+      bodyParts.push(
+        rows(
+          [
+            "Add a professional photo",
+            "Add your WhatsApp number (this is how seller leads reach you fastest)",
+            "Write two lines on how you work",
+          ],
+          true
+        )
+      );
+
+      const html = emailShell({
+        preheader: "Add your photo and WhatsApp so sellers know who they are picking.",
+        heading: `${first}, your profile is live. 3 things to finish it.`,
+        bodyHtml: bodyParts.join(""),
+        cta: { label: "Complete your profile", href: dashboardUrl },
+        footerNote: "You will get a short weekly report on your leads and views. Manage or turn off anytime.",
+      });
+
       await sendEmail({
         to: claim.email,
-        subject: "Your profile claim is approved",
-        html: buildApprovedEmail(agent.name ?? "", agent.slug ?? ""),
+        subject: `${first}, your profile is live. 3 things to finish it.`,
+        html,
         metric: "Agent Claimed",
         properties: {
           agent_id: agent.id,
@@ -145,41 +186,4 @@ async function audit(
   } catch (err) {
     console.error("[admin/claims] audit log failed:", err);
   }
-}
-
-function buildApprovedEmail(name: string, slug: string): string {
-  const first = escapeHtml(givenName(name) || "there");
-  const dashboardUrl = "https://fair-comparisons.com/dashboard";
-  const profileUrl = `https://fair-comparisons.com/property-agents/agent/${slug}`;
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">${first}, your profile claim is approved.</p>
-    <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.6">
-      Our team verified your request. You can now manage your profile and receive seller leads in your area.
-    </p>
-    <table cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="padding-right:8px">
-        <a href="${dashboardUrl}?utm_source=claim_approved&utm_medium=email" style="display:inline-block;background:#1f44ff;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">Open your dashboard</a>
-      </td>
-      <td>
-        <a href="${profileUrl}?utm_source=claim_approved&utm_medium=email" style="display:inline-block;border:1px solid #d1d5db;color:#374151;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:500;font-size:14px">View public page</a>
-      </td>
-    </tr></table>
-  </td></tr>
-  <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
-    <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5">FairComparisons. Rankings based on CEA transaction data, not advertising.</p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
 }

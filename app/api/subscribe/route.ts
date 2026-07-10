@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../lib/email";
 import { checkRateLimit, clientIp } from "../../lib/rateLimit";
-import { escapeHtml } from "../../lib/escapeHtml";
+import { emailShell, p } from "../../lib/email-layout";
 
 // Use service role key for server-side API route (bypasses RLS)
 const supabase = createClient(
@@ -81,13 +81,14 @@ export async function POST(req: Request) {
 
     // Fire Klaviyo welcome event with full HTML.
     // PDPA: consent=true verified above.
-    const welcomeHtml = buildWelcomeEmail(districtTag || null);
+    const normalizedEmail = email.toLowerCase().trim();
+    const welcomeHtml = buildWelcomeEmail(normalizedEmail);
     // Await: a fire-and-forget promise is dropped when the Vercel lambda freezes
     // after responding, so the Klaviyo event never lands.
     try {
       await sendEmail({
-        to: email.toLowerCase().trim(),
-        subject: "Welcome. Here's how we rank agents differently.",
+        to: normalizedEmail,
+        subject: "Your agent shortlist, and how we rank them",
         html: welcomeHtml,
         metric: "Consumer Welcome",
         properties: {
@@ -113,50 +114,26 @@ export async function POST(req: Request) {
   }
 }
 
-function buildWelcomeEmail(districtTag: string | null): string {
-  const districtLine = districtTag
-    ? `<li>District updates for <strong>${escapeHtml(districtTag)}</strong></li>`
-    : "";
+function buildWelcomeEmail(recipientEmail: string): string {
+  const bodyHtml =
+    p(
+      "Thanks for using FairComparisons. Two things worth knowing before you pick an agent:"
+    ) +
+    p(
+      "We rank every CEA-registered agent on their <strong>real transaction record</strong>, not on advertising. No agent can pay to rank higher. That is the whole point."
+    ) +
+    p(
+      "And it is free for you. We are paid by optional agent subscriptions, never by taking a cut of your sale."
+    );
 
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827">You signed up for independent agent rankings.</p>
-
-    <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6">
-      FairComparisons scores every CEA-registered property agent in Singapore using actual transaction records. No ads, no paid placements, no fake reviews.
-    </p>
-
-    <p style="margin:0 0 8px;font-size:14px;font-weight:600;color:#111827">What you will receive:</p>
-    <ul style="margin:0 0 20px;padding-left:20px;color:#4b5563;line-height:2;font-size:14px;">
-      <li>Weekly top agent digest (Mondays)</li>
-      ${districtLine}
-      <li>Nothing else. No spam.</li>
-    </ul>
-
-    <a href="https://fair-comparisons.com/sell?utm_source=welcome&utm_medium=email" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-      Compare top agents
-    </a>
-  </td></tr>
-
-  <tr><td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
-    <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5">
-      FairComparisons. Rankings based on CEA transaction data, not advertising.
-    </p>
-  </td></tr>
-
-</table>
-</td></tr>
-</table>
-</body></html>`;
+  return emailShell({
+    preheader: "Free for sellers. No agent pays for placement. Ever.",
+    heading: "Your agent shortlist, and how we rank them",
+    bodyHtml,
+    cta: {
+      label: "See agents for your home",
+      href: "https://fair-comparisons.com/sell?utm_source=welcome&utm_medium=email",
+    },
+    unsubscribeEmail: recipientEmail,
+  });
 }

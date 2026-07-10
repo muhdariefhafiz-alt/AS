@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
+import { emailShell, p, muted } from "../../../lib/email-layout";
 import { sendWaAsync } from "../../../lib/whatsapp";
 import { hdbValuation, isValidHdbFlatType } from "../../../lib/avm";
 
@@ -78,19 +79,29 @@ export async function GET(req: Request) {
           properties: { lead_token: w.token, channel: "wa" },
         });
       }
+      const movePct = Math.round(move * 100);
+      const rangeStr = `${fmtSgd(fresh.low)} to ${fmtSgd(fresh.high)}`;
+      const html = emailShell({
+        preheader: `Based on the latest transactions in ${w.town}.`,
+        heading: `Your HDB estimate changed to ${rangeStr}`,
+        bodyHtml:
+          p(
+            `Based on recent sales in ${w.town}, our estimate for your HDB flat is now <strong>${rangeStr}</strong> (${direction} ${movePct}% since your last check).`
+          ) +
+          muted(
+            `This is a data estimate, not a valuation. If you are thinking of selling, an agent with a real record in ${w.town} will price it properly.`
+          ),
+        cta: { label: "Refresh your estimate", href: link },
+        footerNote: `Sent to ${w.email} because you asked to watch this valuation on FairComparisons.`,
+        unsubscribeEmail: String(w.email),
+      });
+
       await sendEmail({
         to: String(w.email),
-        subject: `Your ${w.town} home value moved ${direction} ${Math.round(move * 100)}%`,
-        html: updateHtml({
-          town: w.town,
-          low: fresh.low,
-          high: fresh.high,
-          direction,
-          movePct: Math.round(move * 100),
-          link,
-        }),
+        subject: `Your ${w.town} home value moved ${direction} ${movePct}%`,
+        html,
         metric: "AVM Update",
-        properties: { lead_token: w.token, move_pct: Math.round(move * 100) },
+        properties: { lead_token: w.token, move_pct: movePct },
       });
 
       await sb
@@ -112,46 +123,4 @@ function fmtSgd(n: number): string {
     currency: "SGD",
     maximumFractionDigits: 0,
   }).format(n);
-}
-
-function updateHtml({
-  town,
-  low,
-  high,
-  direction,
-  movePct,
-  link,
-}: {
-  town: string;
-  low: number;
-  high: number;
-  direction: string;
-  movePct: number;
-  link: string;
-}): string {
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f9fafb">
-<tr><td align="center" style="padding:24px 16px">
-<table cellpadding="0" cellspacing="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden">
-  <tr><td style="background:#0a1733;padding:24px 32px">
-    <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff">FairComparisons</p>
-  </td></tr>
-  <tr><td style="padding:32px">
-    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827">Your ${town} home value moved ${direction} ${movePct}%.</p>
-    <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.6">
-      Current range: <strong>${fmtSgd(low)} – ${fmtSgd(high)}</strong>.
-    </p>
-    <p style="margin:0 0 16px">
-      <a href="${link}" style="display:inline-block;background:#1f44ff;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        See the latest estimate
-      </a>
-    </p>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
 }
