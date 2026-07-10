@@ -67,6 +67,15 @@ function getEnv() {
   };
 }
 
+// Whether WhatsApp can actually deliver right now. When unprovisioned, sendWa
+// dry-runs (the agent receives nothing), so callers deciding reachability or
+// writing "we contacted this agent" copy MUST treat WhatsApp as a non-channel
+// unless this returns true.
+export function isWhatsAppLive(): boolean {
+  const { phoneNumberId, accessToken } = getEnv();
+  return Boolean(phoneNumberId && accessToken);
+}
+
 function normaliseTo(raw: string): string {
   // Meta wants digits-only (no +) for the `to` field; we accept both.
   return String(raw).replace(/\D/g, "");

@@ -24,6 +24,11 @@ export type ShortlistRow = {
   claimed: boolean;
   agent_flags?: { t: string; pct?: number }[] | null;
   invite_status: string;
+  // Whether FairComparisons has a live channel (verified email, or WhatsApp
+  // once provisioned) to actually deliver an invite to this agent. Unreachable
+  // agents stay visible with their full record but cannot be invited, so the
+  // seller is never told we contacted someone we could not.
+  reachable: boolean;
 };
 
 type Props = {
@@ -63,7 +68,7 @@ export default function ShortlistPicker({
     () =>
       new Set(
         rows
-          .filter((r) => r.invite_status === "requested")
+          .filter((r) => r.invite_status === "requested" && r.reachable)
           .map((r) => r.agent_id)
       )
   );
@@ -75,6 +80,10 @@ export default function ShortlistPicker({
 
   function toggle(id: number) {
     if (alreadyInvited) return;
+    // Never let an unreachable agent into the pick set: we have no channel to
+    // deliver the invite, so accepting the pick would mean lying to the seller.
+    const row = rows.find((r) => r.agent_id === id);
+    if (row && !row.reachable) return;
     setPicked((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -228,10 +237,19 @@ export default function ShortlistPicker({
                   )}
                 </div>
 
-                <div className="shrink-0">
+                <div className="shrink-0 text-right">
                   {isInvited ? (
                     <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
                       Invited
+                    </span>
+                  ) : !a.reachable ? (
+                    // Honest: we have no channel to deliver an invite to this
+                    // agent, so they cannot be picked. Record stays visible.
+                    <span
+                      className="inline-flex max-w-[140px] items-center rounded-full bg-gray-100 px-3 py-1 text-center text-xs font-medium text-gray-500"
+                      title="This agent has no verified contact details on FairComparisons yet, so we cannot send them your request."
+                    >
+                      No verified contact details yet
                     </span>
                   ) : (
                     <button

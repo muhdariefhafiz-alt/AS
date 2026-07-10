@@ -28,6 +28,10 @@ type Props = {
   rows: QuoteRow[];
   alreadyPicked: boolean;
   pickedQuoteId: number | null;
+  // The page renders a richer "we emailed your agents, waiting on them" notice
+  // above this component. When it does, skip the plain "no quotes yet" card so
+  // the seller does not see two competing empty states.
+  waitingNoticeShown?: boolean;
 };
 
 function fmtPrice(n: number | null | undefined): string {
@@ -42,6 +46,7 @@ export default function QuotesView({
   rows,
   alreadyPicked,
   pickedQuoteId,
+  waitingNoticeShown = false,
 }: Props) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState<number | null>(null);
@@ -95,6 +100,9 @@ export default function QuotesView({
   }
 
   if (rows.length === 0) {
+    // The page already shows the "we emailed your agents, waiting on them"
+    // notice above, so avoid a second, blunter empty state under it.
+    if (waitingNoticeShown) return null;
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
         <p className="text-base font-semibold text-gray-900">

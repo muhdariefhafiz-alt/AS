@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "./supabase";
+import { isWhatsAppLive } from "./whatsapp";
 
 export type PropertyType = "HDB" | "CONDO" | "LANDED" | "EC";
 
@@ -157,12 +158,30 @@ export async function buildShortlist(
   }
   if (rows.length === 0) return [];
 
+  // Whether we can actually deliver an invite to each candidate. Used ONLY as
+  // the final tie-break below: merit (composite, then area activity) always
+  // decides first, so reachability can never buy an agent a better rank. It
+  // just prefers, among equals, the agent a seller can actually contact
+  // through us. Email is the live channel; WhatsApp counts once provisioned.
+  const waLive = isWhatsAppLive();
+  const candidateIds = rows.map((r) => Number(r.agent_id));
+  const { data: contactRows } = await sb
+    .from("sg_agents")
+    .select("id, email, whatsapp")
+    .in("id", candidateIds);
+  const reachableSet = new Set(
+    (contactRows ?? [])
+      .filter((c) => Boolean(c.email) || (Boolean(c.whatsapp) && waLive))
+      .map((c) => Number(c.id))
+  );
+
   const scored = rows.map((r) => {
     const base = Number(r.score ?? 0);
     const tb = typeBonus(r.area_property_types, criteria.property_type);
     const lb = localityBonus(r.area_focus_pct ?? 0);
     const composite = base + tb + lb;
-    return { row: r, base, tb, lb, composite };
+    const reachable = reachableSet.has(Number(r.agent_id));
+    return { row: r, base, tb, lb, composite, reachable };
   });
 
   // Relevance floor: a seller searching an area wants agents who actually work
@@ -180,7 +199,11 @@ export async function buildShortlist(
 
   pool.sort((a, b) => {
     if (b.composite !== a.composite) return b.composite - a.composite;
-    return (b.row.area_txns ?? 0) - (a.row.area_txns ?? 0);
+    const txnDiff = (b.row.area_txns ?? 0) - (a.row.area_txns ?? 0);
+    if (txnDiff !== 0) return txnDiff;
+    // Final tie-break only: among agents with identical merit, prefer the one
+    // an invite can actually reach. Never a scoring weight.
+    return Number(b.reachable) - Number(a.reachable);
   });
 
   return pool.slice(0, limit).map((s, i) => ({

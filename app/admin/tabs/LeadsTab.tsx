@@ -45,13 +45,79 @@ const statusColor = (s: string | null): "blue" | "emerald" | "amber" | "gray" =>
   }
 };
 
+// One row per invited-or-unreachable shortlist agent whose notification is
+// missing or failed. This is the manual-outreach worklist: sg_lead_shortlist
+// says who the seller picked, sg_lead_notifications says who a provider
+// actually accepted a message for; the gap is where a human must act.
+type IntegrityRow = {
+  lead_id: number;
+  seller: string;
+  lead_area: string;
+  lead_created: string;
+  agent_name: string;
+  agent_email: string | null;
+  agent_whatsapp: string | null;
+  problem: "no_channel" | "not_notified";
+};
+
+async function notificationIntegrity(): Promise<IntegrityRow[]> {
+  // Open leads only: once instructed/completed/expired the gap is moot.
+  const { data: leads } = await supabase
+    .from("sg_leads")
+    .select("id, full_name, town, district_code, created_at, status")
+    .in("status", ["invited", "quoted"]);
+  if (!leads || leads.length === 0) return [];
+  const leadIds = leads.map((l) => l.id);
+  const leadById = new Map(leads.map((l) => [Number(l.id), l]));
+
+  const [{ data: shortlist }, { data: notifs }] = await Promise.all([
+    supabase
+      .from("sg_lead_shortlist")
+      .select("lead_id, agent_id, status, sg_agents!inner(name, email, whatsapp)")
+      .in("lead_id", leadIds)
+      .in("status", ["invited", "unreachable"]),
+    supabase
+      .from("sg_lead_notifications")
+      .select("lead_id, agent_id, outcome")
+      .in("lead_id", leadIds)
+      .in("outcome", ["sent", "delivered", "read"]),
+  ]);
+
+  const notified = new Set(
+    (notifs ?? []).map((n) => `${n.lead_id}:${n.agent_id}`)
+  );
+
+  const rows: IntegrityRow[] = [];
+  for (const s of shortlist ?? []) {
+    if (notified.has(`${s.lead_id}:${s.agent_id}`)) continue;
+    const joined = s.sg_agents as unknown;
+    const a = ((Array.isArray(joined) ? joined[0] : joined) ?? {}) as Record<string, unknown>;
+    const lead = leadById.get(Number(s.lead_id));
+    if (!lead) continue;
+    const hasChannel = Boolean(a.email) || Boolean(a.whatsapp);
+    rows.push({
+      lead_id: Number(s.lead_id),
+      seller: String(lead.full_name ?? "—"),
+      lead_area: tc(lead.town) || lead.district_code || "—",
+      lead_created: String(lead.created_at),
+      agent_name: String(a.name ?? ""),
+      agent_email: (a.email as string | null) ?? null,
+      agent_whatsapp: (a.whatsapp as string | null) ?? null,
+      problem: s.status === "unreachable" || !hasChannel ? "no_channel" : "not_notified",
+    });
+  }
+  rows.sort((x, y) => x.lead_id - y.lead_id);
+  return rows;
+}
+
 export async function LeadsTab() {
-  const [kpiRes, dailyRes, sourceRes, byAgentRes, recentRes] = await Promise.all([
+  const [kpiRes, dailyRes, sourceRes, byAgentRes, recentRes, integrity] = await Promise.all([
     supabase.rpc("admin_lead_kpis", { p_days: 30 }),
     supabase.rpc("admin_leads_daily", { p_days: 14 }),
     supabase.rpc("admin_leads_by_source", { p_days: 30 }),
     supabase.rpc("admin_leads_by_agent", { p_days: 90, p_limit: 12 }),
     supabase.rpc("admin_recent_leads", { p_limit: 25 }),
+    notificationIntegrity(),
   ]);
 
   const k = (Array.isArray(kpiRes.data) ? kpiRes.data[0] : null) as Kpis | null;
@@ -113,6 +179,54 @@ export async function LeadsTab() {
         />
         <StatCard title="Agents per lead" value={avgShortlist} sub="avg shortlist size" color="#e67e22" />
       </div>
+
+      {/* Notification integrity: invited agents no provider ever accepted a
+          message for. Every row here needs manual outreach or the seller is
+          waiting on an agent who does not know they were invited. */}
+      {integrity.length > 0 && (
+        <div>
+          <SectionHeading
+            title={`Invited agents not reached (${integrity.length})`}
+            hint="The seller picked these agents but no email or WhatsApp was ever accepted by a provider. No contact details = we cannot reach them at all; Not notified = a channel exists but no successful send is on record. Follow up manually."
+          />
+          <div className="mt-3 overflow-x-auto rounded-md border border-red-200 bg-white">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-red-200 bg-red-50 text-[10px] uppercase tracking-widest text-red-700">
+                  <th className="px-4 py-2.5 text-left">Lead</th>
+                  <th className="px-4 py-2.5 text-left">Seller</th>
+                  <th className="px-4 py-2.5 text-left">Area</th>
+                  <th className="px-4 py-2.5 text-left">Agent</th>
+                  <th className="px-4 py-2.5 text-left">Problem</th>
+                  <th className="px-4 py-2.5 text-left">Agent contact</th>
+                </tr>
+              </thead>
+              <tbody>
+                {integrity.map((r, i) => (
+                  <tr key={i} className="border-b border-gray-100 last:border-0 align-top">
+                    <td className="px-4 py-2.5 whitespace-nowrap text-gray-600">
+                      #{r.lead_id} · {fmtDate(r.lead_created)}
+                    </td>
+                    <td className="px-4 py-2.5 font-medium text-gray-900">{r.seller}</td>
+                    <td className="px-4 py-2.5 text-gray-600">{r.lead_area}</td>
+                    <td className="px-4 py-2.5 text-gray-900">{tc(r.agent_name)}</td>
+                    <td className="px-4 py-2.5">
+                      <Pill color={r.problem === "no_channel" ? "gray" : "amber"}>
+                        {r.problem === "no_channel" ? "No contact details" : "Not notified"}
+                      </Pill>
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-gray-600">
+                      {r.agent_email && <div>{r.agent_email}</div>}
+                      {r.agent_whatsapp && <div className="font-mono">{r.agent_whatsapp}</div>}
+                      {!r.agent_email && !r.agent_whatsapp && <span className="text-gray-400">none on file</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Who's generating leads for which agent */}
       <div>

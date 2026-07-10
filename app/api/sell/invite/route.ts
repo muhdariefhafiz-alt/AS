@@ -2,8 +2,20 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
 import { emailShell, p } from "../../../lib/email-layout";
-import { sendWaAsync } from "../../../lib/whatsapp";
+import { sendWa, isWhatsAppLive } from "../../../lib/whatsapp";
 import { checkRateLimit } from "../../../lib/rateLimit";
+
+// One sg_lead_notifications row per (agent, channel) attempt. The outcome is
+// the provider's real answer, never an assumption; seller-facing copy and the
+// admin integrity view read these rows instead of trusting status='invited'.
+type NotificationRow = {
+  lead_id: number;
+  agent_id: number;
+  channel: "email" | "whatsapp" | "none";
+  provider_message_id: string | null;
+  outcome: "sent" | "dry_run" | "error" | "skipped_no_channel";
+  error: string | null;
+};
 
 export async function POST(req: Request) {
   try {
@@ -77,78 +89,223 @@ export async function POST(req: Request) {
       );
     }
 
-    const nowIso = new Date().toISOString();
-    // Mark picked agents as invited; mark the rest as not_picked.
-    const updates = existingShortlist.map((r) => ({
-      id: r.id,
-      status: picked.includes(r.agent_id)
-        ? "invited"
-        : r.status === "suggested"
-          ? "not_picked"
-          : r.status,
-      invited_at: picked.includes(r.agent_id) ? nowIso : null,
-    }));
-    for (const u of updates) {
-      await sb
-        .from("sg_lead_shortlist")
-        .update({ status: u.status, invited_at: u.invited_at })
-        .eq("id", u.id);
-    }
-
-    await sb.from("sg_leads").update({ status: "invited" }).eq("id", lead.id);
-    await sb.from("sg_lead_events").insert({
-      lead_id: lead.id,
-      event_type: "select_agents",
-      meta: { invited_ids: picked },
-    });
-
-    // Notify agents who were invited (email + WhatsApp in parallel).
+    // Fetch the picked agents BEFORE writing any status: whether an agent can
+    // be marked 'invited' depends on whether we can actually reach them. The
+    // old code stamped status='invited' unconditionally, so agents with no
+    // contact channel were shown to the seller as contacted when nothing was
+    // ever attempted.
     const { data: agents } = await sb
       .from("sg_agents")
       .select(
         "id, name, email, whatsapp, claimed, slug, claimed_email, subscription_tier, stripe_subscription_id, email_opt_out_at"
       )
       .in("id", picked);
+
+    // Reachability per agent. Email (Resend) is the live channel; WhatsApp
+    // only counts when provisioned, because unprovisioned sends silently
+    // dry-run and reach nobody.
+    const waLive = isWhatsAppLive();
+    const reachableIds = new Set(
+      (agents ?? [])
+        .filter((a) => Boolean(a.email) || (Boolean(a.whatsapp) && waLive))
+        .map((a) => Number(a.id))
+    );
+    const unreachable = (agents ?? [])
+      .filter((a) => !reachableIds.has(Number(a.id)))
+      .map((a) => ({ id: Number(a.id), name: String(a.name ?? "") }));
+
+    if (reachableIds.size === 0) {
+      // Nothing we send would reach anyone. Refuse honestly instead of
+      // pretending the invite went out.
+      await sb
+        .from("sg_lead_shortlist")
+        .update({ status: "unreachable" })
+        .eq("lead_id", lead.id)
+        .in("agent_id", picked);
+      await sb.from("sg_lead_notifications").insert(
+        picked.map((agentId) => ({
+          lead_id: lead.id,
+          agent_id: agentId,
+          channel: "none",
+          provider_message_id: null,
+          outcome: "skipped_no_channel",
+          error: null,
+        }))
+      );
+      await sb.from("sg_lead_events").insert({
+        lead_id: lead.id,
+        event_type: "select_agents_unreachable",
+        meta: { picked_ids: picked },
+      });
+      return NextResponse.json(
+        {
+          error:
+            "None of the selected agents has verified contact details on FairComparisons yet, so we cannot send your request to them. Please pick a different agent from your shortlist.",
+        },
+        { status: 422 }
+      );
+    }
+
+    const nowIso = new Date().toISOString();
+    // Reachable picked agents become 'invited'; picked agents we cannot reach
+    // become 'unreachable' (never shown to the seller as contacted); untouched
+    // suggestions become 'not_picked'. invited_at is only written for rows
+    // being invited now, so earlier invites keep their timestamp.
+    for (const r of existingShortlist) {
+      if (picked.includes(r.agent_id)) {
+        if (reachableIds.has(r.agent_id)) {
+          await sb
+            .from("sg_lead_shortlist")
+            .update({ status: "invited", invited_at: nowIso })
+            .eq("id", r.id);
+        } else {
+          await sb
+            .from("sg_lead_shortlist")
+            .update({ status: "unreachable", invited_at: null })
+            .eq("id", r.id);
+        }
+      } else if (r.status === "suggested") {
+        await sb
+          .from("sg_lead_shortlist")
+          .update({ status: "not_picked" })
+          .eq("id", r.id);
+      }
+    }
+
+    await sb.from("sg_leads").update({ status: "invited" }).eq("id", lead.id);
+    await sb.from("sg_lead_events").insert({
+      lead_id: lead.id,
+      event_type: "select_agents",
+      meta: {
+        invited_ids: picked.filter((id) => reachableIds.has(id)),
+        unreachable_ids: unreachable.map((u) => u.id),
+      },
+    });
+
+    // Notify reachable invited agents and record every attempt's REAL outcome.
+    // Sends are awaited (not fire-and-forget) so provider rejections become
+    // durable 'error' rows instead of vanishing into console.error.
     const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
+    const notifications: NotificationRow[] = [];
+    let notifiedCount = 0;
     for (const a of agents ?? []) {
+      const agentId = Number(a.id);
+      if (!reachableIds.has(agentId)) {
+        notifications.push({
+          lead_id: lead.id,
+          agent_id: agentId,
+          channel: "none",
+          provider_message_id: null,
+          outcome: "skipped_no_channel",
+          error: null,
+        });
+        continue;
+      }
       const link = `${site}/dashboard?token=${token}&utm_source=notify&utm_medium=agent_invite`;
       const area = lead.town ?? lead.district_code ?? "your area";
-      // WhatsApp lands in seconds; email is the durable record.
-      if (a.whatsapp) {
-        sendWaAsync({
-          to: String(a.whatsapp),
-          template: "agent_invite",
-          variables: {
-            agent_first_name: (a.name ?? "").split(" ")[0] || "Hi",
-            area,
-            property_type: lead.property_type,
-            link,
-          },
-          metric: "Agent Notification",
-          properties: { lead_token: token, agent_id: a.id, channel: "wa" },
-        });
+      let agentNotified = false;
+
+      // WhatsApp lands in seconds; only attempted when provisioned, so a
+      // dry-run is never recorded as contact.
+      if (a.whatsapp && waLive) {
+        try {
+          const wa = await sendWa({
+            to: String(a.whatsapp),
+            template: "agent_invite",
+            variables: {
+              agent_first_name: (a.name ?? "").split(" ")[0] || "Hi",
+              area,
+              property_type: lead.property_type,
+              link,
+            },
+            metric: "Agent Notification",
+            properties: { lead_token: token, agent_id: a.id, channel: "wa" },
+          });
+          notifications.push({
+            lead_id: lead.id,
+            agent_id: agentId,
+            channel: "whatsapp",
+            provider_message_id: wa.dry_run ? null : wa.id,
+            outcome: wa.dry_run ? "dry_run" : "sent",
+            error: null,
+          });
+          if (!wa.dry_run) agentNotified = true;
+        } catch (e) {
+          notifications.push({
+            lead_id: lead.id,
+            agent_id: agentId,
+            channel: "whatsapp",
+            provider_message_id: null,
+            outcome: "error",
+            error: String(e).slice(0, 500),
+          });
+        }
       }
-      if (!a.email) continue;
-      sendEmail({
-        to: a.email,
-        subject: `New seller in ${area}: quote within 24h`,
-        html: agentInviteHtml({
-          agentName: a.name ?? "",
-          propertyType: lead.property_type,
-          area,
-          bedrooms: lead.bedrooms ?? null,
-          timeline: lead.timeline,
-          estValueLow: lead.est_value_low ?? null,
-          estValueHigh: lead.est_value_high ?? null,
-          link,
-        }),
-        metric: "Agent Notification",
-        properties: {
-          lead_token: token,
-          agent_id: a.id,
-          property_type: lead.property_type,
-        },
-      }).catch((e) => console.error("[sell/invite] agent email failed", e));
+
+      // Email is the durable record. sendEmail never throws; failures come
+      // back as id='resend-error' and are recorded as such.
+      if (a.email) {
+        try {
+          const res = (await sendEmail({
+            to: a.email,
+            subject: `New seller in ${area}: quote within 24h`,
+            html: agentInviteHtml({
+              agentName: a.name ?? "",
+              propertyType: lead.property_type,
+              area,
+              bedrooms: lead.bedrooms ?? null,
+              timeline: lead.timeline,
+              estValueLow: lead.est_value_low ?? null,
+              estValueHigh: lead.est_value_high ?? null,
+              link,
+            }),
+            metric: "Agent Notification",
+            properties: {
+              lead_token: token,
+              agent_id: a.id,
+              property_type: lead.property_type,
+            },
+          })) as { id: string; error?: string };
+          const failed =
+            res.id === "resend-error" || res.id === "dry-run" ||
+            res.id === "klaviyo-event-queued";
+          notifications.push({
+            lead_id: lead.id,
+            agent_id: agentId,
+            channel: "email",
+            provider_message_id: failed ? null : res.id,
+            // Klaviyo events and dry-runs are not proof anyone was emailed.
+            outcome:
+              res.id === "resend-error"
+                ? "error"
+                : failed
+                  ? "dry_run"
+                  : "sent",
+            error: res.error ?? null,
+          });
+          if (!failed) agentNotified = true;
+        } catch (e) {
+          notifications.push({
+            lead_id: lead.id,
+            agent_id: agentId,
+            channel: "email",
+            provider_message_id: null,
+            outcome: "error",
+            error: String(e).slice(0, 500),
+          });
+        }
+      }
+
+      if (agentNotified) notifiedCount += 1;
+    }
+
+    if (notifications.length > 0) {
+      const { error: notifErr } = await sb
+        .from("sg_lead_notifications")
+        .insert(notifications);
+      if (notifErr) {
+        console.error("[sell/invite] notification ledger insert failed", notifErr);
+      }
     }
 
     // E1 upgrade prompt (docs/email-lifecycle.md): once a free agent has been
@@ -220,7 +377,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      invited_count: picked.length,
+      // Agents actually invited (reachable and marked invited), agents a
+      // provider accepted a message for, and agents we could not reach at
+      // all. The client shows the seller the truth, not picked.length.
+      invited_count: reachableIds.size,
+      notified_count: notifiedCount,
+      unreachable: unreachable.map((u) => u.name),
     });
   } catch (err) {
     console.error("[sell/invite] unexpected", err);

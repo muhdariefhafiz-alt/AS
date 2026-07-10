@@ -105,6 +105,21 @@ export async function POST(req: Request) {
             recipient: status.recipient_id,
           },
         });
+        // Join the provider callback back to the outbound send so a failed
+        // WhatsApp invite becomes a visible 'failed' notification instead of
+        // an orphan event. status.id is the Meta message id we stored as
+        // provider_message_id at send time. Latent until WhatsApp is
+        // provisioned; harmless no-op matches until then.
+        if (["delivered", "read", "failed"].includes(status.status)) {
+          const { error: updErr } = await sb
+            .from("sg_lead_notifications")
+            .update({ outcome: status.status })
+            .eq("provider_message_id", status.id)
+            .eq("channel", "whatsapp");
+          if (updErr) {
+            console.error("[whatsapp/webhook] notification join failed", updErr);
+          }
+        }
       }
     }
   }
