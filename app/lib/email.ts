@@ -104,8 +104,35 @@ export async function sendEmail({
   return { id: "klaviyo-event-queued" };
 }
 
-// Direct HTML send via Resend (https://resend.com). Requires RESEND_API_KEY and
-// a verified sending domain; RESEND_FROM overrides the default From address.
+// Derive a plain-text alternative from the HTML. A text/plain part is a strong
+// deliverability signal (HTML-only mail is a common spam-filter trigger), so we
+// always send both. Best-effort conversion: links become "text (url)", block
+// tags become newlines, entities and tags are stripped.
+function htmlToText(html: string): string {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<head[\s\S]*?<\/head>/gi, "")
+    .replace(/<span[^>]*display:none[\s\S]*?<\/span>/gi, "") // hidden preheader
+    .replace(/<a [^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, "$2 ($1)")
+    .replace(/<li[^>]*>/gi, "- ")
+    .replace(/<(br|\/p|\/div|\/tr|\/h[1-6]|\/li)\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#x2019;|&#39;|&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/[ \t]+/g, " ")
+    .replace(/^[ \t]+/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+// Direct send via Resend (https://resend.com). Requires RESEND_API_KEY and a
+// verified sending domain; RESEND_FROM overrides the default From. We send from
+// a real monitored inbox (not "noreply", which mailbox providers penalise) and
+// always include a text/plain part alongside the HTML for deliverability.
 async function sendViaResend({
   to,
   subject,
@@ -116,7 +143,7 @@ async function sendViaResend({
   html: string;
 }) {
   const from =
-    process.env.RESEND_FROM ?? "FairComparisons <noreply@fair-comparisons.com>";
+    process.env.RESEND_FROM ?? "FairComparisons <hello@fair-comparisons.com>";
   // Best-effort: never throw. Callers invoke sendEmail fire-and-forget (no
   // await/catch), so a provider failure must not become an unhandled rejection
   // or roll back the caller's request. Failures are logged and returned.
@@ -127,7 +154,7 @@ async function sendViaResend({
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from, to, subject, html }),
+      body: JSON.stringify({ from, to, subject, html, text: htmlToText(html) }),
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
