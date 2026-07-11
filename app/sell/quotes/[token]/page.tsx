@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "../../../lib/supabase";
+import { titleName, cleanAgency } from "../../../lib/names";
 import QuotesView, { type QuoteRow } from "./QuotesView";
 import AddMoreAgentsButton from "./AddMoreAgentsButton";
 import type { Metadata } from "next";
@@ -76,9 +77,10 @@ export default async function QuotesPage({ params }: Props) {
     return {
       quote_id: Number(q.id),
       agent_id: Number(q.agent_id),
-      agent_name: String(a.name ?? ""),
+      // Title-cased for consistency with the picker and homepage ranking.
+      agent_name: titleName(String(a.name ?? "")),
       agent_slug: (a.slug as string) ?? null,
-      agency_name: String(a.agency_name ?? ""),
+      agency_name: cleanAgency(String(a.agency_name ?? "")),
       agent_score: Number(a.score ?? 0),
       agent_flags: (a.agent_flags as { t: string; pct?: number }[] | null) ?? [],
       commission_pct: Number(q.commission_pct),
@@ -138,7 +140,7 @@ export default async function QuotesPage({ params }: Props) {
         string,
         unknown
       >;
-    return String(a.name ?? "Your agent");
+    return titleName(String(a.name ?? "Your agent"));
   };
 
   // Agents the seller is waiting on: invited and not yet quoted. Each carries

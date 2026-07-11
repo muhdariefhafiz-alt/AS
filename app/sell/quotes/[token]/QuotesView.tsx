@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AgentFlags from "../../../components/AgentFlags";
+import { greetName } from "../../../lib/names";
 
 export type QuoteRow = {
   quote_id: number;
@@ -249,7 +250,7 @@ export default function QuotesView({
               >
                 {submitting === q.quote_id
                   ? "Recording your pick…"
-                  : `Instruct ${q.agent_name.split(" ")[0]}`}
+                  : `Instruct ${greetName(q.agent_name) || q.agent_name}`}
               </button>
             )}
           </div>

@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { isAgentReachable } from "../../../lib/reachability";
+import { titleName, cleanAgency } from "../../../lib/names";
 import ShortlistPicker, { type ShortlistRow } from "./ShortlistPicker";
 import type { Metadata } from "next";
 
@@ -131,9 +132,11 @@ export default async function ShortlistPage({ params }: Props) {
     return {
       shortlist_id: Number(s.id),
       agent_id: Number(s.agent_id),
-      agent_name: String(a.name ?? ""),
+      // CEA stores names/agencies ALL-CAPS; the homepage ranking title-cases
+      // them, so the decision surface must too (and caps read as shouting).
+      agent_name: titleName(String(a.name ?? "")),
       agent_slug: (a.slug as string) ?? null,
-      agency_name: String(a.agency_name ?? ""),
+      agency_name: cleanAgency(String(a.agency_name ?? "")),
       // Display the canonical AgentScore (0-100), not the internal composite
       // ranking value in score_at_shortlist, which can exceed 100.
       score: Number(a.score ?? s.score_at_shortlist ?? 0),
