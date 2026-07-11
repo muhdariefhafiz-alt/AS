@@ -162,6 +162,20 @@ code,kbd,samp{font-family:var(--font-mono); font-size:0.92em;}
 .fc-input::placeholder{color:var(--slate);}
 .fc-input:focus,.fc-select:focus,.fc-textarea:focus{border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-wash);}
 .fc-hint{font-size:12.5px; color:var(--slate);}
+
+/* Checkboxes: the system had no checkbox primitive, so all nine forms
+   hand-rolled 13px natives, including the legally load-bearing PDPA consent
+   (WCAG 2.5.8 wants 24px targets). One global rule styles them all. */
+input[type="checkbox"]{width:18px; height:18px; flex-shrink:0; accent-color:var(--blue); cursor:pointer;}
+
+/* Keyboard affordance: nothing declared :focus-visible, so keyboard users got
+   the UA default on buttons and links across the whole conversion path. */
+:focus-visible{outline:2px solid var(--blue); outline-offset:2px; border-radius:2px;}
+.fc-input:focus-visible,.fc-select:focus-visible,.fc-textarea:focus-visible{outline:none;}
+
+/* Fine print: 138 usages of class="small" relied on a rule that never
+   existed, silently rendering consent and reassurance copy at body size. */
+.small{font-size:var(--t-small); line-height:1.55;}
 .fc-search{display:flex; align-items:center; background:#fff; border:1.5px solid var(--ink);
   border-radius:var(--r-lg); padding:6px 6px 6px 18px; max-width:460px;}
 .fc-search input{border:none; outline:none; flex:1; font-family:var(--font-sans); font-size:15px; background:transparent; color:var(--ink);}
