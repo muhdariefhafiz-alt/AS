@@ -84,8 +84,12 @@ function Header() {
     <nav className="fc-nav">
       <div className="fc-wrap fc-nav__inner">
         <Lockup size={20} />
+        {/* Full nav needs ~800px (logo 172 + links + button + padding); at the
+            md: breakpoint (768px) it overflowed every page by 29px, clipping
+            the Sell CTA and adding horizontal scroll on tablets. Expand at
+            840px instead, where it actually fits. */}
         <div className="fc-nav__links">
-          <div className="hidden items-center gap-6 md:flex">
+          <div className="hidden items-center gap-6 min-[840px]:flex">
             {NAV.map(([href, label]) => (
               <Link key={href} href={href}>
                 {label}
@@ -93,11 +97,11 @@ function Header() {
             ))}
           </div>
           <Link href="/sell" className="fc-btn fc-btn--primary fc-btn--sm">
-            <span className="md:hidden">Sell</span>
-            <span className="hidden md:inline">Sell your property</span>
+            <span className="min-[840px]:hidden">Sell</span>
+            <span className="hidden min-[840px]:inline">Sell your property</span>
           </Link>
           {/* Mobile menu */}
-          <details className="relative md:hidden">
+          <details className="relative min-[840px]:hidden">
             <summary
               className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-[8px] border"
               style={{ borderColor: "var(--line-2)", color: "var(--ink)" }}
