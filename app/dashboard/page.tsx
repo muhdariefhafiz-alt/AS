@@ -223,7 +223,9 @@ export default function DashboardPage() {
           <div className="form-step">Sign in</div>
           <div className="fc-field" style={{ marginTop: 14 }}>
             <label className="fc-label">Enter the email you used to claim your profile</label>
-            <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
+            {/* wrap: the 193px button next to a min-width input overflowed
+                375px viewports by 74px; wrapping drops it below the input. */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 2 }}>
               <input
                 type="email"
                 value={email}
@@ -231,7 +233,7 @@ export default function DashboardPage() {
                 placeholder="you@example.com"
                 required
                 className="fc-input"
-                style={{ flex: 1 }}
+                style={{ flex: "1 1 200px" }}
               />
               <button
                 type="submit"
