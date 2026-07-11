@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   const sb = supabaseAdmin();
   const { data: watchers } = await sb
     .from("sg_leads")
-    .select("id, token, property_type, town, email, whatsapp, marketing_consent, est_value_low, est_value_high")
+    .select("id, token, property_type, town, email, email_opt_out_at, whatsapp, marketing_consent, est_value_low, est_value_high")
     .eq("source", "avm")
     .eq("status", "avm_watch")
     .eq("property_type", "HDB")
@@ -42,6 +42,8 @@ export async function GET(req: Request) {
   for (const w of watchers) {
     try {
       if (!w.town) continue;
+      // Unsubscribed watchers are never mailed again.
+      if (w.email_opt_out_at) continue;
       // We don't store flat type; estimate the 4 ROOM band as the town proxy.
       const flat = "4 ROOM";
       if (!isValidHdbFlatType(flat)) continue;

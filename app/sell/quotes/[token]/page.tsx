@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "../../../lib/supabase";
 import QuotesView, { type QuoteRow } from "./QuotesView";
+import AddMoreAgentsButton from "./AddMoreAgentsButton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -28,6 +29,18 @@ function fmtDate(iso: string | null): string | null {
   if (!m) return null;
   const month = MONTHS_SHORT[Number(m[2])] ?? "";
   return `${Number(m[3])} ${month} ${m[1]}`;
+}
+
+// "Fri 11 Jul, 6:40 pm" in Singapore time, for the quote due-by line.
+function fmtDateTimeSg(ms: number): string {
+  return new Intl.DateTimeFormat("en-SG", {
+    timeZone: "Asia/Singapore",
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(ms));
 }
 
 export default async function QuotesPage({ params }: Props) {
@@ -152,6 +165,24 @@ export default async function QuotesPage({ params }: Props) {
     .filter((s) => s.status === "unreachable")
     .map(agentName);
 
+  // The 24h ask is OUR request to the agents, so the due-by moment is real
+  // data: latest actual send (fallback: invited_at) plus 24 hours. When it
+  // lapses with zero quotes, the page says so instead of claiming a live
+  // window forever.
+  const anchorTimes = waitingAgents
+    .map((a) => a.sent_at ?? a.invited_at)
+    .filter((t): t is string => Boolean(t))
+    .map((t) => new Date(t).getTime())
+    .filter((n) => Number.isFinite(n));
+  const quoteDeadlineMs =
+    anchorTimes.length > 0 ? Math.max(...anchorTimes) + 24 * 60 * 60 * 1000 : null;
+  const windowLapsed =
+    rows.length === 0 &&
+    waitingAgents.length > 0 &&
+    quoteDeadlineMs !== null &&
+    // eslint-disable-next-line react-hooks/purity -- dynamic per-request server render: the lapsed state must reflect the actual current time
+    Date.now() > quoteDeadlineMs;
+
   await sb
     .from("sg_lead_events")
     .insert({
@@ -195,15 +226,24 @@ export default async function QuotesPage({ params }: Props) {
               <p className="text-sm font-bold text-gray-900">
                 {rows.length > 0
                   ? `Still waiting on ${waitingAgents.length} more agent${waitingAgents.length === 1 ? "" : "s"} to quote.`
-                  : notifiedWaiting.length > 0
-                    ? `We have ${allNotifiedByEmail ? "emailed" : "notified"} your ${notifiedWaiting.length} agent${notifiedWaiting.length === 1 ? "" : "s"}. Now we wait for them to reach out.`
-                    : `You invited ${waitingAgents.length} agent${waitingAgents.length === 1 ? "" : "s"}.`}
+                  : windowLapsed
+                    ? "The 24 hours we asked for has passed."
+                    : notifiedWaiting.length > 0
+                      ? `We have ${allNotifiedByEmail ? "emailed" : "notified"} your ${notifiedWaiting.length} agent${notifiedWaiting.length === 1 ? "" : "s"}. Now we wait for them to reach out.`
+                      : `You invited ${waitingAgents.length} agent${waitingAgents.length === 1 ? "" : "s"}.`}
               </p>
               <p className="mt-1 text-sm text-gray-600">
-                {notifiedWaiting.length > 0 || rows.length > 0
-                  ? "Each has 24 hours to send you a fee quote. We will email you the moment one responds. There is nothing more for you to do right now."
-                  : "We could not yet confirm delivery to these agents. We will email you the moment a quote arrives."}
+                {windowLapsed && rows.length === 0
+                  ? `None of your agents has quoted yet. ${notifiedWaiting.length > 0 ? "Your request was delivered, so this is on them, not you. " : ""}You can add more agents now, or keep waiting. We will email you the moment anything arrives.`
+                  : notifiedWaiting.length > 0 || rows.length > 0
+                    ? `Each has 24 hours to send you a fee quote${quoteDeadlineMs ? `, so quotes are requested by ${fmtDateTimeSg(quoteDeadlineMs)}` : ""}. We will email you the moment one responds. There is nothing more for you to do right now.`
+                    : "We could not yet confirm delivery to these agents. We will email you the moment a quote arrives."}
               </p>
+              {windowLapsed && (
+                <div className="mt-4">
+                  <AddMoreAgentsButton token={lead.token} prominent />
+                </div>
+              )}
               <ul className="mt-4 divide-y divide-gray-200 border-t border-gray-200">
                 {waitingAgents.map((a, i) => (
                   <li
@@ -227,6 +267,11 @@ export default async function QuotesPage({ params }: Props) {
                   </li>
                 ))}
               </ul>
+              {!windowLapsed && rows.length === 0 && (
+                <div className="mt-3">
+                  <AddMoreAgentsButton token={lead.token} />
+                </div>
+              )}
             </div>
           )}
           {!alreadyPicked && unreachableAgents.length > 0 && (

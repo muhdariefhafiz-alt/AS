@@ -26,7 +26,7 @@ export async function POST() {
     const { data: rows } = await sb
       .from("sg_lead_shortlist")
       .select(
-        "id, status, invited_at, quoted_at, picked_at, sg_leads!inner(id, token, status, property_type, town, district_code, bedrooms, est_value_low, est_value_high, timeline, reason, full_name, created_at)"
+        "id, status, invited_at, quoted_at, picked_at, sg_leads!inner(id, token, status, property_type, town, district_code, bedrooms, est_value_low, est_value_high, timeline, reason, full_name, email, phone, whatsapp, created_at)"
       )
       .eq("agent_id", agent.id)
       .in("status", ["invited", "quoted", "picked", "not_picked"])
@@ -135,6 +135,16 @@ export async function POST() {
           reason: (l.reason as string) ?? null,
           full_name: (l.full_name as string) ?? null,
           created_at: l.created_at ?? null,
+          // Seller contact details are released ONLY on the lead this agent
+          // won: the seller chose them, which is what the PDPA consent
+          // permits. Every other status gets nulls.
+          ...(String(r.status) === "picked"
+            ? {
+                email: (l.email as string) ?? null,
+                phone: (l.phone as string) ?? null,
+                whatsapp: (l.whatsapp as string) ?? null,
+              }
+            : { email: null, phone: null, whatsapp: null }),
         },
         quote: quotesByLead.get(lid) ?? null,
         completion: completionByLead.get(lid) ?? null,

@@ -10,12 +10,12 @@ export const revalidate = 86400;
 export const metadata: Metadata = {
   title: "Sell your property: compare Singapore's top agents on real data",
   description:
-    "Tell us about your HDB, condo or landed property and compare the top-ranked CEA agents for your area on actual transaction records. Contact the ones you choose. Always free for sellers.",
+    "Tell us about your HDB, condo or landed property and compare the top-ranked CEA agents for your area on actual transaction records. Invite up to 3 to send you a fee quote. Always free for sellers.",
   alternates: { canonical: "https://fair-comparisons.com/sell" },
   openGraph: {
     title: "Sell your property: Singapore's data-driven agent comparison",
     description:
-      "Compare the top CEA-licensed agents for your area on real transaction data, then contact the ones you choose. Always free for sellers.",
+      "Compare the top CEA-licensed agents for your area on real transaction data, then invite up to 3 to send you a fee quote. Always free for sellers.",
     url: "https://fair-comparisons.com/sell",
     type: "website",
     locale: "en_SG",
@@ -130,15 +130,15 @@ export default async function SellPage({
   const FAQ: { q: string; a: string }[] = [
     {
       q: "Is it really free for sellers?",
-      a: "Yes. You never pay FairComparisons anything, and we never take a cut of your sale. We are an independent comparison platform: compare the agents, then contact the ones you choose yourself.",
+      a: "Yes. You never pay FairComparisons anything, and we never take a cut of your sale. We are an independent comparison platform: compare the ranked agents, invite up to 3 to send you a fee quote, and choose on evidence.",
     },
     {
       q: "Will agents spam me?",
-      a: "No. We do not route your details to agents. You see the ranked comparison and reach out to the agents you choose, on your own terms. The platform is PDPA-compliant.",
+      a: "No. Agents only hear about your sale if you invite them. When you invite up to 3 agents from your shortlist, we send those agents your property brief, never your contact details. Quotes come back to you through FairComparisons. Your contact details are shared only with the one agent you finally choose to instruct. The platform is PDPA-compliant.",
     },
     {
       q: "How many agents will contact me?",
-      a: "Only the ones you contact first. You compare the ranked agents for your area and decide who to reach out to, so you stay fully in control.",
+      a: "None uninvited. Only the agents you pick, up to 3, are asked to quote, and their quotes come back through FairComparisons rather than your inbox or phone. The one agent you instruct then contacts you directly to take the sale forward.",
     },
     {
       q: "How are you paid, and does it affect the ranking?",
@@ -172,7 +172,7 @@ export default async function SellPage({
           <div className="lp-hero__eyebrow">Sell your property</div>
           <h1>Compare the agents who <span className="accent">actually sell</span> in your area.</h1>
           <p className="lp-hero__sub">
-            Tell us about your home and compare every CEA-licensed agent for your area on real transaction records. Contact the ones you choose. Always free for sellers.
+            Tell us about your home and compare every CEA-licensed agent for your area on real transaction records. Invite up to 3 to send you a fee quote. Always free for sellers.
           </p>
           <div className="lp-hero__tags">
             <span className="lp-hero__tag">Based on 730,000+ CEA transactions</span>
@@ -202,9 +202,9 @@ export default async function SellPage({
           <div className="fc-grid-4" style={{ marginTop: 28 }}>
             {[
               { n: "01", t: "Tell us about your home", d: "Property type, area, timeline. Takes 60 seconds." },
-              { n: "02", t: "See the ranked agents", d: "Top 7 agents for your area based on actual CEA records." },
-              { n: "03", t: "Compare on evidence", d: "Track record, area focus and sale-versus-rental mix, side by side." },
-              { n: "04", t: "Contact who you choose", d: "Reach out to the agents you want, directly. You stay in control." },
+              { n: "02", t: "See the ranked agents", d: "Top agents for your area based on actual CEA records, instantly." },
+              { n: "03", t: "Invite up to 3 to quote", d: "We send your property brief to the agents you pick, and only those agents. Never your contact details at this stage." },
+              { n: "04", t: "Compare quotes, choose one", d: "Fee, timeline and marketing plan come back side by side. Only the agent you finally choose gets your contact details." },
             ].map((s) => (
               <div key={s.n} className="fc-card howcard">
                 <div className="mono" style={{ color: "var(--blue)", fontSize: 13 }}>{s.n}</div>

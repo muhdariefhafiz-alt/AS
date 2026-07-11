@@ -16,6 +16,10 @@ type Lead = {
   reason: string | null;
   full_name: string | null;
   created_at: string | null;
+  // Only populated on the lead this agent WON (status picked); null otherwise.
+  email: string | null;
+  phone: string | null;
+  whatsapp: string | null;
 };
 
 type Quote = {
@@ -261,14 +265,37 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
             )}
 
             {r.status === "picked" && (
-              <CompletionStepper
-                token={r.lead.token}
-                ceaRegistration={ceaRegistration}
-                agentEmail={agentEmail}
-                completion={r.completion}
-                quotedCommissionPct={r.quote?.commission_pct ?? null}
-                onSaved={load}
-              />
+              <>
+                {/* The seller chose this agent: their contact details are
+                    released here (and in the win email) so the handoff can
+                    actually happen. */}
+                {(r.lead.email || r.lead.phone || r.lead.whatsapp) && (
+                  <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm">
+                    <p className="font-semibold text-emerald-900">
+                      Contact {r.lead.full_name ?? "the seller"} to arrange the
+                      agency agreement
+                    </p>
+                    <div className="mt-1.5 space-y-0.5 text-emerald-900">
+                      {(r.lead.whatsapp || r.lead.phone) && (
+                        <div className="font-mono text-xs">
+                          {r.lead.whatsapp || r.lead.phone}
+                        </div>
+                      )}
+                      {r.lead.email && (
+                        <div className="text-xs">{r.lead.email}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <CompletionStepper
+                  token={r.lead.token}
+                  ceaRegistration={ceaRegistration}
+                  agentEmail={agentEmail}
+                  completion={r.completion}
+                  quotedCommissionPct={r.quote?.commission_pct ?? null}
+                  onSaved={load}
+                />
+              </>
             )}
           </li>
         );

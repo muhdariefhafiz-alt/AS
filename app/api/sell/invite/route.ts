@@ -320,6 +320,45 @@ export async function POST(req: Request) {
       if (a.slug) revalidatePath(`/property-agents/agent/${a.slug}`);
     }
 
+    // Written record for the seller: which agents were actually notified (by
+    // name, from the ledger just written) and the permanent link to their
+    // quotes page. Without this the seller's inbox never contains the URL
+    // where everything happens next.
+    if (lead.email && notifiedCount > 0) {
+      const notifiedNames = (agents ?? [])
+        .filter((a) =>
+          notifications.some(
+            (n) => n.agent_id === Number(a.id) && n.outcome === "sent"
+          )
+        )
+        .map((a) => titleName(a.name ?? ""));
+      const quotesUrl = `${site}/sell/quotes/${token}?utm_source=notify&utm_medium=invites_sent`;
+      const first = (lead.full_name ?? "").split(" ")[0] || "";
+      sendEmail({
+        to: lead.email,
+        subject: `We have emailed your ${notifiedCount} agent${notifiedCount === 1 ? "" : "s"}`,
+        html: emailShell({
+          preheader: "Each has 24 hours to send a fee quote. This is your record.",
+          heading: `${first ? `${first}, your` : "Your"} request is with ${notifiedCount} agent${notifiedCount === 1 ? "" : "s"}.`,
+          bodyHtml:
+            p(
+              `We emailed ${notifiedNames.join(", ")} your property brief and asked for a fee quote within 24 hours.`
+            ) +
+            (unreachable.length > 0
+              ? p(
+                  `We could not reach ${unreachable.map((u) => titleName(u.name)).join(", ")}: no verified contact details on FairComparisons. Your request was not sent to them.`
+                )
+              : "") +
+            p(
+              "We will email you the moment a quote arrives. If any agent stays silent, you can invite different agents from the same page."
+            ),
+          cta: { label: "Track your quotes", href: quotesUrl },
+        }),
+        metric: "Seller Invites Sent",
+        properties: { lead_token: token, notified: notifiedCount },
+      }).catch((e) => console.error("[sell/invite] seller record email failed", e));
+    }
+
     // E1 upgrade prompt (docs/email-lifecycle.md): once a free agent has been
     // invited by 3+ sellers lifetime, send a one-time "see plans" nudge.
     // Best-effort: this hook must never fail the invite response.

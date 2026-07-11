@@ -31,7 +31,7 @@ export async function GET(req: Request) {
   const sb = supabaseAdmin();
   const { data: watchers } = await sb
     .from("sg_leads")
-    .select("id, token, town, est_value_low, email, whatsapp, created_at, current_mop_status")
+    .select("id, token, town, est_value_low, email, email_opt_out_at, whatsapp, created_at, current_mop_status")
     .eq("source", "mop_tracker")
     .eq("status", "mop_watch")
     .not("email", "is", null)
@@ -46,6 +46,18 @@ export async function GET(req: Request) {
     try {
       const town = w.town ?? "";
       if (!town) continue;
+      // Unsubscribed watchers are never mailed again.
+      if (w.email_opt_out_at) continue;
+      // One alert per lead, ever. Without this marker the cron re-sent the
+      // same alert every single day forever.
+      const { data: alreadyAlerted } = await sb
+        .from("sg_lead_events")
+        .select("id")
+        .eq("lead_id", w.id)
+        .eq("event_type", "mop_alerted")
+        .limit(1)
+        .maybeSingle();
+      if (alreadyAlerted) continue;
       const flatType = guessFlatType(w.est_value_low ?? null);
       if (!isValidHdbFlatType(flatType)) continue;
 
@@ -89,14 +101,17 @@ export async function GET(req: Request) {
           }).format(result.median_resale_price)
         : null;
 
+      // Honest, hedged copy: we never stored the real key collection date, so
+      // eligibility is an estimate from the snapshot cohort, not a verified
+      // fact. Never assert "you can now sell" on inferred data.
       const html = emailShell({
         preheader: medianPrice
-          ? `Median resale in ${town} is ${medianPrice}. See who is selling.`
-          : `See who is selling in ${town}.`,
-        heading: `Your flat in ${town} is now eligible to sell`,
+          ? `Median resale in ${town} is ${medianPrice}. Check your exact date.`
+          : `Check your exact MOP date before listing.`,
+        heading: `Your ${town} flat may have reached its MOP`,
         bodyHtml:
           p(
-            `Your HDB flat in ${town} has reached its Minimum Occupation Period, so you can now sell on the open market.`
+            `Based on the snapshot you saved with us, your HDB flat in ${town} may have reached its Minimum Occupation Period. We do not hold your exact key collection date, so please confirm your MOP date on the HDB portal before listing.`
           ) +
           (medianPrice
             ? p(
@@ -106,16 +121,20 @@ export async function GET(req: Request) {
                 `When you are ready, see the agents who actually sell in ${town}, ranked on their record.`
               )),
         cta: { label: `See agents in ${town}`, href: link },
-        footerNote: `Sent to ${w.email} because you saved a MOP snapshot on FairComparisons.`,
+        footerNote: `Sent once to ${w.email} because you saved a MOP snapshot on FairComparisons.`,
         unsubscribeEmail: String(w.email),
       });
 
       await sendEmail({
         to: String(w.email),
-        subject: `Your flat in ${town} is now eligible to sell`,
+        subject: `Your ${town} flat may have reached its MOP`,
         html,
         metric: "MOP Alert",
         properties: { lead_token: w.token, town, flat_type: flatType },
+      });
+      await sb.from("sg_lead_events").insert({
+        lead_id: w.id,
+        event_type: "mop_alerted",
       });
       alerted += 1;
     } catch (e) {

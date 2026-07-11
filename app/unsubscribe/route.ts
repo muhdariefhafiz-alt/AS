@@ -68,8 +68,14 @@ export async function POST(req: Request) {
     const sb = supabaseAdmin();
     // Exact match: the link carries the stored email round-tripped, and eq avoids
     // ilike treating "_" / "%" in an address as wildcards (over-matching).
-    await sb.from("sg_agents").update({ email_opt_out_at: new Date().toISOString() }).eq("claimed_email", email);
+    const nowIso = new Date().toISOString();
+    await sb.from("sg_agents").update({ email_opt_out_at: nowIso }).eq("claimed_email", email);
     await sb.from("sg_email_subscribers").update({ unsubscribed: true }).eq("email", email);
+    // Sellers too: leads carry the same suppression flag, checked by every
+    // seller marketing sender (reminder, reactivation, review requests, AVM
+    // updates, MOP alerts). Without this the confirmation below was a lie for
+    // sellers.
+    await sb.from("sg_leads").update({ email_opt_out_at: nowIso }).eq("email", email);
   } catch {
     return page("Something went wrong", p("We could not process that just now. Please try again shortly."), 500);
   }

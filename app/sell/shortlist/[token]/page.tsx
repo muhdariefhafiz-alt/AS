@@ -43,7 +43,7 @@ export default async function ShortlistPage({ params }: Props) {
   const { data: shortlist } = await sb
     .from("sg_lead_shortlist")
     .select(
-      "id, agent_id, rank, score_at_shortlist, status, sg_agents!inner(id, name, slug, agency_name, score, transaction_count, primary_area, google_rating, google_review_count, photo_url, claimed, agent_flags, email, email_status, whatsapp)"
+      "id, agent_id, rank, score_at_shortlist, status, sg_agents!inner(id, name, slug, agency_name, score, transaction_count, primary_area, google_rating, google_review_count, photo_url, claimed, agent_flags, email, email_status, whatsapp, cea_registration)"
     )
     .eq("lead_id", lead.id)
     .order("rank");
@@ -85,6 +85,40 @@ export default async function ShortlistPage({ params }: Props) {
     }
   }
 
+  // Sold evidence per agent: last recorded SALE month, parsed from real CEA
+  // transaction rows (shortlist_last_deals RPC handles the text-date format).
+  // Dormant = no recorded sale in 24+ months; the seller sees that as a
+  // warning chip instead of unknowingly picking an inactive agent.
+  const regs = (shortlist ?? [])
+    .map((s) => {
+      const j = s.sg_agents as unknown;
+      const a = ((Array.isArray(j) ? j[0] : j) ?? {}) as Record<string, unknown>;
+      return (a.cea_registration as string) ?? null;
+    })
+    .filter((r): r is string => Boolean(r));
+  const lastDealByReg = new Map<string, string | null>();
+  if (regs.length > 0) {
+    const { data: deals } = await sb.rpc("shortlist_last_deals", { regs });
+    for (const d of (deals ?? []) as { reg: string; last_sale: string | null }[]) {
+      lastDealByReg.set(d.reg, d.last_sale ?? null);
+    }
+  }
+  const MONTHS_LONG = ["", "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+  const fmtDealMonth = (iso: string | null): string | null => {
+    if (!iso) return null;
+    const m = iso.match(/^(\d{4})-(\d{2})/);
+    if (!m) return null;
+    return `${MONTHS_LONG[Number(m[2])] ?? ""} ${m[1]}`.trim();
+  };
+  const DORMANT_MS = 24 * 30.44 * 24 * 60 * 60 * 1000; // ~24 months
+  const isDormant = (iso: string | null): boolean => {
+    if (!iso) return true;
+    const t = new Date(iso).getTime();
+    // eslint-disable-next-line react-hooks/purity -- dynamic per-request server render: dormancy is relative to the actual current time
+    return !Number.isFinite(t) || Date.now() - t > DORMANT_MS;
+  };
+
   const rows: ShortlistRow[] = (shortlist ?? []).map((s) => {
     const joined = s.sg_agents as unknown;
     const a =
@@ -93,6 +127,7 @@ export default async function ShortlistPage({ params }: Props) {
         unknown
       >;
     const ar = areaRowsByAgent.get(Number(s.agent_id));
+    const lastSaleIso = lastDealByReg.get((a.cea_registration as string) ?? "") ?? null;
     return {
       shortlist_id: Number(s.id),
       agent_id: Number(s.agent_id),
@@ -127,6 +162,8 @@ export default async function ShortlistPage({ params }: Props) {
         email_status: (a.email_status as string | null) ?? null,
         whatsapp: (a.whatsapp as string | null) ?? null,
       }),
+      last_sale: fmtDealMonth(lastSaleIso),
+      dormant: isDormant(lastSaleIso),
     };
   });
 
@@ -147,8 +184,12 @@ export default async function ShortlistPage({ params }: Props) {
   const area = lead.town ?? lead.district_code ?? "your area";
   // Picker stays open while shortlisted/new/reshortlisted; locks once the
   // seller has invited agents (status moves to invited/quoted/instructed).
-  const OPEN_STATES = new Set(["shortlisted", "new", "reshortlisted"]);
+  // 'expired' is deliberately OPEN: the reactivation email's "Resume your
+  // shortlist" CTA lands here, and a locked picker would make that a dead end.
+  // Inviting from an expired lead flips it straight back to 'invited'.
+  const OPEN_STATES = new Set(["shortlisted", "new", "reshortlisted", "expired"]);
   const alreadyInvited = !OPEN_STATES.has(lead.status);
+  const isExpired = lead.status === "expired";
 
   return (
     <>
@@ -162,8 +203,21 @@ export default async function ShortlistPage({ params }: Props) {
             your {propertyTypeLabel} in {area}.
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-gray-600">
-            Ranked by actual transaction record. Compare their track records and
-            contact the ones you choose. Always free for you.
+            Ranked by actual transaction record. Compare their track records,
+            then invite up to 3 to send you a fee quote. Always free for you.
+          </p>
+          <p className="mt-2 max-w-2xl text-xs text-gray-500">
+            How this list is made: we rank the agents with recorded activity in{" "}
+            {area} by their CEA transactions, local focus and {propertyTypeLabel}{" "}
+            match. No agent can pay to be here, and quoting or subscribing never
+            changes anyone&apos;s rank.{" "}
+            <a
+              href="/how-we-score"
+              target="_blank"
+              className="underline hover:text-[var(--blue)]"
+            >
+              Full methodology
+            </a>
           </p>
         </div>
       </section>
@@ -187,6 +241,7 @@ export default async function ShortlistPage({ params }: Props) {
               propertyType={propertyTypeLabel}
               area={area}
               alreadyInvited={alreadyInvited}
+              expired={isExpired}
             />
           )}
         </div>

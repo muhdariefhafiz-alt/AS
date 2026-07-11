@@ -40,10 +40,16 @@ export default function AgentFlags({
   flags,
   max = 2,
   size = "md",
+  expandable = false,
 }: {
   flags?: Flag[] | null;
   max?: number;
   size?: "sm" | "md";
+  // Tap-to-expand chips (native <details>) for decision surfaces like the
+  // seller picker: hover titles are invisible on mobile, exactly where these
+  // warnings matter most. Default stays the compact hover chip for list rows
+  // that are links.
+  expandable?: boolean;
 }) {
   if (!flags || flags.length === 0) return null;
   const shown = [...flags]
@@ -54,6 +60,55 @@ export default function AgentFlags({
 
   const fs = size === "sm" ? 10.5 : 11;
   const pad = size === "sm" ? "1px 7px" : "2px 8px";
+
+  if (expandable) {
+    return (
+      <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {shown.map((f, i) => {
+          const m = FLAG_META[f.t];
+          const c =
+            m.tone === "warn"
+              ? { bg: "var(--warn-wash)", fg: "var(--warn)" }
+              : { bg: "var(--blue-wash)", fg: "var(--blue-deep)" };
+          return (
+            <details key={i} style={{ display: "block" }}>
+              <summary
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  background: c.bg,
+                  color: c.fg,
+                  fontSize: fs,
+                  fontWeight: 700,
+                  letterSpacing: "-0.01em",
+                  padding: pad,
+                  borderRadius: "var(--r-pill)",
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                  listStyle: "none",
+                }}
+              >
+                {m.label(f.pct)}{" "}
+                <span style={{ marginLeft: 4, fontWeight: 400 }}>ⓘ</span>
+              </summary>
+              <span
+                style={{
+                  display: "block",
+                  marginTop: 4,
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                  color: "#4b5563",
+                  maxWidth: "52ch",
+                }}
+              >
+                {m.title(f.pct)}
+              </span>
+            </details>
+          );
+        })}
+      </span>
+    );
+  }
 
   return (
     <span style={{ display: "inline-flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>

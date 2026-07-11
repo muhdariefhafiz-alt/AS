@@ -67,6 +67,10 @@ export default function SellForm({
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Live supply for the chosen area: real count of ranked agents, shown at
+  // step 2 so the seller sees concrete value BEFORE the contact fields, and
+  // an uncovered area fails here instead of after the full form + consent.
+  const [coverage, setCoverage] = useState<{ agents: number; area: string | null } | null>(null);
 
   // Top-of-funnel beacon: fire once on mount so view_form → submit_form
   // conversion is measurable in the admin funnel.
@@ -82,14 +86,43 @@ export default function SellForm({
 
   const isHdb = propertyType === "HDB";
 
+  useEffect(() => {
+    const area = isHdb ? town : districtCode;
+    if (!area) {
+      setCoverage(null);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const qs = new URLSearchParams({ type: propertyType });
+        if (isHdb) qs.set("town", town);
+        else qs.set("district", districtCode);
+        const res = await fetch(`/api/sell/coverage?${qs.toString()}`);
+        if (!res.ok || cancelled) return;
+        const json = await res.json();
+        if (!cancelled) setCoverage({ agents: Number(json.agents ?? 0), area: json.area ?? null });
+      } catch {
+        if (!cancelled) setCoverage(null);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [propertyType, town, districtCode, isHdb]);
+
+  const areaUncovered = coverage !== null && coverage.agents === 0;
+
   const canSubmit = useMemo(() => {
     if (!fullName.trim()) return false;
     if (!email.trim()) return false;
     if (!pdpaConsent) return false;
     if (isHdb && !town) return false;
     if (!isHdb && !districtCode && !town) return false;
+    if (areaUncovered) return false;
     return true;
-  }, [fullName, email, pdpaConsent, isHdb, town, districtCode]);
+  }, [fullName, email, pdpaConsent, isHdb, town, districtCode, areaUncovered]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -187,8 +220,22 @@ export default function SellForm({
           </select>
         </div>
       )}
+      {coverage && coverage.agents > 0 && (
+        <p className="small" style={{ margin: "8px 0 0", color: "var(--blue-deep)", fontWeight: 600 }}>
+          We rank {coverage.agents} CEA-licensed agents with recorded activity
+          here. Your shortlist comes from this pool.
+        </p>
+      )}
+      {areaUncovered && (
+        <div className="fc-alert fc-alert--warn" style={{ marginTop: 10 }}>
+          We do not have ranked agents for this area yet, so we cannot build
+          you a shortlist here. Try a neighbouring area, or email{" "}
+          <a href="mailto:hello@fair-comparisons.com">hello@fair-comparisons.com</a>{" "}
+          and we will source agents manually.
+        </div>
+      )}
       <div className="grid2">
-        <div className="fld"><label>Postal code</label><input className="fc-input" value={postalCode} onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" placeholder="6 digits" /></div>
+        <div className="fld"><label>Postal code</label><input className="fc-input" value={postalCode} onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="postal-code" placeholder="6 digits" /></div>
         <div className="fld"><label>Block + street <span className="muted" style={{ fontWeight: 400 }}>(optional)</span></label><input className="fc-input" value={addressLine} onChange={(e) => setAddressLine(e.target.value.slice(0, 160))} placeholder="e.g. 123 Tampines Street 11" /></div>
       </div>
 
@@ -220,14 +267,14 @@ export default function SellForm({
       )}
 
       <div className="form-step" style={{ marginTop: 26 }}><span className="n">4</span> Where to send the shortlist</div>
-      <div className="fld"><label>Full name <span className="req">*</span></label><input className="fc-input" value={fullName} onChange={(e) => setFullName(e.target.value.slice(0, 120))} required /></div>
+      <div className="fld"><label>Full name <span className="req">*</span></label><input className="fc-input" value={fullName} onChange={(e) => setFullName(e.target.value.slice(0, 120))} autoComplete="name" required /></div>
       <div className="grid2">
-        <div className="fld"><label>Email <span className="req">*</span></label><input className="fc-input" type="email" value={email} onChange={(e) => setEmail(e.target.value.slice(0, 200))} required /></div>
-        <div className="fld"><label>Mobile <span className="muted" style={{ fontWeight: 400 }}>(WhatsApp preferred)</span></label><input className="fc-input" value={phone} onChange={(e) => setPhone(e.target.value.slice(0, 24))} inputMode="tel" placeholder="+65 ..." /></div>
+        <div className="fld"><label>Email <span className="req">*</span></label><input className="fc-input" type="email" value={email} onChange={(e) => setEmail(e.target.value.slice(0, 200))} autoComplete="email" required /></div>
+        <div className="fld"><label>Mobile <span className="muted" style={{ fontWeight: 400 }}>(WhatsApp preferred)</span></label><input className="fc-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value.slice(0, 24))} inputMode="tel" autoComplete="tel" placeholder="+65 ..." /></div>
       </div>
       <label className="fc-row" style={{ gap: 10, alignItems: "flex-start", marginTop: 18, fontSize: 13.5, color: "var(--slate)" }}>
         <input type="checkbox" checked={pdpaConsent} onChange={(e) => setPdpaConsent(e.target.checked)} style={{ marginTop: 3 }} required />
-        <span>I agree to FairComparisons handling my details under Singapore&apos;s PDPA so I can compare and contact agents myself. My data is never sold and never shared with agents I did not choose to contact.</span>
+        <span>I agree to FairComparisons handling my details under Singapore&apos;s PDPA. My data is never sold. Agents I invite receive my property brief only, never my contact details; those are shared only with the one agent I choose to instruct.</span>
       </label>
       <label className="fc-row" style={{ gap: 10, alignItems: "flex-start", marginTop: 10, fontSize: 13.5, color: "var(--slate)" }}>
         <input type="checkbox" checked={marketingConsent} onChange={(e) => setMarketingConsent(e.target.checked)} style={{ marginTop: 3 }} />
@@ -236,7 +283,11 @@ export default function SellForm({
 
       {error && <div className="fc-alert fc-alert--warn" style={{ marginTop: 16 }}>{error}</div>}
 
-      <button type="submit" disabled={!canSubmit || submitting} className="fc-btn fc-btn--primary fc-btn--block fc-btn--lg" style={{ marginTop: 18 }}>
+      <p className="small muted" style={{ margin: "16px 0 0" }}>
+        Your ranked shortlist appears on the next screen. From there you can
+        invite up to 3 agents to send you a fee quote, no obligation.
+      </p>
+      <button type="submit" disabled={!canSubmit || submitting} className="fc-btn fc-btn--primary fc-btn--block fc-btn--lg" style={{ marginTop: 12 }}>
         {submitting
           ? "Building your comparison…"
           : pinnedAgent

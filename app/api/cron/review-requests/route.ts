@@ -46,11 +46,13 @@ export async function GET(req: Request) {
       const { data: lead } = await sb
         .from("sg_leads")
         .select(
-          "token, full_name, email, whatsapp, marketing_consent, property_type, town, district_code"
+          "token, full_name, email, email_opt_out_at, whatsapp, marketing_consent, property_type, town, district_code"
         )
         .eq("id", c.lead_id)
         .single();
       if (!lead || !lead.email) continue;
+      // Unsubscribed sellers are never mailed again.
+      if (lead.email_opt_out_at) continue;
 
       const { data: agent } = await sb
         .from("sg_agents")

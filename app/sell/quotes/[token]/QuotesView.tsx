@@ -116,11 +116,34 @@ export default function QuotesView({
     );
   }
 
+  const winner = rows.find((r) => r.quote_id === pickedQuoteId) ?? null;
+
   return (
     <div className="space-y-4">
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
+        </div>
+      )}
+      {alreadyPicked && winner && (
+        // Post-pick next steps: the handoff email (api/sell/pick) has sent the
+        // seller's contact details to this one agent, so tell the seller
+        // exactly what to expect instead of leaving a bare badge.
+        <div className="rounded-2xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+          <p className="text-sm font-bold text-gray-900">What happens next</p>
+          <p className="mt-1 text-sm text-gray-700">
+            {winner.agent_name} has been sent your contact details and is
+            expected to contact you within a day or two to arrange the agency
+            agreement. Nothing is binding until you sign that agreement with
+            them. We have emailed you a written record of the agreed terms.
+          </p>
+          <p className="mt-2 text-xs text-gray-500">
+            Heard nothing after a few days? Email{" "}
+            <a href="mailto:hello@fair-comparisons.com" className="underline">
+              hello@fair-comparisons.com
+            </a>{" "}
+            and we will chase it.
+          </p>
         </div>
       )}
       {rows.map((q) => {

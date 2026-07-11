@@ -28,7 +28,7 @@ export async function GET(req: Request) {
 
   const { data: stale } = await sb
     .from("sg_leads")
-    .select("id, token, status, full_name, email, updated_at, created_at")
+    .select("id, token, status, full_name, email, email_opt_out_at, updated_at, created_at")
     .in("status", ACTIVE_STATES)
     .lt("created_at", thirtyDaysAgo)
     .limit(500);
@@ -60,29 +60,46 @@ export async function GET(req: Request) {
           meta: { prior_status: lead.status },
         });
 
-        if (lead.email) {
+        if (lead.email && !lead.email_opt_out_at) {
           const site =
             process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
-          const link = `${site}/sell/shortlist/${lead.token}?utm_source=reactivation`;
+          // Copy branches on what actually happened. Telling a seller who
+          // already invited agents to "pick up to 3 agents" proves nobody was
+          // listening; own the miss instead.
+          const hadInvited =
+            lead.status === "invited" || lead.status === "quoted";
+          const link = hadInvited
+            ? `${site}/sell/quotes/${lead.token}?utm_source=reactivation`
+            : `${site}/sell/shortlist/${lead.token}?utm_source=reactivation`;
           sendEmail({
             to: lead.email,
             subject: "Still selling your home?",
             html: emailShell({
-              preheader:
-                "Your ranked shortlist is still here. Pick up where you left off.",
+              preheader: hadInvited
+                ? "Your request is still here, and you can invite different agents."
+                : "Your ranked shortlist is still here. Pick up where you left off.",
               heading: "Still selling your home?",
-              bodyHtml:
-                p(
-                  "A while back you started comparing agents for your home sale. Your shortlist, ranked on real CEA sales, is still ready."
-                ) +
-                p(
-                  "Whenever you are ready, pick up to 3 agents and we will get you fee quotes. No pressure, no cost."
-                ),
-              cta: { label: "Resume your shortlist", href: link },
+              bodyHtml: hadInvited
+                ? p(
+                    "A while back you invited agents to quote on your home sale and not enough came of it. That is on us and them, not you."
+                  ) +
+                  p(
+                    "Your request is still saved. You can add different agents in one click, and we will ask them for fee quotes. No pressure, no cost."
+                  )
+                : p(
+                    "A while back you started comparing agents for your home sale. Your shortlist, ranked on real CEA sales, is still ready."
+                  ) +
+                  p(
+                    "Whenever you are ready, pick up to 3 agents and we will get you fee quotes. No pressure, no cost."
+                  ),
+              cta: {
+                label: hadInvited ? "See where it stands" : "Resume your shortlist",
+                href: link,
+              },
               unsubscribeEmail: lead.email,
             }),
             metric: "Seller Reactivation",
-            properties: { lead_token: lead.token },
+            properties: { lead_token: lead.token, prior_status: lead.status },
           }).catch((e) => console.error("[cron/expire-leads] email failed", e));
         }
         expired += 1;
@@ -98,7 +115,7 @@ export async function GET(req: Request) {
   const fortyEightHoursAgo = new Date(Date.now() - 2 * 86_400_000).toISOString();
   const { data: pending } = await sb
     .from("sg_leads")
-    .select("id, token, full_name, email, property_type, town, district_code, created_at")
+    .select("id, token, full_name, email, email_opt_out_at, property_type, town, district_code, created_at")
     .eq("status", "shortlisted")
     .lt("created_at", fortyEightHoursAgo)
     .limit(500);
@@ -107,7 +124,7 @@ export async function GET(req: Request) {
 
   for (const lead of pending ?? []) {
     try {
-      if (!lead.email) continue;
+      if (!lead.email || lead.email_opt_out_at) continue;
 
       const { data: alreadyReminded } = await sb
         .from("sg_lead_events")
@@ -157,10 +174,91 @@ export async function GET(req: Request) {
     }
   }
 
+  // Quote-window lapse sweep: the product promises agents 24 hours to quote,
+  // so when that window passes with zero quotes the seller must hear it from
+  // us, not discover it by silence. One honest email per lead, ever
+  // (quote_window_lapsed event is the suppression marker).
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data: lapsedLeads } = await sb
+    .from("sg_leads")
+    .select("id, token, full_name, email, email_opt_out_at")
+    .eq("status", "invited")
+    .limit(500);
+
+  let lapsed = 0;
+  for (const lead of lapsedLeads ?? []) {
+    try {
+      if (!lead.email || lead.email_opt_out_at) continue;
+
+      // All invites must be older than 24h and no quote in.
+      const { data: invites } = await sb
+        .from("sg_lead_shortlist")
+        .select("invited_at")
+        .eq("lead_id", lead.id)
+        .eq("status", "invited");
+      if (!invites || invites.length === 0) continue;
+      const newest = invites
+        .map((i) => String(i.invited_at ?? ""))
+        .sort()
+        .at(-1);
+      if (!newest || newest > dayAgo) continue;
+
+      const { data: anyQuote } = await sb
+        .from("sg_lead_quotes")
+        .select("id")
+        .eq("lead_id", lead.id)
+        .limit(1)
+        .maybeSingle();
+      if (anyQuote) continue;
+
+      const { data: alreadyTold } = await sb
+        .from("sg_lead_events")
+        .select("id")
+        .eq("lead_id", lead.id)
+        .eq("event_type", "quote_window_lapsed")
+        .limit(1)
+        .maybeSingle();
+      if (alreadyTold) continue;
+
+      const site =
+        process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
+      const link = `${site}/sell/quotes/${lead.token}?utm_source=lapse_notice`;
+      const first = (lead.full_name ?? "").split(" ")[0] || "";
+      sendEmail({
+        to: lead.email,
+        subject: "No quotes yet from your agents",
+        html: emailShell({
+          preheader: "The 24 hours we asked for has passed. Here are your options.",
+          heading: `${first ? `${first}, the` : "The"} 24 hours we asked for has passed.`,
+          bodyHtml:
+            p(
+              "We asked your invited agents for a fee quote within 24 hours and none has arrived yet. That is on them, not you."
+            ) +
+            p(
+              "You can add more agents to your request in one click, or keep waiting. Either way, we will email you the moment a quote arrives."
+            ),
+          cta: { label: "Add more agents", href: link },
+          unsubscribeEmail: lead.email,
+        }),
+        metric: "Seller Lapse Notice",
+        properties: { lead_token: lead.token },
+      }).catch((e) => console.error("[cron/expire-leads] lapse email failed", e));
+
+      await sb.from("sg_lead_events").insert({
+        lead_id: lead.id,
+        event_type: "quote_window_lapsed",
+      });
+      lapsed += 1;
+    } catch (e) {
+      console.error("[cron/expire-leads] lapse row failed", lead.id, e);
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     scanned: stale?.length ?? 0,
     expired,
     reminded,
+    lapsed,
   });
 }
