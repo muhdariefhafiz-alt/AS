@@ -415,7 +415,9 @@ export default function ShortlistPicker({
             >
               {submitting
                 ? "Sending invites…"
-                : `Invite ${picked.size} agent${picked.size === 1 ? "" : "s"}`}
+                : picked.size === 0
+                  ? "Pick agents to invite"
+                  : `Invite ${picked.size} agent${picked.size === 1 ? "" : "s"}`}
             </button>
           </div>
         </div>
