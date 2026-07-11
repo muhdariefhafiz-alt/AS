@@ -8,6 +8,7 @@ import FunnelTracker from "../../../components/FunnelTracker";
 import { bandFor } from "../../../components/Brand";
 import { titleName, givenName, cleanAgency, saleShare } from "../../../lib/names";
 import ClaimBanner from "../../../components/ClaimBanner";
+import EgoBaitPanel from "../../../components/EgoBaitPanel";
 import StickyMobileCta from "../../../components/StickyMobileCta";
 import AgentTransactionRecord from "../../../components/AgentTransactionRecord";
 import FlagBadge from "../../../components/FlagBadge";
@@ -434,6 +435,11 @@ export default async function AgentPage({ params }: Props) {
             <p style={{ marginTop: 8, fontSize: 15, lineHeight: 1.7, whiteSpace: "pre-line", maxWidth: "75ch" }}>{agent.bio}</p>
           </div>
         )}
+
+        {/* Real seller interest on unclaimed profiles: the ego-search claim
+            trigger. Renders nothing unless sellers have actually picked this
+            agent (district/type/month only, no PII). */}
+        {!agent.claimed && <EgoBaitPanel agentId={agent.id} slug={slug} />}
 
         {/* claim banner — real interactive claim form (email + CEA), id="claim" */}
         {!agent.claimed && (

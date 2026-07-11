@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../../lib/email";
@@ -131,6 +132,12 @@ export async function GET(req: Request) {
     });
   } catch (err) {
     console.error("[claim/verify] session cookie set failed", err);
+  }
+
+  // Claiming changes the public profile (banner + ego-bait panel disappear,
+  // claimed state shows); profiles are 12h-ISR so refresh now.
+  if (agentFull?.slug) {
+    revalidatePath(`/property-agents/agent/${agentFull.slug}`);
   }
 
   // Redirect to success page

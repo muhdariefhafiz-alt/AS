@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
 import { emailShell, p } from "../../../lib/email-layout";
@@ -311,6 +312,12 @@ export async function POST(req: Request) {
       if (notifErr) {
         console.error("[sell/invite] notification ledger insert failed", notifErr);
       }
+    }
+
+    // Profiles are 12h-ISR; a new pick must show in the ego-bait panel now,
+    // not at the next revalidation window.
+    for (const a of agents ?? []) {
+      if (a.slug) revalidatePath(`/property-agents/agent/${a.slug}`);
     }
 
     // E1 upgrade prompt (docs/email-lifecycle.md): once a free agent has been

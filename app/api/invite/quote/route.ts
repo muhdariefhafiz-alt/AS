@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { verifyInviteToken } from "../../../lib/agentInvite";
 import { validateQuoteFields, submitQuoteCore } from "../../../lib/quotes";
@@ -62,7 +63,7 @@ export async function POST(req: Request) {
     const sb = supabaseAdmin();
     const { data: agent } = await sb
       .from("sg_agents")
-      .select("id, name, email, claimed, claimed_email")
+      .select("id, name, slug, email, claimed, claimed_email")
       .eq("id", agentId)
       .single();
     if (!agent) {
@@ -157,6 +158,12 @@ export async function POST(req: Request) {
       agent_id: agent.id,
       metadata: { lead_id: lead.id, claimed_now: claimedNow },
     });
+
+    // Claiming changes the public profile (claimed state, ego-bait panel
+    // disappears); profiles are 12h-ISR so refresh now.
+    if (claimedNow && agent.slug) {
+      revalidatePath(`/property-agents/agent/${agent.slug}`);
+    }
 
     return NextResponse.json({ success: true, claimed: claimedNow });
   } catch (err) {
