@@ -170,34 +170,36 @@ export default function ShortlistPicker({
         quote arrives, and you can invite different agents if any stay silent.
       </div>
 
-      {/* What the seller is actually asking for, before they commit picks.
-          The quote fields are the real ones agents submit; the commission
-          line is public CEA guidance, not advice. */}
-      <div className="mb-3 rounded-xl border border-gray-200 bg-white p-4 text-sm">
-        <p className="font-semibold text-gray-900">
-          What each invited agent sends you
-        </p>
-        <p className="mt-1 text-gray-600">
-          Commission rate, estimated time to sell, estimated sale range, and
-          their marketing plan, side by side. Singapore has no official or
-          fixed commission rate, so every rate an agent quotes is negotiable.
-        </p>
-      </div>
-      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 text-sm">
-        <p className="font-semibold text-gray-900">How to choose your 3</p>
-        <ul className="mt-1 list-disc space-y-1 pl-5 text-gray-600">
-          <li>
-            Prefer agents with real deals in {area} and a high area focus, not
-            just the biggest overall number.
-          </li>
-          <li>
-            Take the warning chips seriously: tap one to see what it means
-            before picking that agent.
-          </li>
-          <li>
-            Open a profile to check the actual deal record behind the score.
-          </li>
-        </ul>
+      {/* One compact guidance card, two columns on desktop: what a quote
+          contains (real fields agents submit + public CEA fact on fees) and
+          how to choose. Two stacked full-width cards pushed the first agent
+          below the fold, which reads as instructions before value. */}
+      <div className="mb-6 grid gap-4 rounded-xl border border-gray-200 bg-white p-4 text-sm sm:grid-cols-2">
+        <div>
+          <p className="font-semibold text-gray-900">
+            What each invited agent sends you
+          </p>
+          <p className="mt-1 text-gray-600">
+            Commission rate, estimated time to sell, estimated sale range, and
+            their marketing plan, side by side. Singapore has no official or
+            fixed commission rate, so every rate an agent quotes is negotiable.
+          </p>
+        </div>
+        <div>
+          <p className="font-semibold text-gray-900">How to choose your 3</p>
+          <ul className="mt-1 list-disc space-y-1 pl-5 text-gray-600">
+            <li>
+              Prefer agents with real deals in {area} and a high area focus,
+              not just the biggest overall number.
+            </li>
+            <li>
+              Take the warning chips seriously: tap one to see what it means.
+            </li>
+            <li>
+              Open a profile to check the deal record behind the score.
+            </li>
+          </ul>
+        </div>
       </div>
 
       <ul className="space-y-3">
