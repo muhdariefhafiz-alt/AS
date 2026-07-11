@@ -124,15 +124,21 @@ export async function POST(req: Request) {
       } else {
         claimedNow = true;
         // Audit trail alongside banner claims; status 'verified' because the
-        // magic link IS the email verification.
-        await sb.from("sg_claim_requests").insert({
+        // magic link IS the email verification. verification_token is NOT
+        // NULL on this table; the magic flow has no separate verify token, so
+        // record a synthetic marker instead.
+        const { error: auditErr } = await sb.from("sg_claim_requests").insert({
           agent_id: agent.id,
           email: agent.email,
+          verification_token: `magic:${crypto.randomUUID()}`,
           status: "verified",
           verified_at: nowIso,
           contact_consent: true,
           source: "magic_invite",
         });
+        if (auditErr) {
+          console.error("[invite/quote] claim audit insert failed", auditErr);
+        }
         await sb.from("sg_funnel_events").insert({
           event: "magic_claim",
           agent_id: agent.id,
