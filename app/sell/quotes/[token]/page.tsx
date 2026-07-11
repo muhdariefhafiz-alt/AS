@@ -216,11 +216,13 @@ export default async function QuotesPage({ params }: Props) {
                     <span className="text-xs text-gray-500">
                       {a.sent_channel === "email"
                         ? `Emailed ${fmtDate(a.sent_at) ?? ""}`.trim()
-                        : a.sent_channel === "whatsapp"
+                        : a.sent_channel?.startsWith("whatsapp")
                           ? `Sent by WhatsApp ${fmtDate(a.sent_at) ?? ""}`.trim()
-                          : fmtDate(a.invited_at)
-                            ? `Invited ${fmtDate(a.invited_at)}`
-                            : "Invited"}
+                          : a.sent_channel === "agency_email"
+                            ? `Sent to their agency ${fmtDate(a.sent_at) ?? ""}`.trim()
+                            : fmtDate(a.invited_at)
+                              ? `Invited ${fmtDate(a.invited_at)}`
+                              : "Invited"}
                     </span>
                   </li>
                 ))}

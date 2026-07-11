@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { SectionHeading, StatCard, Pill, EmptyState, deltaLabel } from "../shared";
+import { agentInviteUrl } from "../../lib/agentInvite";
+import { greetName } from "../../lib/names";
+import WaNotifyButton from "./WaNotifyButton";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,9 +54,12 @@ const statusColor = (s: string | null): "blue" | "emerald" | "amber" | "gray" =>
 // actually accepted a message for; the gap is where a human must act.
 type IntegrityRow = {
   lead_id: number;
+  lead_token: string;
+  property_type: string;
   seller: string;
   lead_area: string;
   lead_created: string;
+  agent_id: number;
   agent_name: string;
   agent_email: string | null;
   agent_whatsapp: string | null;
@@ -64,7 +70,7 @@ async function notificationIntegrity(): Promise<IntegrityRow[]> {
   // Open leads only: once instructed/completed/expired the gap is moot.
   const { data: leads } = await supabase
     .from("sg_leads")
-    .select("id, full_name, town, district_code, created_at, status")
+    .select("id, token, property_type, full_name, town, district_code, created_at, status")
     .in("status", ["invited", "quoted"]);
   if (!leads || leads.length === 0) return [];
   const leadIds = leads.map((l) => l.id);
@@ -97,9 +103,12 @@ async function notificationIntegrity(): Promise<IntegrityRow[]> {
     const hasChannel = Boolean(a.email) || Boolean(a.whatsapp);
     rows.push({
       lead_id: Number(s.lead_id),
+      lead_token: String(lead.token ?? ""),
+      property_type: String(lead.property_type ?? "property"),
       seller: String(lead.full_name ?? "—"),
       lead_area: tc(lead.town) || lead.district_code || "—",
       lead_created: String(lead.created_at),
+      agent_id: Number(s.agent_id),
       agent_name: String(a.name ?? ""),
       agent_email: (a.email as string | null) ?? null,
       agent_whatsapp: (a.whatsapp as string | null) ?? null,
@@ -109,6 +118,27 @@ async function notificationIntegrity(): Promise<IntegrityRow[]> {
   rows.sort((x, y) => x.lead_id - y.lead_id);
   return rows;
 }
+
+// Digits-only number for wa.me links: bare 8-digit SG locals get the 65 code.
+const waDigits = (raw: string) => {
+  const d = raw.replace(/\D/g, "");
+  return d.length === 8 ? `65${d}` : d;
+};
+
+// Prefilled operator invite, sent via official click-to-chat from the
+// FairComparisons WhatsApp profile. Strictly a transactional relay of one
+// named seller request: platform identified, opt-out included, no marketing.
+const waInviteText = (r: IntegrityRow) => {
+  const first = greetName(r.agent_name) || "there";
+  // Per-agent magic link: brief + quote form, claims the profile on submit.
+  const link = agentInviteUrl(r.lead_id, r.agent_id, "wa_manual");
+  return (
+    `Hello ${first}, this is FairComparisons (fair-comparisons.com). ` +
+    `A homeowner selling a ${r.property_type} in ${r.lead_area} shortlisted you for a fee quote, with a 24 hour response window. ` +
+    `View the request and respond here: ${link} ` +
+    `Reply STOP to opt out.`
+  );
+};
 
 export async function LeadsTab() {
   const [kpiRes, dailyRes, sourceRes, byAgentRes, recentRes, integrity] = await Promise.all([
@@ -199,6 +229,7 @@ export async function LeadsTab() {
                   <th className="px-4 py-2.5 text-left">Agent</th>
                   <th className="px-4 py-2.5 text-left">Problem</th>
                   <th className="px-4 py-2.5 text-left">Agent contact</th>
+                  <th className="px-4 py-2.5 text-left">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -219,6 +250,18 @@ export async function LeadsTab() {
                       {r.agent_email && <div>{r.agent_email}</div>}
                       {r.agent_whatsapp && <div className="font-mono">{r.agent_whatsapp}</div>}
                       {!r.agent_email && !r.agent_whatsapp && <span className="text-gray-400">none on file</span>}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {r.agent_whatsapp ? (
+                        <WaNotifyButton
+                          leadId={r.lead_id}
+                          agentId={r.agent_id}
+                          waNumber={waDigits(r.agent_whatsapp)}
+                          text={waInviteText(r)}
+                        />
+                      ) : (
+                        <span className="text-xs text-gray-400">no channel</span>
+                      )}
                     </td>
                   </tr>
                 ))}

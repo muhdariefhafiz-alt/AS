@@ -15,6 +15,21 @@ export function givenName(full: string): string {
   return titleName(tok);
 }
 
+/**
+ * Best name to greet an agent by. CEA names are often "TAN YONG DA (BENDON)"
+ * where the parenthesised part is the name the agent actually goes by, so
+ * prefer its first token; otherwise fall back to givenName(). Greeting by the
+ * raw first token would address Bendon as "Tan".
+ */
+export function greetName(full: string): string {
+  const marketing = (full || "").match(/\(([^)]+)\)/)?.[1]?.trim();
+  if (marketing) {
+    const tok = marketing.split(/\s+/)[0];
+    if (tok) return titleName(tok);
+  }
+  return givenName(full);
+}
+
 /** Clean an agency name: drop "Pte Ltd"/"LLP", title-case, keep ERA upper. */
 export function cleanAgency(name: string): string {
   const n = (name || "").replace(/\s*PTE\.?\s*LTD\.?\.?$/i, "").replace(/\s*LLP$/i, "").trim();

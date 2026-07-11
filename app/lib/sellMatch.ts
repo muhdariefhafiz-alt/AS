@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "./supabase";
-import { isWhatsAppLive } from "./whatsapp";
+import { isAgentReachable } from "./reachability";
 
 export type PropertyType = "HDB" | "CONDO" | "LANDED" | "EC";
 
@@ -162,17 +162,14 @@ export async function buildShortlist(
   // the final tie-break below: merit (composite, then area activity) always
   // decides first, so reachability can never buy an agent a better rank. It
   // just prefers, among equals, the agent a seller can actually contact
-  // through us. Email is the live channel; WhatsApp counts once provisioned.
-  const waLive = isWhatsAppLive();
+  // through us (lib/reachability: usable email, or WhatsApp once provisioned).
   const candidateIds = rows.map((r) => Number(r.agent_id));
   const { data: contactRows } = await sb
     .from("sg_agents")
-    .select("id, email, whatsapp")
+    .select("id, email, email_status, whatsapp")
     .in("id", candidateIds);
   const reachableSet = new Set(
-    (contactRows ?? [])
-      .filter((c) => Boolean(c.email) || (Boolean(c.whatsapp) && waLive))
-      .map((c) => Number(c.id))
+    (contactRows ?? []).filter(isAgentReachable).map((c) => Number(c.id))
   );
 
   const scored = rows.map((r) => {
@@ -206,7 +203,24 @@ export async function buildShortlist(
     return Number(b.reachable) - Number(a.reachable);
   });
 
-  return pool.slice(0, limit).map((s, i) => ({
+  // Guarantee the seller at least 3 agents an invite can actually reach.
+  // Merit order is never altered: the top slice stays exactly as ranked
+  // (unreachable agents stay visible; the picker just cannot invite them).
+  // We only APPEND the next-best reachable candidates from the same pool,
+  // in their true merit order, until 3 reachable agents are present or the
+  // pool runs out. Live data (Jul 2026): pools average 13.7 reachable of
+  // 19.3, so this fires in only a handful of areas.
+  const MIN_REACHABLE = 3;
+  const top = pool.slice(0, limit);
+  const reachableInTop = top.filter((s) => s.reachable).length;
+  if (reachableInTop < MIN_REACHABLE) {
+    for (const s of pool.slice(limit)) {
+      if (top.filter((t) => t.reachable).length >= MIN_REACHABLE) break;
+      if (s.reachable) top.push(s);
+    }
+  }
+
+  return top.map((s, i) => ({
     agent_id: Number(s.row.agent_id),
     agent_name: String(s.row.agent_name ?? ""),
     agent_slug: String(s.row.agent_slug ?? ""),

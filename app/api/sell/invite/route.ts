@@ -3,6 +3,9 @@ import { supabaseAdmin } from "../../../lib/supabase";
 import { sendEmail } from "../../../lib/email";
 import { emailShell, p } from "../../../lib/email-layout";
 import { sendWa, isWhatsAppLive } from "../../../lib/whatsapp";
+import { isEmailUsable, isAgentReachable } from "../../../lib/reachability";
+import { agentInviteUrl } from "../../../lib/agentInvite";
+import { greetName, titleName } from "../../../lib/names";
 import { checkRateLimit } from "../../../lib/rateLimit";
 
 // One sg_lead_notifications row per (agent, channel) attempt. The outcome is
@@ -97,18 +100,15 @@ export async function POST(req: Request) {
     const { data: agents } = await sb
       .from("sg_agents")
       .select(
-        "id, name, email, whatsapp, claimed, slug, claimed_email, subscription_tier, stripe_subscription_id, email_opt_out_at"
+        "id, name, email, email_status, whatsapp, claimed, slug, claimed_email, subscription_tier, stripe_subscription_id, email_opt_out_at"
       )
       .in("id", picked);
 
-    // Reachability per agent. Email (Resend) is the live channel; WhatsApp
-    // only counts when provisioned, because unprovisioned sends silently
-    // dry-run and reach nobody.
+    // Reachability per agent (lib/reachability): a usable email (not graded
+    // dead by the MX sweep or a bounce), or WhatsApp once provisioned.
     const waLive = isWhatsAppLive();
     const reachableIds = new Set(
-      (agents ?? [])
-        .filter((a) => Boolean(a.email) || (Boolean(a.whatsapp) && waLive))
-        .map((a) => Number(a.id))
+      (agents ?? []).filter(isAgentReachable).map((a) => Number(a.id))
     );
     const unreachable = (agents ?? [])
       .filter((a) => !reachableIds.has(Number(a.id)))
@@ -201,7 +201,10 @@ export async function POST(req: Request) {
         });
         continue;
       }
-      const link = `${site}/dashboard?token=${token}&utm_source=notify&utm_medium=agent_invite`;
+      // Per-agent magic link: lands on the tokened brief + quote form and
+      // claims an unclaimed profile on submit. The old /dashboard?token= CTA
+      // walled every unclaimed agent behind a sign-in form.
+      const link = agentInviteUrl(lead.id, agentId, "agent_invite");
       const area = lead.town ?? lead.district_code ?? "your area";
       let agentNotified = false;
 
@@ -213,7 +216,7 @@ export async function POST(req: Request) {
             to: String(a.whatsapp),
             template: "agent_invite",
             variables: {
-              agent_first_name: (a.name ?? "").split(" ")[0] || "Hi",
+              agent_first_name: greetName(a.name ?? "") || "Hi",
               area,
               property_type: lead.property_type,
               link,
@@ -243,8 +246,10 @@ export async function POST(req: Request) {
       }
 
       // Email is the durable record. sendEmail never throws; failures come
-      // back as id='resend-error' and are recorded as such.
-      if (a.email) {
+      // back as id='resend-error' and are recorded as such. Graded-dead
+      // addresses (no_mx/bounced/complained) are never sent to: a guaranteed
+      // bounce helps nobody and burns the sending domain.
+      if (a.email && isEmailUsable(a.email, a.email_status)) {
         try {
           const res = (await sendEmail({
             to: a.email,
@@ -442,7 +447,7 @@ function agentInviteHtml({
   return emailShell({
     preheader: `${preheaderParts.join(", ")}.`,
     heading: agentName
-      ? `${agentName}, you have been shortlisted.`
+      ? `${greetName(agentName) || titleName(agentName)}, you have been shortlisted.`
       : "You have been shortlisted.",
     bodyHtml:
       p(

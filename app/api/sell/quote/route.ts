@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
-import { sendEmail } from "../../../lib/email";
-import { sendWaAsync } from "../../../lib/whatsapp";
 import { getAgentSession } from "../../../lib/agent-auth";
-import { emailShell, p } from "../../../lib/email-layout";
+import { validateQuoteFields, submitQuoteCore } from "../../../lib/quotes";
 
 // Agent submits a quote on a lead they were invited to. Authenticated by the
 // signed agent session cookie; identity is never taken from the request body.
+// Submission mechanics live in lib/quotes.ts, shared with /api/invite/quote.
 
 export async function POST(req: Request) {
   try {
@@ -22,37 +21,13 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const {
-      token,
-      commission_pct,
-      est_timeline_weeks,
-      est_value_low,
-      est_value_high,
-      marketing_plan,
-      note,
-    } = body ?? {};
-
+    const { token } = body ?? {};
     if (typeof token !== "string" || token.length < 8 || token.length > 64) {
       return NextResponse.json({ error: "Invalid token." }, { status: 400 });
     }
-    const pct = Number(commission_pct);
-    if (!Number.isFinite(pct) || pct <= 0 || pct > 10) {
-      return NextResponse.json(
-        { error: "Commission must be between 0 and 10 percent." },
-        { status: 400 }
-      );
-    }
-    if (typeof marketing_plan !== "string" || marketing_plan.trim().length < 20) {
-      return NextResponse.json(
-        { error: "Marketing plan must be at least 20 characters." },
-        { status: 400 }
-      );
-    }
-    if (marketing_plan.length > 2000) {
-      return NextResponse.json(
-        { error: "Marketing plan is too long (max 2000 chars)." },
-        { status: 400 }
-      );
+    const v = validateQuoteFields(body ?? {});
+    if (!v.ok) {
+      return NextResponse.json({ error: v.error }, { status: 400 });
     }
 
     const sb = supabaseAdmin();
@@ -90,89 +65,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const nowIso = new Date().toISOString();
-    const { data: quote, error: quoteErr } = await sb
-      .from("sg_lead_quotes")
-      .upsert(
-        {
-          lead_id: lead.id,
-          agent_id: agent.id,
-          shortlist_id: shortlist.id,
-          commission_pct: pct,
-          est_timeline_weeks: est_timeline_weeks ?? null,
-          est_value_low: est_value_low ?? null,
-          est_value_high: est_value_high ?? null,
-          marketing_plan: marketing_plan.trim(),
-          note: note ? String(note).slice(0, 500) : null,
-          status: "submitted",
-          submitted_at: nowIso,
-        },
-        { onConflict: "lead_id,agent_id" }
-      )
-      .select("id")
-      .single();
-    if (quoteErr || !quote) {
-      console.error("[sell/quote] upsert failed", quoteErr);
-      return NextResponse.json(
-        { error: "Could not save quote." },
-        { status: 500 }
-      );
-    }
-
-    await sb
-      .from("sg_lead_shortlist")
-      .update({ status: "quoted", quoted_at: nowIso })
-      .eq("id", shortlist.id);
-    await sb.from("sg_leads").update({ status: "quoted" }).eq("id", lead.id);
-    await sb.from("sg_lead_events").insert({
-      lead_id: lead.id,
-      agent_id: agent.id,
-      event_type: "agent_submit_quote",
-      meta: { commission_pct: pct, est_timeline_weeks: est_timeline_weeks ?? null },
+    const result = await submitQuoteCore({
+      lead,
+      agent,
+      shortlistId: Number(shortlist.id),
+      pct: v.pct,
+      plan: v.plan,
+      fields: body ?? {},
     });
-
-    // Notify the homeowner, WhatsApp + email in parallel.
-    const site =
-      process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
-    const link = `${site}/sell/quotes/${lead.token}?utm_source=notify`;
-    if (lead.whatsapp && lead.marketing_consent) {
-      sendWaAsync({
-        to: String(lead.whatsapp),
-        template: "seller_quote_ready",
-        variables: {
-          seller_first_name: (lead.full_name ?? "").split(" ")[0] || "Hi",
-          agent_name: agent.name ?? "",
-          link,
-        },
-        metric: "Seller Quote Ready",
-        properties: { lead_token: lead.token, agent_id: agent.id, channel: "wa" },
-      });
-    }
-    if (lead.email) {
-      const agentName = agent.name ?? "";
-      const propertyType = lead.property_type ?? "";
-      const area = lead.town ?? "";
-      const bodyHtml = [
-        p(
-          `${agentName} has sent a fee quote for your ${propertyType ?? "home"}${area ? ` in ${area}` : ""}.`
-        ),
-        p(
-          "Compare them on fee, marketing plan and, most importantly, each agent's real sales record in your area."
-        ),
-      ].join("");
-      sendEmail({
-        to: lead.email,
-        subject: `${agentName} sent you a quote`,
-        html: emailShell({
-          preheader: "Compare fees, plans and records side by side.",
-          heading: `${agentName} sent you a quote`,
-          bodyHtml,
-          cta: { label: "Compare your quotes", href: link },
-          unsubscribeEmail: lead.email,
-        }),
-        metric: "Seller Quote Ready",
-        properties: { lead_token: lead.token, agent_id: agent.id },
-      }).catch((e) => console.error("[sell/quote] seller email failed", e));
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

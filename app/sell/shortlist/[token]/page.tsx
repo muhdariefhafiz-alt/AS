@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { supabaseAdmin } from "../../../lib/supabase";
-import { isWhatsAppLive } from "../../../lib/whatsapp";
+import { isAgentReachable } from "../../../lib/reachability";
 import ShortlistPicker, { type ShortlistRow } from "./ShortlistPicker";
 import type { Metadata } from "next";
 
@@ -43,7 +43,7 @@ export default async function ShortlistPage({ params }: Props) {
   const { data: shortlist } = await sb
     .from("sg_lead_shortlist")
     .select(
-      "id, agent_id, rank, score_at_shortlist, status, sg_agents!inner(id, name, slug, agency_name, score, transaction_count, primary_area, google_rating, google_review_count, photo_url, claimed, agent_flags, email, whatsapp)"
+      "id, agent_id, rank, score_at_shortlist, status, sg_agents!inner(id, name, slug, agency_name, score, transaction_count, primary_area, google_rating, google_review_count, photo_url, claimed, agent_flags, email, email_status, whatsapp)"
     )
     .eq("lead_id", lead.id)
     .order("rank");
@@ -85,11 +85,6 @@ export default async function ShortlistPage({ params }: Props) {
     }
   }
 
-  // Whether we can actually deliver an invite to each agent. Email (Resend)
-  // is the live channel; WhatsApp only counts once provisioned. Computed
-  // server-side so raw contact details never reach the client, only the flag.
-  const waLive = isWhatsAppLive();
-
   const rows: ShortlistRow[] = (shortlist ?? []).map((s) => {
     const joined = s.sg_agents as unknown;
     const a =
@@ -125,7 +120,13 @@ export default async function ShortlistPage({ params }: Props) {
       claimed: Boolean(a.claimed),
       agent_flags: (a.agent_flags as { t: string; pct?: number }[] | null) ?? [],
       invite_status: String(s.status ?? "suggested"),
-      reachable: Boolean(a.email) || (Boolean(a.whatsapp) && waLive),
+      // Computed server-side (lib/reachability) so raw contact details never
+      // reach the client, only the flag.
+      reachable: isAgentReachable({
+        email: (a.email as string | null) ?? null,
+        email_status: (a.email_status as string | null) ?? null,
+        whatsapp: (a.whatsapp as string | null) ?? null,
+      }),
     };
   });
 
