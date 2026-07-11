@@ -28,11 +28,14 @@ async function getTopAgents() {
   return data ?? [];
 }
 
+// Steps must describe the REAL flow (invite-and-quote), matching /sell. The
+// old "contact agents directly" directory copy promised a model that no
+// longer exists and contradicted the product one click later.
 const STEPS: [string, string][] = [
   ["Tell us your home", "Postal code, property type, size. Thirty seconds, no account."],
   ["See ranked agents", "We rank everyone active near you on real transaction data."],
   ["Compare side by side", "Compare each agent's record, areas and reviews side by side."],
-  ["Contact agents directly", "Pick the agents whose record fits your home and reach out yourself. Free to you."],
+  ["Invite up to 3 to quote", "We send your brief to the agents you pick. Their fee quotes come back side by side. Free to you."],
 ];
 
 const TRUST: [string, string][] = [
@@ -87,7 +90,7 @@ export default async function HomePage() {
               </h1>
               <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16 }}>
                 Compare every CEA-registered agent on which homes they actually sell in your area, ranked on{" "}
-                {stats.transactions.toLocaleString()}+ real government transaction records. Then contact the ones you choose.
+                {stats.transactions.toLocaleString()}+ real government transaction records. Then invite up to 3 to send you a fee quote.
               </p>
 
               <form
@@ -241,7 +244,7 @@ export default async function HomePage() {
         <div className="fc-wrap" style={{ textAlign: "center" }}>
           <h2 style={{ color: "#fff" }}>Ready to choose on evidence?</h2>
           <p className="lede" style={{ margin: "14px auto 28px", textAlign: "center" }}>
-            Compare the agents who actually sell properties like yours nearby, then contact the ones you choose.
+            Compare the agents who actually sell properties like yours nearby, then invite up to 3 to send you a fee quote.
           </p>
           <div className="fc-row" style={{ justifyContent: "center", gap: 12 }}>
             <Link href="/sell" className="fc-btn fc-btn--primary fc-btn--lg">
