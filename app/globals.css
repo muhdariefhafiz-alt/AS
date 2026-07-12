@@ -94,8 +94,15 @@ body{
 ::selection{background:var(--blue); color:#fff;}
 
 h1,h2,h3,h4,h5{font-family:var(--font-serif); font-weight:600; letter-spacing:-0.02em; line-height:var(--lh-snug);}
-a{color:var(--blue); text-decoration:none;}
-a:hover{color:var(--blue-deep);}
+/* Exclude anchors that carry a Tailwind `text-white` utility (incl. text-white/60,
+   hover:text-white) from the global anchor color. Tailwind v4 emits this a{} rule
+   UNLAYERED, so without the exclusion it overrides the layered text-white utility
+   and renders white-on-colored CTAs as blue-on-blue. Every broken button carries a
+   text-white* class, so this covers them all. :where() keeps specificity at
+   (0,0,1)/(0,1,1) identical to a bare a{}, so nav/breadcrumb/content/fc-btn links
+   (and the blue-text default for every content link) are completely unaffected. */
+a:where(:not([class*="text-white"])){color:var(--blue); text-decoration:none;}
+a:where(:not([class*="text-white"])):hover{color:var(--blue-deep);}
 code,kbd,samp{font-family:var(--font-mono); font-size:0.92em;}
 
 /* numerals: always tabular for data */
