@@ -364,6 +364,9 @@ export default function DashboardPage() {
           {/* Exp 3: embeddable AgentScore badge */}
           <BadgeCard slug={agent.slug} />
 
+          {/* Grow: lead-generation widget for the agent's own website */}
+          <LeadWidgetCard slug={agent.slug} />
+
           {/* Optional tools tier — NON-ranking only (analytics + market data).
               Gated behind the 7-day "aha moment". */}
           {agent.subscription_tier === "free" && (() => {
@@ -569,6 +572,45 @@ function BadgeCard({ slug }: { slug: string }) {
       <div style={{ marginTop: 14 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`/badge/${slug}.svg`} alt="Your AgentScore badge" width={320} height={96} style={{ maxWidth: "100%", border: "1px solid var(--line)", borderRadius: "var(--r-md)" }} />
+      </div>
+      <textarea
+        readOnly
+        value={embed}
+        onFocus={(e) => e.currentTarget.select()}
+        className="fc-textarea"
+        style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 12, height: 84 }}
+      />
+      <button onClick={copy} className="fc-btn fc-btn--ink fc-btn--sm" style={{ marginTop: 10 }}>
+        {copied ? "Copied" : "Copy embed code"}
+      </button>
+    </div>
+  );
+}
+
+function LeadWidgetCard({ slug }: { slug: string }) {
+  const [copied, setCopied] = useState(false);
+  const base = "https://fair-comparisons.com";
+  const embed = `<iframe src="${base}/embed/agent/${slug}" width="100%" height="230" style="border:0;max-width:404px" title="Get a free valuation" loading="lazy"></iframe>`;
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(embed);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
+  return (
+    <div className="fc-card" style={{ padding: 22 }}>
+      <div className="kicker">Lead widget for your website</div>
+      <p className="muted small" style={{ marginTop: 6 }}>
+        Put a co-branded &ldquo;Get a free valuation&rdquo; card on your own site. Visitors who click come to you as a seller enquiry, with you already pinned as their agent.
+      </p>
+      <div style={{ marginTop: 14, border: "1px solid var(--line)", borderRadius: "var(--r-md)", overflow: "hidden" }}>
+        {/* Live preview of the agent's own widget */}
+        <iframe src={`/embed/agent/${slug}`} width="100%" height={230} style={{ border: 0, display: "block" }} title="Lead widget preview" loading="lazy" />
       </div>
       <textarea
         readOnly
