@@ -18,6 +18,23 @@ const nextConfig: NextConfig = {
       { source: "/badge/:slug.svg", destination: "/badge/:slug" },
     ];
   },
+  // 301s for the 5 @-derived development slugs that were renamed to keyword-
+  // friendly hyphenated slugs (Ubersuggest URL findings). Preserves the equity
+  // of the old indexed URLs.
+  async redirects() {
+    const dev = (from: string, to: string) => ({
+      source: `/property-agents/development/${from}`,
+      destination: `/property-agents/development/${to}`,
+      permanent: true,
+    });
+    return [
+      dev("8bt", "8-bt"),
+      dev("8woodleigh", "8-woodleigh"),
+      dev("citylifetampines", "citylife-tampines"),
+      dev("naturahillview", "natura-hillview"),
+      dev("skysuitesanson", "skysuites-anson"),
+    ];
+  },
 };
 
 export default nextConfig;
