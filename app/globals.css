@@ -324,6 +324,9 @@ input[type="checkbox"]{width:18px; height:18px; flex-shrink:0; accent-color:var(
 .bar__val{font-weight:700; font-size:14px; font-variant-numeric:tabular-nums;}
 .dev{display:flex; align-items:center; gap:14px; padding:14px 0; border-top:1px solid var(--line);}
 .dev:first-child{border-top:none;}
+a.dev--link{text-decoration:none; color:inherit; transition:background 0.12s, padding 0.12s;}
+a.dev--link:hover{background:var(--blue-wash); margin:0 -16px; padding-left:16px; padding-right:16px; border-radius:8px;}
+a.dev--link:hover .dev__name{color:var(--blue-deep);}
 .dev__pos{font-family:var(--font-mono); font-size:14px; color:var(--slate); width:22px; text-align:center;}
 .dev__name{font-weight:700; font-size:15px; letter-spacing:-0.01em;}
 .dev__road{font-family:var(--font-mono); font-size:11px; letter-spacing:0.04em; color:var(--slate); text-transform:uppercase; margin-top:2px;}

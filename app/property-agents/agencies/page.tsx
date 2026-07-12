@@ -31,15 +31,47 @@ const COMPARISONS: Array<{ a: string; b: string; aSlug: string; bSlug: string }>
   { a: "ERA", b: "OrangeTee", aSlug: "era-realty-network-pte-ltd", bSlug: "orangetee-tie-pte-ltd" },
 ];
 
+type LeagueRow = {
+  slug: string;
+  agency_name: string;
+  sales: number;
+  seller_sales: number;
+  rentals: number;
+  per_agent: number;
+  pct_selling: number;
+  rental_pct: number;
+  roster_agents: number;
+  selling_agents: number;
+  google_rating: number | null;
+};
+type LeagueData = {
+  totals: { sales: number; rentals: number; agencies_with_sale: number };
+  by_sales: LeagueRow[];
+  by_efficiency: LeagueRow[];
+  window_start: string;
+  window_end: string;
+};
+
 export default async function AgenciesHubPage() {
-  const { data } = await supabase
-    .from("sg_agencies")
-    .select("name, slug, agent_count, google_rating, google_review_count")
-    .not("agent_count", "is", null)
-    .order("agent_count", { ascending: false })
-    .limit(30);
+  const [{ data }, { data: leagueRow }] = await Promise.all([
+    supabase
+      .from("sg_agencies")
+      .select("name, slug, agent_count, google_rating, google_review_count")
+      .not("agent_count", "is", null)
+      .order("agent_count", { ascending: false })
+      .limit(30),
+    supabase.from("agency_league_stats").select("data").eq("id", 1).single(),
+  ]);
 
   const agencies = (data ?? []) as Agency[];
+  const league = (leagueRow?.data ?? null) as LeagueData | null;
+  // Efficiency only means something with a real sample: a 3-agent shop with two
+  // lucky deals is not "the most productive agency". Gate to agencies with
+  // enough roster + volume so the per-agent figure is not statistical noise.
+  const efficiencyLeague = (league?.by_efficiency ?? [])
+    .filter((r) => r.roster_agents >= 10 && r.sales >= 50)
+    .slice(0, 10);
+  const salesLeague = (league?.by_sales ?? []).slice(0, 12);
   const biggest = agencies[0];
   const totalAgents = agencies.reduce((s, a) => s + (a.agent_count ?? 0), 0);
 
@@ -166,6 +198,78 @@ export default async function AgenciesHubPage() {
               </div>
               <p className="mt-2 text-[11px] text-gray-400">Source: CEA public register (agent counts) and Google (ratings). {totalAgents.toLocaleString()} agents across the agencies shown.</p>
             </section>
+
+            {salesLeague.length > 0 && league && (
+              <section>
+                <h2 className="text-xl font-bold text-gray-900">Which agencies actually sell the most homes?</h2>
+                <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
+                  Headcount is not sales. This ranks agencies by transactions their agents actually closed over the 12 months to {league.window_end}, from CEA records. The seller-side column counts only deals where the agency represented the seller, the side that matters if you are the one selling.
+                </p>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-gray-400">
+                        <th className="pb-2 pr-3">#</th>
+                        <th className="pb-2 pr-3">Agency</th>
+                        <th className="pb-2 pr-3 text-right">Sales</th>
+                        <th className="pb-2 pr-3 text-right">Seller-side</th>
+                        <th className="pb-2 text-right">Per agent</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {salesLeague.map((r, i) => (
+                        <tr key={r.slug}>
+                          <td className="py-2.5 pr-3 text-gray-400">{i + 1}</td>
+                          <td className="py-2.5 pr-3">
+                            <Link href={`/property-agents/agency/${r.slug}`} className="font-medium text-[var(--blue)] hover:underline">{cleanAgency(r.agency_name)}</Link>
+                          </td>
+                          <td className="py-2.5 pr-3 text-right font-semibold text-gray-900">{r.sales.toLocaleString()}</td>
+                          <td className="py-2.5 pr-3 text-right text-gray-600">{r.seller_sales.toLocaleString()}</td>
+                          <td className="py-2.5 text-right text-gray-600">{r.per_agent.toFixed(1)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="mt-2 text-[11px] text-gray-400">Source: CEA transaction records, {league.window_start} to {league.window_end}. &quot;Per agent&quot; is sales divided by the agency&apos;s full registered roster.</p>
+              </section>
+            )}
+
+            {efficiencyLeague.length > 0 && league && (
+              <section>
+                <h2 className="text-xl font-bold text-gray-900">The most productive agencies, per agent</h2>
+                <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
+                  The same records, read a different way. Dividing sales by roster size shows how much of an agency&apos;s volume comes from a genuinely active bench rather than a large name. A smaller, specialist agency often works each deal harder than a household name. Shown for agencies with at least 10 registered agents and 50 sales, so the ratio is not a fluke of one or two deals.
+                </p>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-gray-400">
+                        <th className="pb-2 pr-3">#</th>
+                        <th className="pb-2 pr-3">Agency</th>
+                        <th className="pb-2 pr-3 text-right">Sales / agent</th>
+                        <th className="pb-2 pr-3 text-right">Sales</th>
+                        <th className="pb-2 text-right">Agents</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {efficiencyLeague.map((r, i) => (
+                        <tr key={r.slug}>
+                          <td className="py-2.5 pr-3 text-gray-400">{i + 1}</td>
+                          <td className="py-2.5 pr-3">
+                            <Link href={`/property-agents/agency/${r.slug}`} className="font-medium text-[var(--blue)] hover:underline">{cleanAgency(r.agency_name)}</Link>
+                          </td>
+                          <td className="py-2.5 pr-3 text-right font-semibold text-gray-900">{r.per_agent.toFixed(1)}</td>
+                          <td className="py-2.5 pr-3 text-right text-gray-600">{r.sales.toLocaleString()}</td>
+                          <td className="py-2.5 text-right text-gray-600">{r.roster_agents.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="mt-2 text-[11px] text-gray-400">Source: CEA transaction records, {league.window_start} to {league.window_end}. Ratio is total sales divided by registered roster size; it favours smaller specialist agencies.</p>
+              </section>
+            )}
 
             {/* Popular comparisons */}
             <section>

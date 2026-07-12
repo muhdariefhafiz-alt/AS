@@ -17,6 +17,7 @@ export type TopProject = {
   txns: number;
   avg_price: number;
   median_price: number;
+  slug: string | null;
 };
 
 export type RentalProject = {
@@ -149,13 +150,33 @@ export async function getDistrictMarketData(
         condoTypes.reduce((s, t) => s + t.txns, 0)
       : 0;
 
-  // Process top projects
-  const topProjects: TopProject[] = (topProjectsResult.data ?? []).map((r: Record<string, unknown>) => ({
-    project: String(r.project),
-    street: String(r.street),
-    txns: Number(r.txns),
-    avg_price: Number(r.avg_price),
-    median_price: Number(r.median_price),
+  // Process top projects, then attach the development-page slug so the district
+  // page links DOWN to each development (de-orphaning /development/[slug]). One
+  // batch lookup by name; sg_projects and the RPC share the same URA source so
+  // names match exactly (verified 100% on sampled districts).
+  const rawProjects: Omit<TopProject, "slug">[] = (topProjectsResult.data ?? []).map(
+    (r: Record<string, unknown>) => ({
+      project: String(r.project),
+      street: String(r.street),
+      txns: Number(r.txns),
+      avg_price: Number(r.avg_price),
+      median_price: Number(r.median_price),
+    }),
+  );
+  const projectNames = rawProjects.map((p) => p.project);
+  const slugByName = new Map<string, string>();
+  if (projectNames.length) {
+    const { data: slugRows } = await supabase
+      .from("sg_projects")
+      .select("name, slug")
+      .in("name", projectNames)
+      .not("slug", "is", null)
+      .gt("txn_count", 0);
+    for (const row of slugRows ?? []) slugByName.set(String(row.name), String(row.slug));
+  }
+  const topProjects: TopProject[] = rawProjects.map((p) => ({
+    ...p,
+    slug: slugByName.get(p.project) ?? null,
   }));
 
   // Process rental data

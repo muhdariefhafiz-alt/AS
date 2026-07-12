@@ -258,17 +258,26 @@ export default async function DistrictPage({ params }: Props) {
                   High transaction volume signals an active secondary market with good liquidity. Buyers who may sell within a few years should weight proven resale activity.
                 </p>
                 <div className="fc-card fc-card--pad" style={{ marginTop: 18, padding: "6px 24px 12px" }}>
-                  {topProjects.map((p, i) => (
-                    <div className="dev" key={p.project}>
-                      <span className="dev__pos">{String(i + 1).padStart(2, "0")}</span>
-                      <div style={{ flex: 1 }}>
-                        <div className="dev__name">{p.project}</div>
-                        {p.street && <div className="dev__road">{p.street}</div>}
-                      </div>
-                      <span className="dev__price">{formatPrice(p.median_price)}</span>
-                      <span className="dev__txns">{p.txns} txns</span>
-                    </div>
-                  ))}
+                  {topProjects.map((p, i) => {
+                    const inner = (
+                      <>
+                        <span className="dev__pos">{String(i + 1).padStart(2, "0")}</span>
+                        <div style={{ flex: 1 }}>
+                          <div className="dev__name">{p.project}</div>
+                          {p.street && <div className="dev__road">{p.street}</div>}
+                        </div>
+                        <span className="dev__price">{formatPrice(p.median_price)}</span>
+                        <span className="dev__txns">{p.txns} txns</span>
+                      </>
+                    );
+                    return p.slug ? (
+                      <Link className="dev dev--link" key={p.project} href={`/property-agents/development/${p.slug}`}>
+                        {inner}
+                      </Link>
+                    ) : (
+                      <div className="dev" key={p.project}>{inner}</div>
+                    );
+                  })}
                 </div>
                 <div className="fc-badge fc-badge--source" style={{ marginTop: 16 }}>Source · URA private residential transactions &amp; median rental data</div>
               </>
