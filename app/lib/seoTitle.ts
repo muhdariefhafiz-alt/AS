@@ -20,6 +20,10 @@ export function seoTitle(lead: string): { absolute: string } {
   const cut = l
     .slice(0, MAX)
     .replace(/\s+\S*$/, "")
+    // Drop a dangling trailing connector or short function word so the title
+    // never ends mid-phrase like "... Property Agent in" or "... History &".
+    .replace(/[\s&\-:,|]+$/, "")
+    .replace(/\s+(in|at|vs|for|the|of|to|on|by|and|a|an)$/i, "")
     .replace(/[\s&\-:,|]+$/, "")
     .trim();
   return { absolute: cut || l.slice(0, MAX).trim() };
