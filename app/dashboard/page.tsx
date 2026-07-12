@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import LeadsInbox from "./LeadsInbox";
 import StandingPanel, { type Standing } from "./StandingPanel";
+import DealRadar from "./DealRadar";
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid } from "../lib/tiers";
 
@@ -296,6 +297,9 @@ export default function DashboardPage() {
               <p className="kicker" style={{ marginTop: 4 }}>Public page</p>
             </div>
           </div>
+
+          {/* Deal Radar: daily farm-area prospecting feed (the daily-habit hook) */}
+          {agent.cea_registration && <DealRadar />}
 
           {/* Seller leads inbox */}
           {agent.cea_registration && (
