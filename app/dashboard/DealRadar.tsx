@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 
 // Deal Radar: the agent's daily farm-area prospecting feed. Every row is a
 // real transaction from deal_radar() (no synthesized data). Two signals:
@@ -53,6 +54,7 @@ const areaLabel = (a: Area) =>
 export default function DealRadar() {
   const [areas, setAreas] = useState<Area[]>([]);
   const [items, setItems] = useState<RadarItem[]>([]);
+  const [agentSlug, setAgentSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [addType, setAddType] = useState<"district" | "town">("town");
@@ -65,6 +67,7 @@ export default function DealRadar() {
       const j = await res.json();
       setAreas(j.areas ?? []);
       setItems(j.items ?? []);
+      setAgentSlug(j.agentSlug ?? null);
     } finally {
       setLoading(false);
     }
@@ -175,7 +178,7 @@ export default function DealRadar() {
       {mop.length > 0 && (
         <div style={{ marginTop: 18 }}>
           <h3 style={{ fontSize: 14, margin: "0 0 8px", color: "var(--ink)" }}>Owners reaching MOP</h3>
-          <RadarList items={mop} />
+          <RadarList items={mop} agentSlug={agentSlug} />
         </div>
       )}
 
@@ -183,7 +186,7 @@ export default function DealRadar() {
       {fresh.length > 0 && (
         <div style={{ marginTop: 18 }}>
           <h3 style={{ fontSize: 14, margin: "0 0 8px", color: "var(--ink)" }}>Recent sales near you</h3>
-          <RadarList items={fresh} />
+          <RadarList items={fresh} agentSlug={agentSlug} />
         </div>
       )}
 
@@ -196,7 +199,7 @@ export default function DealRadar() {
   );
 }
 
-function RadarList({ items }: { items: RadarItem[] }) {
+function RadarList({ items, agentSlug }: { items: RadarItem[]; agentSlug: string | null }) {
   return (
     <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
       {items.map((it, i) => (
@@ -216,15 +219,18 @@ function RadarList({ items }: { items: RadarItem[] }) {
             {it.price != null && (
               <div className="serif" style={{ fontWeight: 600, fontSize: 16, color: "var(--ink)" }}>{money(it.price)}</div>
             )}
-            <button
-              type="button"
-              className="fc-btn fc-btn--ghost fc-btn--sm"
-              disabled
-              title="Co-branded seller report, coming this week"
-              style={{ marginTop: 4, opacity: 0.55, cursor: "not-allowed" }}
-            >
-              Seller report
-            </button>
+            {agentSlug ? (
+              <Link
+                href={`/report/${agentSlug}/${it.source === "fresh_private" ? "district" : "town"}/${encodeURIComponent(it.area_key)}`}
+                target="_blank"
+                rel="noopener"
+                className="fc-btn fc-btn--ghost fc-btn--sm"
+                title="Open a co-branded market report to share with this owner"
+                style={{ marginTop: 4 }}
+              >
+                Seller report
+              </Link>
+            ) : null}
           </div>
         </li>
       ))}

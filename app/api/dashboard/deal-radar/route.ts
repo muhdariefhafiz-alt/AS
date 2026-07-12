@@ -14,7 +14,7 @@ async function loadAgent(agentId: number) {
   const sb = supabaseAdmin();
   const { data } = await sb
     .from("sg_agents")
-    .select("id, cea_registration")
+    .select("id, cea_registration, slug")
     .eq("id", agentId)
     .single();
   return data;
@@ -40,7 +40,7 @@ export async function GET() {
   if (!agent?.cea_registration) {
     return NextResponse.json({ error: "No CEA registration on file" }, { status: 404 });
   }
-  return NextResponse.json(await feed(agent.cea_registration));
+  return NextResponse.json({ ...(await feed(agent.cea_registration)), agentSlug: agent.slug ?? null });
 }
 
 export async function POST(req: Request) {
