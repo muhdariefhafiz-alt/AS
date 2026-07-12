@@ -5,6 +5,7 @@ import Link from "next/link";
 import LeadsInbox from "./LeadsInbox";
 import StandingPanel, { type Standing } from "./StandingPanel";
 import DealRadar from "./DealRadar";
+import PlannerPanel from "./PlannerPanel";
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid } from "../lib/tiers";
 
@@ -300,6 +301,9 @@ export default function DashboardPage() {
 
           {/* Deal Radar: daily farm-area prospecting feed (the daily-habit hook) */}
           {agent.cea_registration && <DealRadar />}
+
+          {/* Planner: viewing appointments booked through the agent's /book link */}
+          {agent.cea_registration && <PlannerPanel />}
 
           {/* Seller leads inbox */}
           {agent.cea_registration && (
