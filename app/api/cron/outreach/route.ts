@@ -31,6 +31,22 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // HARD GATE. This drip was built with OUTREACH_RECIPIENT hardcoded to
+  // hello@fair-comparisons.com as a placeholder, and for months its sends
+  // died silently in Klaviyo while sg_outreach recorded agents as touched
+  // (1,042 phantom rows / 340 agents by 2026-07-12). When Resend went live
+  // the placeholder became a real daily 50-email flood into the owner inbox.
+  // Enabling real outreach is a deliberate owner decision (recipients,
+  // PDPA posture, copy) and requires clearing the phantom history first so
+  // nobody gets a mid-sequence touch as their first-ever email.
+  if (process.env.OUTREACH_ENABLED !== "true") {
+    return NextResponse.json({
+      ok: true,
+      sent: 0,
+      skipped: "OUTREACH_ENABLED is not 'true'. See route comment before enabling.",
+    });
+  }
+
   const DAILY_LIMIT = 50;
   const DRIP_SEQUENCE = ["initialOutreach", "competitorComparison", "costComparison", "areaLeader"];
   const results: Record<string, unknown> = {};
