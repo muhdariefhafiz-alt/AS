@@ -6,6 +6,7 @@ import LeadsInbox from "./LeadsInbox";
 import StandingPanel, { type Standing } from "./StandingPanel";
 import DealRadar from "./DealRadar";
 import PlannerPanel from "./PlannerPanel";
+import DemandPanel from "./DemandPanel";
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid } from "../lib/tiers";
 
@@ -284,6 +285,9 @@ export default function DashboardPage() {
 
           {/* Your standing (hero). AgentScore is absorbed into this panel. */}
           <StandingPanel standing={standing} primaryArea={agent.primary_area} score={agent.score} />
+
+          {/* Demand Dashboard: real seller demand for this agent (never affects rank) */}
+          <DemandPanel />
 
           {/* Stats row */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
