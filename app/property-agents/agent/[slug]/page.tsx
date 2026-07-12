@@ -13,6 +13,7 @@ import StickyMobileCta from "../../../components/StickyMobileCta";
 import AgentTransactionRecord from "../../../components/AgentTransactionRecord";
 import FlagBadge from "../../../components/FlagBadge";
 import RelatedAgents from "../../../components/RelatedAgents";
+import { buildAgentVerdict } from "../../../lib/verdict";
 import ProfileCorrection from "../../../components/ProfileCorrection";
 import type { Metadata } from "next";
 
@@ -249,6 +250,25 @@ export default async function AgentPage({ params }: Props) {
   const newLaunchPct = saleCount > 0 ? Math.round((newSaleCt / saleCount) * 100) : null;
   const newLaunchHeavy = saleCount >= 20 && newSaleCt / saleCount >= 0.6;
 
+  // Data-driven verdict: a short, quotable synthesis of THIS agent's record so
+  // the page reads distinctly from every other agent page (dedup-validated in
+  // scripts/verdict-dedup.ts) and gives an AI assistant something specific to
+  // cite. Built from values already derived above so it can never contradict
+  // the body. Only data-dense agents (>=10 txns, has score) get one.
+  const verdict = buildAgentVerdict({
+    name: display,
+    agencyName: agencyName || "their agency",
+    area: primaryShort,
+    score,
+    percentile: agent.percentile != null ? Number(agent.percentile) : null,
+    txns: total,
+    saleShare: salePct != null ? salePct / 100 : null,
+    sellerShare: sideSales > 0 ? sellerSideCt / sideSales : null,
+    specialization: agent.specialization ?? null,
+    yearsActive: agent.years_active != null ? Number(agent.years_active) : null,
+    seed: agent.cea_registration,
+  });
+
   // Exp 1 claim-hook enrichment: real rank in the agent's primary area, area
   // size, and recent profile views, for the ego/loss-aversion claim prompt.
   // A/B by agent id. Only computed for unclaimed profiles.
@@ -466,6 +486,14 @@ export default async function AgentPage({ params }: Props) {
           <main>
             {hasTxns ? (
               <>
+                {verdict && (
+                  <section className="fc-card fc-card--pad" style={{ marginBottom: 20, borderLeft: "3px solid var(--blue)" }}>
+                    <div className="kicker" style={{ color: "var(--blue)" }}>The record at a glance</div>
+                    <p className="serif" style={{ margin: "8px 0 0", fontSize: 19, fontWeight: 600, lineHeight: 1.35 }}>{verdict.headline}.</p>
+                    <p style={{ margin: "8px 0 0", fontSize: 15, lineHeight: 1.7, maxWidth: "70ch", color: "var(--ink)" }}>{verdict.body}</p>
+                    <p className="muted small" style={{ marginTop: 8 }}>Synthesised from {given}&apos;s CEA transaction record. Full breakdown below.</p>
+                  </section>
+                )}
                 {/* Verified track record — real CEA sold-evidence + platform
                     completions, with honest empty states (no fabricated counts). */}
                 <h2 style={{ fontSize: "clamp(22px,2.6vw,30px)" }}>Verified track record</h2>
