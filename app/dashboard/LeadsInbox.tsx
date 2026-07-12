@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import DraftReply from "./DraftReply";
 
 type Lead = {
   id: number;
@@ -253,6 +254,9 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
             )}
 
             {isOpen && r.status === "invited" && (
+              <DraftReply shortlistId={r.shortlist_id} />
+            )}
+            {isOpen && r.status === "invited" && (
               <QuoteForm
                 token={r.lead.token}
                 ceaRegistration={ceaRegistration}
@@ -285,6 +289,7 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
                         <div className="text-xs">{r.lead.email}</div>
                       )}
                     </div>
+                    <DraftReply shortlistId={r.shortlist_id} />
                   </div>
                 )}
                 <CompletionStepper
