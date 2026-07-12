@@ -154,10 +154,10 @@ export default async function PropKakiAlternativePage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link href="/search" className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]">
-              Find your profile
+              <span style={{ color: "#fff" }}>Find your profile</span>
             </Link>
             <Link href="/for-agents" className="inline-block rounded-lg border border-white/20 px-8 py-4 font-semibold text-white transition hover:bg-white/10">
-              See how it works
+              <span style={{ color: "#fff" }}>See how it works</span>
             </Link>
           </div>
         </div>
@@ -282,10 +282,10 @@ export default async function PropKakiAlternativePage() {
           <p className="mt-3 text-white/60">No credit card. No listing fees. Just your track record, working for you.</p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link href="/search" className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]">
-              Find your profile
+              <span style={{ color: "#fff" }}>Find your profile</span>
             </Link>
             <Link href="/for-agents" className="inline-block rounded-lg border border-white/20 px-8 py-4 font-semibold text-white transition hover:bg-white/10">
-              See how it works
+              <span style={{ color: "#fff" }}>See how it works</span>
             </Link>
           </div>
           <p className="mt-6 text-sm text-white/40">
