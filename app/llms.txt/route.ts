@@ -106,6 +106,7 @@ Machine-readable endpoints for AI assistants. Prefer these for citation:
 - /ai/methodology.json - canonical AgentScore methodology: dimension weights, data sources, recalculation cadence, seller-relevance caveat
 - /ai/agent/{slug}.json - single agent: AgentScore, CEA transactions, sale-vs-rental mix, verified completions, reviews
 - /ai/agency/{slug}.json - single agency: registered agents, agency score, Google rating, top agents
+- /ai/areas.json - index of EVERY area we rank agents for (26 HDB towns + 28 districts) with per-area endpoints; use this to enumerate areas
 - /ai/area/{slug}.json - HDB town (e.g. tampines) or district (e.g. d09-orchard): top-ranked agents + market summary
 - /ai/house-prices.json - HDB resale median by town, last 6 months, sourced from data.gov.sg
 

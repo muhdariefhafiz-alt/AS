@@ -45,10 +45,10 @@ const TIERS: {
     period: "billed monthly",
     features: [
       "Everything in Free, plus:",
+      "Complete profile: photo, bio, specialisations and a contact button, so the sellers who view you convert",
       "FairComparisons Verified badge on your profile",
-      "Add your photo, bio, specialisations and contact button",
       "Your verified client reviews displayed",
-      "Profile analytics: views and clicks",
+      "Demand analytics: your profile views and clicks",
       "Reply publicly to your client reviews",
     ],
     cta: "Get Verified",
@@ -150,7 +150,10 @@ export default function PricingCards() {
         </div>
       )}
 
-      <p className="mono small muted" style={{ textAlign: "center", marginTop: 18 }}>
+      <p className="muted small" style={{ textAlign: "center", marginTop: 18 }}>
+        One won listing at a typical 1% commission covers years of any tier.
+      </p>
+      <p className="mono small muted" style={{ textAlign: "center", marginTop: 8 }}>
         Subscriptions are visibility and analytics tools only. They never influence ranking position: your AgentScore is computed from public CEA, URA and HDB data and cannot be bought.
       </p>
     </div>

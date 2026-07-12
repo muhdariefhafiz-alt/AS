@@ -104,9 +104,9 @@ export default async function ForAgentsPage() {
       {/* pricing */}
       <section className="lp-section--paper">
         <div className="fc-wrap" style={{ padding: "64px 40px" }}>
-          <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Simple pricing</h2>
-          <p className="muted" style={{ textAlign: "center", maxWidth: "60ch", margin: "12px auto 0" }}>
-            Claiming your profile and being found by sellers is always free. The paid tiers add reputation and analytics tools only. They never change your rank or how sellers find you.
+          <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Free to be found. Paid to win.</h2>
+          <p className="muted" style={{ textAlign: "center", maxWidth: "62ch", margin: "12px auto 0" }}>
+            Being listed, ranked and found by sellers is free forever, and receiving their invites is too. The paid tiers do one job: help you convert the sellers already looking at you into won listings. At a typical 1% HDB commission, a single closed deal covers years of any tier. They never change your rank or who receives leads.
           </p>
           <div style={{ marginTop: 28 }}><PricingCards /></div>
         </div>
