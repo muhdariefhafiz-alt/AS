@@ -9,6 +9,7 @@ import PostcodeBox from "../../../components/PostcodeBox";
 import { bandFor } from "../../../components/Brand";
 import AgentFlags from "../../../components/AgentFlags";
 import { titleName, cleanAgency } from "../../../lib/names";
+import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -86,11 +87,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const area = areaFromSlug(slug);
   if (!area) return {};
   const s = shortName(area.name);
-  const title = `Best Property Agents in ${s} (${area.district}) 2026 - Ranked by Data`;
   const description = `Top property agents in ${area.name}, ranked by AgentScore based on CEA transaction records. See who handles the most deals in ${s} and compare agent performance.`;
   const url = `https://fair-comparisons.com/property-agents/best/${slug}`;
   return {
-    title,
+    title: seoTitle(`Top Property Agents in ${s} 2026`),
     description,
     alternates: { canonical: url },
     openGraph: {

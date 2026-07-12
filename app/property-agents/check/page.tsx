@@ -5,7 +5,7 @@ import SellCtaBand from "../../components/SellCtaBand";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Property Agent Checker Singapore | Verify CEA Status + Record",
+  title: "Singapore Property Agent Checker",
   description:
     "Free property agent checker for Singapore. Check any agent's CEA registration, real transaction record, areas and AgentScore in seconds. Built on government data, not marketing.",
   alternates: { canonical: "https://fair-comparisons.com/property-agents/check" },

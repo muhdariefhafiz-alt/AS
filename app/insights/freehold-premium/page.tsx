@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
 export const metadata: Metadata = {
-  title: "Singapore Freehold Premium by District - How Much More Does Freehold Cost?",
+  title: "Singapore Freehold Premium by District",
   description: "Data-driven analysis of the freehold vs leasehold price gap across all Singapore districts. District 20 has the highest premium at over 70%. Based on URA transaction data.",
   alternates: { canonical: "https://fair-comparisons.com/insights/freehold-premium" },
 };

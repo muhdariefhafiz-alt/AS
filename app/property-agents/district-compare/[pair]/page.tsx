@@ -4,6 +4,7 @@ import { supabase } from "../../../lib/supabase";
 import { getDistrictMarketData } from "../../../lib/districtData";
 import { formatPrice, formatPsf } from "../../../lib/narrativeHelpers";
 import EmailCapture from "../../../components/EmailCapture";
+import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -93,7 +94,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const b = findDistrict(parsed.d2);
   if (!a || !b) return {};
   return {
-    title: `${a.short} vs ${b.short} - Property Price Comparison (${a.code} vs ${b.code})`,
+    title: seoTitle(`${a.short} vs ${b.short} Property Prices`),
     description: `Compare property prices in ${a.short} (${a.code}) and ${b.short} (${b.code}). Median condo prices, transaction volumes, top developments, rental yields, and agent activity. Based on URA data.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/district-compare/${pair}` },
     // Low-demand permutation page: crawlable for users + internal links

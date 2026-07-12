@@ -8,7 +8,7 @@ import SellerProof from "../components/SellerProof";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Sell your property: compare Singapore's top agents on real data",
+  title: "Sell Your Property: Compare Top SG Agents",
   description:
     "Tell us about your HDB, condo or landed property and compare the top-ranked CEA agents for your area on actual transaction records. Invite up to 3 to send you a fee quote. Always free for sellers.",
   alternates: { canonical: "https://fair-comparisons.com/sell" },

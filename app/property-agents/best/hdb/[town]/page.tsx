@@ -5,6 +5,7 @@ import { HDB_TOWNS, townFromSlug, townDisplayName } from "../../../../lib/hdbDat
 import { formatPrice } from "../../../../lib/narrativeHelpers";
 import EmailCapture from "../../../../components/EmailCapture";
 import AgentFlags from "../../../../components/AgentFlags";
+import { seoTitle } from "../../../../lib/seoTitle";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!town) return {};
   const d = townDisplayName(town.name);
   return {
-    title: `Best HDB Agents in ${d} - Ranked by Transaction Record`,
+    title: seoTitle(`Best HDB Agents in ${d}`),
     description: `Top HDB property agents in ${d}, ranked by AgentScore based on CEA transaction records. Find the most experienced HDB agents active in ${d}.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/best/hdb/${slug}` },
   };

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { formatPrice, formatPriceFull } from "../../../lib/narrativeHelpers";
 import type { Metadata } from "next";
+import { seoTitle } from "../../../lib/seoTitle";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
 export const dynamicParams = false;
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const r = RANGES.find(x => x.slug === range);
   if (!r) return {};
   return {
-    title: `What Can You Buy for ${r.label} in Singapore? - Property Price Guide`,
+    title: seoTitle(`What Can You Buy for ${r.label} in Singapore?`),
     description: `Explore Singapore property options in the ${r.label} price range. Districts, property types, and developments where ${r.desc} are available. Based on ${new Date().getFullYear()} URA and HDB transaction data.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/budget/${range}` },
   };

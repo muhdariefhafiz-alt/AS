@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 export const revalidate = false;
 
 export const metadata: Metadata = {
-  title: "Compare Financial Advisors in Singapore - MAS Licensed",
+  title: "Compare MAS-Licensed Financial Advisors SG",
   description: "Compare MAS-licensed financial advisors, insurance brokers, and capital markets firms in Singapore. Independent comparison based on government regulatory data.",
   alternates: { canonical: "https://fair-comparisons.com/financial-advisors" },
 };

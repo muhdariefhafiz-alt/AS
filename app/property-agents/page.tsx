@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
 export const metadata: Metadata = {
-  title: "Property Agents in Singapore - Compare 30,000+ CEA Agents",
+  title: "Compare Singapore Property Agents on CEA Data",
   description: "Compare property agents in Singapore on actual CEA transaction records. AgentScore rates 10,000+ agents on volume, recency, diversity, and reviews.",
   alternates: { canonical: "https://fair-comparisons.com/property-agents" },
 };

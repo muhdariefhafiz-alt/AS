@@ -4,6 +4,7 @@ import { HDB_TOWNS, townFromSlug, townDisplayName, getHdbTownData } from "../../
 import { formatPrice } from "../../../lib/narrativeHelpers";
 import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
+import { seoTitle } from "../../../lib/seoTitle";
 
 export const revalidate = false;
 export const dynamicParams = true;
@@ -62,7 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const nameA = townDisplayName(parsed.t1);
   const nameB = townDisplayName(parsed.t2);
   return {
-    title: `HDB Prices: ${nameA} vs ${nameB} - Resale Price Comparison`,
+    title: seoTitle(`HDB Prices: ${nameA} vs ${nameB}`),
     description: `Compare HDB resale prices in ${nameA} and ${nameB}. Median prices by flat type, price trends, storey premiums, and transaction volumes. Based on HDB resale transaction data.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/hdb-compare/${pair}` },
     // Low-demand permutation page: crawlable for users + internal links

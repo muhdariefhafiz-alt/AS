@@ -5,6 +5,7 @@ import { formatPrice, formatPriceFull } from "../../../lib/narrativeHelpers";
 import PriceTrendChart from "../../../components/PriceTrendChart";
 import StatCard from "../../../components/StatCard";
 import EmailCapture from "../../../components/EmailCapture";
+import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const isThin = (project.txn_count ?? 0) < 20;
 
   return {
-    title: `${project.name} - Price History, Floor Analysis & Market Data`,
+    title: seoTitle(`${project.name} Price History & Market Data`),
     description: `${project.name} on ${project.street}, District ${project.district}. ${project.txn_count} URA transactions, median ${formatPrice(project.median_price)}. Floor-level pricing, unit size analysis, and price trends.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/development/${slug}` },
     ...(isThin && { robots: { index: false, follow: true } }),

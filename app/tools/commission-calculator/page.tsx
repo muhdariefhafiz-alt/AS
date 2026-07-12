@@ -7,7 +7,7 @@ import SellCtaBand from "../../components/SellCtaBand";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Property Agent Commission Calculator (Singapore, 2026)",
+  title: "SG Property Agent Commission Calculator",
   description:
     "Work out how much property agent commission you will pay in Singapore. Free calculator for HDB, condo, landed and rental, including GST. Based on real market rates.",
   alternates: { canonical: "https://fair-comparisons.com/tools/commission-calculator" },

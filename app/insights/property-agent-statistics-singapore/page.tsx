@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 export const revalidate = 86400; // 24h; study refreshes as the dataset grows
 
 export const metadata: Metadata = {
-  title: "Singapore Property Agent Statistics: What 730,000 Transactions Reveal",
+  title: "Singapore Property Agent Statistics",
   description:
     "A study of Singapore's property agents from CEA transaction records. 66% of registered agents have no transaction on file, 63% of activity is rentals not sales, and the top 20% handle 70% of home sales.",
   alternates: { canonical: "https://fair-comparisons.com/insights/property-agent-statistics-singapore" },

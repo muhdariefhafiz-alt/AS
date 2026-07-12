@@ -6,6 +6,7 @@ import PriceTrendChart from "../../../components/PriceTrendChart";
 import FlatTypeBars from "../../../components/FlatTypeBars";
 import StatCard from "../../../components/StatCard";
 import EmailCapture from "../../../components/EmailCapture";
+import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!t) return {};
   const d = townDisplayName(t.name);
   return {
-    title: `HDB Resale Prices in ${d} (2024-2026) - Trends, Analysis & Data`,
+    title: seoTitle(`HDB Resale Prices in ${d} (2024-2026)`),
     description: `How much does an HDB flat cost in ${d}? Detailed analysis of ${d} resale prices by flat type, floor level, lease age, and flat model. Based on actual HDB transaction data.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/hdb/${slug}` },
   };

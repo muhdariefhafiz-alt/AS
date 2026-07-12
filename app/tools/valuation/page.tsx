@@ -4,7 +4,7 @@ import ValuationForm from "./ValuationForm";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "What's my home worth? Free HDB + condo valuation — Singapore",
+  title: "What's My Home Worth? Free SG Valuation",
   description:
     "Free instant home value estimate from real HDB resale and URA private transaction data. Get a value range, not a vague single number. PDPA-compliant.",
   alternates: { canonical: "https://fair-comparisons.com/tools/valuation" },

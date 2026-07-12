@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import EmailCapture from "../../../components/EmailCapture";
 import { titleName, cleanAgency } from "../../../lib/names";
+import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
 function initials(name: string) {
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const clean = cleanAgency(agency.name);
   return {
-    title: `${clean} Reviews & AgentScore | Singapore Property Agency`,
+    title: seoTitle(`${clean} Reviews & AgentScore`),
     description: `${clean} reviews and ratings: ${agency.agent_count.toLocaleString()} registered ${agency.agent_count === 1 ? "agent" : "agents"}. ${ratingText}${scoreText}See the agency's record on real CEA transaction data and compare it on FairComparisons.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/agency/${slug}` },
     ...(isThin && { robots: { index: false, follow: true } }),

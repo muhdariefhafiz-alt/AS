@@ -6,6 +6,7 @@ import { formatPrice, formatPriceFull, formatPsf } from "../../../lib/narrativeH
 import EmailCapture from "../../../components/EmailCapture";
 import StickyMobileCta from "../../../components/StickyMobileCta";
 import PostcodeBox from "../../../components/PostcodeBox";
+import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -53,7 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!district) return {};
   const area = district.name.split(",")[0].trim();
   return {
-    title: `Property Prices in ${area} (${district.code}) - Condo, Landed & Rental Analysis`,
+    title: seoTitle(`Property Prices in ${area} (${district.code})`),
     description: `${area} property market analysis. Condo and apartment prices, freehold vs leasehold comparison, floor-level premiums, rental yields, and top developments. Based on URA transaction data.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/district/${code}` },
   };

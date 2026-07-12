@@ -4,6 +4,7 @@ import { supabase } from "../../../lib/supabase";
 import { formatPrice } from "../../../lib/narrativeHelpers";
 import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
+import { seoTitle } from "../../../lib/seoTitle";
 
 export const revalidate = false;
 export const dynamicParams = false;
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const y = parseInt(year);
   if (!VALID_YEARS.includes(y)) return {};
   return {
-    title: `Singapore Property Market ${y} - Transaction Data & Agent Activity`,
+    title: seoTitle(`Singapore Property Market ${y}`),
     description: `Singapore property market review for ${y}. Private property and HDB resale transaction volumes, most active agents and agencies, and market trends. Based on URA and HDB data.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/market/${year}` },
   };

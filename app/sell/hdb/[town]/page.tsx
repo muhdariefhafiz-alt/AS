@@ -8,6 +8,7 @@ import {
   buildNarrative,
   fmtSgd,
 } from "../../../lib/sellAreaContent";
+import { seoTitle } from "../../../lib/seoTitle";
 
 export const revalidate = 86400;
 
@@ -52,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? ` Median ${fmtSgd(stats.median)}.`
     : "";
   return {
-    title: `Sell your HDB in ${titleTown}: compare top agents`,
+    title: seoTitle(`Sell Your HDB in ${titleTown}`),
     description: `Selling an HDB flat in ${titleTown}?${priceBit} Compare the top CEA-licensed agents ranked on real transaction records, then contact the ones you choose. Always free for sellers.`,
     alternates: {
       canonical: `https://fair-comparisons.com/sell/hdb/${slug}`,

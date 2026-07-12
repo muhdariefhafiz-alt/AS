@@ -4,7 +4,7 @@ import MopTrackerForm from "./MopTrackerForm";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "HDB MOP Tracker — Check when your flat is eligible to sell",
+  title: "HDB MOP Tracker: When Can You Sell?",
   description:
     "Free MOP date + current value estimate for your HDB flat. Backed by HDB resale data and CEA-licensed agents. PDPA-compliant. No spam.",
   alternates: { canonical: "https://fair-comparisons.com/tools/mop-tracker" },

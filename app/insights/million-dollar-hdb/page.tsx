@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
 export const metadata: Metadata = {
-  title: "Million-Dollar HDB Tracker - Every S$1M+ Resale Transaction in Singapore",
+  title: "Million-Dollar HDB Resale Tracker",
   description: "Track every million-dollar HDB flat in Singapore. Which towns have the most S$1M+ transactions? Bukit Merah leads with 597. Data from HDB resale records.",
   alternates: { canonical: "https://fair-comparisons.com/insights/million-dollar-hdb" },
 };

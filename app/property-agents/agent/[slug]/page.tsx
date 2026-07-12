@@ -7,6 +7,7 @@ import VerifiedReviews from "../../../components/VerifiedReviews";
 import FunnelTracker from "../../../components/FunnelTracker";
 import { bandFor } from "../../../components/Brand";
 import { titleName, givenName, cleanAgency, agencyForRole, saleShare } from "../../../lib/names";
+import { seoTitle } from "../../../lib/seoTitle";
 import ClaimBanner from "../../../components/ClaimBanner";
 import EgoBaitPanel from "../../../components/EgoBaitPanel";
 import StickyMobileCta from "../../../components/StickyMobileCta";
@@ -100,15 +101,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const display = marketing ? `${titleName(agent.name)} (${marketing})` : titleName(agent.name);
 
   // Title front-loads the searches that should land here: name (+ marketing
-  // name), agency, "property agent", and area, then the differentiators. No em
-  // dashes. The layout template appends " | FairComparisons".
+  // name), agency, "property agent", and area. seoTitle clamps to <=60 chars
+  // so it never overflows; the transaction/score differentiators live in the
+  // description and OG instead. No em dashes.
   const areaStr = agent.primary_area ? titleName(agent.primary_area) : null;
   const lead = `${display}, ${agencyForRole(agent.agency_name)} Property Agent${areaStr ? ` in ${areaStr}` : ""}`;
-  const titleTail = [
-    hasTxns ? `${agent.transaction_count} CEA Transactions` : null,
-    s ? `AgentScore ${s}` : null,
-  ].filter(Boolean).join(", ");
-  const title = titleTail ? `${lead} | ${titleTail}` : lead;
 
   const areaPart = agent.primary_area ? ` Active in ${titleName(agent.primary_area)}.` : "";
   const description = s
@@ -118,7 +115,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const url = `https://fair-comparisons.com/property-agents/agent/${slug}`;
 
   return {
-    title,
+    title: seoTitle(lead),
     description,
     alternates: { canonical: url },
     ...(isThin && { robots: { index: false, follow: true } }),

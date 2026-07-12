@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const revalidate = false;
 
 export const metadata: Metadata = {
-  title: "Singapore Court Case Statistics - 5,200+ Published Judgments Analyzed",
+  title: "Singapore Property Court Case Statistics",
   description: "Analysis of 5,200+ published Singapore court judgments from eLitigation.sg. Practice area breakdown, court levels, busiest firms, and lawyer activity patterns.",
   alternates: { canonical: "https://fair-comparisons.com/insights/court-case-statistics" },
   robots: { index: false, follow: false, nocache: true },

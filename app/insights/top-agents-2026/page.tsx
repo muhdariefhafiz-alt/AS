@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
 export const metadata: Metadata = {
-  title: "Top Property Agents in Singapore 2026 | Ranked on Real Sales",
+  title: "Top Singapore Property Agents 2026",
   description:
     "Who actually sells the most homes in Singapore? The top property agents of 2026, ranked on 730,000+ real CEA transactions across all 28 districts. No paid placements, no self-reported awards.",
   alternates: { canonical: "https://fair-comparisons.com/insights/top-agents-2026" },

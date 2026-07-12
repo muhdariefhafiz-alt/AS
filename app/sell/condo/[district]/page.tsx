@@ -8,6 +8,7 @@ import {
   buildNarrative,
   fmtSgd,
 } from "../../../lib/sellAreaContent";
+import { seoTitle } from "../../../lib/seoTitle";
 
 export const revalidate = 86400;
 
@@ -65,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const stats = await privateAreaStats(districtNum(d.code));
   const priceBit = stats.median ? ` Median ${fmtSgd(stats.median)}.` : "";
   return {
-    title: `Sell your condo in ${shortName} (${d.code}): compare top agents`,
+    title: seoTitle(`Sell Your Condo in ${shortName} (${d.code})`),
     description: `Selling a private property in ${shortName}, ${d.code}?${priceBit} Compare the top CEA-licensed agents ranked on real URA transaction records, then contact the ones you choose. Always free for sellers.`,
     alternates: {
       canonical: `https://fair-comparisons.com/sell/condo/${slug}`,

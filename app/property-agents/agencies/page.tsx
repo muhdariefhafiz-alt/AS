@@ -7,7 +7,7 @@ import SellCtaBand from "../../components/SellCtaBand";
 export const revalidate = 86400; // 24h
 
 export const metadata: Metadata = {
-  title: "Singapore Property Agencies: Compare the Biggest Names (PropNex, ERA, Huttons)",
+  title: "Compare Singapore Property Agencies",
   description:
     "Compare Singapore's property agencies by size and Google rating: PropNex, ERA, Huttons, OrangeTee and more. See why the biggest agency is not the same as the best agent for your sale.",
   alternates: { canonical: "https://fair-comparisons.com/property-agents/agencies" },

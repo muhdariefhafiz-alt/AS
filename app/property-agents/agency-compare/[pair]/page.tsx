@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import { seoTitle } from "../../../lib/seoTitle";
 import EmailCapture from "../../../components/EmailCapture";
 import type { Metadata } from "next";
 
@@ -159,7 +160,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const b = shortName(resB.data.name);
 
   return {
-    title: `${a} vs ${b}: Which Agency Is Better? | CEA Data`,
+    title: seoTitle(`${a} vs ${b}: Agency Comparison`),
     description: `${a} or ${b}? Compare both Singapore agencies on real CEA data: agent count, average AgentScore, transaction volume and top-performing agents. Decide on evidence, not advertising.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/agency-compare/${pair}` },
   };

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import EmailCapture from "../../../components/EmailCapture";
+import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = TYPES.find(x => x.slug === type);
   if (!t) return {};
   return {
-    title: `Best ${t.label} Property Agents in Singapore - Ranked by Transaction Records`,
+    title: seoTitle(`Best ${t.label} Agents in Singapore`),
     description: `Top property agents for ${t.desc} in Singapore, ranked by AgentScore. Based on CEA transaction records. See which agents close the most ${t.label.toLowerCase()} deals.`,
     alternates: { canonical: `https://fair-comparisons.com/property-agents/best-by-type/${type}` },
   };

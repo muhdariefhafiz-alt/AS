@@ -10,6 +10,7 @@ import {
   getQualifyingHdbSegments,
 } from "../../../../lib/hdbData";
 import { formatPrice, formatPriceFull } from "../../../../lib/narrativeHelpers";
+import { seoTitle } from "../../../../lib/seoTitle";
 import StatCard from "../../../../components/StatCard";
 import SellCtaBand from "../../../../components/SellCtaBand";
 
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return {};
   const d = townDisplayName(town.name);
   return {
-    title: `${flat.label} HDB Resale Prices in ${d}: Median ${formatPrice(data.summary.median_price)} (2026)`,
+    title: seoTitle(`${flat.label} HDB Resale Prices in ${d}`),
     description: `How much is a ${flat.label.toLowerCase()} HDB flat in ${d}? Median ${formatPriceFull(
       data.summary.median_price,
     )} across ${data.summary.txns.toLocaleString()} recent resales, from ${formatPrice(
