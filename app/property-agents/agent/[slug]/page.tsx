@@ -300,11 +300,12 @@ export default async function AgentPage({ params }: Props) {
     ...(marketing && { alternateName: marketing }),
     ...(showPhoto && { image: agent.photo_url }),
     ...(showBio && { description: agent.bio }),
-    ...(agency && { worksFor: { "@type": "RealEstateAgent", name: agency.name } }),
+    // An agency is an Organization, not a RealEstateAgent.
+    ...(agency && { worksFor: { "@type": "Organization", name: agency.name } }),
     address: { "@type": "PostalAddress", addressLocality: "Singapore", addressCountry: "SG" },
-    ...(agent.google_rating && {
-      aggregateRating: { "@type": "AggregateRating", ratingValue: agent.google_rating, reviewCount: agent.google_review_count },
-    }),
+    // No aggregateRating: google_rating is not rendered anywhere on this page, so
+    // emitting it in structured data is a schema-vs-visible-content mismatch that
+    // Google penalizes. Re-add only when tied to first-party reviews shown on-page.
   };
   const breadcrumbLd = {
     "@context": "https://schema.org",

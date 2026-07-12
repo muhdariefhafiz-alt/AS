@@ -155,10 +155,12 @@ export async function POST(req: Request) {
         // gets the agent they asked for, plus area agents to compare against.
         const { data: ra } = await sb
           .from("sg_agents")
-          .select("id, name, slug, agency_name, cea_registration, score, transaction_count")
+          .select("id, name, slug, agency_name, cea_registration, score, transaction_count, email_opt_out_at")
           .eq("id", requestedId)
           .maybeSingle();
-        if (ra) {
+        // Do not broker an introduction to an agent who opted out of contact.
+        // Fall back to the area shortlist (public comparison) instead of pinning them.
+        if (ra && !ra.email_opt_out_at) {
           const base = Number(ra.score ?? 0);
           shortlist = [
             {
