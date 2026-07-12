@@ -33,6 +33,13 @@ export async function POST(req: Request) {
     }
     const { leadId, agentId } = parsed;
 
+    // Optional WhatsApp opt-in captured on the brief form. A provided number
+    // from a claimed/claiming agent is an explicit opt-in for lead alerts.
+    const waNum =
+      typeof body?.whatsapp === "string" && body.whatsapp.trim().length >= 8
+        ? body.whatsapp.trim().slice(0, 20)
+        : null;
+
     // The consent checkbox is the agent's identity confirmation AND the PDPA
     // consent record. Refuse without it: an unchecked submit must never claim
     // a profile for someone.
@@ -116,6 +123,10 @@ export async function POST(req: Request) {
           contact_consent_version: CONTACT_CONSENT_VERSION,
           email_status: "verified",
           email_validated_at: nowIso,
+          // WhatsApp opt-in captured on the brief form (only when a number was
+          // given). This is the compliant opt-in: claimed + consented + own
+          // number.
+          ...(waNum ? { whatsapp: waNum, whatsapp_opt_in_at: nowIso } : {}),
         })
         .eq("id", agent.id)
         .eq("claimed", false);
@@ -145,6 +156,12 @@ export async function POST(req: Request) {
           metadata: { lead_id: lead.id },
         });
       }
+    } else if (waNum && agent.claimed) {
+      // Already-claimed agent adding/updating their WhatsApp opt-in on the form.
+      await sb
+        .from("sg_agents")
+        .update({ whatsapp: waNum, whatsapp_opt_in_at: new Date().toISOString() })
+        .eq("id", agent.id);
     }
 
     const result = await submitQuoteCore({

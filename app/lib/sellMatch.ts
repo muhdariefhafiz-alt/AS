@@ -166,7 +166,7 @@ export async function buildShortlist(
   const candidateIds = rows.map((r) => Number(r.agent_id));
   const { data: contactRows } = await sb
     .from("sg_agents")
-    .select("id, email, email_status, whatsapp")
+    .select("id, email, email_status, whatsapp, whatsapp_opt_in_at")
     .in("id", candidateIds);
   const reachableSet = new Set(
     (contactRows ?? []).filter(isAgentReachable).map((c) => Number(c.id))

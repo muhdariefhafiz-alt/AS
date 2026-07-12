@@ -18,13 +18,23 @@ export function isEmailUsable(
   return !DEAD_EMAIL_GRADES.has(emailStatus ?? "");
 }
 
+// WhatsApp is an AUTOMATED channel only when the agent opted in (claimed +
+// consented + provided their own number, recorded as whatsapp_opt_in_at) AND
+// the API is provisioned. A scraped number without opt-in is NOT auto-reachable
+// (the WhatsApp Business Policy forbids messaging non-opted-in users); it stays
+// manual-operator-only via the admin wa.me digest.
+export function isWhatsAppAutoReachable(a: {
+  whatsapp?: string | null;
+  whatsapp_opt_in_at?: string | null;
+}): boolean {
+  return Boolean(a.whatsapp) && Boolean(a.whatsapp_opt_in_at) && isWhatsAppLive();
+}
+
 export function isAgentReachable(a: {
   email?: string | null;
   email_status?: string | null;
   whatsapp?: string | null;
+  whatsapp_opt_in_at?: string | null;
 }): boolean {
-  return (
-    isEmailUsable(a.email, a.email_status) ||
-    (Boolean(a.whatsapp) && isWhatsAppLive())
-  );
+  return isEmailUsable(a.email, a.email_status) || isWhatsAppAutoReachable(a);
 }

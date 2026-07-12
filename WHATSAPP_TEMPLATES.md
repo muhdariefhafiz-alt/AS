@@ -48,7 +48,27 @@ Each template's body uses positional placeholders `{{1}}, {{2}}, ...` in
 the order shown. The order is locked by `app/lib/whatsapp.ts`. If you
 change the order in Meta, change the order in `templateParameters()` too.
 
-### 1. `agent_invite` — sent to a CEA agent when a seller picks them
+### 1. `agent_lead_alert` — sent to a CLAIMED, OPTED-IN agent when a seller picks them
+
+This is the live agent-notification template. It is notification-only: no
+seller name, area, or property type in the message. Everything stays in the
+portal (the link opens the lead brief where the agent quotes). Sent ONLY to
+agents who claimed their profile and provided their WhatsApp number (opt-in),
+so it is WhatsApp-Business-Policy compliant.
+
+- **Category:** Utility
+- **Variables (in order):**
+  1. `agent_first_name`
+  2. `link` (tokened portal link to the lead brief)
+
+**Suggested body:**
+
+```
+Hi {{1}}, you have a new seller lead in your FairComparisons dashboard.
+Open it to send your fee quote before the 24-hour window closes: {{2}}
+```
+
+### 1b. `agent_invite` — legacy pre-claim invite (optional)
 
 - **Category:** Marketing
 - **Variables (in order):**
@@ -56,6 +76,10 @@ change the order in Meta, change the order in `templateParameters()` too.
   2. `property_type` (HDB | Condo | EC | Landed)
   3. `area` (HDB town or district)
   4. `link` (deep link to /dashboard with token)
+
+Not sent by the current invite route (which uses `agent_lead_alert` for
+opted-in agents and the email magic-claim invite for unclaimed agents). Keep
+the template only if you want a separate first-touch WhatsApp variant.
 
 **Suggested body:**
 

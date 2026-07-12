@@ -45,9 +45,19 @@ type MopAlertVars = {
   link: string;
 };
 
+// Notification only: tells a claimed, opted-in agent a new lead is waiting in
+// their dashboard, with a portal link. Deliberately carries NO seller detail
+// (no name, area, or property type). Everything stays in the portal; the agent
+// never gets the seller's contact until the seller instructs them.
+type AgentLeadAlertVars = {
+  agent_first_name: string;
+  link: string;
+};
+
 // Discriminated union: each template name pins its variable shape.
 export type WaSend =
   | { template: "agent_invite"; variables: AgentInviteVars }
+  | { template: "agent_lead_alert"; variables: AgentLeadAlertVars }
   | { template: "seller_quote_ready"; variables: SellerQuoteReadyVars }
   | { template: "seller_completion_review"; variables: SellerCompletionReviewVars }
   | { template: "seller_shortlist_ready"; variables: SellerShortlistReadyVars }
@@ -91,6 +101,11 @@ function templateParameters(send: WaSend): { type: "text"; text: string }[] {
         { type: "text", text: send.variables.agent_first_name },
         { type: "text", text: send.variables.property_type },
         { type: "text", text: send.variables.area },
+        { type: "text", text: send.variables.link },
+      ];
+    case "agent_lead_alert":
+      return [
+        { type: "text", text: send.variables.agent_first_name },
         { type: "text", text: send.variables.link },
       ];
     case "seller_quote_ready":

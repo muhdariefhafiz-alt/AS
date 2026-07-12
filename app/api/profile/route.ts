@@ -78,7 +78,15 @@ export async function POST(req: Request) {
         changed.push("marketing name");
       }
     }
-    if (whatsapp !== undefined) updates.whatsapp = whatsapp || null;
+    if (whatsapp !== undefined) {
+      // A claimed agent providing their own WhatsApp number in their dashboard
+      // IS the opt-in: they consented to WhatsApp contact at claim, and now
+      // supply the number. Stamp the opt-in; clearing the number withdraws it.
+      // This is the only place whatsapp_opt_in_at is set, so scraped numbers
+      // never become auto-messageable.
+      updates.whatsapp = whatsapp || null;
+      updates.whatsapp_opt_in_at = whatsapp ? new Date().toISOString() : null;
+    }
     if (message !== undefined) {
       updates.message = message || null;
       if ((message || null) !== (agent.message || null)) {

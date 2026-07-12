@@ -44,7 +44,7 @@ export default async function ShortlistPage({ params }: Props) {
   const { data: shortlist } = await sb
     .from("sg_lead_shortlist")
     .select(
-      "id, agent_id, rank, score_at_shortlist, status, sg_agents!inner(id, name, slug, agency_name, score, transaction_count, primary_area, google_rating, google_review_count, photo_url, claimed, agent_flags, email, email_status, whatsapp, cea_registration)"
+      "id, agent_id, rank, score_at_shortlist, status, sg_agents!inner(id, name, slug, agency_name, score, transaction_count, primary_area, google_rating, google_review_count, photo_url, claimed, agent_flags, email, email_status, whatsapp, whatsapp_opt_in_at, cea_registration)"
     )
     .eq("lead_id", lead.id)
     .order("rank");
@@ -164,6 +164,7 @@ export default async function ShortlistPage({ params }: Props) {
         email: (a.email as string | null) ?? null,
         email_status: (a.email_status as string | null) ?? null,
         whatsapp: (a.whatsapp as string | null) ?? null,
+        whatsapp_opt_in_at: (a.whatsapp_opt_in_at as string | null) ?? null,
       }),
       last_sale: fmtDealMonth(lastSaleIso),
       dormant: isDormant(lastSaleIso),

@@ -101,7 +101,7 @@ export async function POST(req: Request) {
     const { data: agents } = await sb
       .from("sg_agents")
       .select(
-        "id, name, email, email_status, whatsapp, claimed, slug, claimed_email, subscription_tier, stripe_subscription_id, email_opt_out_at"
+        "id, name, email, email_status, whatsapp, whatsapp_opt_in_at, claimed, slug, claimed_email, subscription_tier, stripe_subscription_id, email_opt_out_at"
       )
       .in("id", picked);
 
@@ -209,17 +209,19 @@ export async function POST(req: Request) {
       const area = lead.town ?? lead.district_code ?? "your area";
       let agentNotified = false;
 
-      // WhatsApp lands in seconds; only attempted when provisioned, so a
-      // dry-run is never recorded as contact.
-      if (a.whatsapp && waLive) {
+      // WhatsApp is a NOTIFICATION only, and only to agents who opted in
+      // (claimed + consented + provided their number, recorded as
+      // whatsapp_opt_in_at) once the API is live. It carries no seller detail,
+      // just a portal link: everything stays in the account. Scraped numbers
+      // without opt-in are never auto-messaged here (they are manual-operator
+      // only via the admin wa.me digest).
+      if (a.whatsapp && a.whatsapp_opt_in_at && waLive) {
         try {
           const wa = await sendWa({
             to: String(a.whatsapp),
-            template: "agent_invite",
+            template: "agent_lead_alert",
             variables: {
               agent_first_name: greetName(a.name ?? "") || "Hi",
-              area,
-              property_type: lead.property_type,
               link,
             },
             metric: "Agent Notification",

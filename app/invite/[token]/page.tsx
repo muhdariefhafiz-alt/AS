@@ -70,7 +70,7 @@ export default async function InviteBriefPage({ params }: Props) {
   const [{ data: agent }, { data: lead }] = await Promise.all([
     sb
       .from("sg_agents")
-      .select("id, name, slug, claimed")
+      .select("id, name, slug, claimed, whatsapp")
       .eq("id", parsed.agentId)
       .maybeSingle(),
     sb
@@ -175,6 +175,7 @@ export default async function InviteBriefPage({ params }: Props) {
               agentName={displayName}
               claimed={Boolean(agent.claimed)}
               alreadyQuoted={alreadyQuoted}
+              defaultWhatsapp={(agent.whatsapp as string | null) ?? ""}
             />
           )}
 

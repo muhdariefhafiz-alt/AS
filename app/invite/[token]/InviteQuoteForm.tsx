@@ -11,16 +11,19 @@ export default function InviteQuoteForm({
   agentName,
   claimed,
   alreadyQuoted,
+  defaultWhatsapp = "",
 }: {
   inviteToken: string;
   agentName: string;
   claimed: boolean;
   alreadyQuoted: boolean;
+  defaultWhatsapp?: string;
 }) {
   const [pct, setPct] = useState("");
   const [weeks, setWeeks] = useState("");
   const [plan, setPlan] = useState("");
   const [note, setNote] = useState("");
+  const [whatsapp, setWhatsapp] = useState(defaultWhatsapp);
   const [consent, setConsent] = useState(false);
   const [state, setState] = useState<"idle" | "submitting" | "done" | "error">(
     alreadyQuoted ? "done" : "idle"
@@ -47,6 +50,7 @@ export default function InviteQuoteForm({
           est_timeline_weeks: weeks ? Number(weeks) : null,
           marketing_plan: plan,
           note: note || null,
+          whatsapp: whatsapp.trim() || null,
           contact_consent: true,
         }),
       });
@@ -173,6 +177,25 @@ export default function InviteQuoteForm({
           onChange={(e) => setNote(e.target.value)}
           className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[var(--blue)] focus:outline-none"
         />
+      </label>
+
+      <label className="mt-4 block">
+        <span className="text-sm font-medium text-gray-700">
+          WhatsApp for instant lead alerts{" "}
+          <span className="font-normal text-gray-400">(optional)</span>
+        </span>
+        <input
+          type="tel"
+          value={whatsapp}
+          onChange={(e) => setWhatsapp(e.target.value)}
+          placeholder="+65 9XXX XXXX"
+          className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[var(--blue)] focus:outline-none"
+        />
+        <span className="mt-1 block text-xs text-gray-500">
+          Add your number and we WhatsApp you the moment a seller shortlists you,
+          so you can respond from your dashboard before the window closes. You
+          can change or remove it anytime in your dashboard.
+        </span>
       </label>
 
       <label className="mt-5 flex items-start gap-2.5">

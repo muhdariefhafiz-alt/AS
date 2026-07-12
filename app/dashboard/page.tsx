@@ -493,8 +493,8 @@ export default function DashboardPage() {
 
               {/* WhatsApp */}
               <div className="fc-field">
-                <label className="fc-label">WhatsApp number</label>
-                <p className="muted small">Include country code (e.g. +6591234567). We use this to alert you the moment a seller contacts you through your profile.</p>
+                <label className="fc-label">WhatsApp number for lead alerts</label>
+                <p className="muted small">Include country code (e.g. +6591234567). We send you a WhatsApp the moment a seller shortlists you, so you can respond from your dashboard before the window closes. Leave blank to turn WhatsApp alerts off.</p>
                 <input
                   type="tel"
                   value={whatsapp}
