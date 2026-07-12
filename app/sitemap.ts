@@ -48,6 +48,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // === HIGH PRIORITY: Core pages (lastModified = today because daily cron revalidates) ===
     { url: BASE, lastModified: today(), changeFrequency: "daily", priority: 1.0 },
     { url: `${BASE}/sell`, lastModified: today(), changeFrequency: "weekly", priority: 0.95 },
+    { url: `${BASE}/tools`, lastModified: today(), changeFrequency: "weekly", priority: 0.85 },
+    { url: `${BASE}/tools/affordability-calculator`, lastModified: today(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/tools/mop-tracker`, lastModified: today(), changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/tools/valuation`, lastModified: today(), changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/tools/commission-calculator`, lastModified: today(), changeFrequency: "monthly", priority: 0.9 },
