@@ -575,7 +575,7 @@ export default async function AgentPage({ params }: Props) {
                 <p className="mono small muted" style={{ marginTop: 18 }}>AgentScore and ranking are computed from CEA, URA and HDB records only.</p>
               </>
             )}
-            <RelatedAgents agentId={agent.id} />
+            <RelatedAgents agentId={agent.id} primaryArea={agent.primary_area} agencyId={agent.agency_id} agencyName={agent.agency_name} />
             <ProfileCorrection given={given} cea={agent.cea_registration} />
           </main>
 
