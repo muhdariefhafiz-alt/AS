@@ -53,6 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/tools/commission-calculator`, lastModified: today(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/tools/stamp-duty-calculator`, lastModified: today(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/tools/cea-advertising-checker`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE}/tools/net-proceeds-calculator`, lastModified: today(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/property-agents`, lastModified: today(), changeFrequency: "daily", priority: 0.95 },
     { url: `${BASE}/property-agents/agencies`, lastModified: today(), changeFrequency: "weekly", priority: 0.85 },
     { url: `${BASE}/property-agents/check`, lastModified: today(), changeFrequency: "monthly", priority: 0.8 },
