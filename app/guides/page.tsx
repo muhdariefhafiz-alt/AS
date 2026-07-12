@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 const guides = [
   {
     slug: "how-to-choose-property-agent",
-    title: "How to Choose a Property Agent in Singapore",
-    description: "What to look for in an agent, red flags to avoid, questions to ask, and how CEA registration works.",
+    title: "How to Check and Choose a Property Agent",
+    description: "Verify CEA registration, read an agent's real transaction record, spot the red flags, and know the questions to ask before you sign.",
     tag: "Agent Selection",
     tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
   },

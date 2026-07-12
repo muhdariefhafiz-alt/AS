@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "How to Choose a Property Agent in Singapore (2026 Guide)",
-  description: "What to look for when choosing a property agent in Singapore. CEA registration, track record, specialization, red flags, and the right questions to ask before signing an agreement.",
+  title: "How to Check & Choose a Property Agent in Singapore (2026)",
+  description: "Check any Singapore property agent free: verify their CEA registration, count recent local sales, and compare their real transaction record. Plus red flags and the questions to ask before you sign.",
   alternates: { canonical: "https://fair-comparisons.com/guides/how-to-choose-property-agent" },
 };
 
@@ -75,6 +75,23 @@ export default function HowToChooseAgentPage() {
           </p>
         </div>
       </section>
+
+      <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
+        <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5 md:flex md:items-center md:justify-between md:gap-6">
+          <div>
+            <p className="text-base font-bold text-gray-900">Want to check a specific agent right now?</p>
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-gray-600">
+              Search any Singapore property agent to see their AgentScore, verified CEA registration, and recent transaction record, ranked against everyone else in their area. Free, no sign-up.
+            </p>
+          </div>
+          <Link
+            href="/property-agents"
+            className="mt-4 inline-block whitespace-nowrap rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)] md:mt-0"
+          >
+            Check an agent &rarr;
+          </Link>
+        </div>
+      </div>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
