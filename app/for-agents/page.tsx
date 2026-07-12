@@ -127,6 +127,16 @@ export default async function ForAgentsPage() {
               <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>How sellers find agents on FairComparisons</div>
               <p className="muted small">Sellers compare agents in their area and contact the ones they choose. Your track record does the selling. See how it works.</p>
             </Link>
+            <Link href="/for-agents/grow" className="fc-card fc-card--pad fc-card--hover">
+              <div className="eyebrow">Grow</div>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>Turn your track record into listings</div>
+              <p className="muted small">Deal Radar prospecting, co-branded seller reports, a lead widget for your own site, and embeddable calculators. Free to be listed and ranked.</p>
+            </Link>
+            <Link href="/for-agents/planner" className="fc-card fc-card--pad fc-card--hover">
+              <div className="eyebrow">Planner</div>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>Your viewings, all in one place</div>
+              <p className="muted small">Share one booking link; buyers request a viewing time; you confirm and manage every viewing from your dashboard.</p>
+            </Link>
           </div>
         </div>
       </section>
