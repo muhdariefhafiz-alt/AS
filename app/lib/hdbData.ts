@@ -228,3 +228,90 @@ export async function getHdbTownData(townName: string): Promise<HdbTownData> {
       .slice(0, 10),
   };
 }
+
+// --- HDB town x flat-type segment pages (deeper than town level) ---
+
+export const HDB_FLAT_TYPES = [
+  { name: "2 ROOM", slug: "2-room", label: "2-Room" },
+  { name: "3 ROOM", slug: "3-room", label: "3-Room" },
+  { name: "4 ROOM", slug: "4-room", label: "4-Room" },
+  { name: "5 ROOM", slug: "5-room", label: "5-Room" },
+  { name: "EXECUTIVE", slug: "executive", label: "Executive" },
+] as const;
+
+export function flatTypeFromSlug(slug: string): (typeof HDB_FLAT_TYPES)[number] | undefined {
+  return HDB_FLAT_TYPES.find((f) => f.slug === slug);
+}
+
+export type HdbSegmentSummary = {
+  txns: number;
+  median_price: number;
+  min_price: number;
+  max_price: number;
+  median_psm: number;
+  avg_sqm: number;
+};
+export type SegStorey = { storey_range: string; median_price: number; txns: number };
+export type SegLease = { era: string; median_psm: number; txns: number };
+export type SegModel = { flat_model: string; median_price: number; txns: number };
+export type SegBlock = { block: string; street_name: string; median_price: number; txns: number };
+
+export type HdbSegmentData = {
+  summary: HdbSegmentSummary;
+  storey: SegStorey[];
+  lease: SegLease[];
+  models: SegModel[];
+  blocks: SegBlock[];
+};
+
+// Single RPC round-trip. Returns null when the segment has no rows so the page
+// can 404 rather than render an empty shell. Deliberately no time-series: the
+// 2025 ingestion window is partially populated, so a monthly trend line would
+// misrepresent the market. Everything here is cross-sectional over the real
+// recent-transaction sample.
+export async function getHdbSegmentData(
+  townName: string,
+  flatType: string,
+): Promise<HdbSegmentData | null> {
+  const { data } = await supabase.rpc("get_hdb_segment_stats", { t_name: townName, f_type: flatType });
+  const d = data as HdbSegmentData | null;
+  if (!d || !d.summary || !d.summary.txns) return null;
+  return {
+    summary: d.summary,
+    storey: d.storey ?? [],
+    lease: d.lease ?? [],
+    models: d.models ?? [],
+    blocks: d.blocks ?? [],
+  };
+}
+
+export type HdbSegmentParam = {
+  townSlug: string;
+  flatSlug: string;
+  townName: string;
+  flatType: string;
+  flatLabel: string;
+  txns: number;
+  median: number;
+};
+
+// The density-gated set of segments that get their own page (>= 150 txns / 24mo).
+export async function getQualifyingHdbSegments(): Promise<HdbSegmentParam[]> {
+  const { data } = await supabase.rpc("get_hdb_qualifying_segments", { min_n: 150 });
+  const out: HdbSegmentParam[] = [];
+  for (const r of (data ?? []) as Array<{ town: string; flat_type: string; txns: number; median_price: number }>) {
+    const town = HDB_TOWNS.find((t) => t.name === r.town);
+    const flat = HDB_FLAT_TYPES.find((f) => f.name === r.flat_type);
+    if (!town || !flat) continue;
+    out.push({
+      townSlug: town.slug,
+      flatSlug: flat.slug,
+      townName: town.name,
+      flatType: flat.name,
+      flatLabel: flat.label,
+      txns: Number(r.txns),
+      median: Number(r.median_price),
+    });
+  }
+  return out;
+}

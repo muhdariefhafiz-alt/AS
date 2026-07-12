@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HDB_TOWNS, townFromSlug, townDisplayName, getHdbTownData } from "../../../lib/hdbData";
+import { HDB_TOWNS, townFromSlug, townDisplayName, getHdbTownData, getQualifyingHdbSegments } from "../../../lib/hdbData";
 import { formatPrice, formatPriceFull } from "../../../lib/narrativeHelpers";
 import PriceTrendChart from "../../../components/PriceTrendChart";
 import FlatTypeBars from "../../../components/FlatTypeBars";
@@ -50,7 +50,9 @@ export default async function HdbTownPage({ params }: Props) {
   if (!town) notFound();
 
   const display = townDisplayName(town.name);
-  const data = await getHdbTownData(town.name);
+  const [data, allSegments] = await Promise.all([getHdbTownData(town.name), getQualifyingHdbSegments()]);
+  // Flat types in this town that have their own density-gated segment page.
+  const segmentByFlatType = new Map(allSegments.filter((s) => s.townSlug === slug).map((s) => [s.flatType, s.flatSlug]));
 
   const trend = data.priceTrend;
   const recentPrice = trend[0]?.median_price ?? 0;
@@ -552,13 +554,23 @@ export default async function HdbTownPage({ params }: Props) {
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Prices by Type</h3>
               <div className="mt-4 space-y-3">
-                {data.flatTypes.slice(0, 5).map((t) => (
-                  <div key={t.flat_type} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">{t.flat_type}</span>
-                    <span className="text-sm font-bold text-gray-900">{formatPrice(t.median_price)}</span>
-                  </div>
-                ))}
+                {data.flatTypes.slice(0, 5).map((t) => {
+                  const segSlug = segmentByFlatType.get(t.flat_type);
+                  return (
+                    <div key={t.flat_type} className="flex items-center justify-between">
+                      {segSlug ? (
+                        <Link href={`/property-agents/hdb/${slug}/${segSlug}`} className="text-sm font-medium text-[var(--blue)] hover:underline">{t.flat_type}</Link>
+                      ) : (
+                        <span className="text-sm text-gray-600">{t.flat_type}</span>
+                      )}
+                      <span className="text-sm font-bold text-gray-900">{formatPrice(t.median_price)}</span>
+                    </div>
+                  );
+                })}
               </div>
+              {segmentByFlatType.size > 0 && (
+                <p className="mt-3 text-[11px] text-gray-400">Tap a flat type for a full price breakdown by floor, age, model and block.</p>
+              )}
             </div>
 
             <div className={`rounded-xl border p-5 ${vsSg.dir === "up" ? "border-amber-200 bg-amber-50" : vsSg.dir === "down" ? "border-green-200 bg-green-50" : "border-gray-200 bg-gray-50"}`}>
