@@ -14,7 +14,10 @@ import { supabase } from "./supabase";
 //    would throw away live traffic. Not-in-sitemap != noindex.
 
 export const AGENT_INDEX_MIN_TXNS = 30;
-export const AGENT_SITEMAP_SHARD_SIZE = 5000;
+// 1000, not larger: PostgREST caps a single select at 1000 rows by default, so a
+// shard reads exactly one .range() page. A bigger shard would silently truncate
+// (verified: a 5000-span range returned only 1000 URLs). ~12k indexable = 13 shards.
+export const AGENT_SITEMAP_SHARD_SIZE = 1000;
 
 // TS predicate (page-level). Mirror of the SQL filter below so the two cannot drift.
 export function isAgentIndexable(a: {
