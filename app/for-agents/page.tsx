@@ -131,6 +131,27 @@ export default async function ForAgentsPage() {
         </div>
       </section>
 
+      {/* how we compare to other platforms */}
+      <section className="lp-section--paper">
+        <div className="fc-wrap" style={{ padding: "56px 40px" }}>
+          <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,32px)" }}>How FairComparisons compares</h2>
+          <p className="muted" style={{ textAlign: "center", maxWidth: "60ch", margin: "12px auto 0" }}>
+            Honest, sourced side-by-sides with the platforms Singapore agents already know. We are free to be listed and ranked, and sellers compare and invite you to quote.
+          </p>
+          <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+            {[
+              ["propertyguru", "PropertyGuru"], ["99co", "99.co"], ["srx", "SRX"], ["ohmyhome", "Ohmyhome"],
+              ["edgeprop", "EdgeProp"], ["mogul", "Mogul.sg"], ["propkaki", "PropKaki"],
+            ].map(([slug, name]) => (
+              <Link key={slug} href={`/for-agents/${slug}-alternative`} className="fc-card fc-card--pad fc-card--hover" style={{ display: "block" }}>
+                <span className="eyebrow">Compare</span>
+                <span className="serif" style={{ display: "block", fontWeight: 600, fontSize: 17, marginTop: 6 }}>{name} alternative</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* final CTA */}
       <section className="lp-hero">
         <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px" }}>

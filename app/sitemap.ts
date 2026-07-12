@@ -78,6 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/for-agents`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/for-agents/propertyguru-alternative`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/for-agents/propkaki-alternative`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
+    ...["99co", "srx", "ohmyhome", "mogul", "edgeprop"].map(c => ({ url: `${BASE}/for-agents/${c}-alternative`, lastModified: today(), changeFrequency: "monthly" as const, priority: 0.82 })),
     { url: `${BASE}/for-agents/lead-generation`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/how-we-score`, changeFrequency: "monthly", priority: 0.7 },
