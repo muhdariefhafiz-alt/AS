@@ -6,7 +6,7 @@ import AgentReviews from "../../../components/AgentReviews";
 import VerifiedReviews from "../../../components/VerifiedReviews";
 import FunnelTracker from "../../../components/FunnelTracker";
 import { bandFor } from "../../../components/Brand";
-import { titleName, givenName, cleanAgency, saleShare } from "../../../lib/names";
+import { titleName, givenName, cleanAgency, agencyForRole, saleShare } from "../../../lib/names";
 import ClaimBanner from "../../../components/ClaimBanner";
 import EgoBaitPanel from "../../../components/EgoBaitPanel";
 import StickyMobileCta from "../../../components/StickyMobileCta";
@@ -102,7 +102,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // name), agency, "property agent", and area, then the differentiators. No em
   // dashes. The layout template appends " | FairComparisons".
   const areaStr = agent.primary_area ? titleName(agent.primary_area) : null;
-  const lead = `${display}, ${cleanAgency(agent.agency_name)} Property Agent${areaStr ? ` in ${areaStr}` : ""}`;
+  const lead = `${display}, ${agencyForRole(agent.agency_name)} Property Agent${areaStr ? ` in ${areaStr}` : ""}`;
   const titleTail = [
     hasTxns ? `${agent.transaction_count} CEA Transactions` : null,
     s ? `AgentScore ${s}` : null,
@@ -353,7 +353,7 @@ export default async function AgentPage({ params }: Props) {
             )}
             <div style={{ flex: 1, minWidth: 260 }}>
               <h1 style={{ margin: 0, fontSize: "clamp(28px,3.4vw,40px)" }}>{h1Name}</h1>
-              <div className="agent-meta">{agencyName} property agent{agent.primary_area ? ` in ${titleName(agent.primary_area)}` : ""} · CEA {agent.cea_registration}</div>
+              <div className="agent-meta">{agencyForRole(agent.agency_name)} property agent{agent.primary_area ? ` in ${titleName(agent.primary_area)}` : ""} · CEA {agent.cea_registration}</div>
               <div className="fc-row" style={{ gap: 8, marginTop: 14 }}>
                 {hasTxns && <span className="statchip">{total} transactions</span>}
                 {areaFocusPct > 0 && primaryShort && <span className="statchip">{areaFocusPct}% in {primaryShort}</span>}

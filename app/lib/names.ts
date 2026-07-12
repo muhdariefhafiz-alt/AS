@@ -37,6 +37,16 @@ export function cleanAgency(name: string): string {
 }
 
 /**
+ * Agency name for immediate use before the words "Property Agent". Strips a
+ * trailing "Property"/"Properties" so an agency like "Jinson Property" renders
+ * "Jinson Property Agent", not "Jinson Property Property Agent". Do NOT use for a
+ * standalone agency name (use cleanAgency) where the trailing token is the name.
+ */
+export function agencyForRole(name: string): string {
+  return cleanAgency(name).replace(/\s+propert(?:y|ies)$/i, "").trim();
+}
+
+/**
  * Share of an agent's transactions that are SALES (not rentals), from a
  * { TYPE: count } map. Used to flag rental-focused agents on seller surfaces:
  * a "best agent to sell" who is mostly leasing rentals would otherwise mislead.
