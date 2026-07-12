@@ -81,12 +81,34 @@ export async function GET(req: Request) {
       await sb.from("fc_gsc_daily_stats").insert(pageRows.map((r) => toRow(r, "page", endStr)));
     }
 
+    // ---- page+query pairs (28d rolling snapshot) ----
+    // Which queries drive impressions to WHICH page: the evidence layer for
+    // retitling pages to their actual queries. keys[0]=page URL, keys[1]=query;
+    // stored as "<path> :: <query>" (paths contain no spaces, so the separator
+    // is unambiguous).
+    const pairRows = await querySearchAnalytics(token, {
+      startDate: ymd(start28),
+      endDate: endStr,
+      dimensions: ["page", "query"],
+      rowLimit: 500,
+    });
+    await sb.from("fc_gsc_daily_stats").delete().eq("dimension", "page_query");
+    if (pairRows.length) {
+      await sb.from("fc_gsc_daily_stats").insert(
+        pairRows.map((r) => ({
+          ...toRow(r, "page_query", endStr),
+          dimension_value: `${(r.keys[0] ?? "").replace(/^https?:\/\/[^/]+/, "") || "/"} :: ${r.keys[1] ?? ""}`,
+        }))
+      );
+    }
+
     return NextResponse.json({
       ok: true,
       window: { start: ymd(startDaily), end: endStr },
       days: dateRows.length,
       queries: queryRows.length,
       pages: pageRows.length,
+      pageQueries: pairRows.length,
     });
   } catch (err) {
     console.error("[cron/gsc-sync]", err);

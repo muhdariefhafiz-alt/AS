@@ -1,6 +1,16 @@
 import type { MetadataRoute } from "next";
+import { countIndexableAgents, agentSitemapShardCount } from "./lib/indexable";
 
-export default function robots(): MetadataRoute.Robots {
+const BASE = "https://fair-comparisons.com";
+
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  // The agent set is a sharded route sitemap (app/property-agents/sitemap.ts);
+  // list every shard URL so Google discovers all of them, not just the root.
+  const shards = agentSitemapShardCount(await countIndexableAgents());
+  const agentSitemaps = Array.from(
+    { length: shards },
+    (_, id) => `${BASE}/property-agents/sitemap/${id}.xml`
+  );
   return {
     rules: [
       {
@@ -31,6 +41,6 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "Applebot", allow: "/" },
       { userAgent: "Applebot-Extended", allow: "/" },
     ],
-    sitemap: "https://fair-comparisons.com/sitemap.xml",
+    sitemap: [`${BASE}/sitemap.xml`, ...agentSitemaps],
   };
 }

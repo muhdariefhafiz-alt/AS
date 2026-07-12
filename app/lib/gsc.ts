@@ -49,7 +49,21 @@ export type GscRow = { keys: string[]; clicks: number; impressions: number; ctr:
 
 export async function querySearchAnalytics(
   token: string,
-  body: { startDate: string; endDate: string; dimensions: string[]; rowLimit?: number }
+  body: {
+    startDate: string;
+    endDate: string;
+    dimensions: string[];
+    rowLimit?: number;
+    // Optional GSC filter, e.g. scope a page+query pull to one path prefix.
+    dimensionFilterGroups?: {
+      groupType?: "and";
+      filters: {
+        dimension: "page" | "query" | "country" | "device";
+        operator: "contains" | "equals" | "notContains" | "notEquals";
+        expression: string;
+      }[];
+    }[];
+  }
 ): Promise<GscRow[]> {
   const url = `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(GSC_SITE_URL)}/searchAnalytics/query`;
   const res = await fetch(url, {

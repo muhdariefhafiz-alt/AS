@@ -22,10 +22,11 @@ function today() {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // NOTE: Lawyers + financial-advisors intentionally excluded from sitemap while
   // the frontend focuses only on property agents. Backend data collection continues.
-  const [districtsRes, agenciesRes, agentsRes, projectsRes] = await Promise.all([
+  // Agents are served from the sharded app/property-agents/sitemap.ts (the full
+  // data-dense set, uncapped) rather than the old 10k slice here.
+  const [districtsRes, agenciesRes, projectsRes] = await Promise.all([
     supabase.from("sg_districts").select("slug").not("slug", "is", null),
     supabase.from("sg_agencies").select("slug, agent_count, google_review_count, score").order("agent_count", { ascending: false }).limit(5000),
-    supabase.from("sg_agents").select("slug, score, transaction_count, google_review_count").order("score", { ascending: false, nullsFirst: false }).limit(10000),
     supabase.from("sg_projects").select("slug, txn_count").order("txn_count", { ascending: false }).limit(5000),
   ]);
 
@@ -33,10 +34,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const agencies = (agenciesRes.data ?? []).filter(a =>
     (a.score && Number(a.score) >= 20) || (a.google_review_count ?? 0) >= 5 || a.agent_count >= 50
   );
-
-  const scoredAgents = (agentsRes.data ?? []).filter(a =>
-    (a.score && Number(a.score) >= 1) || (a.google_review_count ?? 0) > 0 || (a.transaction_count ?? 0) > 0
-  ).slice(0, 10000);
 
   const budgetSlugs = ["under-500k", "500k-to-800k", "800k-to-1m", "1m-to-1-5m", "1-5m-to-2m", "2m-to-3m", "3m-to-5m", "5m-to-10m", "above-10m"];
   const typeSlugs = ["hdb", "condo", "landed", "executive-condo", "apartment", "rental"];
@@ -114,8 +111,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // === Agencies ===
     ...agencies.map(a => ({ url: `${BASE}/property-agents/agency/${a.slug}`, changeFrequency: "weekly" as const, priority: a.agent_count >= 1000 ? 0.8 : 0.7 })),
 
-    // === Agents ===
-    ...scoredAgents.map(a => ({ url: `${BASE}/property-agents/agent/${a.slug}`, changeFrequency: "weekly" as const, priority: Number(a.score) >= 70 ? 0.7 : 0.6 })),
+    // === Agents === (served from the sharded app/property-agents/sitemap.ts)
 
     // === Developments ===
     ...(projectsRes.data ?? []).filter(p => (p.txn_count ?? 0) >= 20).map(p => ({ url: `${BASE}/property-agents/development/${p.slug}`, changeFrequency: "weekly" as const, priority: (p.txn_count ?? 0) >= 200 ? 0.8 : 0.7 })),
