@@ -7,6 +7,7 @@ import { sendWaAsync } from "../../../lib/whatsapp";
 import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
 import { escapeHtml } from "../../../lib/escapeHtml";
 import { emailShell, p } from "../../../lib/email-layout";
+import { resolveContactId } from "../../../lib/contacts";
 
 // Per-IP rate limit: 5 lead submissions / hour (Redis-backed when configured).
 const RATE_LIMIT = 5;
@@ -252,6 +253,22 @@ export async function POST(req: Request) {
         { error: "Could not save your request. Please try again." },
         { status: 500 }
       );
+    }
+
+    // Attach the contact identity (Unified Inbox spine). Best-effort: the lead
+    // is already saved, so a resolution hiccup must not fail the request.
+    try {
+      const contactId = await resolveContactId(sb, {
+        phone: phone ?? null,
+        whatsapp: whatsapp ?? null,
+        email: String(email).toLowerCase().trim(),
+        fullName: full_name,
+      });
+      if (contactId) {
+        await sb.from("sg_leads").update({ contact_id: contactId }).eq("id", lead.id);
+      }
+    } catch (e) {
+      console.error("[sell/lead] contact resolve failed", e);
     }
 
     // Rank by final position (the pinned requested agent sits at index 0 → rank 1).

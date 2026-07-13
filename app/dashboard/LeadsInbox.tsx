@@ -49,15 +49,39 @@ type Row = {
   invited_at: string | null;
   quoted_at: string | null;
   picked_at: string | null;
+  first_reply_at: string | null;
+  needs_reply: boolean;
+  age_hours: number | null;
+  sla: "fresh" | "aging" | "overdue" | null;
+  deal_value: number;
   lead: Lead;
   quote: Quote | null;
   completion: Completion | null;
+};
+
+type Summary = {
+  needs_reply: number;
+  oldest_aging_hours: number;
+  top_deal_value: number;
 };
 
 type Props = {
   agentEmail: string;
   ceaRegistration: string;
 };
+
+function ag0(hours: number): string {
+  if (hours < 1) return "<1h";
+  if (hours < 24) return `${Math.round(hours)}h`;
+  return `${Math.floor(hours / 24)}d`;
+}
+
+function slaChip(sla: Row["sla"], ageHours: number | null): { label: string; cls: string } | null {
+  if (!sla || ageHours == null) return null;
+  if (sla === "overdue") return { label: `Overdue ${ag0(ageHours)}`, cls: "bg-red-100 text-red-700" };
+  if (sla === "aging") return { label: `Aging ${ag0(ageHours)}`, cls: "bg-amber-100 text-amber-800" };
+  return { label: "New", cls: "bg-emerald-100 text-emerald-700" };
+}
 
 const TYPE_LABEL: Record<string, string> = {
   HDB: "HDB",
@@ -101,8 +125,10 @@ function statusPill(status: string): { label: string; cls: string } {
 
 export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [summary, setSummary] = useState<Summary | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [openId, setOpenId] = useState<number | null>(null);
+  const [replying, setReplying] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -117,15 +143,40 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
         return;
       }
       setRows(json.leads ?? []);
+      setSummary(json.summary ?? null);
     } catch {
       setLoadError("Network error loading leads.");
     }
   }, [agentEmail]);
 
+  // Record that the agent replied (they send via their own channel; this marks
+  // first_reply_at and fires the reply signal). Optimistic; server reconciles.
+  const markReplied = useCallback(async (shortlistId: number) => {
+    setReplying(shortlistId);
+    setRows((rs) =>
+      rs?.map((r) =>
+        r.shortlist_id === shortlistId
+          ? { ...r, first_reply_at: new Date().toISOString(), needs_reply: false, sla: null }
+          : r
+      ) ?? rs
+    );
+    setSummary((s) => (s ? { ...s, needs_reply: Math.max(0, s.needs_reply - 1) } : s));
+    try {
+      await fetch("/api/dashboard/leads/reply-sent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shortlist_id: shortlistId }),
+      });
+    } catch {
+      /* optimistic; a later load() reconciles */
+    } finally {
+      setReplying(null);
+    }
+  }, []);
+
   useEffect(() => {
     // Fire-and-forget; the load() callback owns its own setState. We don't
     // await it here because the effect contract is synchronous.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
@@ -156,7 +207,23 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
   }
 
   return (
-    <ul className="space-y-3">
+    <>
+      {summary && summary.needs_reply > 0 && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--blue)] bg-[var(--blue-wash)] px-4 py-3">
+          <p className="text-sm text-[var(--ink)]">
+            <strong>
+              {summary.needs_reply} {summary.needs_reply === 1 ? "lead needs" : "leads need"} a reply
+            </strong>
+            {summary.oldest_aging_hours >= 4 && (
+              <span className="text-[var(--slate)]"> &middot; oldest waiting {ag0(summary.oldest_aging_hours)}</span>
+            )}
+          </p>
+          <span className="text-xs font-semibold text-[var(--blue-deep)]">
+            Reply first to win the instruction
+          </span>
+        </div>
+      )}
+      <ul className="space-y-3">
       {rows.map((r) => {
         const pill = statusPill(r.status);
         const area = r.lead.town ?? r.lead.district_code ?? "—";
@@ -181,6 +248,19 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
                   >
                     {pill.label}
                   </span>
+                  {r.status === "invited" &&
+                    (() => {
+                      const c = slaChip(r.sla, r.age_hours);
+                      return c ? (
+                        <span
+                          className={
+                            "inline-flex rounded-full px-2 py-0.5 text-xs font-semibold " + c.cls
+                          }
+                        >
+                          {c.label}
+                        </span>
+                      ) : null;
+                    })()}
                 </div>
                 <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-gray-600">
                   {r.lead.bedrooms && <span>{r.lead.bedrooms}-bed</span>}
@@ -202,6 +282,24 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
                     </span>
                   )}
                 </div>
+                {r.status === "invited" && (
+                  <div className="mt-2">
+                    {r.first_reply_at ? (
+                      <span className="text-xs font-medium text-emerald-700">
+                        &#10003; Replied {new Date(r.first_reply_at).toLocaleDateString()}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={replying === r.shortlist_id}
+                        onClick={() => markReplied(r.shortlist_id)}
+                        className="text-xs font-semibold text-[var(--blue-deep)] underline hover:text-[var(--blue)]"
+                      >
+                        {replying === r.shortlist_id ? "Saving…" : "Mark as replied"}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
               {r.status === "invited" && (
                 <button
@@ -305,7 +403,8 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
           </li>
         );
       })}
-    </ul>
+      </ul>
+    </>
   );
 }
 
