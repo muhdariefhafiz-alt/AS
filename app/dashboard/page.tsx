@@ -9,6 +9,7 @@ import PlannerPanel from "./PlannerPanel";
 import DemandPanel from "./DemandPanel";
 import BuildingPagesPanel from "./BuildingPagesPanel";
 import ShareCard from "./ShareCard";
+import PerfUploadCard from "./PerfUploadCard";
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid } from "../lib/tiers";
 
@@ -423,6 +424,10 @@ export default function DashboardPage() {
 
           {/* Building pages: agent-owned marketing on development data pages */}
           {agent.cea_registration && <BuildingPagesPanel />}
+
+          {/* Early-access falsification test: bring portal performance data in
+              via the only lawful route (the agent's own AgentNet PDF export). */}
+          {agent.cea_registration && <PerfUploadCard />}
 
           {/* Seller leads inbox */}
           {agent.cea_registration && (
