@@ -31,11 +31,11 @@ export type CompetitorData = {
 export const COMPETITORS: Record<string, CompetitorData> = {
   "99co": {
     slug: "99co", name: "99.co", url: "https://www.99.co", verifiedOn: "2026-07-12",
-    metaTitle: "99.co Alternative for Agents - FairComparisons",
+    metaTitle: "99.co Alternative for Agents & Package Pricing",
     metaDescription:
-      "99.co is a listing portal agents pay for. FairComparisons lists and ranks every CEA agent free, on real CEA/URA/HDB records, and lets sellers compare and invite you to quote. See how they compare.",
-    heroHeadline: "99.co sells listings and leads to agents.",
-    heroAccent: "FairComparisons ranks you free, on your record.",
+      "99.co sells agents subscription packages and credits. FairComparisons ranks every CEA agent free on real transaction records. Compare and claim your free profile.",
+    heroHeadline: "The 99.co alternative for agents:",
+    heroAccent: "ranked free, on your record.",
     heroSub:
       "99.co is one of Singapore's top consumer portals. FairComparisons is a seller-first comparison layer: every CEA agent is listed and ranked on real transaction data at no cost, and sellers compare agents and invite them to quote.",
     compareRows: [
@@ -63,11 +63,11 @@ export const COMPETITORS: Record<string, CompetitorData> = {
 
   srx: {
     slug: "srx", name: "SRX", url: "https://www.srx.com.sg", verifiedOn: "2026-07-12",
-    metaTitle: "SRX Alternative for Agents - FairComparisons",
+    metaTitle: "SRX Alternative for Agents & Package Pricing",
     metaDescription:
-      "SRX is a data portal agents pay to list and feature on. FairComparisons lists and ranks every CEA agent free, on real transaction records, with a seller compare-and-invite marketplace. See how they compare.",
-    heroHeadline: "SRX ranks agents by listings and paid slots.",
-    heroAccent: "FairComparisons ranks you on your record, free.",
+      "SRX visibility runs on paid packages and featured slots. FairComparisons ranks every CEA agent free on official records. Compare and claim your free profile.",
+    heroHeadline: "The SRX alternative for agents:",
+    heroAccent: "ranked on your record, free.",
     heroSub:
       "SRX is a trusted data and listings portal, part of the 99 Group. FairComparisons is the seller-first layer: every CEA agent is ranked on real transaction data at no cost, and sellers compare agents and invite them to quote.",
     compareRows: [
@@ -95,11 +95,11 @@ export const COMPETITORS: Record<string, CompetitorData> = {
 
   ohmyhome: {
     slug: "ohmyhome", name: "Ohmyhome", url: "https://ohmyhome.com", verifiedOn: "2026-07-12",
-    metaTitle: "Ohmyhome Alternative for Agents - FairComparisons",
+    metaTitle: "Ohmyhome Alternative: Compare Every Agent Free",
     metaDescription:
-      "Ohmyhome sells through its own in-house agents. FairComparisons lists and ranks every independent CEA agent free, on real transaction records, and lets sellers compare and invite them to quote.",
-    heroHeadline: "Ohmyhome sells through its own in-house agents.",
-    heroAccent: "FairComparisons ranks every independent agent, free.",
+      "Ohmyhome assigns its own in-house agents. FairComparisons compares every independent CEA agent on real records, free. See the comparison and claim your profile.",
+    heroHeadline: "The Ohmyhome alternative:",
+    heroAccent: "every independent agent, compared free.",
     heroSub:
       "Ohmyhome is a low-fixed-fee brokerage and DIY portal staffed by its own agents. FairComparisons is a neutral comparison of every independent CEA agent, ranked on real transaction data, where the seller compares and invites quotes.",
     compareRows: [
@@ -126,11 +126,11 @@ export const COMPETITORS: Record<string, CompetitorData> = {
 
   mogul: {
     slug: "mogul", name: "Mogul.sg", url: "https://mogul.sg", verifiedOn: "2026-07-12",
-    metaTitle: "Mogul.sg Alternative for Agents - FairComparisons",
+    metaTitle: "Mogul.sg Alternative: Compare Agents on Record",
     metaDescription:
-      "Mogul.sg assigns sellers one partner agent for a flat fee. FairComparisons lists and ranks every CEA agent free, on real transaction records, and lets sellers compare and invite them to quote.",
-    heroHeadline: "Mogul.sg assigns sellers one partner agent.",
-    heroAccent: "FairComparisons lets sellers compare every agent.",
+      "Mogul.sg assigns sellers one partner agent. FairComparisons compares every CEA agent free on real records. See the comparison and claim your free profile.",
+    heroHeadline: "The Mogul.sg alternative:",
+    heroAccent: "compare every agent, not just one.",
     heroSub:
       "Mogul.sg is a data-rich portal with a low-cost, concierge selling service. FairComparisons is the seller-first comparison layer: every CEA agent is ranked on real transaction data, and the seller compares and invites a shortlist to quote.",
     compareRows: [
@@ -157,11 +157,11 @@ export const COMPETITORS: Record<string, CompetitorData> = {
 
   edgeprop: {
     slug: "edgeprop", name: "EdgeProp", url: "https://www.edgeprop.sg", verifiedOn: "2026-07-12",
-    metaTitle: "EdgeProp Alternative for Agents - FairComparisons",
+    metaTitle: "EdgeProp Alternative for Agents & Lead Pricing",
     metaDescription:
-      "EdgeProp sells agents leads and featured placement. FairComparisons lists and ranks every CEA agent free, on real transaction records, and lets sellers compare and invite them to quote.",
-    heroHeadline: "EdgeProp sells agents leads and placement.",
-    heroAccent: "FairComparisons ranks you free, on your record.",
+      "EdgeProp sells agents leads and placement. FairComparisons ranks every CEA agent free on real records, with seller invites at no cost. Claim your free profile.",
+    heroHeadline: "The EdgeProp alternative for agents:",
+    heroAccent: "ranked free, on your record.",
     heroSub:
       "EdgeProp is a listings-and-data portal with an attached agent-services arm. FairComparisons is the seller-first layer: every CEA agent is ranked on real transaction data at no cost, and sellers compare agents and invite them to quote.",
     compareRows: [

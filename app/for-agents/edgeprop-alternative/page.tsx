@@ -14,6 +14,13 @@ export const metadata: Metadata = {
     title: DATA.metaTitle, description: DATA.metaDescription,
     url: `https://fair-comparisons.com/for-agents/${DATA.slug}-alternative`,
     siteName: "FairComparisons", locale: "en_SG", type: "website",
+    images: ["https://fair-comparisons.com/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: DATA.metaTitle,
+    description: DATA.metaDescription,
+    images: ["https://fair-comparisons.com/og-image.png"],
   },
 };
 

@@ -5,20 +5,28 @@ import { supabase } from "../../lib/supabase";
 export const revalidate = false;
 
 export const metadata: Metadata = {
-  title: "PropKaki Alternative for Agents - FairComparisons",
+  title: "PropKaki Alternative for Agents & Pricing",
   description:
-    "PropKaki gives agents AI tools. FairComparisons gives agents clients: a seller marketplace, an independent AgentScore from real CEA transactions, and free-forever visibility. See how they compare.",
+    "PropKaki gives agents AI tools. FairComparisons ranks every CEA agent free on real records and sends real seller invites. Compare and claim your free profile.",
   alternates: {
     canonical: "https://fair-comparisons.com/for-agents/propkaki-alternative",
   },
   openGraph: {
-    title: "PropKaki Alternative for Agents - FairComparisons",
+    title: "PropKaki Alternative for Agents & Pricing",
     description:
-      "PropKaki gives agents AI tools. FairComparisons gives agents clients, an independent record, and free-forever visibility.",
+      "PropKaki gives agents AI tools. FairComparisons ranks every CEA agent free on real records and sends real seller invites.",
     url: "https://fair-comparisons.com/for-agents/propkaki-alternative",
     siteName: "FairComparisons",
     locale: "en_SG",
     type: "website",
+    images: ["https://fair-comparisons.com/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PropKaki Alternative for Agents & Pricing",
+    description:
+      "PropKaki gives agents AI tools. FairComparisons ranks every CEA agent free on real records and sends real seller invites.",
+    images: ["https://fair-comparisons.com/og-image.png"],
   },
 };
 
@@ -121,11 +129,20 @@ export default async function PropKakiAlternativePage() {
       { "@type": "ListItem", position: 3, name: "PropKaki alternative", item: "https://fair-comparisons.com/for-agents/propkaki-alternative" },
     ],
   };
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "PropKaki Alternative for Agents & Pricing",
+    url: "https://fair-comparisons.com/for-agents/propkaki-alternative",
+    dateModified: "2026-07-13",
+    isPartOf: { "@type": "WebSite", name: "FairComparisons", url: "https://fair-comparisons.com" },
+  };
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd).replace(/</g, "\\u003c") }} />
 
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="mx-auto max-w-[1120px] px-5 pt-6 md:px-8">
@@ -143,9 +160,9 @@ export default async function PropKakiAlternativePage() {
         <div className="mx-auto max-w-[900px] px-5 py-16 text-center md:px-8 md:py-24">
           <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)]">For Property Agents</p>
           <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-5xl">
-            PropKaki gives agents tools.
+            The PropKaki alternative for agents:
             <br />
-            <span className="text-[var(--slate-2)]">FairComparisons gives agents clients.</span>
+            <span className="text-[var(--slate-2)]">beyond AI tools, real seller clients.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">
             PropKaki is an AI assistant and toolkit. FairComparisons is a seller marketplace and an

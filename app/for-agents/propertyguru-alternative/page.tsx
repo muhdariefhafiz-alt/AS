@@ -5,20 +5,28 @@ import { supabase } from "../../lib/supabase";
 export const revalidate = false;
 
 export const metadata: Metadata = {
-  title: "PropertyGuru Alternative for Agents - FairComparisons",
+  title: "PropertyGuru Alternative & Agent Pricing",
   description:
-    "Spending S$2,000+/mo on PropertyGuru? FairComparisons gives property agents unlimited visibility from S$0/mo. Data-driven AgentScore, no pay-to-play rankings.",
+    "PropertyGuru agent packages run S$1,949-S$34,322/yr. FairComparisons ranks agents on real CEA records from S$0/mo. Compare pricing and claim your free profile.",
   alternates: {
     canonical: "https://fair-comparisons.com/for-agents/propertyguru-alternative",
   },
   openGraph: {
-    title: "PropertyGuru Alternative for Agents - FairComparisons",
+    title: "PropertyGuru Alternative & Agent Pricing",
     description:
-      "Spending S$2,000+/mo on PropertyGuru? FairComparisons gives property agents unlimited visibility from S$0/mo.",
+      "PropertyGuru agent packages run S$1,949-S$34,322/yr. FairComparisons ranks agents on real CEA records from S$0/mo.",
     url: "https://fair-comparisons.com/for-agents/propertyguru-alternative",
     siteName: "FairComparisons",
     locale: "en_SG",
     type: "website",
+    images: ["https://fair-comparisons.com/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PropertyGuru Alternative & Agent Pricing",
+    description:
+      "PropertyGuru agent packages run S$1,949-S$34,322/yr. FairComparisons ranks agents on real CEA records from S$0/mo.",
+    images: ["https://fair-comparisons.com/og-image.png"],
   },
 };
 
@@ -66,6 +74,23 @@ const faqItems = [
 export default async function PropertyGuruAlternativePage() {
   const stats = await getStats();
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://fair-comparisons.com" },
+      { "@type": "ListItem", position: 2, name: "For Agents", item: "https://fair-comparisons.com/for-agents" },
+      { "@type": "ListItem", position: 3, name: "PropertyGuru alternative", item: "https://fair-comparisons.com/for-agents/propertyguru-alternative" },
+    ],
+  };
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "PropertyGuru Alternative & Agent Pricing",
+    url: "https://fair-comparisons.com/for-agents/propertyguru-alternative",
+    dateModified: "2026-07-13",
+    isPartOf: { "@type": "WebSite", name: "FairComparisons", url: "https://fair-comparisons.com" },
+  };
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -84,6 +109,14 @@ export default async function PropertyGuruAlternativePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd).replace(/</g, "\\u003c") }}
       />
 
       {/* Breadcrumb */}
@@ -104,14 +137,14 @@ export default async function PropertyGuruAlternativePage() {
             For Property Agents
           </p>
           <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-5xl">
-            Spending S$2,000+/mo on PropertyGuru?
+            The PropertyGuru alternative for agents:
             <br />
-            <span className="text-[var(--slate-2)]">There&apos;s a smarter way.</span>
+            <span className="text-[var(--slate-2)]">ranked on merit, from S$0/mo.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">
-            FairComparisons profiles {stats.scored.toLocaleString()} scored property agents across
-            Singapore. Buyers find you through Google, see your track record, and reach out directly.
-            No listing fees. No pay-to-play rankings.
+            Spending S$2,000+/mo on PropertyGuru? FairComparisons is a PropertyGuru alternative for
+            Singapore property agents: {stats.scored.toLocaleString()} scored profiles that buyers find
+            through Google, with no listing fees and no pay-to-play rankings.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
@@ -133,11 +166,11 @@ export default async function PropertyGuruAlternativePage() {
       {/* Comparison table */}
       <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
         <h2 className="text-center text-2xl font-bold text-gray-900">
-          PropertyGuru vs FairComparisons
+          PropertyGuru agent pricing vs FairComparisons (2026)
         </h2>
         <p className="mx-auto mt-3 max-w-lg text-center text-sm text-gray-500">
           PropertyGuru pricing below is its published agent package card as of October 2025 (annual,
-          including 9% GST), with the per-month equivalent. FairComparisons pricing is current as of today.
+          including 9% GST), with the per-month equivalent. FairComparisons pricing verified July 2026.
         </p>
 
         <div className="mt-8 overflow-x-auto">
@@ -217,6 +250,10 @@ export default async function PropertyGuruAlternativePage() {
             </tbody>
           </table>
         </div>
+        <p className="mx-auto mt-4 max-w-xl text-center text-sm text-gray-500">
+          See the full sourced price table for every SG portal in the{" "}
+          <Link href="/for-agents/portal-pricing" className="text-[var(--blue)]">2026 portal pricing breakdown</Link>.
+        </p>
       </section>
 
       {/* Key differentiators */}

@@ -22,11 +22,29 @@ export default function CompetitorAlternative({ data, stats }: { data: Competito
       { "@type": "ListItem", position: 3, name: `${data.name} alternative`, item: `https://fair-comparisons.com/for-agents/${data.slug}-alternative` },
     ],
   };
+  // Machine-readable freshness: mirrors the visible "verified on" line.
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: data.metaTitle,
+    url: `https://fair-comparisons.com/for-agents/${data.slug}-alternative`,
+    dateModified: data.verifiedOn,
+    isPartOf: { "@type": "WebSite", name: "FairComparisons", url: "https://fair-comparisons.com" },
+  };
+
+  // The full comparison cluster: cross-link every sibling page (keyword anchors)
+  // so no spoke depends on the hub alone for inbound links.
+  const SIBLINGS: [string, string][] = [
+    ["propertyguru", "PropertyGuru alternative"], ["99co", "99.co alternative"], ["srx", "SRX alternative"],
+    ["ohmyhome", "Ohmyhome alternative"], ["mogul", "Mogul.sg alternative"], ["edgeprop", "EdgeProp alternative"],
+    ["propkaki", "PropKaki alternative"],
+  ];
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd).replace(/</g, "\\u003c") }} />
 
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="mx-auto max-w-[1120px] px-5 pt-6 md:px-8">
@@ -123,7 +141,10 @@ export default function CompetitorAlternative({ data, stats }: { data: Competito
               <p className="mt-1 text-xs text-gray-400">agencies</p>
             </div>
           </div>
-          <p className="mt-6 text-sm text-gray-500">Data sourced from CEA, URA and HDB public records. Updated regularly.</p>
+          <p className="mt-6 text-sm text-gray-500">
+            Data sourced from CEA, URA and HDB public records. Updated regularly.{" "}
+            <Link href="/property-agents" className="text-[var(--blue)]">Browse all ranked CEA agents</Link>.
+          </p>
         </div>
       </section>
 
@@ -134,12 +155,25 @@ export default function CompetitorAlternative({ data, stats }: { data: Competito
           {data.faq.map((item, i) => (
             <details key={i} className="group py-4">
               <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-gray-900">
-                {item.q}
+                <h3 className="inline text-sm font-semibold">{item.q}</h3>
                 <span className="ml-4 text-gray-400 transition group-open:rotate-45">+</span>
               </summary>
               <p className="mt-3 text-sm leading-relaxed text-gray-500">{item.a}</p>
             </details>
           ))}
+        </div>
+      </section>
+
+      {/* Cluster cross-links */}
+      <section className="border-t border-gray-100 bg-gray-50">
+        <div className="mx-auto max-w-[860px] px-5 py-10 text-center md:px-8">
+          <h2 className="text-lg font-bold text-gray-900">Compare other Singapore platforms</h2>
+          <p className="mx-auto mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
+            {SIBLINGS.filter(([slug]) => slug !== data.slug).map(([slug, label]) => (
+              <Link key={slug} href={`/for-agents/${slug}-alternative`} className="text-[var(--blue)]">{label}</Link>
+            ))}
+            <Link href="/for-agents/portal-pricing" className="text-[var(--blue)]">Portal pricing 2026</Link>
+          </p>
         </div>
       </section>
 

@@ -5,15 +5,22 @@ import { getAgentStats } from "../../lib/agentStats";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "What SG Agents Really Pay for Portals in 2026",
+  title: "PropertyGuru Agent Pricing 2026 & SG Portal Costs",
   description:
-    "PropertyGuru's published agent packages now run S$1,949 to S$34,322 a year (Oct 2025 card, incl GST). 99.co-SRX tiers run S$980 to S$3,814. See the full sourced price table, and what a rank-neutral alternative costs: S$0 to be listed and ranked.",
+    "PropertyGuru agent packages run S$1,949-S$34,322/yr. 99.co-SRX runs S$980-S$3,814. See the sourced price table and compare a S$0 rank-neutral alternative.",
   alternates: { canonical: "https://fair-comparisons.com/for-agents/portal-pricing" },
   openGraph: {
-    title: "What SG agents really pay for portals in 2026",
+    title: "PropertyGuru Agent Pricing 2026 & SG Portal Costs",
     description: "The sourced portal price table, side by side with a rank-neutral alternative: free to be listed and ranked.",
     url: "https://fair-comparisons.com/for-agents/portal-pricing",
     siteName: "FairComparisons", locale: "en_SG", type: "website",
+    images: ["https://fair-comparisons.com/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PropertyGuru Agent Pricing 2026 & SG Portal Costs",
+    description: "PropertyGuru agent packages run S$1,949-S$34,322/yr. 99.co-SRX runs S$980-S$3,814. Compare a S$0 rank-neutral alternative.",
+    images: ["https://fair-comparisons.com/og-image.png"],
   },
 };
 
@@ -118,7 +125,7 @@ export default async function PortalPricingPage() {
 
       {/* Price tables */}
       <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-        <h2 className="text-center text-2xl font-bold text-gray-900">The published price cards</h2>
+        <h2 className="text-center text-2xl font-bold text-gray-900">PropertyGuru agent pricing vs 99.co-SRX packages: the published cards</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-sm text-gray-500">
           Annual prices including GST, from each platform&#39;s published agent package card, verified July 2026. Per-month equivalents shown for comparison. Ad credits and boosts cost extra on both portals.
         </p>
