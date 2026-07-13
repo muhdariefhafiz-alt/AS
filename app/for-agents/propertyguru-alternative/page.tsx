@@ -44,7 +44,7 @@ const faqItems = [
   {
     question: "How much does it cost compared to PropertyGuru?",
     answer:
-      "Claiming and maintaining your FairComparisons profile is free forever, and we never take a cut of a sale. Optional subscriptions add reputation and analytics tools: Verified S$29/mo, Professional S$69/mo, Elite S$149/mo. PropertyGuru agent packages range from S$163/mo (Entry) to S$2,861/mo (Business Plus), depending on features and listing credits.",
+      "Claiming and maintaining your FairComparisons profile is free forever, and we never take a cut of a sale. Optional subscriptions add reputation and analytics tools: Verified S$29/mo, Professional S$69/mo, Elite S$149/mo. PropertyGuru's published agent packages (October 2025, including GST) range from S$1,949/yr (Bronze, about S$162/mo) to S$34,322/yr (Platinum+, about S$2,860/mo), depending on listings and visibility credits.",
   },
   {
     question: "Can I cancel my PropertyGuru subscription if I join FairComparisons?",
@@ -136,8 +136,8 @@ export default async function PropertyGuruAlternativePage() {
           PropertyGuru vs FairComparisons
         </h2>
         <p className="mx-auto mt-3 max-w-lg text-center text-sm text-gray-500">
-          PropertyGuru pricing is based on publicly available 2024 rate cards. FairComparisons pricing
-          is current as of today.
+          PropertyGuru pricing below is its published agent package card as of October 2025 (annual,
+          including 9% GST), with the per-month equivalent. FairComparisons pricing is current as of today.
         </p>
 
         <div className="mt-8 overflow-x-auto">
@@ -145,40 +145,40 @@ export default async function PropertyGuruAlternativePage() {
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="px-4 py-3 text-left font-semibold text-gray-900">Plan</th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-900">Monthly cost</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-900">Cost</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-900">What you get</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               <tr className="bg-gray-50">
                 <td colSpan={3} className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-gray-400">
-                  PropertyGuru Agent Plans
+                  PropertyGuru Agent Packages (Oct 2025, incl GST)
                 </td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-gray-700">Entry</td>
-                <td className="px-4 py-3 text-gray-700">S$163</td>
-                <td className="px-4 py-3 text-gray-500">Basic listing credits, agent profile</td>
+                <td className="px-4 py-3 text-gray-700">Bronze</td>
+                <td className="px-4 py-3 text-gray-700">S$1,949/yr (&asymp;S$162/mo)</td>
+                <td className="px-4 py-3 text-gray-500">Entry package, 5 concurrent listings</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-gray-700">Advance</td>
-                <td className="px-4 py-3 text-gray-700">S$488</td>
-                <td className="px-4 py-3 text-gray-500">More listing credits, featured placement</td>
+                <td className="px-4 py-3 text-gray-700">Silver</td>
+                <td className="px-4 py-3 text-gray-700">S$5,873/yr (&asymp;S$489/mo)</td>
+                <td className="px-4 py-3 text-gray-500">More listings and ad credits</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-gray-700">Professional</td>
-                <td className="px-4 py-3 text-gray-700">S$976</td>
-                <td className="px-4 py-3 text-gray-500">Premium listings, priority search results</td>
+                <td className="px-4 py-3 text-gray-700">Gold</td>
+                <td className="px-4 py-3 text-gray-700">S$11,650/yr (&asymp;S$971/mo)</td>
+                <td className="px-4 py-3 text-gray-500">Higher listing caps, more visibility credits</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-gray-700">Business</td>
-                <td className="px-4 py-3 text-gray-700">S$1,464</td>
-                <td className="px-4 py-3 text-gray-500">Top-tier listings, analytics dashboard</td>
+                <td className="px-4 py-3 text-gray-700">Platinum</td>
+                <td className="px-4 py-3 text-gray-700">S$27,455/yr (&asymp;S$2,288/mo)</td>
+                <td className="px-4 py-3 text-gray-500">Premium package for high-volume agents</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-gray-700">Business Plus</td>
-                <td className="px-4 py-3 text-gray-700">S$2,861</td>
-                <td className="px-4 py-3 text-gray-500">Maximum visibility, all features</td>
+                <td className="px-4 py-3 text-gray-700">Platinum+</td>
+                <td className="px-4 py-3 text-gray-700">S$34,322/yr (&asymp;S$2,860/mo)</td>
+                <td className="px-4 py-3 text-gray-500">Top package, 150 concurrent listings</td>
               </tr>
 
               <tr className="bg-[var(--blue-wash)]">

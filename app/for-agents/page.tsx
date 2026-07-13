@@ -148,6 +148,11 @@ export default async function ForAgentsPage() {
           <p className="muted" style={{ textAlign: "center", maxWidth: "60ch", margin: "12px auto 0" }}>
             Honest, sourced side-by-sides with the platforms Singapore agents already know. We are free to be listed and ranked, and sellers compare and invite you to quote.
           </p>
+          <p className="muted" style={{ textAlign: "center", marginTop: 10 }}>
+            <Link href="/for-agents/portal-pricing" style={{ color: "var(--blue)", fontWeight: 600 }}>
+              What agents really pay for portals in 2026: the sourced price table &rarr;
+            </Link>
+          </p>
           <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
             {[
               ["propertyguru", "PropertyGuru"], ["99co", "99.co"], ["srx", "SRX"], ["ohmyhome", "Ohmyhome"],
