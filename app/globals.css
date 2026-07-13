@@ -465,3 +465,9 @@ a.dev--link:hover .dev__name{color:var(--blue-deep);}
 @media(prefers-reduced-motion: reduce){
   .js-reveal-ready .fc-reveal{ opacity:1; transform:none; transition:none; }
 }
+/* Dashboard tab-switch: content fades up on every tab change (keyed wrapper
+   remounts). No fill-mode: the element's NATURAL state is visible, so if the
+   animation ever doesn't run the content simply shows (never stuck hidden). */
+@media(prefers-reduced-motion: no-preference){
+  .fc-tab-in{ animation:fcHeroIn .35s cubic-bezier(.16,1,.3,1); }
+}

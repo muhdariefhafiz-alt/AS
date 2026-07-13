@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { supabase } from "../lib/supabase";
 import PricingCards from "../components/PricingCards";
 import ScrollReveal from "../components/ScrollReveal";
+import DashboardPreview from "../components/DashboardPreview";
 
 export const revalidate = false;
 
@@ -62,6 +63,14 @@ export default async function ForAgentsPage() {
           </div>
           <div className="fc-hero-in fc-hero-in--5">
             <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Claim your free profile</Link>
+          </div>
+
+          {/* Product-forward hero (housapp move): the real dashboard, in miniature. */}
+          <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 44, padding: "0 8px" }}>
+            <DashboardPreview />
+            <p style={{ marginTop: 14, fontSize: 12.5, color: "var(--slate-2)" }}>
+              Your dashboard the moment you claim: your standing, your leads, your daily worklist.
+            </p>
           </div>
         </div>
       </header>

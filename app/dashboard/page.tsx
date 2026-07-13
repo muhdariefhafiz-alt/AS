@@ -386,6 +386,9 @@ export default function DashboardPage() {
             ))}
           </div>
 
+          {/* Keyed by tab: remounts on switch so content fades up (fc-tab-in). */}
+          <div key={activeTab} className="fc-tab-in" style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+
           {/* ---------- HOME: standing + activation + demand snapshot + launcher ---------- */}
           {activeTab === "home" && (
             <>
@@ -746,6 +749,8 @@ export default function DashboardPage() {
             </form>
           </div>
           )}
+
+          </div>{/* end keyed tab wrapper */}
         </div>
       )}
     </div>
