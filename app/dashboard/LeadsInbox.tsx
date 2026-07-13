@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import DraftReply from "./DraftReply";
 
@@ -283,7 +284,7 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
                   )}
                 </div>
                 {r.status === "invited" && (
-                  <div className="mt-2">
+                  <div className="mt-2 flex gap-3">
                     {r.first_reply_at ? (
                       <span className="text-xs font-medium text-emerald-700">
                         &#10003; Replied {new Date(r.first_reply_at).toLocaleDateString()}
@@ -298,6 +299,12 @@ export default function LeadsInbox({ agentEmail, ceaRegistration }: Props) {
                         {replying === r.shortlist_id ? "Saving…" : "Mark as replied"}
                       </button>
                     )}
+                    <Link
+                      href={`/dashboard/contacts/${r.shortlist_id}`}
+                      className="text-xs font-semibold text-gray-600 hover:text-gray-900 underline"
+                    >
+                      View contact
+                    </Link>
                   </div>
                 )}
               </div>
