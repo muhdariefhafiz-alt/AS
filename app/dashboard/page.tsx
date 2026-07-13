@@ -79,6 +79,7 @@ export default function DashboardPage() {
   } | null>(null);
   const [standing, setStanding] = useState<Standing>(null);
   const [farmAreaCount, setFarmAreaCount] = useState<number | null>(null);
+  const [today, setToday] = useState<{ openLeads: number; viewingRequests: number } | null>(null);
   const [activeTab, setActiveTabState] = useState<TabId>("home");
 
   // Tab synced to the URL (?tab=) so it is linkable and back-button friendly.
@@ -146,6 +147,11 @@ export default function DashboardPage() {
             fetch("/api/dashboard/deal-radar")
               .then((r) => (r.ok ? r.json() : null))
               .then((j) => { if (j) setFarmAreaCount((j.areas ?? []).length); })
+              .catch(() => {});
+            // "What needs you today" worklist counts.
+            fetch("/api/dashboard/today")
+              .then((r) => (r.ok ? r.json() : null))
+              .then((j) => { if (j) setToday(j); })
               .catch(() => {});
             return;
           }
@@ -385,6 +391,29 @@ export default function DashboardPage() {
             <>
               {/* Your standing (hero). AgentScore is absorbed into this panel. */}
               <StandingPanel standing={standing} primaryArea={agent.primary_area} score={agent.score} />
+
+              {/* "What needs you today": the habit worklist. A live enquiry or
+                  viewing request is more urgent than finishing setup, so it
+                  leads when present. Each row jumps to the Leads tab. */}
+              {today && (today.openLeads > 0 || today.viewingRequests > 0) && (
+                <div className="fc-card fc-card--pad" style={{ borderLeft: "3px solid var(--ok)" }}>
+                  <p className="kicker" style={{ color: "var(--ok)", margin: 0 }}>What needs you today</p>
+                  <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+                    {today.openLeads > 0 && (
+                      <button onClick={() => setTab("leads")} className="fc-card fc-card--fill" style={{ padding: "11px 14px", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}>
+                        <span className="small"><strong>{today.openLeads}</strong> seller enquir{today.openLeads === 1 ? "y is" : "ies are"} awaiting your quote</span>
+                        <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>Reply &rarr;</span>
+                      </button>
+                    )}
+                    {today.viewingRequests > 0 && (
+                      <button onClick={() => setTab("leads")} className="fc-card fc-card--fill" style={{ padding: "11px 14px", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}>
+                        <span className="small"><strong>{today.viewingRequests}</strong> viewing request{today.viewingRequests === 1 ? "" : "s"} to confirm</span>
+                        <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>Confirm &rarr;</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
           {/* Adaptive "Today" hero: a profile-completeness engine until the agent
               is set up, then a calm "you're set" line. Zeros are never the hero —
