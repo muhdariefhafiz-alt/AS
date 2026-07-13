@@ -106,6 +106,9 @@ export async function POST(req: Request) {
         reason: "investment",
         est_value_low: result.low,
         est_value_high: result.high,
+        // Exact flat type so My Home + the avm-updates cron re-value the right
+        // band instead of the historical 4 ROOM proxy.
+        flat_type: mode === "hdb" && isValidHdbFlatType(flat_type) ? flat_type : null,
       });
       if (error) {
         console.error("[avm/lookup] persist failed", error);

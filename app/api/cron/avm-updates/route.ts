@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   const sb = supabaseAdmin();
   const { data: watchers } = await sb
     .from("sg_leads")
-    .select("id, token, property_type, town, email, email_opt_out_at, whatsapp, marketing_consent, est_value_low, est_value_high")
+    .select("id, token, property_type, town, email, email_opt_out_at, whatsapp, marketing_consent, est_value_low, est_value_high, flat_type")
     .eq("source", "avm")
     .eq("status", "avm_watch")
     .eq("property_type", "HDB")
@@ -44,8 +44,9 @@ export async function GET(req: Request) {
       if (!w.town) continue;
       // Unsubscribed watchers are never mailed again.
       if (w.email_opt_out_at) continue;
-      // We don't store flat type; estimate the 4 ROOM band as the town proxy.
-      const flat = "4 ROOM";
+      // Use the stored flat type (captured at save since My Home v1); older
+      // watchers without one fall back to the historical 4 ROOM town proxy.
+      const flat = isValidHdbFlatType(String(w.flat_type ?? "")) ? String(w.flat_type) : "4 ROOM";
       if (!isValidHdbFlatType(flat)) continue;
       const fresh = await hdbValuation(w.town, flat);
       if (!fresh) continue;
