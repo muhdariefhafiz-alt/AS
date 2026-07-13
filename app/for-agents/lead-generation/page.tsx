@@ -5,14 +5,14 @@ import { supabase } from "../../lib/supabase";
 export const revalidate = false;
 
 export const metadata: Metadata = {
-  title: "Property Agent Lead Generation Singapore - FairComparisons",
+  title: "Property Agent Lead Generation Singapore",
   description:
     "Buyers are already searching for agents like you. FairComparisons ranks in Google for agent name and area searches. Your track record sells itself.",
   alternates: {
     canonical: "https://fair-comparisons.com/for-agents/lead-generation",
   },
   openGraph: {
-    title: "Property Agent Lead Generation Singapore - FairComparisons",
+    title: "Property Agent Lead Generation Singapore",
     description:
       "Buyers are already searching for agents like you. FairComparisons ranks in Google for agent name and area searches.",
     url: "https://fair-comparisons.com/for-agents/lead-generation",

@@ -117,6 +117,16 @@ export default async function ForAgentsPage() {
         <div className="fc-wrap" style={{ padding: "64px 40px" }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Resources for agents</h2>
           <div className="fc-grid-2" style={{ marginTop: 28, gap: 18 }}>
+            <Link href="/for-agents/features" className="fc-card fc-card--pad fc-card--hover">
+              <div className="eyebrow">The toolkit</div>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>Every agent tool, one free dashboard</div>
+              <p className="muted small">Deal Radar, Planner, Demand Dashboard, Building Pages, badge and lead widget. What each does, what it costs (mostly S$0), and how they fit together.</p>
+            </Link>
+            <Link href="/for-agents/building-pages" className="fc-card fc-card--pad fc-card--hover">
+              <div className="eyebrow">New</div>
+              <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>Own your development&#39;s page</div>
+              <p className="muted small">Your commentary, profile and booking link on a development&#39;s data page. One agent per building, first come, first served.</p>
+            </Link>
             <Link href="/for-agents/propertyguru-alternative" className="fc-card fc-card--pad fc-card--hover">
               <div className="eyebrow">Compare</div>
               <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>PropertyGuru alternative</div>

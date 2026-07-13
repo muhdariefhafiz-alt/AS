@@ -5,7 +5,7 @@ import { getAgentStats } from "../../lib/agentStats";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Grow: turn your track record into listings | For Agents",
+  title: "Grow: Agent Prospecting & Seller Reports",
   description:
     "The FairComparisons Grow toolkit for Singapore property agents: Deal Radar prospecting on real CEA/URA/HDB data, co-branded seller reports, a lead-generation website widget, and embeddable calculators. Free to be listed and ranked.",
   alternates: { canonical: "https://fair-comparisons.com/for-agents/grow" },

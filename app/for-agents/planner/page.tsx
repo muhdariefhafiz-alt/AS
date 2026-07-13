@@ -5,7 +5,7 @@ import { getAgentStats } from "../../lib/agentStats";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Planner: your viewings, all in one place | For Agents",
+  title: "Agent Viewing Planner & Free Booking Link",
   description:
     "The FairComparisons Planner for Singapore property agents. Share one booking link; buyers request a viewing time; you confirm, complete or cancel from your dashboard. Free, no account needed for buyers.",
   alternates: { canonical: "https://fair-comparisons.com/for-agents/planner" },
@@ -85,7 +85,7 @@ export default async function PlannerPage() {
         <div className="fc-wrap" style={{ padding: "48px 40px", textAlign: "center" }}>
           <h2 style={{ fontSize: "clamp(22px,3vw,30px)" }}>Part of your free agent toolkit</h2>
           <p className="muted" style={{ maxWidth: "60ch", margin: "12px auto 0" }}>
-            Planner sits alongside <Link href="/for-agents/grow" style={{ color: "var(--blue)", fontWeight: 600 }}>Grow</Link> (Deal Radar prospecting, co-branded seller reports and a lead widget) in your dashboard. Being listed and ranked is always free.
+            Planner sits alongside <Link href="/for-agents/features" style={{ color: "var(--blue)", fontWeight: 600 }}>the full toolkit</Link> and <Link href="/for-agents/grow" style={{ color: "var(--blue)", fontWeight: 600 }}>Grow</Link> (Deal Radar prospecting, co-branded seller reports and a lead widget) in your dashboard. Being listed and ranked is always free.
           </p>
           <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 40, flexWrap: "wrap" }}>
             {[[stats.total, "agents profiled"], [stats.scored, "agents scored"], [stats.agencies, "agencies"]].map(([n, l]) => (
