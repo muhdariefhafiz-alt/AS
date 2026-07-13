@@ -64,6 +64,29 @@ export async function GET(req: Request) {
     }
   }
 
+  // Market pulse: month-to-date HDB resale stats from our own mirror. This is
+  // the genuinely weekly-changing content in the digest (new records land every
+  // weekly sync), so the "this week" framing earns itself even when the top-5
+  // barely moves. Honest framing: "so far this month".
+  let pulse: { count: number; median: number; topTown: string } | null = null;
+  try {
+    const curMonth = new Date().toISOString().slice(0, 7);
+    const { data: mtd } = await supabase
+      .from("sg_hdb_transactions")
+      .select("resale_price, town")
+      .eq("month", curMonth)
+      .limit(8000);
+    if (mtd && mtd.length >= 50) {
+      const prices = mtd.map((r) => Number(r.resale_price)).filter((n) => n > 0).sort((a, b) => a - b);
+      const byTown: Record<string, number> = {};
+      for (const r of mtd) byTown[String(r.town)] = (byTown[String(r.town)] || 0) + 1;
+      const topTown = Object.entries(byTown).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
+      pulse = { count: mtd.length, median: prices[Math.floor(prices.length / 2)], topTown };
+    }
+  } catch {
+    pulse = null;
+  }
+
   // Build emails. All-zero suppression (doc B2): if every metric line for a
   // recipient is zero or absent, skip that recipient entirely. Never email "0 views".
   const emails = subscribers.flatMap((sub) => {
@@ -86,6 +109,11 @@ export async function GET(req: Request) {
       p(
         "This week's highest-scoring property agents in Singapore, ranked on CEA transaction data. No paid placements."
       ),
+      pulse
+        ? p(
+            `<strong>HDB resale so far this month:</strong> ${pulse.count.toLocaleString()} sales at a median of S$${pulse.median.toLocaleString()}. Most active town: ${pulse.topTown}.`
+          )
+        : "",
       weeklyViews
         ? p(
             `<strong>${weeklyViews.toLocaleString()}</strong> agent profiles researched this week by Singapore buyers.`

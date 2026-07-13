@@ -153,31 +153,44 @@ function Footer() {
               hello@fair-comparisons.com
             </a>
           </div>
-          <div>
-            <div className="eyebrow" style={{ color: "var(--slate-2)" }}>
-              Platform
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            <div>
+              <div className="eyebrow" style={{ color: "var(--slate-2)" }}>
+                Platform
+              </div>
+              <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8, fontSize: 14 }}>
+                {[
+                  ["/property-agents", "Compare agents"],
+                  ["/sell", "Sell your property"],
+                  ["/tools/valuation", "Online valuation"],
+                  ["/tools", "Free tools"],
+                  ["/guides", "Property guides"],
+                  ["/for-agents", "For agents"],
+                ].map(([href, label]) => (
+                  <Link key={href} href={href} style={{ color: "rgba(255,255,255,0.78)" }}>
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </div>
-            <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8, fontSize: 14 }}>
-              {[
-                ["/property-agents", "Compare agents"],
-                ["/sell", "Sell your property"],
-                ["/tools/valuation", "Online valuation"],
-                ["/tools/mop-tracker", "MOP tracker"],
-                ["/for-agents", "For agents"],
-                ["/guides/property-agent-commission", "Agent commission guide"],
-                ["/guides", "Property guides"],
-                ["/how-we-score", "How we score"],
-                ["/independent", "Why we're independent"],
-                ["/about", "About"],
-                ["/trust", "Trust & data"],
-                ["/contact", "Contact"],
-                ["/privacy", "Privacy"],
-                ["/terms", "Terms"],
-              ].map(([href, label]) => (
-                <Link key={href} href={href} style={{ color: "rgba(255,255,255,0.78)" }}>
-                  {label}
-                </Link>
-              ))}
+            <div>
+              <div className="eyebrow" style={{ color: "var(--slate-2)" }}>
+                Company
+              </div>
+              <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8, fontSize: 14 }}>
+                {[
+                  ["/about", "About"],
+                  ["/how-we-score", "How we score"],
+                  ["/trust", "Trust & data"],
+                  ["/contact", "Contact"],
+                  ["/privacy", "Privacy"],
+                  ["/terms", "Terms"],
+                ].map(([href, label]) => (
+                  <Link key={href} href={href} style={{ color: "rgba(255,255,255,0.78)" }}>
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
           <div>
