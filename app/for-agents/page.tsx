@@ -5,6 +5,9 @@ import PricingCards from "../components/PricingCards";
 import ScrollReveal from "../components/ScrollReveal";
 import DashboardPreview from "../components/DashboardPreview";
 import PlannerPreview from "../components/PlannerPreview";
+import AgentFeatureShowcase from "../components/AgentFeatureShowcase";
+import AgentIntegrationHub from "../components/AgentIntegrationHub";
+import AgentTrustSection from "../components/AgentTrustSection";
 
 export const revalidate = false;
 
@@ -88,6 +91,9 @@ export default async function ForAgentsPage() {
           </p>
         </div>
       </section>
+
+      {/* Feature showcase (green boxes): the real revenue tools, benefit-led */}
+      <AgentFeatureShowcase />
 
       {/* claimed vs unclaimed */}
       <section className="lp-section--paper">
@@ -258,6 +264,12 @@ export default async function ForAgentsPage() {
           </div>
         </div>
       </section>
+
+      {/* Works with your stack (greyed, coming soon) */}
+      <AgentIntegrationHub />
+
+      {/* Data + integrity trust block */}
+      <AgentTrustSection />
 
       {/* final CTA */}
       <section className="lp-hero">
