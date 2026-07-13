@@ -31,7 +31,8 @@ export function AdminSidebar({
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">FairComparisons</p>
         <h2 className="mt-0.5 text-sm font-bold text-gray-900">Command center</h2>
       </div>
-      <nav className="flex flex-col gap-1">
+      {/* Mobile: one horizontal scrollable chip row (no 11-item vertical wall). Desktop: vertical rail. */}
+      <nav className="flex flex-row gap-1.5 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0">
         {TABS.map((t) => {
           const isActive = active === t.id;
           const badge = badges[t.id];
@@ -39,7 +40,7 @@ export function AdminSidebar({
             <Link
               key={t.id}
               href={`/admin?tab=${t.id}`}
-              className={`group rounded-md border px-3 py-2 transition ${
+              className={`group shrink-0 rounded-md border px-3 py-2 transition ${
                 isActive
                   ? "border-teal-400 bg-teal-50 text-teal-700"
                   : "border-transparent text-gray-600 hover:border-gray-200 hover:bg-gray-50 hover:text-gray-900"
@@ -57,7 +58,7 @@ export function AdminSidebar({
                   </span>
                 )}
               </div>
-              <div className="mt-0.5 text-[10px] text-gray-500">{t.hint}</div>
+              <div className="mt-0.5 hidden text-[10px] text-gray-500 lg:block">{t.hint}</div>
             </Link>
           );
         })}

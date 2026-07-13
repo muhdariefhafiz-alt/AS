@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import type { Metadata } from "next";
@@ -103,17 +104,33 @@ export default async function AdminPage({ searchParams }: Props) {
             </div>
           </header>
 
-          {active === "overzicht" && <OverzichtTab />}
-          {active === "liquidity" && <LiquidityTab />}
-          {active === "funnel" && <FunnelTab />}
-          {active === "leads" && <LeadsTab />}
-          {active === "loops" && <LoopsTab />}
-          {active === "supply" && <SupplyTab />}
-          {active === "seo" && <SeoTab />}
-          {active === "ai-search" && <AiSearchTab />}
-          {active === "contracts" && <ContractsTab />}
-          {active === "ops" && <OpsTab />}
-          {active === "revenue" && <RevenueTab />}
+          {/* Stream the tab body: sidebar + header paint immediately, data-heavy
+              tabs fill in behind a skeleton instead of blocking navigation. */}
+          <Suspense
+            key={active}
+            fallback={
+              <div className="space-y-4">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="animate-pulse rounded-lg border border-gray-200 bg-white p-6">
+                    <div className="h-4 w-40 rounded bg-gray-100" />
+                    <div className="mt-4 h-24 rounded bg-gray-50" />
+                  </div>
+                ))}
+              </div>
+            }
+          >
+            {active === "overzicht" && <OverzichtTab />}
+            {active === "liquidity" && <LiquidityTab />}
+            {active === "funnel" && <FunnelTab />}
+            {active === "leads" && <LeadsTab />}
+            {active === "loops" && <LoopsTab />}
+            {active === "supply" && <SupplyTab />}
+            {active === "seo" && <SeoTab />}
+            {active === "ai-search" && <AiSearchTab />}
+            {active === "contracts" && <ContractsTab />}
+            {active === "ops" && <OpsTab />}
+            {active === "revenue" && <RevenueTab />}
+          </Suspense>
         </div>
       </div>
     </div>

@@ -89,8 +89,9 @@ export default async function ForAgentsPage() {
           <p className="muted" style={{ textAlign: "center", maxWidth: "60ch", margin: "12px auto 0" }}>
             The AgentScore is fully automated. Payment does not influence your ranking. The only way to improve your score is to close more transactions and deliver better service.
           </p>
-          <div className="fc-grid-4" style={{ marginTop: 28 }}>
-            {[["30", "Volume", "Sale-weighted CEA transactions"], ["25", "Recency", "Recent activity weighted higher"], ["15", "Diversity", "Property and transaction types"], ["15", "Experience", "Years registered and consistency"]].map(([n, t, d]) => (
+          {/* Must match the five-dimension model on /how-we-score exactly. */}
+          <div style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14 }}>
+            {[["30", "Volume", "Sale-weighted CEA transactions"], ["25", "Recency", "Recent activity weighted higher"], ["15", "Diversity", "Property and transaction types"], ["15", "Experience", "Years of recorded activity"], ["15", "Reviews", "Agency review standing, Bayesian-corrected"]].map(([n, t, d]) => (
               <div key={t} className="fc-card fc-card--pad" style={{ textAlign: "center" }}>
                 <div className="serif" style={{ fontWeight: 600, fontSize: 34, color: "var(--blue)" }}>{n}</div>
                 <div style={{ fontWeight: 700, marginTop: 4 }}>{t}</div>
@@ -98,6 +99,10 @@ export default async function ForAgentsPage() {
               </div>
             ))}
           </div>
+          <p className="muted small" style={{ textAlign: "center", marginTop: 14 }}>
+            The full methodology, including how each dimension is measured, is public on{" "}
+            <Link href="/how-we-score" style={{ color: "var(--blue)", fontWeight: 600 }}>how we score</Link>.
+          </p>
         </div>
       </section>
 
