@@ -11,7 +11,7 @@ import { MIN_COMMENTARY_CHARS, MAX_COMMENTARY_CHARS, MAX_HEADLINE_CHARS } from "
 // touches rank, score or lead flow.
 
 type ProjectHit = { id: number; name: string; slug: string; street: string | null; district: string | null; txn_count: number | null };
-type PanelData = { tier: string; quota: number; used: number; pages: BuildingPage[] };
+type PanelData = { tier: string; quota: number; used: number; pages: BuildingPage[]; claimable?: number };
 
 export default function BuildingPagesPanel() {
   const [data, setData] = useState<PanelData | null>(null);
@@ -129,16 +129,22 @@ export default function BuildingPagesPanel() {
       <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
         <div>
           <p className="kicker" style={{ color: "var(--blue-deep)", margin: 0 }}>Building pages</p>
-          <h2 style={{ fontSize: 18, margin: "4px 0 0" }}>Present a development you know best</h2>
+          <h2 style={{ fontSize: 18, margin: "4px 0 0" }}>Own the page buyers read before they sell</h2>
         </div>
         <span className="muted small">{data.used} of {data.quota} pages on your {data.tier} plan</span>
       </div>
 
       <p className="muted small" style={{ marginTop: 10 }}>
-        Your local commentary appears on the development&#39;s data page, with your profile, CEA registration
-        and a booking link. One agent per development, first come first served. New spotlights are featured
-        on the homepage. Never affects your rank or who receives leads.
+        Every development page here is researched by real buyers and sellers. Put your name, your insight and
+        your booking link on the one you know best, and you become the agent they meet. One agent per
+        development, first come first served, and new spotlights get featured on the homepage. It never touches your rank.
       </p>
+
+      {typeof data.claimable === "number" && data.claimable > 0 && data.used < data.quota && (
+        <p className="small" style={{ marginTop: 8, color: "var(--blue-deep)", fontWeight: 600 }}>
+          {data.claimable.toLocaleString()} developments still have no agent presenting them. Claim one before a competitor does.
+        </p>
+      )}
 
       {error && (
         <p className="small" style={{ marginTop: 10, color: "#b42318" }}>{error}</p>

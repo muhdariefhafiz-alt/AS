@@ -112,9 +112,9 @@ export default function DealRadar() {
       <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
         <div>
           <p className="kicker" style={{ color: "var(--blue-deep)", margin: 0 }}>Deal Radar</p>
-          <h2 style={{ fontSize: 18, margin: "4px 0 0" }}>Fresh prospects in your farm area</h2>
+          <h2 style={{ fontSize: 18, margin: "4px 0 0" }}>Your next listing is already in the data</h2>
         </div>
-        <span className="muted small">Owners reaching MOP + recent nearby sales, from CEA/URA/HDB records.</span>
+        <span className="muted small">See which owners are about to sell, and price from every fresh nearby deal, before your competitors do.</span>
       </div>
 
       {/* Farm areas */}
@@ -169,8 +169,9 @@ export default function DealRadar() {
 
       {areas.length === 0 && (
         <p className="muted small" style={{ marginTop: 12 }}>
-          Add the HDB towns and districts you farm. We surface owners reaching their MOP and every
-          recent sale nearby, so you always have a fresh call list.
+          Tell us the towns and districts you farm, and every morning you&apos;ll have a fresh call list:
+          owners hitting their 5-year MOP (the sellers no one else has spotted yet) and every recent sale
+          to price from. Add your first area above and watch your next listing appear.
         </p>
       )}
 

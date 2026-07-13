@@ -43,17 +43,28 @@ export async function GET(req: Request) {
     return NextResponse.json({ projects: data ?? [] });
   }
 
-  const [{ data: pages }, quota] = await Promise.all([
+  const [{ data: pages }, quota, claimable] = await Promise.all([
     sb
       .from("sg_building_pages")
       .select(`${PAGE_COLS}, sg_projects(name, district, txn_count)`)
       .eq("agent_id", session.agentId)
       .order("updated_at", { ascending: false }),
     quotaFor(session.agentId),
+    // Scarcity nudge (F1): meaningful developments with no agent presenting them
+    // yet. Every one is a page an agent could own, first-come.
+    (async () => {
+      const [{ count: totalDev }, { data: claimed }] = await Promise.all([
+        sb.from("sg_projects").select("id", { count: "exact", head: true }).gt("txn_count", 20),
+        sb.from("sg_building_pages").select("project_id").eq("status", "published"),
+      ]);
+      const claimedCount = new Set((claimed ?? []).map((c) => c.project_id)).size;
+      return Math.max((totalDev ?? 0) - claimedCount, 0);
+    })(),
   ]);
 
   return NextResponse.json({
     ...quota,
+    claimable,
     pages: (pages ?? []).map((p) => {
       const proj = p.sg_projects as unknown as { name: string; district: string | null; txn_count: number | null } | null;
       return {

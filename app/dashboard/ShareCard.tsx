@@ -69,7 +69,7 @@ export default function ShareCard({ slug, score }: { slug: string; score: number
       {mode === "rank" && (
         <div style={{ marginTop: 14 }}>
           <p className="muted small" style={{ marginBottom: 12 }}>
-            Your AgentScore is computed from real CEA records and can&apos;t be bought. Share it where clients already talk to you.
+            Your AgentScore is proof no competitor can fake: it&apos;s computed from real CEA records and can&apos;t be bought. Drop it into a listing pitch or your WhatsApp and let it close for you.
           </p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
