@@ -25,29 +25,34 @@ const TIER_LABELS: Record<Tier, string> = {
 // Profile-completeness engine. Weights reflect conversion impact, not equal
 // thirds: a photo and a message do the most to convert the sellers who already
 // view the profile. Drives the adaptive "Today" hero and its single next action.
-type SetupStep = { key: string; label: string; cta: string; weight: number; done: boolean; anchor: string };
+type TabId = "home" | "leads" | "grow" | "profile";
+type SetupStep = { key: string; label: string; cta: string; weight: number; done: boolean; anchor: string; tab: TabId };
 function computeCompleteness(p: {
   photo: boolean; message: boolean; whatsapp: boolean; bio: boolean; areas: number | null;
 }): { pct: number; done: number; steps: SetupStep[]; next: SetupStep | null } {
   const steps: SetupStep[] = [
-    { key: "photo", label: "Add a profile photo", cta: "Add your photo", weight: 30, done: p.photo, anchor: "edit-photo" },
-    { key: "message", label: "Write your message to sellers", cta: "Write your message", weight: 25, done: p.message, anchor: "edit-message" },
-    { key: "whatsapp", label: "Add WhatsApp for instant lead alerts", cta: "Add your WhatsApp", weight: 20, done: p.whatsapp, anchor: "edit-whatsapp" },
-    { key: "bio", label: "Write a short bio", cta: "Write your bio", weight: 15, done: p.bio, anchor: "edit-bio" },
-    { key: "areas", label: "Add the areas you farm", cta: "Add a farm area", weight: 10, done: (p.areas ?? 0) > 0, anchor: "deal-radar" },
+    { key: "photo", label: "Add a profile photo", cta: "Add your photo", weight: 30, done: p.photo, anchor: "edit-photo", tab: "profile" },
+    { key: "message", label: "Write your message to sellers", cta: "Write your message", weight: 25, done: p.message, anchor: "edit-message", tab: "profile" },
+    { key: "whatsapp", label: "Add WhatsApp for instant lead alerts", cta: "Add your WhatsApp", weight: 20, done: p.whatsapp, anchor: "edit-whatsapp", tab: "profile" },
+    { key: "bio", label: "Write a short bio", cta: "Write your bio", weight: 15, done: p.bio, anchor: "edit-bio", tab: "profile" },
+    { key: "areas", label: "Add the areas you farm", cta: "Add a farm area", weight: 10, done: (p.areas ?? 0) > 0, anchor: "deal-radar", tab: "grow" },
   ];
   const pct = steps.filter((s) => s.done).reduce((a, s) => a + s.weight, 0);
   return { pct, done: steps.filter((s) => s.done).length, steps, next: steps.find((s) => !s.done) ?? null };
 }
 
 // Scroll to and focus an edit-form field (or the Deal Radar picker) so the
-// hero's next-best-action deep-links straight to the exact input.
-function focusField(anchor: string) {
+// hero's next-best-action deep-links straight to the exact input. Polls for the
+// element (up to ~1s) because a cross-tab jump mounts the target tab first.
+function focusField(anchor: string, tries = 0) {
   const el = document.getElementById(anchor);
-  if (!el) return;
-  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (!el) {
+    if (tries < 20) setTimeout(() => focusField(anchor, tries + 1), 50);
+    return;
+  }
+  el.scrollIntoView({ block: "center" });
   const input = el.querySelector("input, textarea, select") as HTMLElement | null;
-  if (input) setTimeout(() => input.focus(), 350);
+  if (input) setTimeout(() => input.focus(), 120);
 }
 
 export default function DashboardPage() {
@@ -74,6 +79,29 @@ export default function DashboardPage() {
   } | null>(null);
   const [standing, setStanding] = useState<Standing>(null);
   const [farmAreaCount, setFarmAreaCount] = useState<number | null>(null);
+  const [activeTab, setActiveTabState] = useState<TabId>("home");
+
+  // Tab synced to the URL (?tab=) so it is linkable and back-button friendly.
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t === "leads" || t === "grow" || t === "profile") setActiveTabState(t);
+  }, []);
+  function setTab(t: TabId) {
+    setActiveTabState(t);
+    const url = new URL(window.location.href);
+    if (t === "home") url.searchParams.delete("tab"); else url.searchParams.set("tab", t);
+    window.history.replaceState(null, "", url.toString());
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  // Cross-tab deep link: switch to the field's tab (without setTab's scroll-to-top,
+  // so the field scroll wins), then scroll to + focus the field after render.
+  function goToField(tab: TabId, anchor: string) {
+    setActiveTabState(tab);
+    const url = new URL(window.location.href);
+    if (tab === "home") url.searchParams.delete("tab"); else url.searchParams.set("tab", tab);
+    window.history.replaceState(null, "", url.toString());
+    setTimeout(() => focusField(anchor), 220);
+  }
 
   // Edit form state
   const [bio, setBio] = useState("");
@@ -331,8 +359,32 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Your standing (hero). AgentScore is absorbed into this panel. */}
-          <StandingPanel standing={standing} primaryArea={agent.primary_area} score={agent.score} />
+          {/* Tabs: Home = activation + daily pulse; the tools live behind
+              job-based tabs so a new agent is not buried in a 12-section wall,
+              while the Home launcher keeps every tool discoverable. */}
+          <div style={{ display: "flex", gap: 4, overflowX: "auto", borderBottom: "1px solid var(--line)" }}>
+            {(([["home", "Home"], ["leads", "Leads"], ["grow", "Grow"], ["profile", "Profile"]]) as [TabId, string][]).map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className="small"
+                style={{
+                  border: "none", background: "none", cursor: "pointer", padding: "9px 15px", fontWeight: 600, whiteSpace: "nowrap", fontSize: 14,
+                  color: activeTab === id ? "var(--ink)" : "var(--slate)",
+                  borderBottom: activeTab === id ? "2px solid var(--blue)" : "2px solid transparent",
+                  marginBottom: -1,
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* ---------- HOME: standing + activation + demand snapshot + launcher ---------- */}
+          {activeTab === "home" && (
+            <>
+              {/* Your standing (hero). AgentScore is absorbed into this panel. */}
+              <StandingPanel standing={standing} primaryArea={agent.primary_area} score={agent.score} />
 
           {/* Adaptive "Today" hero: a profile-completeness engine until the agent
               is set up, then a calm "you're set" line. Zeros are never the hero —
@@ -373,7 +425,7 @@ export default function DashboardPage() {
                   A complete profile converts more of the sellers already looking at you.
                 </p>
                 {next && (
-                  <button className="fc-btn fc-btn--primary fc-btn--sm" style={{ marginTop: 12 }} onClick={() => focusField(next.anchor)}>
+                  <button className="fc-btn fc-btn--primary fc-btn--sm" style={{ marginTop: 12 }} onClick={() => goToField(next.tab, next.anchor)}>
                     {next.cta} &rarr;
                   </button>
                 )}
@@ -381,7 +433,7 @@ export default function DashboardPage() {
                   {steps.map((s) => (
                     <button
                       key={s.key}
-                      onClick={() => focusField(s.anchor)}
+                      onClick={() => goToField(s.tab, s.anchor)}
                       className="small"
                       style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center", color: s.done ? "var(--slate)" : "var(--ink)" }}
                     >
@@ -411,26 +463,40 @@ export default function DashboardPage() {
             </button>
           )}
 
-          {/* Deal Radar: daily farm-area prospecting feed (the daily-habit hook).
-              id anchor so the setup hero's "Add a farm area" step scrolls here. */}
-          {agent.cea_registration && (
-            <div id="deal-radar">
-              <DealRadar />
-            </div>
+              {/* Contact-click detail for paid tiers (views live in Demand above). */}
+              {isPaid(agent.subscription_tier) && (
+                <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
+                  <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week}</p>
+                  <p className="kicker" style={{ marginTop: 4 }}>Contact-button clicks this week</p>
+                </div>
+              )}
+
+              {/* Tools launcher — every tool stays discoverable from Home even
+                  though its full UI lives in a tab (protects feature discovery). */}
+              <div>
+                <p className="kicker" style={{ margin: "0 0 10px" }}>Your tools</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>
+                  {(([
+                    ["leads", "Seller enquiries", "Reply and win listings"],
+                    ["leads", "Viewings", "Confirm booking requests"],
+                    ["grow", "Deal Radar", "Owners reaching MOP near you"],
+                    ["grow", "Building pages", "Own a development's page"],
+                    ["grow", "Share your record", "Rank card + website badge"],
+                    ["profile", "Edit profile", "Photo, message, WhatsApp"],
+                  ]) as [TabId, string, string][]).map(([tab, title, sub]) => (
+                    <button key={title} onClick={() => setTab(tab)} className="fc-card" style={{ padding: 14, textAlign: "left", cursor: "pointer", border: "1px solid var(--line)" }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{title}</div>
+                      <div className="muted small" style={{ marginTop: 3 }}>{sub}</div>
+                      <div className="small" style={{ marginTop: 8, color: "var(--blue)", fontWeight: 600 }}>Open &rarr;</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
 
-          {/* Planner: viewing appointments booked through the agent's /book link */}
-          {agent.cea_registration && <PlannerPanel />}
-
-          {/* Building pages: agent-owned marketing on development data pages */}
-          {agent.cea_registration && <BuildingPagesPanel />}
-
-          {/* Early-access falsification test: bring portal performance data in
-              via the only lawful route (the agent's own AgentNet PDF export). */}
-          {agent.cea_registration && <PerfUploadCard />}
-
-          {/* Seller leads inbox */}
-          {agent.cea_registration && (
+          {/* ---------- LEADS: the money surface (enquiries + viewings) ---------- */}
+          {activeTab === "leads" && agent.cea_registration && (
             <div>
               <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
                 <h2 style={{ fontSize: 18, margin: 0 }}>Seller enquiries</h2>
@@ -446,39 +512,38 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+          {activeTab === "leads" && agent.cea_registration && <PlannerPanel />}
 
-          {/* Contact-click detail for paid tiers (views already live in the
-              Demand panel above; the free-tier teaser is the inline chip). */}
-          {isPaid(agent.subscription_tier) && (
-            <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
-              <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week}</p>
-              <p className="kicker" style={{ marginTop: 4 }}>Contact-button clicks this week</p>
+          {/* ---------- GROW: prospecting + marketing toolkit ---------- */}
+          {activeTab === "grow" && agent.cea_registration && (
+            <div id="deal-radar">
+              <DealRadar />
+            </div>
+          )}
+          {activeTab === "grow" && agent.cea_registration && <BuildingPagesPanel />}
+          {activeTab === "grow" && agent.cea_registration && <PerfUploadCard />}
+
+          {/* Consolidated share surface (Grow tab). */}
+          {activeTab === "grow" && <ShareCard slug={agent.slug} score={agent.score} />}
+
+          {/* ---------- PROFILE: identity model + verified + edit form ---------- */}
+          {activeTab === "profile" && (
+            <div className="fc-card" style={{ background: "var(--blue-wash)", borderColor: "transparent", padding: "20px 22px" }}>
+              <h2 style={{ fontSize: 16, margin: 0, color: "var(--ink)" }}>How FairComparisons works for you</h2>
+              <ul style={{ marginTop: 10, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 14.5, color: "var(--ink-2)" }}>
+                <li>You&apos;re listed free, ranked purely on your CEA transaction record.</li>
+                <li>Sellers compare every agent in their area and invite the ones they choose; we pass you that introduction free.</li>
+                <li>We never take a cut of your sales. Optional subscriptions add reputation and analytics tools, nothing more.</li>
+              </ul>
+              <p className="small" style={{ marginTop: 12, color: "var(--blue-deep)" }}>
+                Your ranking is always earned, never bought. There is no paid placement on FairComparisons.
+              </p>
             </div>
           )}
 
-          {/* How it works — independent comparison model: every agent is
-              listed and ranked free on their CEA record, sellers compare and
-              contact agents themselves, and FairComparisons is paid only by
-              optional subscriptions that never affect ranking. */}
-          <div className="fc-card" style={{ background: "var(--blue-wash)", borderColor: "transparent", padding: "20px 22px" }}>
-            <h2 style={{ fontSize: 16, margin: 0, color: "var(--ink)" }}>How FairComparisons works for you</h2>
-            <ul style={{ marginTop: 10, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 14.5, color: "var(--ink-2)" }}>
-              <li>You&apos;re listed free, ranked purely on your CEA transaction record.</li>
-              <li>Sellers compare every agent in their area and invite the ones they choose; we pass you that introduction free.</li>
-              <li>We never take a cut of your sales. Optional subscriptions add reputation and analytics tools, nothing more.</li>
-            </ul>
-            <p className="small" style={{ marginTop: 12, color: "var(--blue-deep)" }}>
-              Your ranking is always earned, never bought. There is no paid placement on FairComparisons.
-            </p>
-          </div>
-
-          {/* One consolidated share surface: AgentScore badge + website lead
-              widget behind a toggle (was two separate cards). */}
-          <ShareCard slug={agent.slug} score={agent.score} />
-
           {/* Optional tools tier — NON-ranking only (analytics + market data).
               Gated behind the 7-day "aha moment". */}
-          {agent.subscription_tier === "free" && (() => {
+          {activeTab === "profile" && agent.subscription_tier === "free" && (() => {
             const claimedDaysAgo = agent.claimed_at
               ? (Date.now() - new Date(agent.claimed_at).getTime()) / (1000 * 60 * 60 * 24)
               : null;
@@ -513,7 +578,7 @@ export default function DashboardPage() {
           })()}
 
           {/* Existing paid tier holders — manage/cancel */}
-          {agent.subscription_tier !== "free" && (
+          {activeTab === "profile" && agent.subscription_tier !== "free" && (
             <div className="fc-card fc-card--fill" style={{ padding: "14px 16px" }}>
               <p className="muted small">
                 You have {TIER_LABELS[agent.subscription_tier]} tools. To manage or cancel, email{" "}
@@ -523,6 +588,7 @@ export default function DashboardPage() {
           )}
 
           {/* Profile edit form */}
+          {activeTab === "profile" && (
           <div style={{ borderTop: "1px solid var(--line)", paddingTop: 24 }}>
             <h2 style={{ fontSize: 18, margin: 0 }}>Edit your profile</h2>
             <form onSubmit={handleSave} style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 20 }}>
@@ -650,6 +716,7 @@ export default function DashboardPage() {
               </div>
             </form>
           </div>
+          )}
         </div>
       )}
     </div>
