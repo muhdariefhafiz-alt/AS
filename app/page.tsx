@@ -262,6 +262,25 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ---------- MY HOME (F3 nurture entry point) ---------- */}
+      <section className="fc-wrap" style={{ padding: "0 40px 64px" }}>
+        <div className="fc-card" style={{ background: "var(--ink)", color: "#fff", padding: "40px 36px", display: "flex", flexWrap: "wrap", gap: 24, alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ maxWidth: "52ch" }}>
+            <div className="eyebrow" style={{ color: "var(--slate-2)" }}>My Home</div>
+            <h2 style={{ color: "#fff", margin: "10px 0 0", fontSize: "clamp(22px,2.6vw,30px)" }}>
+              Track what your home is worth, <span className="italic-serif">every month.</span>
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.72)", marginTop: 10, fontSize: 15, lineHeight: 1.65 }}>
+              A free estimate from real HDB transactions, refreshed monthly, with your MOP countdown and the
+              comparable sales behind the number. No account, no obligation, unsubscribe anytime.
+            </p>
+          </div>
+          <Link href="/tools/valuation" className="fc-btn fc-btn--primary fc-btn--lg" style={{ flexShrink: 0 }}>
+            Get your free estimate
+          </Link>
+        </div>
+      </section>
+
       {/* ---------- GUIDES & RANKINGS (internal link equity) ---------- */}
       <section style={{ background: "var(--cloud)" }}>
         <div className="fc-wrap" style={{ padding: "56px 40px" }}>

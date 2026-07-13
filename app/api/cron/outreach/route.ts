@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isEmailUsable } from "../../../lib/reachability";
 import { createClient } from "@supabase/supabase-js";
 import { sendBatchEmails } from "../../../lib/email";
 import {
@@ -47,7 +48,8 @@ export async function GET(req: Request) {
     });
   }
 
-  const DAILY_LIMIT = 50;
+  // Conservative rollout: cap via env (default 10/day, hard ceiling 50).
+  const DAILY_LIMIT = Math.max(1, Math.min(50, Number(process.env.OUTREACH_DAILY_CAP ?? 10)));
   const DRIP_SEQUENCE = ["initialOutreach", "competitorComparison", "costComparison", "areaLeader"];
   const results: Record<string, unknown> = {};
 
@@ -74,10 +76,24 @@ export async function GET(req: Request) {
   const slugs = uniqueCandidates.map(c => c.agent_slug);
   const { data: agents } = await supabase
     .from("sg_agents")
-    .select("id, slug, name, score, transaction_count, primary_area, agency_name, cea_registration, percentile, claimed")
+    .select("id, slug, name, score, transaction_count, primary_area, agency_name, cea_registration, percentile, claimed, email, email_status, email_opt_out_at")
     .in("slug", slugs);
 
   const agentMap = new Map((agents ?? []).map(a => [a.slug, a]));
+
+  // Warmest-first: agents real sellers shortlisted in the last 30 days lead
+  // the queue (their email opens with genuine demand, not cold ego-bait).
+  const d30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: shortlisted } = await supabase
+    .from("sg_lead_shortlist")
+    .select("agent_id")
+    .gte("created_at", d30);
+  const shortlistedIds = new Set((shortlisted ?? []).map(r => r.agent_id));
+  uniqueCandidates.sort((a, b) => {
+    const aw = shortlistedIds.has(agentMap.get(a.agent_slug)?.id ?? -1) ? 0 : 1;
+    const bw = shortlistedIds.has(agentMap.get(b.agent_slug)?.id ?? -1) ? 0 : 1;
+    return aw - bw;
+  });
 
   // Get existing outreach history
   const agentIds = (agents ?? []).filter(a => !a.claimed).map(a => a.id);
@@ -120,6 +136,9 @@ export async function GET(req: Request) {
     const agent = agentMap.get(candidate.agent_slug);
     if (!agent || agent.claimed) continue;
     if (!agent.score || Number(agent.score) < 30) continue;
+    // Real-recipient suppression: must have a usable, non-opted-out email.
+    if (!agent.email || agent.email_opt_out_at) continue;
+    if (!isEmailUsable(agent.email, agent.email_status)) continue;
 
     const h = historyMap.get(agent.id);
 
@@ -161,11 +180,11 @@ export async function GET(req: Request) {
   }
 
   // --- 3. Generate emails using lib templates ---
-  // Placeholder until we have agent emails. Also signs the unsubscribe link,
-  // so it must match the `to` address exactly.
-  const OUTREACH_RECIPIENT = "hello@fair-comparisons.com";
-
+  // Recipient is the agent's own email; the signed unsubscribe link must match
+  // the `to` address exactly. (The old hello@ placeholder is gone: this route
+  // only runs behind OUTREACH_ENABLED and only for suppression-checked agents.)
   const emailBatch = toSend.map(({ agent, template, rank, area }) => {
+    const OUTREACH_RECIPIENT = String(agent.email);
     const agentData = {
       name: agent.name,
       slug: agent.slug,

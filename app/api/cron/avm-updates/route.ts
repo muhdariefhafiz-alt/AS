@@ -9,10 +9,16 @@ import { hdbValuation, isValidHdbFlatType } from "../../../lib/avm";
 // has moved more than 2% since we last stored it. HDB-only for now (private
 // needs the project slug, which we don't store on the lead).
 //
+// Monthly nurture (F3): watchers whose estimate has NOT moved 2% still get one
+// calm monthly My Home update (Zoopla-style), throttled by digest_last_sent_at.
+// Any send (alert or digest) stamps digest_last_sent_at so nobody gets both
+// within a month.
+//
 // Batched: processes up to 200 watchers per run via created_at cursor so we
 // never blow the cron time budget.
 
 const MOVE_THRESHOLD = 0.02;
+const DIGEST_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export async function GET(req: Request) {
   const cronSecret = process.env.CRON_SECRET;
@@ -26,7 +32,7 @@ export async function GET(req: Request) {
   const sb = supabaseAdmin();
   const { data: watchers } = await sb
     .from("sg_leads")
-    .select("id, token, property_type, town, email, email_opt_out_at, whatsapp, marketing_consent, est_value_low, est_value_high, flat_type")
+    .select("id, token, property_type, town, email, email_opt_out_at, whatsapp, marketing_consent, est_value_low, est_value_high, flat_type, digest_last_sent_at, keys_date")
     .eq("source", "avm")
     .eq("status", "avm_watch")
     .eq("property_type", "HDB")
@@ -39,6 +45,8 @@ export async function GET(req: Request) {
   }
 
   let notified = 0;
+  let digests = 0;
+  const now = Date.now();
   for (const w of watchers) {
     try {
       if (!w.town) continue;
@@ -62,10 +70,45 @@ export async function GET(req: Request) {
         continue;
       }
       const move = Math.abs(fresh.mid - prevMid) / prevMid;
-      if (move < MOVE_THRESHOLD) continue;
-
       const site =
         process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
+
+      if (move < MOVE_THRESHOLD) {
+        // Monthly nurture: one calm My Home update while the value holds.
+        const lastDigest = w.digest_last_sent_at ? new Date(String(w.digest_last_sent_at)).getTime() : 0;
+        if (now - lastDigest < DIGEST_INTERVAL_MS) continue;
+
+        const digestLink = `${site}/tools/valuation/result/${w.token}?utm_source=avm_monthly`;
+        const range = `${fmtSgd(fresh.low)} to ${fmtSgd(fresh.high)}`;
+        const digestHtml = emailShell({
+          preheader: `Your ${w.town} estimate is holding steady.`,
+          heading: `Your ${w.town} home, this month`,
+          bodyHtml:
+            p(
+              `Our estimate for your HDB flat is <strong>${range}</strong>, holding steady since your last update (less than 2% movement, based on recent recorded sales in ${w.town}).`
+            ) +
+            muted(
+              `This is a data estimate, not a valuation. Your My Home page has the full picture: recent comparable sales${w.keys_date ? ", your MOP countdown" : ""} and what agents in ${w.town} are selling for.`
+            ),
+          cta: { label: "Open My Home", href: digestLink },
+          footerNote: `Sent monthly to ${w.email} because you asked to watch this valuation on FairComparisons.`,
+          unsubscribeEmail: String(w.email),
+        });
+        await sendEmail({
+          to: String(w.email),
+          subject: `Your ${w.town} home: this month's estimate`,
+          html: digestHtml,
+          metric: "AVM Monthly Digest",
+          properties: { lead_token: w.token },
+        });
+        await sb
+          .from("sg_leads")
+          .update({ digest_last_sent_at: new Date(now).toISOString() })
+          .eq("id", w.id);
+        digests += 1;
+        continue;
+      }
+
       const link = `${site}/tools/valuation/result/${w.token}?utm_source=avm_update`;
       const direction = fresh.mid > prevMid ? "up" : "down";
 
@@ -109,7 +152,7 @@ export async function GET(req: Request) {
 
       await sb
         .from("sg_leads")
-        .update({ est_value_low: fresh.low, est_value_high: fresh.high })
+        .update({ est_value_low: fresh.low, est_value_high: fresh.high, digest_last_sent_at: new Date(now).toISOString() })
         .eq("id", w.id);
       notified += 1;
     } catch (e) {
@@ -117,7 +160,7 @@ export async function GET(req: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, scanned: watchers.length, notified });
+  return NextResponse.json({ ok: true, scanned: watchers.length, notified, digests });
 }
 
 function fmtSgd(n: number): string {
