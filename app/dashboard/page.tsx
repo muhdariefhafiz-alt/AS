@@ -8,6 +8,7 @@ import DealRadar from "./DealRadar";
 import PlannerPanel from "./PlannerPanel";
 import DemandPanel from "./DemandPanel";
 import BuildingPagesPanel from "./BuildingPagesPanel";
+import ShareCard from "./ShareCard";
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid } from "../lib/tiers";
 
@@ -19,6 +20,34 @@ const TIER_LABELS: Record<Tier, string> = {
   professional: "Professional",
   elite: "Elite",
 };
+
+// Profile-completeness engine. Weights reflect conversion impact, not equal
+// thirds: a photo and a message do the most to convert the sellers who already
+// view the profile. Drives the adaptive "Today" hero and its single next action.
+type SetupStep = { key: string; label: string; cta: string; weight: number; done: boolean; anchor: string };
+function computeCompleteness(p: {
+  photo: boolean; message: boolean; whatsapp: boolean; bio: boolean; areas: number | null;
+}): { pct: number; done: number; steps: SetupStep[]; next: SetupStep | null } {
+  const steps: SetupStep[] = [
+    { key: "photo", label: "Add a profile photo", cta: "Add your photo", weight: 30, done: p.photo, anchor: "edit-photo" },
+    { key: "message", label: "Write your message to sellers", cta: "Write your message", weight: 25, done: p.message, anchor: "edit-message" },
+    { key: "whatsapp", label: "Add WhatsApp for instant lead alerts", cta: "Add your WhatsApp", weight: 20, done: p.whatsapp, anchor: "edit-whatsapp" },
+    { key: "bio", label: "Write a short bio", cta: "Write your bio", weight: 15, done: p.bio, anchor: "edit-bio" },
+    { key: "areas", label: "Add the areas you farm", cta: "Add a farm area", weight: 10, done: (p.areas ?? 0) > 0, anchor: "deal-radar" },
+  ];
+  const pct = steps.filter((s) => s.done).reduce((a, s) => a + s.weight, 0);
+  return { pct, done: steps.filter((s) => s.done).length, steps, next: steps.find((s) => !s.done) ?? null };
+}
+
+// Scroll to and focus an edit-form field (or the Deal Radar picker) so the
+// hero's next-best-action deep-links straight to the exact input.
+function focusField(anchor: string) {
+  const el = document.getElementById(anchor);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  const input = el.querySelector("input, textarea, select") as HTMLElement | null;
+  if (input) setTimeout(() => input.focus(), 350);
+}
 
 export default function DashboardPage() {
   const [email, setEmail] = useState("");
@@ -43,6 +72,7 @@ export default function DashboardPage() {
     whatsapp_clicks_this_week: number;
   } | null>(null);
   const [standing, setStanding] = useState<Standing>(null);
+  const [farmAreaCount, setFarmAreaCount] = useState<number | null>(null);
 
   // Edit form state
   const [bio, setBio] = useState("");
@@ -83,6 +113,11 @@ export default function DashboardPage() {
             setMessage(data.agent.message || "");
             setMarketingName(data.agent.marketing_name || "");
             setLookupStatus("found");
+            // Non-blocking: farm-area count feeds the profile-completeness meter.
+            fetch("/api/dashboard/deal-radar")
+              .then((r) => (r.ok ? r.json() : null))
+              .then((j) => { if (j) setFarmAreaCount((j.areas ?? []).length); })
+              .catch(() => {});
             return;
           }
         }
@@ -203,11 +238,17 @@ export default function DashboardPage() {
 
   return (
     <div style={{ maxWidth: 660, margin: "0 auto", padding: "56px 22px 80px" }}>
-      <div className="eyebrow">Agent dashboard</div>
-      <h1 style={{ fontSize: "var(--t-h2)", margin: "10px 0 0" }}>Your FairComparisons account</h1>
-      <p className="muted" style={{ marginTop: 8, fontSize: 15 }}>
-        Manage your profile, see how sellers find you, and track your reputation and analytics.
-      </p>
+      {/* Big title only on the sign-in screen; the dashboard leads with the
+          slim agent header + the adaptive "Today" hero instead. */}
+      {lookupStatus !== "found" && (
+        <>
+          <div className="eyebrow">Agent dashboard</div>
+          <h1 style={{ fontSize: "var(--t-h2)", margin: "10px 0 0" }}>Your FairComparisons account</h1>
+          <p className="muted" style={{ marginTop: 8, fontSize: 15 }}>
+            Manage your profile, see how sellers find you, and track your reputation and analytics.
+          </p>
+        </>
+      )}
 
       {/* Upgrade success banner */}
       {upgraded && (
@@ -279,33 +320,103 @@ export default function DashboardPage() {
                 <p className="muted small">{agent.agency_name ? cleanAgency(agent.agency_name) : "Independent agent"}</p>
               </div>
             </div>
-            <span className="fc-badge" style={{ background: "var(--cloud)", color: "var(--ink)" }}>
-              {TIER_LABELS[agent.subscription_tier]} plan
-            </span>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+              <span className="fc-badge" style={{ background: "var(--cloud)", color: "var(--ink)" }}>
+                {TIER_LABELS[agent.subscription_tier]} plan
+              </span>
+              <Link href={`/property-agents/agent/${agent.slug}`} className="small" style={{ color: "var(--blue)", fontWeight: 600 }}>
+                View public profile ›
+              </Link>
+            </div>
           </div>
 
           {/* Your standing (hero). AgentScore is absorbed into this panel. */}
           <StandingPanel standing={standing} primaryArea={agent.primary_area} score={agent.score} />
 
+          {/* Adaptive "Today" hero: a profile-completeness engine until the agent
+              is set up, then a calm "you're set" line. Zeros are never the hero —
+              Standing above always leads with the real, non-zero rank. */}
+          {(() => {
+            const { pct, done, steps, next } = computeCompleteness({
+              photo: !!photoUrl.trim(),
+              message: !!message.trim(),
+              whatsapp: !!whatsapp.trim(),
+              bio: !!bio.trim(),
+              areas: farmAreaCount,
+            });
+            if (pct >= 100) {
+              return (
+                <div className="fc-card fc-card--fill" style={{ padding: "12px 16px" }}>
+                  <span className="small" style={{ color: "var(--ok)", fontWeight: 700 }}>&#10003; Profile complete.</span>{" "}
+                  <span className="muted small">
+                    {agent.views_this_week > 0
+                      ? `${agent.views_this_week} seller${agent.views_this_week === 1 ? "" : "s"} viewed you this week. Share your record below to bring in more.`
+                      : "You're set up and ranked. Share your record below and add farm areas to surface fresh owners."}
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <div className="fc-card fc-card--pad" style={{ borderLeft: "3px solid var(--blue)" }}>
+                <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+                  <div>
+                    <p className="kicker" style={{ color: "var(--blue-deep)", margin: 0 }}>Today</p>
+                    <h2 style={{ fontSize: 18, margin: "4px 0 0" }}>Finish your profile &mdash; {pct}% done</h2>
+                  </div>
+                  <span className="muted small">{done} of {steps.length} steps</span>
+                </div>
+                <div style={{ marginTop: 12, height: 10, borderRadius: 999, background: "var(--cloud)", overflow: "hidden" }}>
+                  <div style={{ width: `${pct}%`, height: "100%", background: "var(--blue)", transition: "width .3s" }} />
+                </div>
+                <p className="muted small" style={{ marginTop: 10 }}>
+                  A complete profile converts more of the sellers already looking at you.
+                </p>
+                {next && (
+                  <button className="fc-btn fc-btn--primary fc-btn--sm" style={{ marginTop: 12 }} onClick={() => focusField(next.anchor)}>
+                    {next.cta} &rarr;
+                  </button>
+                )}
+                <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: "6px 16px" }}>
+                  {steps.map((s) => (
+                    <button
+                      key={s.key}
+                      onClick={() => focusField(s.anchor)}
+                      className="small"
+                      style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "inline-flex", gap: 6, alignItems: "center", color: s.done ? "var(--slate)" : "var(--ink)" }}
+                    >
+                      <span style={{ color: s.done ? "var(--ok)" : "var(--slate-2)" }}>{s.done ? "✓" : "○"}</span>
+                      <span style={{ textDecoration: s.done ? "line-through" : "none" }}>{s.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Demand Dashboard: real seller demand for this agent (never affects rank) */}
           <DemandPanel />
 
-          {/* Stats row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
-              <p className="serif" style={{ fontSize: 30, fontWeight: 600 }}>{TIER_LABELS[agent.subscription_tier]}</p>
-              <p className="kicker" style={{ marginTop: 4 }}>Current plan</p>
-            </div>
-            <div className="fc-card" style={{ padding: 18, textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-              <Link href={`/property-agents/agent/${agent.slug}`} style={{ color: "var(--blue)", fontWeight: 600, fontSize: 15 }}>
-                View profile ›
-              </Link>
-              <p className="kicker" style={{ marginTop: 4 }}>Public page</p>
-            </div>
-          </div>
+          {/* Verified upsell as a single contextual chip right under the numbers
+              it unlocks (was a full locked card + a duplicate stat tile). */}
+          {agent.subscription_tier === "free" && (
+            <button
+              onClick={() => handleUpgrade("verified")}
+              disabled={checkoutLoading !== null}
+              className="fc-card fc-card--fill"
+              style={{ padding: "10px 14px", textAlign: "left", cursor: "pointer", border: "1px dashed var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}
+            >
+              <span className="muted small">Weekly trends and contact-click detail unlock with <strong style={{ color: "var(--ink)" }}>Verified</strong>.</span>
+              <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>{checkoutLoading === "verified" ? "…" : "Unlock →"}</span>
+            </button>
+          )}
 
-          {/* Deal Radar: daily farm-area prospecting feed (the daily-habit hook) */}
-          {agent.cea_registration && <DealRadar />}
+          {/* Deal Radar: daily farm-area prospecting feed (the daily-habit hook).
+              id anchor so the setup hero's "Add a farm area" step scrolls here. */}
+          {agent.cea_registration && (
+            <div id="deal-radar">
+              <DealRadar />
+            </div>
+          )}
 
           {/* Planner: viewing appointments booked through the agent's /book link */}
           {agent.cea_registration && <PlannerPanel />}
@@ -331,31 +442,14 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Profile activity. Views are shown to everyone (the upgrade hook);
-              richer analytics (clicks, and later trends) are a Verified+ tool. */}
-          <div>
-            <h2 style={{ fontSize: 18, margin: 0 }}>Profile activity</h2>
-            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
-                <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.views_this_week}</p>
-                <p className="kicker" style={{ marginTop: 4 }}>Profile views this week</p>
-              </div>
-              {isPaid(agent.subscription_tier) ? (
-                <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
-                  <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week}</p>
-                  <p className="kicker" style={{ marginTop: 4 }}>Contact-button clicks this week</p>
-                </div>
-              ) : (
-                <div className="fc-card" style={{ padding: 18, textAlign: "center", background: "var(--cloud)", display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}>
-                  <p className="kicker" style={{ margin: 0, lineHeight: 1.4 }}>Contact clicks and weekly trends</p>
-                  <button onClick={() => handleUpgrade("verified")} disabled={checkoutLoading !== null} className="fc-btn fc-btn--ghost fc-btn--sm">
-                    {checkoutLoading === "verified" ? "…" : "Unlock with Verified"}
-                  </button>
-                </div>
-              )}
+          {/* Contact-click detail for paid tiers (views already live in the
+              Demand panel above; the free-tier teaser is the inline chip). */}
+          {isPaid(agent.subscription_tier) && (
+            <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
+              <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week}</p>
+              <p className="kicker" style={{ marginTop: 4 }}>Contact-button clicks this week</p>
             </div>
-            <p className="muted small" style={{ marginTop: 8 }}>View tracking runs once your profile is set up.</p>
-          </div>
+          )}
 
           {/* How it works — independent comparison model: every agent is
               listed and ranked free on their CEA record, sellers compare and
@@ -373,11 +467,9 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Exp 3: embeddable AgentScore badge */}
-          <BadgeCard slug={agent.slug} />
-
-          {/* Grow: lead-generation widget for the agent's own website */}
-          <LeadWidgetCard slug={agent.slug} />
+          {/* One consolidated share surface: AgentScore badge + website lead
+              widget behind a toggle (was two separate cards). */}
+          <ShareCard slug={agent.slug} score={agent.score} />
 
           {/* Optional tools tier — NON-ranking only (analytics + market data).
               Gated behind the 7-day "aha moment". */}
@@ -444,7 +536,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Message to buyers */}
-              <div className="fc-field">
+              <div className="fc-field" id="edit-message">
                 <label className="fc-label">Message to sellers</label>
                 <p className="muted small">This appears at the top of your public profile. Tell sellers why they should pick you.</p>
                 <textarea
@@ -459,7 +551,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Bio */}
-              <div className="fc-field">
+              <div className="fc-field" id="edit-bio">
                 <label className="fc-label">Bio / practice description</label>
                 <p className="muted small">Tell sellers about your specialization and experience. Max 1,000 characters.</p>
                 <textarea
@@ -474,7 +566,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Photo upload */}
-              <div className="fc-field">
+              <div className="fc-field" id="edit-photo">
                 <label className="fc-label">Profile photo</label>
                 <p className="muted small">Upload a professional headshot. JPEG, PNG, or WebP.</p>
                 <input
@@ -511,7 +603,7 @@ export default function DashboardPage() {
               </div>
 
               {/* WhatsApp */}
-              <div className="fc-field">
+              <div className="fc-field" id="edit-whatsapp">
                 <label className="fc-label">WhatsApp number for lead alerts</label>
                 <p className="muted small">Include country code (e.g. +6591234567). We send you a WhatsApp the moment a seller shortlists you, so you can respond from your dashboard before the window closes. Leave blank to turn WhatsApp alerts off.</p>
                 <input
@@ -559,81 +651,3 @@ export default function DashboardPage() {
   );
 }
 
-// Exp 3: embeddable AgentScore badge. Live preview + copy-paste embed code.
-function BadgeCard({ slug }: { slug: string }) {
-  const [copied, setCopied] = useState(false);
-  const base = "https://fair-comparisons.com";
-  const embed = `<a href="${base}/property-agents/agent/${slug}?ref=badge"><img src="${base}/badge/${slug}.svg" alt="My AgentScore on FairComparisons" width="320" height="96"></a>`;
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(embed);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard unavailable */
-    }
-  }
-
-  return (
-    <div className="fc-card" style={{ padding: 22 }}>
-      <div className="kicker">Your verified badge</div>
-      <p className="muted small" style={{ marginTop: 6 }}>
-        Add your AgentScore badge to your email signature, website, or social profiles. It links back to your profile so sellers can see your full record.
-      </p>
-      <div style={{ marginTop: 14 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`/badge/${slug}.svg`} alt="Your AgentScore badge" width={320} height={96} style={{ maxWidth: "100%", border: "1px solid var(--line)", borderRadius: "var(--r-md)" }} />
-      </div>
-      <textarea
-        readOnly
-        value={embed}
-        onFocus={(e) => e.currentTarget.select()}
-        className="fc-textarea"
-        style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 12, height: 84 }}
-      />
-      <button onClick={copy} className="fc-btn fc-btn--ink fc-btn--sm" style={{ marginTop: 10 }}>
-        {copied ? "Copied" : "Copy embed code"}
-      </button>
-    </div>
-  );
-}
-
-function LeadWidgetCard({ slug }: { slug: string }) {
-  const [copied, setCopied] = useState(false);
-  const base = "https://fair-comparisons.com";
-  const embed = `<iframe src="${base}/embed/agent/${slug}" width="100%" height="230" style="border:0;max-width:404px" title="Get a free valuation" loading="lazy"></iframe>`;
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(embed);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard unavailable */
-    }
-  }
-
-  return (
-    <div className="fc-card" style={{ padding: 22 }}>
-      <div className="kicker">Lead widget for your website</div>
-      <p className="muted small" style={{ marginTop: 6 }}>
-        Put a co-branded &ldquo;Get a free valuation&rdquo; card on your own site. Visitors who click come to you as a seller enquiry, with you already pinned as their agent.
-      </p>
-      <div style={{ marginTop: 14, border: "1px solid var(--line)", borderRadius: "var(--r-md)", overflow: "hidden" }}>
-        {/* Live preview of the agent's own widget */}
-        <iframe src={`/embed/agent/${slug}`} width="100%" height={230} style={{ border: 0, display: "block" }} title="Lead widget preview" loading="lazy" />
-      </div>
-      <textarea
-        readOnly
-        value={embed}
-        onFocus={(e) => e.currentTarget.select()}
-        className="fc-textarea"
-        style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 12, height: 84 }}
-      />
-      <button onClick={copy} className="fc-btn fc-btn--ink fc-btn--sm" style={{ marginTop: 10 }}>
-        {copied ? "Copied" : "Copy embed code"}
-      </button>
-    </div>
-  );
-}

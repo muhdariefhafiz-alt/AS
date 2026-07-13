@@ -71,7 +71,7 @@ export default function DemandPanel() {
 
       {quiet && (
         <p className="muted small" style={{ marginTop: 12 }}>
-          Quiet right now. A complete profile (photo, bio, WhatsApp) converts more of the sellers who do look, and your ranking keeps working for you around the clock.
+          Your ranking is already working for you around the clock. Finish your profile above (photo, message, WhatsApp) and add your farm areas so more of the sellers who find you reach out.
         </p>
       )}
 
