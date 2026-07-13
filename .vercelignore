@@ -1,0 +1,7 @@
+# Agent tooling / scratch. These are never part of the app build, and a Vercel
+# CLI upload does not fully respect .gitignore, so gate them explicitly to keep
+# the operator's OS username (from any absolute path inside them) off production.
+.gstack/
+.claude/
+.firecrawl/
+.git/
