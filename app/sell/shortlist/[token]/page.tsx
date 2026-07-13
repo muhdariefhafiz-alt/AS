@@ -3,6 +3,7 @@ import { supabaseAdmin } from "../../../lib/supabase";
 import { isAgentReachable } from "../../../lib/reachability";
 import { titleName, cleanAgency } from "../../../lib/names";
 import ShortlistPicker, { type ShortlistRow } from "./ShortlistPicker";
+import ExpiredLink from "../../../components/ExpiredLink";
 import type { Metadata } from "next";
 
 // Per-token pages are private/personalised — never indexed.
@@ -32,7 +33,9 @@ export default async function ShortlistPage({ params }: Props) {
     )
     .eq("token", token)
     .single();
-  if (!lead) notFound();
+  // A well-formed but unknown token is usually a stale email link (comparison
+  // removed or expired). Recover the seller instead of a bare 404.
+  if (!lead) return <ExpiredLink kind="shortlist" />;
 
   // Once the seller has invited agents, the picker is the wrong destination.
   // Any shortlist CTA (email reminder, reactivation link) for an already-invited

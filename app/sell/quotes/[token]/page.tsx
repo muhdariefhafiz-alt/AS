@@ -3,6 +3,7 @@ import { supabaseAdmin } from "../../../lib/supabase";
 import { titleName, cleanAgency } from "../../../lib/names";
 import QuotesView, { type QuoteRow } from "./QuotesView";
 import AddMoreAgentsButton from "./AddMoreAgentsButton";
+import ExpiredLink from "../../../components/ExpiredLink";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -56,7 +57,8 @@ export default async function QuotesPage({ params }: Props) {
     )
     .eq("token", token)
     .single();
-  if (!lead) notFound();
+  // Stale email link (comparison removed or expired): recover, never bare-404.
+  if (!lead) return <ExpiredLink kind="quote comparison" />;
 
   const { data: quotes } = await sb
     .from("sg_lead_quotes")
