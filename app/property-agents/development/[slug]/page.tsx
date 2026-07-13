@@ -406,6 +406,21 @@ export default async function DevelopmentPage({ params }: Props) {
               </section>
             )}
 
+            {/* Seller CTA: turn development-page traffic into a free, no-cost
+                agent comparison (closes the building-page / dev-page loop). */}
+            <section className="rounded-xl border border-[var(--blue-wash)] bg-gradient-to-b from-[var(--blue-wash)]/50 to-white p-6 text-center">
+              <h2 className="text-xl font-bold text-gray-900">Selling a unit at {project.name}?</h2>
+              <p className="mx-auto mt-2 max-w-[54ch] text-[15px] leading-relaxed text-gray-600">
+                Compare every CEA agent active in {distName} on their real transaction record, then invite up to three to send you a fee quote. Always free, and no agent can pay to rank.
+              </p>
+              <Link
+                href={`/sell?type=CONDO&district=${project.district}`}
+                className="mt-4 inline-block rounded-lg bg-[var(--blue)] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-[var(--blue-deep)]"
+              >
+                Compare agents free
+              </Link>
+            </section>
+
             {/* FAQ */}
             {faqItems.length > 0 && (
               <section>
