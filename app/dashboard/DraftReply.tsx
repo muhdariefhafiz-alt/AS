@@ -11,11 +11,13 @@ export default function DraftReply({ shortlistId }: { shortlistId: number }) {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [upgrade, setUpgrade] = useState(false);
 
   async function generate() {
     if (busy) return;
     setBusy(true);
     setError(null);
+    setUpgrade(false);
     try {
       const res = await fetch("/api/dashboard/draft-reply", {
         method: "POST",
@@ -24,7 +26,10 @@ export default function DraftReply({ shortlistId }: { shortlistId: number }) {
       });
       const j = await res.json().catch(() => ({}));
       if (res.ok && j.draft) setDraft(j.draft);
-      else setError(j.error || "Could not draft a reply.");
+      else {
+        setError(j.error || "Could not draft a reply.");
+        setUpgrade(Boolean(j.upgrade));
+      }
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -48,7 +53,17 @@ export default function DraftReply({ shortlistId }: { shortlistId: number }) {
           {busy ? "Drafting..." : "Draft a reply with AI"}
         </button>
       )}
-      {error && <p className="muted small" style={{ marginTop: 6 }}>{error}</p>}
+      {error && !upgrade && <p className="muted small" style={{ marginTop: 6 }}>{error}</p>}
+      {error && upgrade && (
+        <div className="fc-alert fc-alert--info" style={{ marginTop: 8 }}>
+          <span>
+            {error}{" "}
+            <a href="/dashboard?tab=grow" style={{ fontWeight: 700, textDecoration: "underline" }}>
+              See plans
+            </a>
+          </span>
+        </div>
+      )}
       {draft && (
         <div>
           <div className="kicker" style={{ marginBottom: 6 }}>Suggested reply (grounded in the record)</div>

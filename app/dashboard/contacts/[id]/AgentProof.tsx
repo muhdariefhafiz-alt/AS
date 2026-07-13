@@ -1,174 +1,147 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { formatPrice } from "../../../lib/narrativeHelpers";
 
-type Lead = {
-  id: number;
-  property_type: string;
-  town: string | null;
-  est_value_low: number | null;
-  est_value_high: number | null;
-};
-
-type Agent = {
-  id: number;
-  cea_registration: string;
+export type Proof = {
+  score: number | null;
+  agencyName: string | null;
   name: string | null;
-  agency: string | null;
-  agentscore: number;
+  primaryArea: string | null;
+  yearsActive: number | null;
+  txnTotals: { total: number; sales: number; rentals: number; sellerSales: number };
+  recentDeals: { month: string; propertyType: string; transactionType: string; represented: string; area: string }[];
+  comps: { title: string; subtitle: string; price: number | null; event_date: string }[];
+  areaMedian: number | null;
+  areaLabel: string | null;
+  standing: { areaName: string; agentPct: number | null; agentRank: number | null; agentTotal: number | null } | null;
 };
 
-type Transaction = {
-  id: number;
-  block_number: string | null;
-  street_name: string | null;
-  unit_number: string | null;
-  price: number;
-  transaction_date: string;
-  property_type: string;
-  rooms: number | null;
-};
+function titleCase(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
-type Props = {
-  agent: Agent;
-  lead: Lead;
-};
+// get_agent_standing.agent_pct is "better than N%" (higher = better).
+function standingBand(pct: number | null): string | null {
+  if (pct == null) return null;
+  if (pct >= 90) return "Top 10%";
+  if (pct >= 75) return "Top 25%";
+  if (pct >= 50) return "Top half";
+  return "Ranked";
+}
 
-export default function AgentProof({ agent, lead }: Props) {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [areaMedian, setAreaMedian] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        // Fetch agent's recent transactions + area median (placeholder for Phase 2 integration)
-        // For now, show the agent's score + mock data
-        setTransactions([
-          {
-            id: 1,
-            block_number: "123",
-            street_name: "Tampines St 11",
-            unit_number: "#10-45",
-            price: 640000,
-            transaction_date: "2026-05-15",
-            property_type: "4-room",
-            rooms: 4,
-          },
-          {
-            id: 2,
-            block_number: "456",
-            street_name: "Tampines Ave 2",
-            unit_number: "#08-32",
-            price: 625000,
-            transaction_date: "2026-01-20",
-            property_type: "4-room",
-            rooms: 4,
-          },
-          {
-            id: 3,
-            block_number: "789",
-            street_name: "Tampines St 21",
-            unit_number: "#12-18",
-            price: 610000,
-            transaction_date: "2025-09-10",
-            property_type: "4-room",
-            rooms: 4,
-          },
-        ]);
-        // Area median (placeholder; integrate with area_recent_sales RPC in Phase 2)
-        setAreaMedian(618000);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [agent.id, lead.town]);
-
-  if (loading) {
-    return <div className="bg-white dark:bg-gray-800 rounded-lg p-6 animate-pulse h-64" />;
-  }
-
-  const askingMid = lead.est_value_low && lead.est_value_high
-    ? (lead.est_value_low + lead.est_value_high) / 2
-    : null;
+export default function AgentProof({ proof, propertyType }: { proof: Proof; propertyType: string }) {
+  const { score, txnTotals, recentDeals, comps, areaMedian, areaLabel, standing, primaryArea, yearsActive } = proof;
+  const band = standing ? standingBand(standing.agentPct) : null;
 
   return (
-    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-        Your proof
-      </h2>
+    <section className="fc-card fc-card--pad" style={{ background: "var(--blue-wash)", borderColor: "transparent" }}>
+      <div className="kicker" style={{ marginBottom: 12 }}>Your proof</div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 16 }}>
         <div>
-          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">AgentScore</div>
-          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-            {agent.agentscore}
+          <div className="kicker">AgentScore</div>
+          <div className="tnum" style={{ fontSize: 34, fontWeight: 800, color: "var(--blue-deep)", lineHeight: 1.1 }}>
+            {score ?? "n/a"}
           </div>
-        </div>
-        <div>
-          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            Active in {lead.town}
-          </div>
-          <div className="text-lg text-gray-900 dark:text-gray-100">4 years</div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            {transactions.length} recent sales
-          </div>
-        </div>
-        <div>
-          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            Area median (3-room)
-          </div>
-          <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {areaMedian ? `S$${(areaMedian / 1000).toFixed(0)}k` : "—"}
-          </div>
-          {askingMid && areaMedian && (
-            <div className={`text-xs font-medium ${
-              askingMid > areaMedian * 1.1 ? "text-amber-600" :
-              askingMid < areaMedian * 0.9 ? "text-emerald-600" :
-              "text-gray-600"
-            }`}>
-              {askingMid > areaMedian ? "Above" : "Below"} median
+          {band && standing && (
+            <div className="small" style={{ color: "var(--blue-deep)", fontWeight: 600 }}>
+              {band} in {standing.areaName || primaryArea}
+              {standing.agentTotal ? ` of ${standing.agentTotal}` : ""}
             </div>
           )}
         </div>
-      </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded p-4">
-        <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3 text-sm">
-          Recent sales ({lead.property_type})
-        </h3>
-        <div className="space-y-3">
-          {transactions.map((txn) => (
-            <div
-              key={txn.id}
-              className="flex items-start justify-between pb-3 border-b border-gray-200 dark:border-gray-700 last:border-0"
-            >
-              <div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">
-                  Blk {txn.block_number} {txn.street_name}
-                  {txn.unit_number && <span className="text-gray-500 dark:text-gray-400"> {txn.unit_number}</span>}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {new Date(txn.transaction_date).toLocaleDateString("en-SG", {
-                    year: "2-digit",
-                    month: "short",
-                  })}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900 dark:text-gray-100">
-                  S${(txn.price / 1000).toFixed(0)}k
-                </div>
-              </div>
-            </div>
-          ))}
+        <div>
+          <div className="kicker">Track record</div>
+          <div style={{ fontSize: 15, color: "var(--ink)", fontWeight: 700 }}>
+            {txnTotals.total.toLocaleString()} transactions
+          </div>
+          <div className="small muted">
+            {txnTotals.sales.toLocaleString()} sales · {txnTotals.rentals.toLocaleString()} rentals
+            {txnTotals.sellerSales ? ` · ${txnTotals.sellerSales.toLocaleString()} as seller's agent` : ""}
+          </div>
+        </div>
+
+        <div>
+          <div className="kicker">Area & experience</div>
+          <div style={{ fontSize: 15, color: "var(--ink)", fontWeight: 700 }}>{primaryArea || "n/a"}</div>
+          <div className="small muted">{yearsActive ? `${Math.round(yearsActive)} years active` : "Active agent"}</div>
         </div>
       </div>
 
-      <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded text-sm text-emerald-800 dark:text-emerald-300">
-        ✓ Fact-checked: all claims backed by your verified record
+      {recentDeals.length > 0 && (
+        <div className="fc-card fc-card--pad" style={{ marginTop: 16 }}>
+          <div className="kicker" style={{ marginBottom: 10 }}>Your recent transactions</div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {recentDeals.map((d, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  paddingBottom: 8,
+                  borderBottom: i < recentDeals.length - 1 ? "1px solid var(--line)" : "none",
+                }}
+              >
+                <span style={{ color: "var(--ink)" }}>
+                  {titleCase(d.transactionType || d.propertyType)}
+                  {d.area ? ` · ${titleCase(d.area)}` : ""}
+                </span>
+                <span className="small muted" style={{ whiteSpace: "nowrap" }}>
+                  {d.represented ? `acted for ${titleCase(d.represented)}` : ""} · {d.month}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="small muted" style={{ marginTop: 8 }}>
+            From official CEA transaction records. Counts, not prices; the register does not publish per-deal prices.
+          </p>
+        </div>
+      )}
+
+      {comps.length > 0 && (
+        <div className="fc-card fc-card--pad" style={{ marginTop: 12 }}>
+          <div className="kicker" style={{ marginBottom: 10 }}>
+            Recent {propertyType.toUpperCase() === "HDB" ? "HDB" : "private"} deals in {areaLabel || "the area"}
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {comps.map((c, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  paddingBottom: 8,
+                  borderBottom: i < comps.length - 1 ? "1px solid var(--line)" : "none",
+                }}
+              >
+                <span style={{ color: "var(--ink)" }}>
+                  {c.title}
+                  {c.subtitle ? <span className="muted"> · {c.subtitle}</span> : null}
+                </span>
+                <span className="tnum" style={{ fontWeight: 700, color: "var(--ink)", whiteSpace: "nowrap" }}>
+                  {c.price != null ? formatPrice(c.price) : "n/a"}
+                </span>
+              </div>
+            ))}
+          </div>
+          {areaMedian != null && (
+            <p className="small muted" style={{ marginTop: 8 }}>
+              Median of recent deals shown: <strong className="tnum">{formatPrice(areaMedian)}</strong>. Context for the
+              seller&apos;s asking range, not a per-room valuation.
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="fc-alert fc-alert--ok" style={{ marginTop: 14 }}>
+        Every figure here comes from official CEA/URA/HDB records. Nothing invented.
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,52 +1,29 @@
 "use client";
 
-type TimelineEvent = {
-  id: number;
+export type TimelineItem = {
+  id: string;
   event_type: string;
-  meta: Record<string, unknown> | null;
-  created_at: string | null;
+  at: string | null;
+  meta?: Record<string, unknown> | null;
 };
 
-type Props = {
-  events: TimelineEvent[];
-};
+type Style = { icon: string; label: string; accent: string };
 
-const EVENT_ICON: Record<string, string> = {
-  lead_invited: "🎯",
-  draft_viewed: "✎",
-  reply_sent: "✓",
-  viewed: "👁️",
-  email_reply: "💬",
-  viewing_booked: "📅",
-  quote_submitted: "💰",
-  lead_picked: "🏆",
-  lead_not_picked: "✗",
+const EVENT_STYLE: Record<string, Style> = {
+  lead_invited: { icon: "◆", label: "Lead invited", accent: "var(--blue)" },
+  reply_sent: { icon: "✓", label: "Reply sent", accent: "var(--ok)" },
+  email_reply: { icon: "↩", label: "Seller replied", accent: "var(--ink-2)" },
+  agent_note: { icon: "✎", label: "Note", accent: "var(--slate)" },
+  quote_submitted: { icon: "$", label: "Quote submitted", accent: "var(--blue-deep)" },
+  viewing_booked: { icon: "◷", label: "Viewing booked", accent: "var(--blue)" },
+  lead_picked: { icon: "★", label: "Seller picked you", accent: "var(--ok)" },
+  lead_not_picked: { icon: "·", label: "Seller picked another agent", accent: "var(--slate)" },
 };
+const FALLBACK: Style = { icon: "•", label: "Event", accent: "var(--line-2)" };
 
-const EVENT_LABEL: Record<string, string> = {
-  lead_invited: "LEAD INVITED",
-  draft_viewed: "DRAFT VIEWED",
-  reply_sent: "REPLY SENT",
-  viewed: "VIEWED",
-  email_reply: "EMAIL REPLY",
-  viewing_booked: "VIEWING BOOKED",
-  quote_submitted: "QUOTE SUBMITTED",
-  lead_picked: "LEAD PICKED",
-  lead_not_picked: "LEAD NOT PICKED",
-};
-
-const EVENT_COLOR: Record<string, { bg: string; border: string; text: string }> = {
-  lead_picked: { bg: "bg-emerald-50 dark:bg-emerald-900/20", border: "border-emerald-200 dark:border-emerald-800", text: "text-emerald-700 dark:text-emerald-300" },
-  reply_sent: { bg: "bg-blue-50 dark:bg-blue-900/20", border: "border-blue-200 dark:border-blue-800", text: "text-blue-700 dark:text-blue-300" },
-  email_reply: { bg: "bg-purple-50 dark:bg-purple-900/20", border: "border-purple-200 dark:border-purple-800", text: "text-purple-700 dark:text-purple-300" },
-  viewed: { bg: "bg-gray-50 dark:bg-gray-800", border: "border-gray-200 dark:border-gray-700", text: "text-gray-700 dark:text-gray-300" },
-  default: { bg: "bg-gray-50 dark:bg-gray-800", border: "border-gray-200 dark:border-gray-700", text: "text-gray-700 dark:text-gray-300" },
-};
-
-function formatDate(isoString: string | null): string {
-  if (!isoString) return "Unknown date";
-  const dt = new Date(isoString);
-  return dt.toLocaleDateString("en-SG", {
+function fmt(iso: string | null): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString("en-SG", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -55,71 +32,72 @@ function formatDate(isoString: string | null): string {
   });
 }
 
-function eventContext(event: TimelineEvent): string {
-  const { event_type, meta } = event;
+function fmtDate(iso: string | null): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString("en-SG", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
 
-  switch (event_type) {
+function context(item: TimelineItem): string {
+  const m = item.meta ?? {};
+  switch (item.event_type) {
     case "lead_invited":
-      return `Seller shortlisted you${meta?.shortlist_count ? ` + ${(meta.shortlist_count as number) - 1} others` : ""}`;
-    case "draft_viewed":
-      const preview = meta?.preview ? (meta.preview as string).substring(0, 60) : "AI-drafted reply preview";
-      return preview;
+      return "Seller shortlisted you and invited a quote.";
     case "reply_sent":
-      return "Draft sent via email";
-    case "viewed":
-      const readTime = meta?.read_time_seconds
-        ? Math.round((meta.read_time_seconds as number) / 60)
-        : 2;
-      return `Seller opened your email (${readTime} min read time)`;
-    case "email_reply":
-      return meta?.text ? (meta.text as string).substring(0, 80) : "Email reply from seller";
-    case "viewing_booked":
-      return "Viewing scheduled";
+      return "You marked your first reply as sent.";
+    case "email_reply": {
+      const subj = typeof m.subject === "string" && m.subject ? `“${m.subject}”: ` : "";
+      const text = typeof m.text === "string" ? m.text : "";
+      return `${subj}${text}`.trim() || "Seller replied by email.";
+    }
+    case "agent_note":
+      return typeof m.text === "string" ? m.text : "";
     case "quote_submitted":
-      return "Quote submitted to seller";
+      return "You submitted a quote to the seller.";
+    case "viewing_booked": {
+      const label = typeof m.property_label === "string" && m.property_label ? m.property_label : "Viewing";
+      const when = typeof m.viewing_at === "string" ? fmtDate(m.viewing_at) : "";
+      const status = typeof m.status === "string" && m.status ? ` · ${m.status}` : "";
+      return `${label}${when ? ` · ${when}` : ""}${status}`;
+    }
     case "lead_picked":
-      return "Seller picked you as the winning agent";
+      return "The seller chose you as their agent.";
     case "lead_not_picked":
-      return "Seller picked another agent";
+      return "The seller chose another agent. The record still counts toward your standing.";
     default:
-      return "Event";
+      return "";
   }
 }
 
-export default function Timeline({ events }: Props) {
-  if (!events || events.length === 0) {
-    return (
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center text-gray-500 dark:text-gray-400">
-        No timeline events yet.
-      </div>
-    );
+export default function Timeline({ items }: { items: TimelineItem[] }) {
+  if (!items.length) {
+    return <p className="muted small">No activity yet. It will appear here as the lead progresses.</p>;
   }
 
   return (
-    <div className="space-y-4">
-      {events.map((event) => {
-        const colors = EVENT_COLOR[event.event_type] || EVENT_COLOR.default;
-        const icon = EVENT_ICON[event.event_type] || "•";
-        const label = EVENT_LABEL[event.event_type] || event.event_type.toUpperCase();
-        const context = eventContext(event);
-
+    <div style={{ display: "grid", gap: 10 }}>
+      {items.map((item) => {
+        const s = EVENT_STYLE[item.event_type] ?? FALLBACK;
+        const body = context(item);
         return (
           <div
-            key={event.id}
-            className={`border rounded-lg p-4 ${colors.bg} ${colors.border}`}
+            key={item.id}
+            className="fc-card"
+            style={{ padding: "12px 14px", borderLeft: `3px solid ${s.accent}`, background: "var(--paper)" }}
           >
-            <div className="flex items-start gap-3">
-              <div className="text-2xl mt-1">{icon}</div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <div className={`text-sm font-bold ${colors.text}`}>{label}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                    {formatDate(event.created_at)}
-                  </div>
-                </div>
-                <div className="text-sm text-gray-700 dark:text-gray-300 mt-1">{context}</div>
-              </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+              <span style={{ color: s.accent, fontWeight: 700 }} aria-hidden>
+                {s.icon}
+              </span>
+              <span style={{ fontWeight: 700, color: "var(--ink)", fontSize: 14 }}>{s.label}</span>
+              <span className="kicker" style={{ marginLeft: "auto" }}>
+                {fmt(item.at)}
+              </span>
             </div>
+            {body && (
+              <p className="small" style={{ margin: "6px 0 0", color: "var(--ink-3)", whiteSpace: "pre-wrap" }}>
+                {body}
+              </p>
+            )}
           </div>
         );
       })}

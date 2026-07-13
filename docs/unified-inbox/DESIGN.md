@@ -6,13 +6,27 @@
 
 ---
 
+## 0. Build reconciliation (what actually shipped in Phase 1)
+
+This section overrides the aspirational spec below where they conflict. Phase 1 shipped on the real codebase, so a few spec assumptions were corrected against ground truth:
+
+- **Brand tokens.** The implemented UI uses the live "The Record" `fc-*` design system (`app/globals.css`), not the generic blue palette sketched in Section 2. The system is LIGHT ONLY (no dark mode selector exists), so the dark-mode section is deferred, not built. Canonical tokens: `--ink #0a1733`, `--blue #1f44ff`, `--blue-deep #0a23cf`, `--blue-wash`, `--ok`, `--warn`, `--slate`, `--line`, `--cloud`, `--paper`; classes `.fc-card`, `.fc-chip(--active)`, `.fc-btn(--primary/--ink/--ghost/--quiet/--sm)`, `.fc-badge(--ok/--warn)`, `.fc-alert(--info/--ok/--warn)`, `.kicker`, `.muted`, `.small`, `.serif`, `.tnum`.
+- **Proof is real, never mock.** `AgentProof` renders the agent's own CEA transaction record (`get_agent_txn_record`), real recent area deals (`area_recent_sales`, with an honest "recent deals in the area" median, never a per-room median), and area standing (`get_agent_standing`). No hardcoded transactions.
+- **No fabricated score-impact widget.** AgentScore has no responsiveness dimension and there is no reply-time history yet, so the "+points / percentile" card was cut. It is replaced by an honest per-lead reply-timing line ("You replied in Xh" / "Awaiting your reply, Xh since invite, target 24h").
+- **Assignment deferred.** No team/colleague model exists and the primary persona is the solo agent, so the assignment feature (and its placeholder colleague list) was removed rather than shipped with invented names. Revisit when a real agency-team model exists.
+- **Labels + notes shipped for real.** Labels use a controlled vocabulary (`Hot / Warm / Cold / Follow-up / Closed`) in a per-agent `sg_lead_labels` table; notes reuse `sg_lead_events` (`agent_note`). Both are private per agent.
+- **Free/paid line is real.** Tiers are `free / verified / professional / elite` (`app/lib/tiers.ts`; S$29 / S$69 / S$149 per month). Only AI-draft volume is metered: 2 free drafts per month, then an upgrade prompt. The base inbox, money-at-risk sort, and the seller's first reply are never gated.
+- **Two-way email is built but inert.** Inbound capture (`reply_token` + Svix-verified `resend-inbound` webhook writing `email_reply` timeline events) ships dormant until the owner provisions the `reply.fair-comparisons.com` MX and `RESEND_INBOUND_WEBHOOK_SECRET`, plus a data-residency/DPO sign-off.
+
+---
+
 ## 1. Design Principles
 
 ### 1.1 Wedge-Driven
 Phase 0's strength is speed and leakage capture. Phase 1 design amplifies this by:
-- **Putting money-at-risk queue front and center** — SLA aging, deal size, reply status.
-- **Making proof visible** — AgentScore, transaction history, and comps are always one glance away, not buried in a modal.
-- **One-tap reply** — draft is pre-generated and copyable; sending (via email, WhatsApp later) is frictionless.
+- **Putting money-at-risk queue front and center**: SLA aging, deal size, reply status.
+- **Making proof visible**: AgentScore, transaction history, and comps are always one glance away, not buried in a modal.
+- **One-tap reply**: draft is pre-generated and copyable; sending (via email, WhatsApp later) is frictionless.
 
 ### 1.2 Confidence Rebuilding
 The median agent loses ~86% of leads. Retention value lives in the owned record (AgentScore movement, transaction proof, SLA responsiveness), not in individual lead wins. The design re-frames lost leads as "completed record" milestones, not failures.
@@ -162,7 +176,7 @@ Use the existing FC brand token system (see `app/lib/globals.css` `.fc-*` lib if
 │ May 28, 11:00am at Tampines St 11                           │
 │ ────────────────────────────────────────────────────────────│
 │                                                              │
-│ [LEAD PICKED / NOT PICKED — outcome TBD]                    │
+│ [LEAD PICKED / NOT PICKED (outcome TBD)]                    │
 │                                                              │
 │ Your score impact:                                          │
 │ +0.5 point (fast reply within SLA) ✓                        │
@@ -521,7 +535,7 @@ Each component ships with:
 - **Not:** Generic SaaS platitudes ("Empower your sales," "Unlock your potential")
 - **Yes:** Agent-specific, grounded in reality ("Never drop a deal." "Reply first, reply backed by your real numbers.")
 - **Tone:** Professional, human, no jargon. "Your AgentScore" not "User-generated trust metric."
-- **Errors:** Honest and actionable ("Failed to send draft — email is required" not "Error 500")
+- **Errors:** Honest and actionable ("Failed to send draft, email is required" not "Error 500")
 
 ---
 
