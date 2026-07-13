@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { getAgentSession } from "../../../lib/agent-auth";
+import { insertViewingEvent } from "../../../lib/google-calendar";
 
 // Planner: an agent's viewing appointments. Session-gated; the agent is derived
 // from the signed cookie, never request input. All access via supabaseAdmin
@@ -62,6 +63,35 @@ export async function POST(req: Request) {
     .eq("id", id)
     .eq("agent_cea_no", agent.cea_registration);
   if (error) return NextResponse.json({ error: "Could not update." }, { status: 500 });
+
+  // On confirm, best-effort drop the viewing into the agent's Google Calendar
+  // (no-op unless they've connected it). Never blocks or fails the confirm.
+  if (status === "confirmed") {
+    try {
+      const { data: v } = await supabaseAdmin()
+        .from("sg_viewings")
+        .select("property_label, viewing_at, attendee_name, attendee_contact, message")
+        .eq("id", id)
+        .eq("agent_cea_no", agent.cea_registration)
+        .maybeSingle();
+      if (v?.viewing_at) {
+        const start = new Date(String(v.viewing_at));
+        const end = new Date(start.getTime() + 60 * 60 * 1000);
+        await insertViewingEvent(session.agentId, {
+          title: `Viewing: ${v.property_label ?? "property"}`,
+          location: v.property_label ?? undefined,
+          description: [
+            "Booked through FairComparisons.",
+            v.attendee_name ? `Attendee: ${v.attendee_name}` : null,
+            v.attendee_contact ? `Contact: ${v.attendee_contact}` : null,
+            v.message ? `Note: ${v.message}` : null,
+          ].filter(Boolean).join("\n"),
+          startIso: start.toISOString(),
+          endIso: end.toISOString(),
+        });
+      }
+    } catch { /* calendar is best-effort */ }
+  }
 
   return NextResponse.json(await feed(agent.cea_registration, agent.slug ?? null));
 }

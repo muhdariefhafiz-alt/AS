@@ -36,10 +36,15 @@ export default function PlannerPanel() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [cal, setCal] = useState<{ configured: boolean; connected: boolean; email?: string | null } | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch("/api/dashboard/viewings");
+      const [res, calRes] = await Promise.all([
+        fetch("/api/dashboard/viewings"),
+        fetch("/api/agent/calendar/status"),
+      ]);
+      if (calRes.ok) setCal(await calRes.json());
       if (!res.ok) return;
       const j = await res.json();
       setViewings(j.viewings ?? []);
@@ -112,6 +117,31 @@ export default function PlannerPanel() {
             </button>
           </div>
           <p className="muted small" style={{ margin: "8px 0 0" }}>Share it in your listings, bio and messages so buyers can request a viewing time.</p>
+        </div>
+      )}
+
+      {/* Google Calendar connect: only shows once the integration is configured.
+          Connected agents get every viewing they confirm dropped into their own
+          calendar automatically. */}
+      {cal?.configured && (
+        <div className="fc-card fc-card--fill" style={{ marginTop: 12, padding: "12px 16px" }}>
+          {cal.connected ? (
+            <div className="fc-row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ color: "var(--ok)", fontWeight: 700, fontSize: 13 }}>&#10003; Google Calendar connected</span>
+              {cal.email && <span className="muted small">· {cal.email}</span>}
+              <span className="muted small" style={{ flexBasis: "100%" }}>Every viewing you confirm is added to your calendar automatically.</span>
+            </div>
+          ) : (
+            <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>Connect your calendar</div>
+                <div className="muted small" style={{ marginTop: 2 }}>Confirmed viewings drop straight into your Google Calendar. We only add events, never read the rest.</div>
+              </div>
+              <a href="/api/agent/calendar/google/start" className="fc-btn fc-btn--ink fc-btn--sm" style={{ flexShrink: 0, textDecoration: "none" }}>
+                Connect Google Calendar
+              </a>
+            </div>
+          )}
         </div>
       )}
 
