@@ -18,6 +18,23 @@ async function getStats() {
   };
 }
 
+async function getBuildingSpotlights() {
+  // Latest agent-presented development pages ("Building spotlights").
+  // RLS only exposes published rows to the anon client. Marketing surface:
+  // being featured here never affects any agent's rank or lead flow.
+  const { data } = await supabase
+    .from("sg_building_pages")
+    .select("slug, headline, published_at, sg_projects(name, district, txn_count, median_price), sg_agents(name, agency_name)")
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .limit(3);
+  return (data ?? []) as unknown as Array<{
+    slug: string; headline: string; published_at: string | null;
+    sg_projects: { name: string; district: string | null; txn_count: number | null; median_price: number | null } | null;
+    sg_agents: { name: string; agency_name: string | null } | null;
+  }>;
+}
+
 async function getTopAgents() {
   const { data } = await supabase
     .from("sg_agents")
@@ -45,7 +62,7 @@ const TRUST: [string, string][] = [
 ];
 
 export default async function HomePage() {
-  const [stats, topAgents] = await Promise.all([getStats(), getTopAgents()]);
+  const [stats, topAgents, spotlights] = await Promise.all([getStats(), getTopAgents(), getBuildingSpotlights()]);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -212,6 +229,36 @@ export default async function HomePage() {
               Browse all agents
             </Link>
           </div>
+        </section>
+      )}
+
+      {/* ---------- BUILDING SPOTLIGHTS (agent-presented development pages) ---------- */}
+      {spotlights.length > 0 && (
+        <section className="fc-wrap" style={{ padding: "0 40px 64px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 10 }}>
+            <h2 style={{ margin: 0 }}>Building spotlights</h2>
+            <span className="muted" style={{ fontSize: 13 }}>Local agents on the developments they know best</span>
+          </div>
+          <div className="fc-grid-3" style={{ marginTop: 18 }}>
+            {spotlights.map((sp) => (
+              <Link key={sp.slug} href={`/property-agents/development/${sp.slug}`} className="fc-card fc-card--pad" style={{ display: "block", textDecoration: "none" }}>
+                <div className="eyebrow" style={{ color: "var(--blue-deep)" }}>
+                  {sp.sg_projects?.name ?? sp.slug}{sp.sg_projects?.district ? ` · D${sp.sg_projects.district}` : ""}
+                </div>
+                <div className="serif" style={{ fontWeight: 600, fontSize: 18, margin: "8px 0 6px", color: "var(--ink)" }}>
+                  {sp.headline}
+                </div>
+                <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+                  By {titleName(sp.sg_agents?.name ?? "a CEA-registered agent")}
+                  {sp.sg_agents?.agency_name ? `, ${cleanAgency(sp.sg_agents.agency_name)}` : ""}
+                  {typeof sp.sg_projects?.txn_count === "number" ? ` · ${sp.sg_projects.txn_count} URA transactions` : ""}
+                </p>
+              </Link>
+            ))}
+          </div>
+          <p className="muted" style={{ marginTop: 12, fontSize: 12 }}>
+            Agent commentary on real URA price data. Spotlights never change rankings; every agent is scored on records alone.
+          </p>
         </section>
       )}
 

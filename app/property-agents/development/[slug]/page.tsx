@@ -73,7 +73,7 @@ export default async function DevelopmentPage({ params }: Props) {
   const districtSlug = districtRow?.slug ?? `d${project.district}`;
   const areaName = (districtRow?.name ?? districtName(project.district)).split(",")[0].trim();
 
-  const [trendRes, floorRes, sizeRes, tenureRes, rentalRes, listingsRes, topAgentsRes] = await Promise.all([
+  const [trendRes, floorRes, sizeRes, tenureRes, rentalRes, listingsRes, topAgentsRes, spotlightRes] = await Promise.all([
     supabase.rpc("get_project_price_trend", { p_name: project.name }),
     supabase.rpc("get_project_floor_analysis", { p_name: project.name }),
     supabase.rpc("get_project_size_analysis", { p_name: project.name }),
@@ -81,6 +81,13 @@ export default async function DevelopmentPage({ params }: Props) {
     supabase.from("sg_rental_medians").select("*").eq("project", project.name).order("ref_period", { ascending: false }).limit(12),
     supabase.from("sg_listings").select("title, price, agent_name, agent_license, agency_name, listing_type, bedrooms").ilike("title", `%${project.name.split(" ").slice(0, 2).join(" ")}%`).limit(5),
     supabase.rpc("get_top_agents_in_area_rich", { area_name: areaName, lim: 8 }),
+    // Agent-owned building spotlight (RLS: only published rows are readable).
+    supabase
+      .from("sg_building_pages")
+      .select("headline, commentary, published_at, updated_at, sg_agents(name, slug, photo_url, score, agency_name, cea_registration)")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle(),
   ]);
 
   const trends = (trendRes.data ?? []) as TrendData[];
@@ -92,6 +99,11 @@ export default async function DevelopmentPage({ params }: Props) {
   const topAgents = (topAgentsRes.data ?? []) as Array<{
     agent_name: string; agent_slug: string; agency_name: string; score: number; area_txns: number;
   }>;
+  const spotlightRow = spotlightRes.data as {
+    headline: string; commentary: string; published_at: string | null; updated_at: string;
+    sg_agents: { name: string; slug: string | null; photo_url: string | null; score: number | null; agency_name: string | null; cea_registration: string | null } | null;
+  } | null;
+  const spotlight = spotlightRow?.sg_agents ? { ...spotlightRow, agent: spotlightRow.sg_agents } : null;
 
   const chartData = trends.map((t) => ({
     month: t.contract_date,
@@ -134,6 +146,13 @@ export default async function DevelopmentPage({ params }: Props) {
     ...(faqItems.length > 0 ? [{
       "@context": "https://schema.org", "@type": "FAQPage",
       mainEntity: faqItems.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    }] : []),
+    ...(spotlight ? [{
+      "@context": "https://schema.org", "@type": "WebPage",
+      name: `${project.name} Price History & Market Data`,
+      url: `https://fair-comparisons.com/property-agents/development/${slug}`,
+      dateModified: (spotlight.updated_at ?? spotlight.published_at ?? "").slice(0, 10),
+      isPartOf: { "@type": "WebSite", name: "FairComparisons", url: "https://fair-comparisons.com" },
     }] : []),
   ];
 
@@ -347,6 +366,43 @@ export default async function DevelopmentPage({ params }: Props) {
                   </Link>
                 </div>
                 <p className="mt-2 text-[11px] text-gray-400">Source: CEA salesperson transaction records (data.gov.sg). AgentScore by FairComparisons.</p>
+              </section>
+            )}
+
+            {/* Agent-owned building spotlight: marketing content, clearly
+                attributed, next to the neutral URA data. Never a ranking. */}
+            {spotlight && (
+              <section className="rounded-xl border border-[var(--blue-wash)] bg-gradient-to-b from-[var(--blue-wash)]/40 to-white p-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">Agent spotlight</p>
+                <h2 className="mt-2 text-xl font-bold text-gray-900">{spotlight.headline}</h2>
+                <div className="mt-3 space-y-3 text-[15px] leading-[1.75] text-gray-600">
+                  {spotlight.commentary.split(/\n{2,}/).map((para, i) => (
+                    <p key={i}>{para}</p>
+                  ))}
+                </div>
+                <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-900">{spotlight.agent.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {spotlight.agent.agency_name}{spotlight.agent.cea_registration ? ` · CEA ${spotlight.agent.cea_registration}` : ""}
+                    </p>
+                  </div>
+                  {spotlight.agent.slug && (
+                    <>
+                      <Link href={`/book/${spotlight.agent.slug}`} className="rounded-lg bg-[var(--blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--blue-deep)]">
+                        Book a viewing consult
+                      </Link>
+                      <Link href={`/property-agents/agent/${spotlight.agent.slug}`} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:border-gray-300">
+                        Full profile
+                      </Link>
+                    </>
+                  )}
+                </div>
+                <p className="mt-4 text-[11px] text-gray-400">
+                  Commentary is marketing content by the presenting agent, not FairComparisons editorial. Market
+                  data above comes from URA records. Presenting a page never changes any agent&#39;s AgentScore or
+                  ranking; compare all agents for this district in the list below.
+                </p>
               </section>
             )}
 

@@ -7,6 +7,7 @@ import StandingPanel, { type Standing } from "./StandingPanel";
 import DealRadar from "./DealRadar";
 import PlannerPanel from "./PlannerPanel";
 import DemandPanel from "./DemandPanel";
+import BuildingPagesPanel from "./BuildingPagesPanel";
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid } from "../lib/tiers";
 
@@ -308,6 +309,9 @@ export default function DashboardPage() {
 
           {/* Planner: viewing appointments booked through the agent's /book link */}
           {agent.cea_registration && <PlannerPanel />}
+
+          {/* Building pages: agent-owned marketing on development data pages */}
+          {agent.cea_registration && <BuildingPagesPanel />}
 
           {/* Seller leads inbox */}
           {agent.cea_registration && (
