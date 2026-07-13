@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "../lib/supabase";
 import PricingCards from "../components/PricingCards";
+import ScrollReveal from "../components/ScrollReveal";
 
 export const revalidate = false;
 
@@ -36,28 +37,38 @@ export default async function ForAgentsPage() {
   const stats = await getStats();
   return (
     <>
-      {/* hero */}
+      {/* Scroll-reveal engine (animates .fc-reveal sections as they enter view). */}
+      <ScrollReveal />
+
+      {/* hero — staggered load-in, benefit-led */}
       <header className="lp-hero">
         <div className="fc-wrap" style={{ textAlign: "center" }}>
-          <div className="lp-hero__eyebrow">For property agents</div>
-          <h1 style={{ maxWidth: "18ch", margin: "16px auto 0" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">For property agents</div>
+          <h1 className="fc-hero-in fc-hero-in--2" style={{ maxWidth: "18ch", margin: "16px auto 0" }}>
             You&apos;re judged on your <span className="accent">record,</span> not your wallet.
           </h1>
-          <p className="lp-hero__sub" style={{ margin: "16px auto 0" }}>
-            Sellers compare every CEA-registered agent on real transaction data and contact the ones they choose. No cost to be ranked, no cost to be found. Claim your profile free, then subscribe for reputation and analytics tools if you want them. Subscriptions never change your rank.
+          <div className="fc-hero-in fc-hero-in--3" style={{ margin: "18px auto 0", maxWidth: "46ch", display: "flex", flexDirection: "column", gap: 7, fontSize: 16.5, lineHeight: 1.5, color: "var(--slate)" }}>
+            <span>Know who&apos;s about to sell, before your competitors.</span>
+            <span>Win listings on your track record, not your ad budget.</span>
+            <span>Every tool you need, in one free dashboard.</span>
+          </div>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--4" style={{ margin: "18px auto 0", fontSize: 14.5 }}>
+            Sellers compare every CEA-registered agent on real transaction data and invite the ones they choose. Free to be ranked, free to be found. Subscriptions add tools, never rank.
           </p>
-          <div style={{ display: "flex", gap: 48, justifyContent: "center", margin: "34px 0 30px", flexWrap: "wrap" }}>
+          <div className="fc-hero-in fc-hero-in--4" style={{ display: "flex", gap: 48, justifyContent: "center", margin: "30px 0 26px", flexWrap: "wrap" }}>
             <div className="hstat"><div className="n tnum">{stats.scored.toLocaleString()}</div><div className="l">Agents scored</div></div>
             <div className="hstat"><div className="n tnum">28</div><div className="l">Districts</div></div>
             <div className="hstat"><div className="n">0%</div><div className="l">Upfront cost</div></div>
           </div>
-          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Claim your free profile</Link>
+          <div className="fc-hero-in fc-hero-in--5">
+            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Claim your free profile</Link>
+          </div>
         </div>
       </header>
 
       {/* Reposition: the neutral layer that outlives any agency super-app */}
       <section className="lp-section">
-        <div className="fc-wrap" style={{ padding: "56px 40px", textAlign: "center" }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px", textAlign: "center" }}>
           <div className="lp-hero__eyebrow" style={{ justifyContent: "center" }}>Your identity, not your agency&apos;s</div>
           <h2 style={{ maxWidth: "24ch", margin: "12px auto 0", fontSize: "clamp(24px,3vw,32px)" }}>
             Agencies change. Your record and your phone number don&apos;t.
@@ -70,7 +81,7 @@ export default async function ForAgentsPage() {
 
       {/* claimed vs unclaimed */}
       <section className="lp-section--paper">
-        <div className="fc-wrap" style={{ padding: "64px 40px" }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "64px 40px" }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Claimed vs unclaimed profiles</h2>
           <div className="fc-grid-2" style={{ marginTop: 28, gap: 18 }}>
             <div className="fc-card compare-col">
@@ -97,7 +108,7 @@ export default async function ForAgentsPage() {
 
       {/* how score works */}
       <section className="lp-section">
-        <div className="fc-wrap" style={{ padding: "64px 40px" }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "64px 40px" }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>How your score is calculated</h2>
           <p className="muted" style={{ textAlign: "center", maxWidth: "60ch", margin: "12px auto 0" }}>
             The AgentScore is fully automated. Payment does not influence your ranking. The only way to improve your score is to close more transactions and deliver better service.
@@ -133,7 +144,7 @@ export default async function ForAgentsPage() {
       {/* resources */}
       <section className="lp-section">
         <div className="fc-wrap" style={{ padding: "64px 40px" }}>
-          <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Resources for agents</h2>
+          <h2 className="fc-reveal" style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Resources for agents</h2>
           <div className="fc-grid-2" style={{ marginTop: 28, gap: 18 }}>
             <Link href="/for-agents/features" className="fc-card fc-card--pad fc-card--hover">
               <div className="eyebrow">The toolkit</div>
