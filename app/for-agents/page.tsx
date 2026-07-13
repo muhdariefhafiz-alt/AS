@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import PricingCards from "../components/PricingCards";
 import ScrollReveal from "../components/ScrollReveal";
 import DashboardPreview from "../components/DashboardPreview";
+import PlannerPreview from "../components/PlannerPreview";
 
 export const revalidate = false;
 
@@ -115,6 +116,49 @@ export default async function ForAgentsPage() {
         </div>
       </section>
 
+      {/* Planner highlight — the flagship "connect your stack" tool: buyers
+          self-schedule via one link, and confirmed viewings sync into the
+          agent's own calendar automatically. Calendar sync is live for Google. */}
+      <section className="lp-section--paper">
+        <div className="fc-wrap fc-reveal" style={{ padding: "64px 40px" }}>
+          <div className="fc-grid-2" style={{ gap: 44, alignItems: "center" }}>
+            <div>
+              <div className="lp-hero__eyebrow">New · Planner</div>
+              <h2 style={{ maxWidth: "16ch", margin: "12px 0 0", fontSize: "clamp(26px,3vw,34px)" }}>
+                One link that <span className="accent">fills your calendar.</span>
+              </h2>
+              <p className="muted" style={{ margin: "16px 0 0", fontSize: 15.5, lineHeight: 1.7, maxWidth: "52ch" }}>
+                Share one booking link in your listings and messages. Buyers pick a viewing time themselves. You tap confirm, and the appointment drops straight into your Google Calendar. No spreadsheets, no double-booking, no back-and-forth.
+              </p>
+              <ul style={{ listStyle: "none", margin: "20px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+                {[
+                  ["Buyers self-schedule", "One co-branded link, carrying your AgentScore, in every listing and bio. No account needed for the buyer."],
+                  ["Confirm in one tap", "Every request lands in your dashboard with the property, time and the buyer's contact. Confirm, complete or cancel."],
+                  ["Synced to your calendar", "Confirmed viewings appear in your own Google Calendar automatically, so your day is always up to date."],
+                ].map(([t, d]) => (
+                  <li key={t} style={{ display: "flex", gap: 11 }}>
+                    <Tick />
+                    <span>
+                      <strong style={{ color: "var(--ink)" }}>{t}.</strong>{" "}
+                      <span className="muted" style={{ fontSize: 14.5 }}>{d}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div style={{ marginTop: 24, display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+                <Link href="/search" className="fc-btn fc-btn--primary">Claim your free profile</Link>
+                <Link href="/for-agents/planner" style={{ color: "var(--blue)", fontWeight: 600, fontSize: 14.5 }}>
+                  See how the Planner works &rarr;
+                </Link>
+              </div>
+            </div>
+            <div style={{ padding: "0 4px" }}>
+              <PlannerPreview />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* how score works */}
       <section className="lp-section">
         <div className="fc-wrap fc-reveal" style={{ padding: "64px 40px" }}>
@@ -183,7 +227,7 @@ export default async function ForAgentsPage() {
             <Link href="/for-agents/planner" className="fc-card fc-card--pad fc-card--hover">
               <div className="eyebrow">Planner</div>
               <div className="serif" style={{ fontWeight: 600, fontSize: 20, margin: "8px 0 6px" }}>Your viewings, all in one place</div>
-              <p className="muted small">Share one booking link; buyers request a viewing time; you confirm and manage every viewing from your dashboard.</p>
+              <p className="muted small">Share one booking link; buyers request a viewing time; you confirm and manage every viewing, and confirmed viewings sync into your Google Calendar automatically.</p>
             </Link>
           </div>
         </div>

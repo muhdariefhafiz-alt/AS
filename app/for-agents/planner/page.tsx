@@ -5,9 +5,9 @@ import { getAgentStats } from "../../lib/agentStats";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Agent Viewing Planner & Free Booking Link",
+  title: "Agent Viewing Planner, Booking Link & Calendar Sync",
   description:
-    "The FairComparisons Planner for Singapore property agents. Share one booking link; buyers request a viewing time; you confirm, complete or cancel from your dashboard. Free, no account needed for buyers.",
+    "The FairComparisons Planner for Singapore property agents. Share one booking link; buyers request a viewing time; you confirm, complete or cancel from your dashboard, and confirmed viewings sync into your Google Calendar automatically. Free, no account needed for buyers.",
   alternates: { canonical: "https://fair-comparisons.com/for-agents/planner" },
   openGraph: {
     title: "Planner: your viewings, all in one place",
@@ -32,6 +32,12 @@ const FEATURES: { kicker: string; title: string; body: string; points: string[] 
     points: ["New requests flagged for action", "Confirm / mark done / cancel in one tap", "The buyer's contact captured with every request"],
   },
   {
+    kicker: "Works with your calendar",
+    title: "Confirmed viewings sync to your Google Calendar",
+    body: "Connect your calendar once from the dashboard. Every viewing you confirm is added to your own Google Calendar automatically, with the property, time and the buyer's details, so your day stays up to date wherever you check it. We only add viewing events; we never read the rest of your calendar.",
+    points: ["Connect once, sync from then on", "Confirmed viewings added automatically", "We only write events, never read your calendar"],
+  },
+  {
     kicker: "Built on your record",
     title: "The link carries your independent AgentScore",
     body: "Because your booking page shows your AgentScore from real CEA, URA and HDB transaction data, a buyer requesting a viewing already sees the evidence that you sell. The Planner turns your track record into booked appointments.",
@@ -49,11 +55,12 @@ export default async function PlannerPage() {
           <div className="lp-hero__eyebrow">For agents · Planner</div>
           <h1>Your viewings,<br /><span className="accent">all in one place.</span></h1>
           <p className="lp-hero__sub">
-            Share one booking link. Buyers request a viewing time; you confirm, complete or cancel from your dashboard. No spreadsheets, no missed requests, no account needed for the buyer.
+            Share one booking link. Buyers request a viewing time; you confirm, complete or cancel from your dashboard; and confirmed viewings sync into your Google Calendar automatically. No spreadsheets, no missed requests, no account needed for the buyer.
           </p>
           <div className="lp-hero__tags">
             <span className="lp-hero__tag">One shareable booking link</span>
             <span className="lp-hero__tag">Manage from your dashboard</span>
+            <span className="lp-hero__tag">Syncs to Google Calendar</span>
             <span className="lp-hero__tag">Free</span>
           </div>
           <div style={{ marginTop: 24 }}>
