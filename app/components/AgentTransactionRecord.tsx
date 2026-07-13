@@ -155,8 +155,29 @@ export default async function AgentTransactionRecord({ cea, given }: { cea: stri
           </div>
         )}
 
-        <div style={{ overflowX: "auto", marginTop: 16, border: "1px solid var(--line)", borderRadius: "var(--r-md)" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
+        {/* Auditable receipts, but no longer a 60-row wall dominating the page:
+            8 most-recent rows are shown, the rest live in a collapsed <details>.
+            The full record stays crawlable (it is in the server HTML). */}
+        {(() => {
+          const PREVIEW = 8;
+          const head = recent.slice(0, PREVIEW);
+          const rest = recent.slice(PREVIEW);
+          const Rows = (list: Row[]) =>
+            list.map((r, i) => {
+              const isSeller = r.represented === "SELLER";
+              return (
+                <tr key={i}>
+                  <td style={TD}>{fmtMonth(r.month)}</td>
+                  <td style={TD}>{titleCase(r.transaction_type)}</td>
+                  <td style={{ ...TD, fontWeight: isSeller ? 700 : 400, color: isSeller ? "var(--blue)" : "inherit" }}>
+                    {r.represented ? titleCase(r.represented) : "—"}
+                  </td>
+                  <td style={TD}>{propLabel(r.property_type)}</td>
+                  <td style={TD}>{r.area ? titleCase(r.area) : "—"}</td>
+                </tr>
+              );
+            });
+          const Head = (
             <thead>
               <tr style={{ background: "var(--cloud)" }}>
                 <th style={TH}>Date</th>
@@ -166,30 +187,37 @@ export default async function AgentTransactionRecord({ cea, given }: { cea: stri
                 <th style={TH}>Area</th>
               </tr>
             </thead>
-            <tbody>
-              {recent.map((r, i) => {
-                const isSeller = r.represented === "SELLER";
-                return (
-                  <tr key={i}>
-                    <td style={TD}>{fmtMonth(r.month)}</td>
-                    <td style={TD}>{titleCase(r.transaction_type)}</td>
-                    <td style={{ ...TD, fontWeight: isSeller ? 700 : 400, color: isSeller ? "var(--blue)" : "inherit" }}>
-                      {r.represented ? titleCase(r.represented) : "—"}
-                    </td>
-                    <td style={TD}>{propLabel(r.property_type)}</td>
-                    <td style={TD}>{r.area ? titleCase(r.area) : "—"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {rec.total > recent.length && (
-          <p className="muted small" style={{ marginTop: 12 }}>
-            Showing the {recent.length} most recent of {rec.total.toLocaleString()} recorded transactions.
-          </p>
-        )}
+          );
+          return (
+            <>
+              <div style={{ overflowX: "auto", marginTop: 16, border: "1px solid var(--line)", borderRadius: "var(--r-md)" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
+                  {Head}
+                  <tbody>{Rows(head)}</tbody>
+                </table>
+              </div>
+              {rest.length > 0 && (
+                <details style={{ marginTop: 12 }}>
+                  <summary style={{ cursor: "pointer", color: "var(--blue)", fontWeight: 600, fontSize: 13.5 }}>
+                    Show {rest.length} more recorded transaction{rest.length === 1 ? "" : "s"}
+                    {rec.total > recent.length ? ` (of ${rec.total.toLocaleString()} on record)` : ""}
+                  </summary>
+                  <div style={{ overflowX: "auto", marginTop: 10, border: "1px solid var(--line)", borderRadius: "var(--r-md)" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
+                      {Head}
+                      <tbody>{Rows(rest)}</tbody>
+                    </table>
+                  </div>
+                </details>
+              )}
+              {rest.length === 0 && rec.total > recent.length && (
+                <p className="muted small" style={{ marginTop: 12 }}>
+                  Showing the {recent.length} most recent of {rec.total.toLocaleString()} recorded transactions.
+                </p>
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {/* T6 honest disclosure + T5 report-a-correction */}

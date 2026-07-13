@@ -12,6 +12,7 @@ import ClaimBanner from "../../../components/ClaimBanner";
 import EgoBaitPanel from "../../../components/EgoBaitPanel";
 import StickyMobileCta from "../../../components/StickyMobileCta";
 import AgentTransactionRecord from "../../../components/AgentTransactionRecord";
+import AgentDealBreakdown from "../../../components/AgentDealBreakdown";
 import FlagBadge from "../../../components/FlagBadge";
 import RelatedAgents from "../../../components/RelatedAgents";
 import { buildAgentVerdict } from "../../../lib/verdict";
@@ -518,6 +519,16 @@ export default async function AgentPage({ params }: Props) {
                       : "No sales have been logged on FairComparisons yet; this fills in as the record grows."}
                   </p>
                 </div>
+
+                {/* Shareable visual summary (donut + represented-side split),
+                    server-rendered from the CEA aggregates. Leads with a
+                    graphic instead of the 60-row table (now collapsed below). */}
+                <AgentDealBreakdown
+                  transactionTypes={track!.transaction_types}
+                  representedRoles={track!.represented_roles}
+                  total={total}
+                  given={given}
+                />
 
                 <h2 style={{ fontSize: "clamp(22px,2.6vw,30px)", marginTop: 40 }}>Performance overview</h2>
                 <p className="muted small" style={{ margin: "6px 0 0" }}>Based on {total} CEA transactions recorded to date.</p>
