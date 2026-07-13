@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { getAgentSession } from "../../../lib/agent-auth";
-import { insertViewingEvent } from "../../../lib/google-calendar";
+import { syncViewingToCalendar } from "../../../lib/calendar-sync";
 
 // Planner: an agent's viewing appointments. Session-gated; the agent is derived
 // from the signed cookie, never request input. All access via supabaseAdmin
@@ -64,8 +64,8 @@ export async function POST(req: Request) {
     .eq("agent_cea_no", agent.cea_registration);
   if (error) return NextResponse.json({ error: "Could not update." }, { status: 500 });
 
-  // On confirm, best-effort drop the viewing into the agent's Google Calendar
-  // (no-op unless they've connected it). Never blocks or fails the confirm.
+  // On confirm, best-effort drop the viewing into the agent's connected
+  // calendar (Google or Outlook; no-op unless connected). Never blocks the confirm.
   if (status === "confirmed") {
     try {
       const { data: v } = await supabaseAdmin()
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       if (v?.viewing_at) {
         const start = new Date(String(v.viewing_at));
         const end = new Date(start.getTime() + 60 * 60 * 1000);
-        await insertViewingEvent(session.agentId, {
+        await syncViewingToCalendar(session.agentId, {
           title: `Viewing: ${v.property_label ?? "property"}`,
           location: v.property_label ?? undefined,
           description: [

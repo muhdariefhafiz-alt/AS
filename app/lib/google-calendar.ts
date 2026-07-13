@@ -80,7 +80,7 @@ export async function getGoogleEmail(accessToken: string): Promise<string | null
 
 export async function storeCalendarTokens(agentId: number, tokens: { access_token: string; refresh_token?: string; expires_in: number }, email: string | null) {
   const row: Record<string, unknown> = {
-    agent_id: agentId, provider: "google", google_email: email,
+    agent_id: agentId, provider: "google", google_email: email, account_email: email,
     access_token: tokens.access_token,
     token_expiry: new Date(Date.now() + (tokens.expires_in - 60) * 1000).toISOString(),
     updated_at: new Date().toISOString(),
@@ -93,7 +93,7 @@ export async function storeCalendarTokens(agentId: number, tokens: { access_toke
 export async function getCalendarConnection(agentId: number) {
   const { data } = await supabaseAdmin()
     .from("sg_agent_calendar")
-    .select("google_email, access_token, refresh_token, token_expiry")
+    .select("provider, account_email, google_email, access_token, refresh_token, token_expiry")
     .eq("agent_id", agentId)
     .maybeSingle();
   return data;
@@ -102,6 +102,9 @@ export async function getCalendarConnection(agentId: number) {
 async function getValidAccessToken(agentId: number): Promise<string | null> {
   const conn = await getCalendarConnection(agentId);
   if (!conn) return null;
+  // Defensive: this refresher only speaks Google. (The calendar-sync
+  // dispatcher routes by provider, but never refresh an MS token here.)
+  if (conn.provider && conn.provider !== "google") return null;
   if (conn.access_token && conn.token_expiry && new Date(String(conn.token_expiry)).getTime() > Date.now()) {
     return String(conn.access_token);
   }
