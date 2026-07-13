@@ -17,6 +17,10 @@
       "schedule": "0 2 * * *"
     },
     {
+      "path": "/api/cron/agent-activation",
+      "schedule": "30 1 * * *"
+    },
+    {
       "path": "/api/cron/weekly-digest",
       "schedule": "0 1 * * 1"
     },
