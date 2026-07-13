@@ -55,6 +55,19 @@ export default async function ForAgentsPage() {
         </div>
       </header>
 
+      {/* Reposition: the neutral layer that outlives any agency super-app */}
+      <section className="lp-section">
+        <div className="fc-wrap" style={{ padding: "56px 40px", textAlign: "center" }}>
+          <div className="lp-hero__eyebrow" style={{ justifyContent: "center" }}>Your identity, not your agency&apos;s</div>
+          <h2 style={{ maxWidth: "24ch", margin: "12px auto 0", fontSize: "clamp(24px,3vw,32px)" }}>
+            Agencies change. Your record and your phone number don&apos;t.
+          </h2>
+          <p className="muted" style={{ maxWidth: "62ch", margin: "16px auto 0", fontSize: 15.5, lineHeight: 1.7 }}>
+            Most agents move between agencies over a career, and every move resets the agency&apos;s CRM, email and portal login. The two things that stay yours are your <strong>public track record</strong> and your <strong>personal contact</strong>. FairComparisons ranks you on that record from official CEA, URA and HDB data and connects sellers to you directly, so your reputation compounds with you, independent of any agency super-app.
+          </p>
+        </div>
+      </section>
+
       {/* claimed vs unclaimed */}
       <section className="lp-section--paper">
         <div className="fc-wrap" style={{ padding: "64px 40px" }}>

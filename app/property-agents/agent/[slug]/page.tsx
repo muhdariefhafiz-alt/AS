@@ -13,6 +13,7 @@ import EgoBaitPanel from "../../../components/EgoBaitPanel";
 import StickyMobileCta from "../../../components/StickyMobileCta";
 import AgentTransactionRecord from "../../../components/AgentTransactionRecord";
 import AgentDealBreakdown from "../../../components/AgentDealBreakdown";
+import AgentActivityChart from "../../../components/AgentActivityChart";
 import FlagBadge from "../../../components/FlagBadge";
 import RelatedAgents from "../../../components/RelatedAgents";
 import { buildAgentVerdict } from "../../../lib/verdict";
@@ -158,13 +159,15 @@ export default async function AgentPage({ params }: Props) {
     .single();
   if (!agent) notFound();
 
-  const [agencyRes, trackRes, listingsRes] = await Promise.all([
+  const [agencyRes, trackRes, listingsRes, activityRes] = await Promise.all([
     agent.agency_id
       ? supabase.from("sg_agencies").select("name, slug, agent_count, google_rating, google_review_count, address, website").eq("id", agent.agency_id).single()
       : Promise.resolve({ data: null }),
     supabase.rpc("get_agent_track_record", { reg_num: agent.cea_registration }),
     supabase.from("sg_listings").select("title, address, price, property_type, district_code, listing_type").eq("agent_license", agent.cea_registration).limit(6),
+    supabase.rpc("get_agent_activity_by_year", { p_reg: agent.cea_registration }),
   ]);
+  const activity = (activityRes.data ?? []) as Array<{ year: string; sales: number; rentals: number; total: number }>;
 
   const agency = agencyRes.data;
   const track = (trackRes.data?.[0] as TrackRecord | undefined) ?? null;
@@ -527,6 +530,14 @@ export default async function AgentPage({ params }: Props) {
                   transactionTypes={track!.transaction_types}
                   representedRoles={track!.represented_roles}
                   total={total}
+                  given={given}
+                />
+
+                {/* Activity-over-time bars + rank-percentile (PropKaki-parity visuals) */}
+                <AgentActivityChart
+                  activity={activity}
+                  percentile={agent.percentile}
+                  totalTxns={total}
                   given={given}
                 />
 
