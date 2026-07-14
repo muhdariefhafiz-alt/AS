@@ -202,12 +202,12 @@ export async function GET(req: Request) {
     flags.push(`Match rate ${matchRate}%: under half of leads (30d) got a reachable invite`);
   }
 
-  if (bounced > 0) {
-    flags.push(`${bounced} agent email${bounced === 1 ? "" : "s"} now bounce (dead address)`);
-  }
-  if (noMx > 0) {
-    flags.push(`${noMx} agent email${noMx === 1 ? "" : "s"} have no MX (undeliverable)`);
-  }
+  // Email deliverability: bounced / no-MX are STANDING backlogs (a cumulative
+  // count of dead addresses), not week-over-week regressions, so they live in
+  // the informational metric line, not the flags. Only a windowed, recent event
+  // (outreach sends that failed in the last 7 days) is worth an alert here,
+  // otherwise the digest would cry "flag" every week over a static number and
+  // train the operator to ignore it.
   if (outreachFailed7d > 0) {
     flags.push(`${outreachFailed7d} outreach send${outreachFailed7d === 1 ? "" : "s"} failed in the last 7 days`);
   }
