@@ -214,8 +214,8 @@ export async function FunnelTab() {
       <div className="grid gap-3 md:grid-cols-3">
         <StatCard
           title="View to WhatsApp"
-          value={profileViews ? `${Math.round((waClicks / profileViews) * 100)}%` : "0%"}
-          sub="whatsapp / view (liquidity)"
+          value={waClicks > 0 ? `${Math.round((waClicks / Math.max(profileViews, 1)) * 100)}%` : "no signal"}
+          sub={waClicks > 0 ? "whatsapp / view (liquidity)" : "wa click not yet instrumented"}
           color="#2980b9"
         />
         <StatCard

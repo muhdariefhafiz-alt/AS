@@ -38,10 +38,11 @@ export default async function AdminPage({ searchParams }: Props) {
   const active = TABS.find((t) => t.id === tab)?.id || "overzicht";
 
   // Sidebar badge counts (cheap queries)
-  const [pendingClaims, feedbackNew, emailFailed, pendingMessages, pendingPhotos, pendingBios] = await Promise.all([
+  const [pendingClaims, emailBad, outreachFailed, pendingMessages, pendingPhotos, pendingBios] = await Promise.all([
     supabase.from("sg_claim_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
-    supabase.from("dashboard_feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
-    supabase.from("email_queue").select("id", { count: "exact", head: true }).eq("status", "failed"),
+    // SG signals (the NL dashboard_feedback / email_queue tables were wrong-tenant).
+    supabase.from("sg_agents").select("id", { count: "exact", head: true }).in("email_status", ["bounced", "complained"]),
+    supabase.from("sg_outreach").select("id", { count: "exact", head: true }).eq("status", "failed"),
     supabase
       .from("sg_agents")
       .select("id", { count: "exact", head: true })
@@ -73,7 +74,7 @@ export default async function AdminPage({ searchParams }: Props) {
 
   const badges: Record<string, number> = {
     overzicht: pendingClaims.count ?? 0,
-    ops: (emailFailed.count ?? 0) + (feedbackNew.count ?? 0),
+    ops: (outreachFailed.count ?? 0) + (emailBad.count ?? 0),
     revenue: 0,
     liquidity: 0,
     funnel: 0,
