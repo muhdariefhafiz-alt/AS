@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAgentStats } from "../../lib/agentStats";
+import ProductBox from "../../components/ProductBox";
+import { InboxMock } from "../../components/mocks";
 
 export const revalidate = 86400;
 
@@ -134,6 +136,19 @@ export default async function FeaturesHubPage() {
           </div>
         </div>
       </header>
+
+      <section className="lp-section">
+        <div className="fc-wrap" style={{ padding: "56px 40px 0" }}>
+          <ProductBox
+            layout="hero"
+            eyebrow="The flagship tool"
+            title="Every lead in one inbox, replied to first."
+            body="The tools all feed one place: every FairComparisons seller lead lands in your inbox with an AI draft grounded in your own CEA transactions, so you reply first, backed by your real numbers, in one tap."
+            mockup={<InboxMock />}
+            cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
+          />
+        </div>
+      </section>
 
       {PILLARS.map((p, pi) => (
         <section key={p.pillar} className={pi % 2 === 0 ? "lp-section" : "lp-section--paper"}>

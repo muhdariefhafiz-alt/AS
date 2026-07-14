@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAgentStats } from "../../lib/agentStats";
+import ProductBox from "../../components/ProductBox";
+import { PlannerMock } from "../../components/mocks";
 
 export const revalidate = 86400;
 
@@ -71,6 +73,14 @@ export default async function PlannerPage() {
 
       <section className="lp-section">
         <div className="fc-wrap" style={{ padding: "56px 40px", display: "flex", flexDirection: "column", gap: 40 }}>
+          <ProductBox
+            layout="hero"
+            eyebrow="Viewing Planner"
+            title="One link that fills your calendar."
+            body="Share your booking link in every listing and message. Buyers pick a viewing time themselves, you tap confirm, and it drops into your Google Calendar automatically. No spreadsheets, no double-booking, no account needed for the buyer."
+            mockup={<PlannerMock />}
+            cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
+          />
           {FEATURES.map((f) => (
             <div key={f.kicker} className="fc-card fc-card--pad" style={{ background: "#fff" }}>
               <p className="kicker" style={{ color: "var(--blue-deep)" }}>{f.kicker}</p>

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAgentStats } from "../../lib/agentStats";
+import ProductBox from "../../components/ProductBox";
+import { WidgetMock } from "../../components/mocks";
 
 export const revalidate = 86400;
 
@@ -70,6 +72,14 @@ export default async function GrowPage() {
 
       <section className="lp-section">
         <div className="fc-wrap" style={{ padding: "56px 40px", display: "flex", flexDirection: "column", gap: 40 }}>
+          <ProductBox
+            layout="hero"
+            eyebrow="Grow toolkit"
+            title="Turn your record into your own lead source."
+            body="Embed your verified AgentScore badge and a home-value widget on your own website, hand out co-branded seller reports, and let visitors asking what their home is worth become tracked enquiries, all built on your real record."
+            mockup={<WidgetMock />}
+            cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
+          />
           {FEATURES.map((f) => (
             <div key={f.kicker} className="fc-card fc-card--pad" style={{ background: "#fff" }}>
               <p className="kicker" style={{ color: "var(--blue-deep)" }}>{f.kicker}</p>

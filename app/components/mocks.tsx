@@ -133,6 +133,32 @@ export function WidgetMock() {
   );
 }
 
+// Planner: a buyer self-schedules a viewing that syncs to the agent's calendar.
+export function PlannerMock() {
+  return (
+    <div aria-hidden="true" style={shell}>
+      <MockChrome />
+      <div style={{ padding: "14px 15px 16px" }}>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>VIEWING PLANNER</div>
+        <div style={{ fontSize: 15, fontWeight: 700, marginTop: 4 }}>New viewing request</div>
+        <div style={{ background: MOCK.panel, borderRadius: 10, padding: "11px 12px", marginTop: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600 }}>Blk 138 Tampines St 11</div>
+              <div style={{ fontSize: 10.5, color: MOCK.faint }}>Sat 12 Jul · 3:00pm</div>
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: "var(--blue)", borderRadius: 999, padding: "4px 11px" }}>Confirm</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 11, fontSize: 11, color: MOCK.body }}>
+          <span style={{ width: 16, height: 16, borderRadius: 999, background: MOCK.pillBg, color: MOCK.pillText, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800 }}>✓</span>
+          Syncs to your Google Calendar
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Demand Dashboard: how many sellers are viewing / comparing the agent.
 export function DemandMock() {
   return (

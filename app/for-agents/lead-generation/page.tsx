@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "../../lib/supabase";
+import ProductBox from "../../components/ProductBox";
+import { SellerCompareMock } from "../../components/mocks";
 
 export const revalidate = false;
 
@@ -121,6 +123,18 @@ export default async function LeadGenerationPage() {
             </Link>
           </div>
         </div>
+      </section>
+
+      {/* Product box: what buyers actually see when they find you */}
+      <section className="mx-auto max-w-[1120px] px-5 py-12 md:px-8">
+        <ProductBox
+          layout="hero"
+          eyebrow="What they find"
+          title="When a seller searches, they compare you on the record."
+          body="Your FairComparisons profile ranks on real CEA, URA and HDB transactions. Sellers shortlist and invite the agents they choose, so your track record does the selling before you ever speak."
+          mockup={<SellerCompareMock />}
+          cta={{ label: "Find and claim your profile", href: "/search", variant: "ink" }}
+        />
       </section>
 
       {/* The pitch */}
