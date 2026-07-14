@@ -79,6 +79,10 @@
     {
       "path": "/api/cron/hdb-sync",
       "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/cron/ops-digest",
+      "schedule": "45 0 * * 1"
     }
   ]
 }

@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { SectionHeading, StatCard, Pill, EmptyState, MS_DAY } from "../shared";
+import ExportCard from "./ExportCard";
+import CronRunButton from "./CronRunButton";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,6 +27,7 @@ const CRONS: [string, string, string][] = [
   ["ai-tracker-scan", "07:00-07:30 UTC Mon", "AI citation SOV (4 surfaces)"],
   ["hdb-sync", "06:00 UTC Mon", "HDB resale re-mirror"],
   ["standing-digest", "08:00 UTC monthly (2nd)", "Agent standing email"],
+  ["ops-digest", "00:45 UTC Mon", "Operator health + regression digest"],
 ];
 
 export async function OpsTab() {
@@ -159,6 +162,7 @@ export async function OpsTab() {
                 <th className="px-3 py-2">Cron</th>
                 <th className="px-3 py-2">Schedule</th>
                 <th className="px-3 py-2">Purpose</th>
+                <th className="px-3 py-2">Run</th>
               </tr>
             </thead>
             <tbody>
@@ -167,11 +171,17 @@ export async function OpsTab() {
                   <td className="px-3 py-2 font-mono text-xs">{name}</td>
                   <td className="px-3 py-2 text-xs text-gray-500">{schedule}</td>
                   <td className="px-3 py-2 text-xs">{purpose}</td>
+                  <td className="px-3 py-2"><CronRunButton path={`/api/cron/${name}`} /></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="mt-2 text-[11px] text-gray-400">Run now fires the job on demand with the cron secret. Long jobs (hdb-sync, scrape-contacts) may time out at the platform limit; the schedule still runs them fully.</p>
+      </div>
+
+      <div>
+        <ExportCard />
       </div>
     </div>
   );
