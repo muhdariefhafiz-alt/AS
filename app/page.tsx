@@ -2,6 +2,8 @@ import Link from "next/link";
 import { supabase } from "./lib/supabase";
 import { Seal, Gauge, RankRow, RankedBadge, SourceBadge } from "./components/Brand";
 import { titleName, cleanAgency } from "./lib/names";
+import ProductBox from "./components/ProductBox";
+import { SellerCompareMock } from "./components/mocks";
 
 export const revalidate = 43200; // 12h fallback; daily cron also force-revalidates
 
@@ -180,6 +182,19 @@ export default async function HomePage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ---------- SELLER PRODUCT BOX ---------- */}
+      <section className="fc-wrap" style={{ padding: "0 40px 64px" }}>
+        <ProductBox
+          layout="hero"
+          eyebrow="Compare and invite"
+          title="See every agent ranked, then invite the ones you choose."
+          body="FairComparisons ranks every CEA-registered agent in your area on their real transaction record. Shortlist up to three, invite them to quote, and compare fees side by side. Free, no obligation, and rankings can never be bought."
+          mockup={<SellerCompareMock />}
+          cta={{ label: "See agents in your area", href: "/search", variant: "ink" }}
+          secondary={{ label: "How the ranking works", href: "/how-we-score" }}
+        />
       </section>
 
       {/* ---------- WHY TRUST ---------- */}

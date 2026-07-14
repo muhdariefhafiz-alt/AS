@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import ValuationForm from "./ValuationForm";
+import ProductBox from "../../components/ProductBox";
+import { SellerCompareMock } from "../../components/mocks";
 
 export const revalidate = 86400;
 
@@ -77,6 +79,19 @@ export default function ValuationPage() {
           <p className="lede" style={{ margin: "16px auto 0", maxWidth: "64ch", color: "var(--slate)" }}>
             Any tool that gives you one exact figure is guessing with false precision. Two identical-looking flats can sell 10 to 15% apart on floor, facing, renovation and timing. We show you the band that recent comparable sales actually landed in, plus how many sales we based it on, so you know how much to trust it.
           </p>
+        </div>
+      </section>
+
+      <section className="lp-section">
+        <div className="fc-wrap" style={{ padding: "0 40px 64px" }}>
+          <ProductBox
+            layout="hero"
+            eyebrow="Next step"
+            title="Know your value. Now compare the agents who sell at it."
+            body="See every CEA-registered agent in your area ranked on their real transaction record, and invite up to three to quote. Free for sellers, and no agent can pay to rank higher."
+            mockup={<SellerCompareMock />}
+            cta={{ label: "See agents in your area", href: "/search", variant: "ink" }}
+          />
         </div>
       </section>
     </>

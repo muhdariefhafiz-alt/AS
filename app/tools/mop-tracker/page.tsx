@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import MopTrackerForm from "./MopTrackerForm";
+import ProductBox from "../../components/ProductBox";
+import { SellerCompareMock } from "../../components/mocks";
 
 export const revalidate = 86400;
 
@@ -9,7 +11,7 @@ export const metadata: Metadata = {
     "Free MOP date + current value estimate for your HDB flat. Backed by HDB resale data and CEA-licensed agents. PDPA-compliant. No spam.",
   alternates: { canonical: "https://fair-comparisons.com/tools/mop-tracker" },
   openGraph: {
-    title: "HDB MOP Tracker — When can you sell?",
+    title: "HDB MOP Tracker: When can you sell?",
     description:
       "Estimate your MOP date + flat value in 30 seconds. Free. Powered by HDB resale + CEA records.",
     url: "https://fair-comparisons.com/tools/mop-tracker",
@@ -115,6 +117,19 @@ export default function MopTrackerPage() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="lp-section--paper">
+        <div className="fc-wrap" style={{ padding: "0 40px 64px" }}>
+          <ProductBox
+            layout="hero"
+            eyebrow="Next step"
+            title="Know when you can sell. Line up the right agent now."
+            body="Compare every CEA-registered agent who actually sells your flat type in your town, ranked on real transaction records, and invite up to three to quote when you are ready."
+            mockup={<SellerCompareMock />}
+            cta={{ label: "See agents in your town", href: "/search", variant: "ink" }}
+          />
         </div>
       </section>
     </>

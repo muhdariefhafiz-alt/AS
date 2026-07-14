@@ -3,6 +3,8 @@ import { supabase } from "../lib/supabase";
 import { titleName, cleanAgency } from "../lib/names";
 import SellCtaBand from "../components/SellCtaBand";
 import type { Metadata } from "next";
+import ProductBox from "../components/ProductBox";
+import { SellerCompareMock } from "../components/mocks";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
@@ -58,6 +60,19 @@ export default async function PropertyAgentsHub() {
             </Link>
           </div>
         </div>
+      </section>
+
+      {/* ---------- SELLER PRODUCT BOX ---------- */}
+      <section className="fc-wrap" style={{ padding: "56px 40px 0" }}>
+        <ProductBox
+          layout="hero"
+          eyebrow="Compare and invite"
+          title="See every agent ranked, then invite the ones you choose."
+          body="Shortlist up to three agents in your area on their real transaction record and invite them to quote. Free for sellers, no obligation, and no agent can pay to rank higher."
+          mockup={<SellerCompareMock />}
+          cta={{ label: "See agents in your area", href: "/search", variant: "ink" }}
+          secondary={{ label: "How the ranking works", href: "/how-we-score" }}
+        />
       </section>
 
       {/* ---------- BROWSE BY DISTRICT ---------- */}

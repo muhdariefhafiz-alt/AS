@@ -4,6 +4,8 @@ import { supabase } from "../lib/supabase";
 import { titleName, cleanAgency } from "../lib/names";
 import SellForm from "./SellForm";
 import SellerProof from "../components/SellerProof";
+import ProductBox from "../components/ProductBox";
+import { ValuationMock } from "../components/mocks";
 
 export const revalidate = 86400;
 
@@ -218,6 +220,19 @@ export default async function SellPage({
 
       {/* Objection-handling FAQ. The three biggest seller hesitations: cost,
           spam, and how we make money. */}
+      <section className="lp-section--paper">
+        <div className="fc-wrap" style={{ padding: "0 40px 64px" }}>
+          <ProductBox
+            layout="hero"
+            eyebrow="Know your number first"
+            title="Not sure what it is worth? Start with a real range."
+            body="Get an evidence-backed value range from recent HDB resale and URA transactions before you brief agents, so you can judge every quote against the real market."
+            mockup={<ValuationMock />}
+            cta={{ label: "Get my free valuation", href: "/tools/valuation", variant: "ink" }}
+          />
+        </div>
+      </section>
+
       <section id="faq" className="lp-section">
         <div className="fc-wrap" style={{ padding: "56px 40px 72px", maxWidth: 820 }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>Common questions</h2>
