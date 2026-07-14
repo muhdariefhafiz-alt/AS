@@ -9,7 +9,7 @@
  * so each function takes the recipient email as its final argument.
  */
 
-import { givenName } from "./names";
+import { greetName } from "./names";
 import { emailShell, p, muted, rows, statCard } from "./email-layout";
 
 const BASE_URL = "https://fair-comparisons.com";
@@ -38,7 +38,7 @@ function claimUrl(slug: string, campaign: string) {
 }
 
 function firstName(name: string) {
-  return givenName(name);
+  return greetName(name);
 }
 
 /** AgentScore stat card, with a percentile line when it is genuinely strong. */

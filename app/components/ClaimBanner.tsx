@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { trackEvent } from "../lib/analytics";
-import { givenName } from "../lib/names";
+import { greetName } from "../lib/names";
 
 /** Fire-and-forget funnel event to /api/funnel */
 function trackFunnel(event: string, agentId: number, metadata?: Record<string, unknown>) {
@@ -48,7 +48,7 @@ export default function ClaimBanner({
   const hasTrackedView = useRef(false);
   const refSource = useRef<string | null>(null);
 
-  const firstName = givenName(agentName);
+  const firstName = greetName(agentName);
 
   // Attribution + experiment metadata on every funnel event for this banner.
   const meta = () => ({ variant, ref: refSource.current });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { givenName } from "../lib/names";
+import { greetName } from "../lib/names";
 
 interface SelfViewCTAProps {
   agentSlug: string;
@@ -49,7 +49,7 @@ export default function SelfViewCTA({ agentSlug, agentName, claimed }: SelfViewC
 
   if (!show || claimed) return null;
 
-  const firstName = givenName(agentName);
+  const firstName = greetName(agentName);
 
   return (
     <div className="mx-auto max-w-[1120px] px-5 md:px-8">

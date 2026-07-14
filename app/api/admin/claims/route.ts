@@ -5,7 +5,7 @@ import { getAdminSession } from "../../../lib/admin-auth";
 import { sendEmail } from "../../../lib/email";
 import { emailShell, p, rows, statCard } from "../../../lib/email-layout";
 import { AGENT_TERMS_VERSION } from "../../../lib/agent-terms";
-import { givenName } from "../../../lib/names";
+import { greetName } from "../../../lib/names";
 import { escapeHtml } from "../../../lib/escapeHtml";
 
 const supabase = createClient(
@@ -99,7 +99,7 @@ export async function POST(req: Request) {
 
     // Notify the agent at the (now admin-vetted) submitted email.
     try {
-      const first = escapeHtml(givenName(agent.name ?? "") || "there");
+      const first = escapeHtml(greetName(agent.name ?? "") || "there");
       const dashboardUrl = "https://fair-comparisons.com/dashboard?utm_source=claim_approved&utm_medium=email";
       const profileUrl = agent.slug
         ? `https://fair-comparisons.com/property-agents/agent/${agent.slug}?utm_source=claim_approved&utm_medium=email`

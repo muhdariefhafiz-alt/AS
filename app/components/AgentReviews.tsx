@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { givenName } from "../lib/names";
+import { greetName } from "../lib/names";
 
 type Review = {
   id: number;
@@ -125,7 +125,7 @@ export default function AgentReviews({ agentId, agentName }: Props) {
     ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
     : null;
 
-  const firstName = givenName(agentName);
+  const firstName = greetName(agentName);
 
   return (
     <section>

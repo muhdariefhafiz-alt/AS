@@ -15,19 +15,53 @@ export function givenName(full: string): string {
   return titleName(tok);
 }
 
+// Common Singaporean Chinese surnames as they appear FIRST in CEA (surname-first)
+// records, plus the top Mandarin pinyin forms. Used to safely pull a given name
+// out of a bare ALL-CAPS name with no parenthesised preferred name
+// ("TAN BEN DON" -> "Ben"). Gated on a known surname so Malay ("MUHAMMAD ...")
+// and Indian given-first names are never mis-stripped down to a middle token.
+const CN_SURNAMES = new Set([
+  "TAN", "LIM", "LEE", "NG", "WONG", "GOH", "ONG", "CHUA", "TEO", "KOH", "HAN",
+  "CHAN", "LOW", "TOH", "SIM", "YEO", "CHONG", "CHIA", "CHEW", "SEAH", "HO",
+  "HENG", "LAU", "FOO", "YAP", "QUEK", "GAN", "LEONG", "LOH", "SOH", "TAY",
+  "PHUA", "OOI", "CHOO", "WEE", "ANG", "CHENG", "CHIN", "CHOW", "FONG", "KWEK",
+  "LIEW", "LING", "MOK", "POH", "SNG", "THAM", "YONG", "SEE", "SIA", "NEO",
+  "PNG", "TNG", "KANG", "LOKE", "TICK", "SEET",
+  "ZHANG", "ZHOU", "LI", "WANG", "CHEN", "LIU", "HUANG", "WU", "ZHAO", "YANG",
+  "XU", "SUN", "ZHU", "LIN", "GUO",
+]);
+
 /**
- * Best name to greet an agent by. CEA names are often "TAN YONG DA (BENDON)"
- * where the parenthesised part is the name the agent actually goes by, so
- * prefer its first token; otherwise fall back to givenName(). Greeting by the
- * raw first token would address Bendon as "Tan".
+ * Best name to greet an agent by. CEA names are surname-first, often
+ * "TAN YONG DA (BENDON)" where the parenthesised part is the name the agent
+ * actually goes by. Resolution order:
+ *   1. Parenthesised preferred name  ("... (Ziqi)" -> "Ziqi").
+ *   2. "SURNAME, Given"              (comma path -> "Given").
+ *   3. Bare ALL-CAPS with a known Chinese surname first ("TAN BEN DON" -> "Ben").
+ *   4. Fallback to givenName().
+ * Greeting by the raw first token would address Bendon as "Tan".
  */
 export function greetName(full: string): string {
-  const marketing = (full || "").match(/\(([^)]+)\)/)?.[1]?.trim();
+  const raw = (full || "").trim();
+  if (!raw) return "";
+
+  const marketing = raw.match(/\(([^)]+)\)/)?.[1]?.trim();
   if (marketing) {
     const tok = marketing.split(/\s+/)[0];
     if (tok) return titleName(tok);
   }
-  return givenName(full);
+
+  if (raw.includes(",")) return givenName(raw);
+
+  const toks = raw.split(/\s+/);
+  const isAllCaps = raw === raw.toUpperCase() && /[A-Z]/.test(raw);
+  if (isAllCaps && toks.length >= 2 && CN_SURNAMES.has(toks[0].toUpperCase())) {
+    // Skip the surname; use the next token that is more than a single initial.
+    const given = toks.slice(1).find((t) => t.replace(/\W/g, "").length > 1) || toks[1];
+    return titleName(given);
+  }
+
+  return givenName(raw);
 }
 
 /** Clean an agency name: drop "Pte Ltd"/"LLP", title-case, keep ERA upper. */

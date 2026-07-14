@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "../../../lib/stripe";
 import { sendEmail } from "../../../lib/email";
 import { emailShell, p } from "../../../lib/email-layout";
-import { givenName } from "../../../lib/names";
+import { greetName } from "../../../lib/names";
 import { escapeHtml } from "../../../lib/escapeHtml";
 import type Stripe from "stripe";
 
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
               | undefined;
 
             if (dunningAgent && to) {
-              const firstRaw = givenName(dunningAgent.name ?? "") || "there";
+              const firstRaw = greetName(dunningAgent.name ?? "") || "there";
               const first = escapeHtml(firstRaw);
               const tier = dunningAgent.subscription_tier as string | null;
               const planLabel =

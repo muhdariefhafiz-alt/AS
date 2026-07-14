@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../lib/email";
 import { emailShell, p, muted } from "../../lib/email-layout";
-import { givenName, titleName } from "../../lib/names";
+import { greetName, titleName } from "../../lib/names";
 import { checkRateLimit, clientIp } from "../../lib/rateLimit";
 
 // Service role: this route reads agent contact PII (email/phone) to send a
@@ -121,7 +121,7 @@ export async function POST(req: Request) {
     try {
       await sendEmail({
         to: agent.email!,
-        subject: `Verify your profile claim, ${givenName(agent.name)}`,
+        subject: `Verify your profile claim, ${greetName(agent.name)}`,
         html: verifyHtml,
         metric: "Claim Verification",
         properties: {
@@ -151,7 +151,7 @@ function buildVerifyEmail(agentName: string, verifyUrl: string): string {
 
   return emailShell({
     preheader: "One click confirms this profile is yours. Link expires in 24h.",
-    heading: `Verify your profile claim, ${givenName(agentName)}`,
+    heading: `Verify your profile claim, ${greetName(agentName)}`,
     bodyHtml,
     cta: { label: "Verify and claim profile", href: verifyUrl },
   });

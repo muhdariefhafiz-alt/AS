@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "../../../lib/email";
 import { emailShell, p, rows, statCard } from "../../../lib/email-layout";
 import { AGENT_TERMS_VERSION } from "../../../lib/agent-terms";
-import { givenName } from "../../../lib/names";
+import { greetName } from "../../../lib/names";
 import { issueAgentSession, AGENT_COOKIE, AGENT_SESSION_TTL_MS } from "../../../lib/agent-auth";
 
 // Service role: reads/writes agent email + claimed_email during claim
@@ -103,7 +103,7 @@ export async function GET(req: Request) {
     await sendEmail({
       to: claim.email,
       subject: agentFull?.name
-        ? `${givenName(agentFull.name)}, your profile is live. 3 things to finish it.`
+        ? `${greetName(agentFull.name)}, your profile is live. 3 things to finish it.`
         : "Your profile is live. 3 things to finish it.",
       html: claimedHtml,
       metric: "Agent Claimed",
@@ -150,7 +150,7 @@ function buildClaimedEmail(
   profileUrl: string,
   dashboardUrl: string,
 ): string {
-  const firstName = givenName(name);
+  const firstName = greetName(name);
   const bodyHtml = [
     p(
       `Your profile is live and sellers in your area can now invite you to quote.${

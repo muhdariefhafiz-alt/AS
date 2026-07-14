@@ -6,7 +6,7 @@ import AgentReviews from "../../../components/AgentReviews";
 import VerifiedReviews from "../../../components/VerifiedReviews";
 import FunnelTracker from "../../../components/FunnelTracker";
 import { bandFor } from "../../../components/Brand";
-import { titleName, givenName, cleanAgency, agencyForRole, saleShare } from "../../../lib/names";
+import { titleName, greetName, cleanAgency, agencyForRole, saleShare } from "../../../lib/names";
 import { seoTitle } from "../../../lib/seoTitle";
 import ClaimBanner from "../../../components/ClaimBanner";
 import EgoBaitPanel from "../../../components/EgoBaitPanel";
@@ -187,7 +187,7 @@ export default async function AgentPage({ params }: Props) {
   const primaryArea = areas[0]?.name ?? agent.primary_area ?? null;
 
   const display = titleName(agent.name);
-  const given = givenName(agent.name);
+  const given = greetName(agent.name);
   const agencyName = cleanAgency(agent.agency_name);
   // Approved agent-supplied marketing name shown in the H1 (and JSON-LD) so the
   // page ranks for the name clients actually search. Body sentences keep the

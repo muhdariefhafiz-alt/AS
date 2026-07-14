@@ -166,10 +166,10 @@ export async function LoopsTab() {
       </div>
 
       <div>
-        <SectionHeading title="Instrumented events (30d)" hint="First-class funnel/loop events now firing at the source — time-series + attribution, not just state." />
+        <SectionHeading title="Instrumented events (30d)" hint="First-class funnel/loop events now firing at the source: time-series + attribution, not just state." />
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Shortlist empty" value={evShortlistEmpty} sub="demand, no supply" danger={evShortlistEmpty > 0} />
-          <StatCard title="Lead received" value={evLeadReceived} sub="per agent" />
+          <StatCard title="Lead received" value={evLeadReceived} sub="one per shortlisted agent" />
           <StatCard title="Agent responded" value={evResponded} sub="quote sent" />
           <StatCard title="Review submitted" value={evReviewed} sub="moat input" />
         </div>
