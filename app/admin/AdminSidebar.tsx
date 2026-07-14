@@ -92,7 +92,7 @@ export function AdminSidebar({
             href="/admin/broadcasts"
             className="flex items-center justify-between rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800 hover:bg-blue-100"
           >
-            <span>Broadcasts</span>
+            <span>Reach agents</span>
           </Link>
           <Link
             href="/admin/impersonate"
