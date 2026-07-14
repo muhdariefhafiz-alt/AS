@@ -89,6 +89,12 @@ export function AdminSidebar({
             )}
           </Link>
           <Link
+            href="/admin/broadcasts"
+            className="flex items-center justify-between rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800 hover:bg-blue-100"
+          >
+            <span>Broadcasts</span>
+          </Link>
+          <Link
             href="/admin/impersonate"
             className="flex items-center justify-between rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-800 hover:bg-indigo-100"
           >

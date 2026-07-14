@@ -10,6 +10,7 @@ import DemandPanel from "./DemandPanel";
 import BuildingPagesPanel from "./BuildingPagesPanel";
 import ShareCard from "./ShareCard";
 import PerfUploadCard from "./PerfUploadCard";
+import DashboardBanner from "./DashboardBanner";
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid } from "../lib/tiers";
 
@@ -346,6 +347,8 @@ export default function DashboardPage() {
       {/* Step 2: Dashboard */}
       {lookupStatus === "found" && agent && (
         <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 22 }}>
+          {/* Operator announcements targeted at this agent's cohort */}
+          <DashboardBanner />
           {/* Agent header with tier badge */}
           <div className="fc-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px" }}>
             <div className="fc-row" style={{ gap: 12 }}>

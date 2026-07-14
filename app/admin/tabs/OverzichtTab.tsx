@@ -12,7 +12,7 @@ export async function OverzichtTab() {
   const now = Date.now();
   const cutoff8wk = new Date(now - 8 * MS_WEEK).toISOString();
 
-  const [claims8wk, payingAgents, activeEvents, pendingClaims, recentFeedback, totalClaimedCount] = await Promise.all([
+  const [claims8wk, payingAgents, activeEvents, pendingClaims, nsmRes, totalClaimedCount, liqRes] = await Promise.all([
     supabase.from("sg_claim_requests").select("created_at, status").gte("created_at", cutoff8wk),
     supabase
       .from("sg_agents")
@@ -31,14 +31,24 @@ export async function OverzichtTab() {
       .eq("status", "pending")
       .order("created_at", { ascending: false })
       .limit(5),
-    supabase
-      .from("dashboard_feedback")
-      .select("id, office_name, category, body, created_at")
-      .eq("status", "new")
-      .order("created_at", { ascending: false })
-      .limit(3),
+    supabase.rpc("sg_nsm_weekly", { p_weeks: 8, p_sla_hours: 24 }),
     supabase.from("sg_agents").select("id", { count: "exact", head: true }).eq("claimed", true),
+    supabase.rpc("sg_lead_liquidity", { p_days: 30 }),
   ]);
+
+  // North Star: timely first reply is the promise the marketplace makes to
+  // sellers. Liquidity: whether leads actually flow to a quote. Both come from
+  // aggregate RPCs so they are not truncated by the 1000-row PostgREST cap.
+  type NsmRow = { week: string; leads_with_reply: number; timely_leads: number; median_reply_hours: number | null };
+  const nsm = (nsmRes.data ?? []) as NsmRow[];
+  const nsmLatest = nsm[nsm.length - 1];
+  const nsmTimely = nsmLatest?.timely_leads ?? 0;
+  const nsmMedian = nsmLatest?.median_reply_hours ?? null;
+  const nsmSpark = nsm.map((r) => r.timely_leads ?? 0);
+  type LiqRow = { leads: number; shortlisted: number; invited: number; quoted: number; picked: number; median_ttfq_hours: number | null };
+  const liq = ((liqRes.data ?? [])[0] ?? { leads: 0, shortlisted: 0, invited: 0, quoted: 0, picked: 0, median_ttfq_hours: null }) as LiqRow;
+  const matchRate = liq.leads ? Math.round((liq.invited / liq.leads) * 100) : 0;
+  const quoteFill = liq.leads ? Math.round((liq.quoted / liq.leads) * 100) : 0;
 
   const claimsAll = claims8wk.data ?? [];
   const claimsWeekly = buildWeekly(
@@ -92,6 +102,37 @@ export async function OverzichtTab() {
 
   return (
     <div className="space-y-8">
+      <div>
+        <SectionHeading title="Marketplace health (North Star)" hint="Timely first reply is the promise; liquidity is whether leads reach a quote." />
+        <div className="grid gap-3 md:grid-cols-4">
+          <StatCard
+            title="Timely first replies / wk"
+            value={nsmTimely}
+            sparkline={nsmSpark}
+            color="#1f44ff"
+            sub={nsmMedian != null ? `median first reply ${nsmMedian}h (SLA 24h)` : "awaiting reply data"}
+          />
+          <StatCard
+            title="Match rate (30d)"
+            value={`${matchRate}%`}
+            color="#2980b9"
+            sub={`${liq.invited}/${liq.leads} leads got a reachable invite`}
+          />
+          <StatCard
+            title="Quote-fill (30d)"
+            value={`${quoteFill}%`}
+            color="#059669"
+            sub={`${liq.quoted}/${liq.leads} leads received a quote`}
+          />
+          <StatCard
+            title="Time to first quote"
+            value={liq.median_ttfq_hours != null ? `${liq.median_ttfq_hours}h` : "n/a"}
+            color="#e67e22"
+            sub="median, matched leads"
+          />
+        </div>
+      </div>
+
       <div>
         <SectionHeading title="Constellation" hint="3 North Star metrics in 1 oogopslag." />
         <div className="grid gap-3 md:grid-cols-3">
@@ -165,27 +206,6 @@ export async function OverzichtTab() {
         </div>
       )}
 
-      {(recentFeedback.data ?? []).length > 0 && (
-        <div>
-          <SectionHeading title="Fresh feedback" hint="Last 3 agent feedback items marked 'new'." />
-          <div className="space-y-2">
-            {(recentFeedback.data ?? []).map((f) => (
-              <div key={f.id} className="rounded-md border border-purple-200 bg-purple-50/40 p-3 text-sm">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span>
-                    <strong>{f.office_name || "Unknown"}</strong>{" "}
-                    <span className="rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[10px] font-bold uppercase text-purple-700">
-                      {f.category}
-                    </span>
-                  </span>
-                  <span className="text-[11px] text-gray-500">{new Date(f.created_at).toLocaleString("en-SG")}</span>
-                </div>
-                <p className="mt-1 text-gray-600">{f.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
