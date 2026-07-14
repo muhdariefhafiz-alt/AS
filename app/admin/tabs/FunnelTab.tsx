@@ -16,6 +16,8 @@ async function countEvent(event: string, since: string): Promise<number> {
   return count ?? 0;
 }
 
+// Raw event-row count (page reloads included). Only correct for stages that
+// have no lead_id (e.g. view_form), which are raw pageviews, not leads.
 async function countLeadEvent(eventType: string, since: string): Promise<number> {
   const { count } = await supabase
     .from("sg_lead_events")
@@ -23,6 +25,21 @@ async function countLeadEvent(eventType: string, since: string): Promise<number>
     .eq("event_type", eventType)
     .gte("created_at", since);
   return count ?? 0;
+}
+
+// Lead-scoped stage size: distinct leads that reached this stage, NOT raw
+// event rows. Counting rows double-counts reloads and makes the funnel
+// non-monotonic (27 shortlist views for 2 leads). Distinct on lead_id in JS
+// since PostgREST has no count(distinct).
+async function countDistinctLeadEvent(eventType: string, since: string): Promise<number> {
+  const { data } = await supabase
+    .from("sg_lead_events")
+    .select("lead_id")
+    .eq("event_type", eventType)
+    .gte("created_at", since)
+    .not("lead_id", "is", null)
+    .limit(10000);
+  return new Set((data ?? []).map((r) => r.lead_id)).size;
 }
 
 export async function FunnelTab() {
@@ -68,14 +85,16 @@ export async function FunnelTab() {
     sPick,
     sCompletion,
   ] = await Promise.all([
+    // view_form has no lead_id: bot-inclusive raw pageviews, kept out of the
+    // lead-to-lead funnel. Every other stage counts DISTINCT leads.
     countLeadEvent("view_form", cutoff30),
-    countLeadEvent("submit_form", cutoff30),
-    countLeadEvent("view_shortlist", cutoff30),
-    countLeadEvent("select_agents", cutoff30),
-    countLeadEvent("agent_submit_quote", cutoff30),
-    countLeadEvent("view_quotes", cutoff30),
-    countLeadEvent("pick_winner", cutoff30),
-    countLeadEvent("log_completion", cutoff30),
+    countDistinctLeadEvent("submit_form", cutoff30),
+    countDistinctLeadEvent("view_shortlist", cutoff30),
+    countDistinctLeadEvent("select_agents", cutoff30),
+    countDistinctLeadEvent("agent_submit_quote", cutoff30),
+    countDistinctLeadEvent("view_quotes", cutoff30),
+    countDistinctLeadEvent("pick_winner", cutoff30),
+    countDistinctLeadEvent("log_completion", cutoff30),
   ]);
 
   // Shortlist intent: which agents do sellers actually put on their
@@ -102,14 +121,14 @@ export async function FunnelTab() {
   const agentById = new Map((slAgents ?? []).map((a) => [a.id, a]));
 
   const sellerSteps = [
-    { label: "Form viewed", value: sViewForm, note: "landed on /sell" },
-    { label: "Lead submitted", value: sSubmit, note: "/sell form completed" },
-    { label: "Shortlist viewed", value: sViewShortlist, note: "saw ranked agents" },
-    { label: "Agents invited", value: sSelect, note: "picked up to 3" },
-    { label: "Quotes submitted", value: sQuote, note: "agent-side response" },
-    { label: "Quotes compared", value: sViewQuotes, note: "seller reviewed" },
-    { label: "Agent instructed", value: sPick, note: "picked a winner" },
-    { label: "Completion logged", value: sCompletion, note: "sale closed" },
+    { label: "Raw /sell pageviews", value: sViewForm, note: "bot-inclusive, no lead_id, excluded from dropoff", rawPageview: true },
+    { label: "Lead submitted", value: sSubmit, note: "distinct leads, /sell form completed" },
+    { label: "Shortlist viewed", value: sViewShortlist, note: "distinct leads that saw ranked agents" },
+    { label: "Invite actions", value: sSelect, note: "distinct leads that selected agents (not an agent count)" },
+    { label: "Quotes submitted", value: sQuote, note: "distinct leads with an agent quote" },
+    { label: "Quotes compared", value: sViewQuotes, note: "distinct leads that reviewed quotes" },
+    { label: "Agent instructed", value: sPick, note: "distinct leads that picked a winner" },
+    { label: "Completion logged", value: sCompletion, note: "distinct leads, sale closed" },
   ];
 
   const consumerSteps = [
@@ -225,9 +244,9 @@ export async function FunnelTab() {
           color="#e67e22"
         />
         <StatCard
-          title="Verified to paid"
-          value={verified ? `${Math.round((subStarted / Math.max(verified, 1)) * 100)}%` : "0%"}
-          sub="free to Pro/Premium"
+          title="Paid subs vs verified (30d)"
+          value={`${subStarted} / ${verified}`}
+          sub="gross events in window, not a true cohort (different populations)"
           color="#059669"
         />
       </div>
@@ -239,8 +258,10 @@ export async function FunnelTab() {
   );
 }
 
-function FunnelTable({ steps }: { steps: { label: string; value: number; note?: string }[] }) {
-  const max = Math.max(1, ...steps.map((s) => s.value));
+function FunnelTable({ steps }: { steps: { label: string; value: number; note?: string; rawPageview?: boolean }[] }) {
+  // Scale bars off the lead-scoped stages only, so a 4k raw-pageview row does
+  // not flatten every real funnel bar to nothing.
+  const max = Math.max(1, ...steps.filter((s) => !s.rawPageview).map((s) => s.value));
   return (
     <div className="overflow-hidden rounded-md border border-gray-200 bg-white">
       <table className="w-full text-sm">
@@ -254,9 +275,33 @@ function FunnelTable({ steps }: { steps: { label: string; value: number; note?: 
         </thead>
         <tbody>
           {steps.map((s, i) => {
-            const prev = i > 0 ? steps[i - 1].value : null;
-            const dropoff = prev && prev > 0 ? Math.round(((prev - s.value) / prev) * 100) : null;
-            const pct = (s.value / max) * 100;
+            // Compare only to the previous LEAD-SCOPED stage. Raw pageview rows
+            // (no lead_id) are not comparable, so they are skipped both as a
+            // dropoff source and as the base for the next stage.
+            let prev: number | null = null;
+            if (!s.rawPageview) {
+              for (let j = i - 1; j >= 0; j--) {
+                if (!steps[j].rawPageview) {
+                  prev = steps[j].value;
+                  break;
+                }
+              }
+            }
+            const pct = Math.min(100, (s.value / max) * 100);
+            let dropoffCell: string;
+            if (s.rawPageview) {
+              dropoffCell = "n/a";
+            } else if (prev === null || prev === 0) {
+              dropoffCell = "-";
+            } else if (s.value > prev) {
+              // Growth vs prev stage (e.g. more views than leads): show a
+              // clamped "+N%", never a double-negative like "--1250%".
+              dropoffCell = `+${Math.round(((s.value - prev) / prev) * 100)}%`;
+            } else if (s.value === prev) {
+              dropoffCell = "0%";
+            } else {
+              dropoffCell = `-${Math.round(((prev - s.value) / prev) * 100)}%`;
+            }
             return (
               <tr key={s.label} className="border-t border-gray-100">
                 <td className="px-3 py-2 font-medium">
@@ -269,9 +314,7 @@ function FunnelTable({ steps }: { steps: { label: string; value: number; note?: 
                     <div className="h-2 bg-teal-600" style={{ width: `${pct}%` }} />
                   </div>
                 </td>
-                <td className="px-3 py-2 text-right text-xs text-gray-500">
-                  {dropoff === null ? "-" : dropoff === 0 ? "0%" : `-${dropoff}%`}
-                </td>
+                <td className="px-3 py-2 text-right text-xs text-gray-500">{dropoffCell}</td>
               </tr>
             );
           })}

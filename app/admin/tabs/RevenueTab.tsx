@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { SectionHeading, StatCard, Pill, EmptyState, buildWeekly, MS_DAY } from "../shared";
+import { TIER_LABEL, TIER_PRICE } from "../../lib/tiers";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,14 +16,14 @@ export async function RevenueTab() {
     supabase
       .from("sg_agents")
       .select(
-        "id, name, slug, primary_area, subscription_tier, subscription_started_at, subscription_ends_at, subscription_canceled_at, claimed_at"
+        "id, name, slug, primary_area, subscription_tier, subscription_started_at, subscription_ends_at, claimed_at"
       )
       .in("subscription_tier", ["verified", "professional", "elite"])
       .not("subscription_started_at", "is", null)
       .order("subscription_started_at", { ascending: false }),
     supabase
       .from("sg_funnel_events")
-      .select("event, created_at")
+      .select("event, created_at, agent_id")
       .in("event", ["checkout_started", "subscription_started"])
       .gte("created_at", cutoff90),
     supabase.from("sg_agents").select("id", { count: "exact", head: true }).eq("claimed", true),
@@ -46,21 +47,33 @@ export async function RevenueTab() {
     subscription_tier: string;
     subscription_started_at: string;
     subscription_ends_at: string | null;
-    subscription_canceled_at: string | null;
     claimed_at: string | null;
   }>;
   const premiumCount = paying.length;
-  const TIER_PRICE: Record<string, number> = { verified: 29, professional: 69, elite: 149 };
   const tierCount = (t: string) => paying.filter((p) => p.subscription_tier === t).length;
-  const proCount = tierCount("professional");
-  const premiumTierCount = tierCount("elite");
+  // Real paid tiers + prices from the single source of truth (app/lib/tiers.ts).
+  const paidTiers = Object.keys(TIER_PRICE) as Array<keyof typeof TIER_PRICE>;
+  const tierBreakdown = paidTiers.map((t) => `${tierCount(t)} ${TIER_LABEL[t]}`).join(", ");
+  const tierHint = paidTiers.map((t) => `${TIER_LABEL[t]} (S$${TIER_PRICE[t]})`).join(", ");
 
-  const mrr = paying.reduce((s, p) => s + (TIER_PRICE[p.subscription_tier] ?? 0), 0);
+  const mrr = paying.reduce((s, p) => s + (TIER_PRICE[p.subscription_tier as keyof typeof TIER_PRICE] ?? 0), 0);
   const arr = mrr * 12;
 
-  const intentRows = (upgradeIntent.data ?? []) as Array<{ event: string; created_at: string }>;
+  const intentRows = (upgradeIntent.data ?? []) as Array<{
+    event: string;
+    created_at: string;
+    agent_id: number | null;
+  }>;
   const intentWeekly = buildWeekly(intentRows, 8);
-  const intent30 = intentRows.filter((e) => e.created_at >= cutoff30).length;
+  // DISTINCT agents who started checkout in the last 30d. Counting unique
+  // agent_id for checkout_started (not summing checkout_started +
+  // subscription_started rows) avoids double-counting an agent who both
+  // showed intent and converted.
+  const intent30 = new Set(
+    intentRows
+      .filter((e) => e.event === "checkout_started" && e.created_at >= cutoff30 && e.agent_id != null)
+      .map((e) => e.agent_id)
+  ).size;
 
   const totalClaimed = claimedCount.count ?? 0;
   const conversionPct = totalClaimed ? ((premiumCount / totalClaimed) * 100).toFixed(1) : "0";
@@ -77,7 +90,7 @@ export async function RevenueTab() {
   return (
     <div className="space-y-8">
       <div>
-        <SectionHeading title="Recurring revenue" hint="Pro (S$99) + Premium (S$299) subscriptions." />
+        <SectionHeading title="Recurring revenue" hint={`${tierHint} subscriptions.`} />
         <div className="grid gap-3 md:grid-cols-4">
           <StatCard
             title="Paying agents"
@@ -88,7 +101,7 @@ export async function RevenueTab() {
           <StatCard
             title="MRR"
             value={`S$${mrr.toLocaleString()}`}
-            sub={`${proCount} Pro, ${premiumTierCount} Premium`}
+            sub={tierBreakdown}
             color="#059669"
             sparkline={newPayingWeekly}
           />
@@ -107,7 +120,7 @@ export async function RevenueTab() {
           <StatCard title="Checkout started" value={checkoutCount} sub="upgrade intent" color="#2980b9" />
           <StatCard title="New paying" value={newPayingWeekly[newPayingWeekly.length - 1] || 0} sub="this week" color="#059669" />
           <StatCard title="Cancelled" value={cancelCount} sub="subscription cancelled" color="#dc2626" />
-          <StatCard title="Upgrade intent events 30d" value={intent30} sub="checkout_started + subscription_started" />
+          <StatCard title="Checkout intent 30d" value={intent30} sub="distinct agents, checkout_started" />
         </div>
       </div>
 
@@ -127,7 +140,9 @@ export async function RevenueTab() {
               </thead>
               <tbody>
                 {paying.map((p) => {
-                  const canceled = !!p.subscription_canceled_at;
+                  // The cancel webhook sets subscription_ends_at (and drops the
+                  // tier to free); it never writes subscription_canceled_at.
+                  const canceled = !!p.subscription_ends_at;
                   return (
                     <tr key={p.id} className="border-t border-gray-100">
                       <td className="px-3 py-2">

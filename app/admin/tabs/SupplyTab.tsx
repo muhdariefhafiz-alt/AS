@@ -12,7 +12,6 @@ type SupplyStats = {
   paying: number;
   email: number;
   phone: number;
-  cea: number;
   google_rating: number;
   score: number;
   txn: number;
@@ -33,9 +32,16 @@ export async function SupplyTab() {
   // 1000-row limit, which previously made total read 1,000 (really 30,740) and
   // every coverage % divide by the wrong denominator. The claim-requests table
   // is tiny, so it is safe to read directly for the velocity chart.
-  const [statsRes, claimRates] = await Promise.all([
+  const [statsRes, claimRates, waAllRes] = await Promise.all([
     supabase.rpc("sg_supply_stats"),
     supabase.from("sg_claim_requests").select("status, created_at"),
+    // WhatsApp-number coverage across ALL agents (the RPC only counts WhatsApp
+    // for claimed agents). head:true exact count so it never caps at 1000 rows.
+    supabase
+      .from("sg_agents")
+      .select("*", { count: "exact", head: true })
+      .not("whatsapp", "is", null)
+      .neq("whatsapp", ""),
   ]);
 
   const s = (statsRes.data ?? {}) as Partial<SupplyStats>;
@@ -49,7 +55,7 @@ export async function SupplyTab() {
 
   const emailPct = pct(s.email);
   const phonePct = pct(s.phone);
-  const ceaPct = pct(s.cea);
+  const waNumberPct = pct(waAllRes.count ?? 0);
   const ratingPct = pct(s.google_rating);
   const scorePct = pct(s.score);
   const txnPct = pct(s.txn);
@@ -68,7 +74,7 @@ export async function SupplyTab() {
   const topDistricts = s.districts ?? [];
   const topSpecs: [string, number][] = (s.specializations ?? []).map((x) => [x.name, x.n]);
 
-  // Claim velocity (weekly last 8 weeks) — from the small claim-requests table.
+  // Claim velocity (weekly last 8 weeks), from the small claim-requests table.
   const weeklyClaims: number[] = [];
   const now = Date.now();
   for (let w = 7; w >= 0; w--) {
@@ -104,7 +110,7 @@ export async function SupplyTab() {
         <div className="grid gap-3 md:grid-cols-3">
           <CompletenessBar label="E-mail" pct={emailPct} hint="outreach-plafond" />
           <CompletenessBar label="Phone" pct={phonePct} />
-          <CompletenessBar label="CEA registration" pct={ceaPct} hint="verplicht voor identiteit" />
+          <CompletenessBar label="WhatsApp number" pct={waNumberPct} hint="outreach-kanaal, alle agents" />
           <CompletenessBar label="Google rating" pct={ratingPct} hint="score-input" />
           <CompletenessBar label="AgentScore" pct={scorePct} hint="ranking mogelijk" />
           <CompletenessBar label="Transaction count" pct={txnPct} hint="CEA data" />

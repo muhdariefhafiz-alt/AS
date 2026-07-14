@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-import { SectionHeading, StatCard, buildWeekly, deltaLabel, MS_DAY, MS_WEEK } from "../shared";
+import { SectionHeading, StatCard, buildWeekly, deltaLabel, MS_WEEK } from "../shared";
+import { TIER_PRICE, type Tier } from "../../lib/tiers";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,7 +11,6 @@ const supabase = createClient(
 export async function OverzichtTab() {
   const now = Date.now();
   const cutoff8wk = new Date(now - 8 * MS_WEEK).toISOString();
-  const cutoff30 = new Date(now - 30 * MS_DAY).toISOString();
 
   const [claims8wk, payingAgents, activeEvents, pendingClaims, recentFeedback, totalClaimedCount] = await Promise.all([
     supabase.from("sg_claim_requests").select("created_at, status").gte("created_at", cutoff8wk),
@@ -24,7 +24,7 @@ export async function OverzichtTab() {
       .select("agent_id, created_at")
       .in("event", ["profile_edit", "dashboard_login"])
       .not("agent_id", "is", null)
-      .gte("created_at", cutoff30),
+      .gte("created_at", cutoff8wk),
     supabase
       .from("sg_claim_requests")
       .select("id, email, status, created_at, agent_id")
@@ -41,16 +41,33 @@ export async function OverzichtTab() {
   ]);
 
   const claimsAll = claims8wk.data ?? [];
-  const verifiedWeekly = buildWeekly(
-    claimsAll.filter((c) => c.status === "verified"),
+  const claimsWeekly = buildWeekly(
+    claimsAll.filter((c) => c.status === "verified" || c.status === "approved"),
     8
   );
-  const claimsThisWeek = verifiedWeekly[verifiedWeekly.length - 1] || 0;
-  const claimsLastWeek = verifiedWeekly[verifiedWeekly.length - 2] || 0;
+  const claimsThisWeek = claimsWeekly[claimsWeekly.length - 1] || 0;
+  const claimsLastWeek = claimsWeekly[claimsWeekly.length - 2] || 0;
+
+  // Retention numerator must be a subset of the claimed-count denominator, else
+  // the percentage can exceed 100%. Intersect the active agents with the claimed
+  // set. The lookup is bounded by the (small) active set, so no 1000-row cap risk.
+  const activeRows = activeEvents.data ?? [];
+  const activeAgentIds = Array.from(
+    new Set(activeRows.map((e) => e.agent_id).filter((id): id is number => id != null))
+  );
+  const claimedActive = new Set<number>();
+  if (activeAgentIds.length) {
+    const { data: claimedRows } = await supabase
+      .from("sg_agents")
+      .select("id")
+      .eq("claimed", true)
+      .in("id", activeAgentIds);
+    for (const a of claimedRows ?? []) claimedActive.add(a.id);
+  }
 
   const activeByWeek = new Array(8).fill(null).map(() => new Set<number>());
-  for (const e of activeEvents.data ?? []) {
-    if (!e.agent_id) continue;
+  for (const e of activeRows) {
+    if (!e.agent_id || !claimedActive.has(e.agent_id)) continue;
     const b = Math.floor((now - new Date(e.created_at).getTime()) / MS_WEEK);
     if (b >= 0 && b < 8) activeByWeek[b].add(e.agent_id);
   }
@@ -60,10 +77,9 @@ export async function OverzichtTab() {
   const totalClaimed = totalClaimedCount.count ?? 0;
   const activePct = totalClaimed ? Math.round((activeThisWeek / totalClaimed) * 100) : 0;
 
-  const paying = (payingAgents.data ?? []) as Array<{ subscription_tier: string; subscription_started_at: string }>;
+  const paying = (payingAgents.data ?? []) as Array<{ subscription_tier: Exclude<Tier, "free">; subscription_started_at: string }>;
   const payingWeekly = buildWeekly(paying.map((p) => ({ created_at: p.subscription_started_at })), 8);
   const payingThisWeek = payingWeekly[payingWeekly.length - 1] || 0;
-  const TIER_PRICE: Record<string, number> = { verified: 29, professional: 69, elite: 149 };
   const mrr = paying.reduce((s, p) => s + (TIER_PRICE[p.subscription_tier] ?? 0), 0);
 
   // Build agent name lookup for pending claims
@@ -83,9 +99,9 @@ export async function OverzichtTab() {
             title="Acquisition (claims / week)"
             value={claimsThisWeek}
             delta={deltaLabel(claimsThisWeek, claimsLastWeek)}
-            sparkline={verifiedWeekly}
+            sparkline={claimsWeekly}
             color="#2980b9"
-            sub="verified claims deze week"
+            sub="verified + approved claims deze week"
           />
           <StatCard
             title="Retention (active / week)"

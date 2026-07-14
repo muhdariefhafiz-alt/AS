@@ -5,10 +5,18 @@ import { agentInviteUrl } from "../../lib/agentInvite";
 import { greetName } from "../../lib/names";
 import WaNotifyButton from "./WaNotifyButton";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// sg_leads / sg_lead_shortlist / sg_lead_notifications are RLS-enabled with zero
+// policies, so the anon key reads them empty and the whole tab renders blank with
+// no error. Refuse to fall back to the anon key: fail loud at module init instead.
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SERVICE_ROLE_KEY) {
+  throw new Error(
+    "LeadsTab: SUPABASE_SERVICE_ROLE_KEY is required. The lead tables are RLS-enabled " +
+      "with no policies, so the anon key silently reads empty. Refusing to fall back."
+  );
+}
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, SERVICE_ROLE_KEY);
 
 type Kpis = {
   total_all: number; window_n: number; prior_n: number;
@@ -37,7 +45,7 @@ const money = (n: number | null) =>
   n == null ? null : n >= 1_000_000 ? `S$${(n / 1_000_000).toFixed(1)}M` : `S$${Math.round(n / 1_000)}k`;
 const valueRange = (lo: number | null, hi: number | null) => {
   const a = money(lo), b = money(hi);
-  return a && b ? `${a} to ${b}` : a || b || "—";
+  return a && b ? `${a} to ${b}` : a || b || "n/a";
 };
 const statusColor = (s: string | null): "blue" | "emerald" | "amber" | "gray" => {
   switch (s) {
@@ -105,8 +113,8 @@ async function notificationIntegrity(): Promise<IntegrityRow[]> {
       lead_id: Number(s.lead_id),
       lead_token: String(lead.token ?? ""),
       property_type: String(lead.property_type ?? "property"),
-      seller: String(lead.full_name ?? "—"),
-      lead_area: tc(lead.town) || lead.district_code || "—",
+      seller: String(lead.full_name ?? "n/a"),
+      lead_area: tc(lead.town) || lead.district_code || "n/a",
       lead_created: String(lead.created_at),
       agent_id: Number(s.agent_id),
       agent_name: String(a.name ?? ""),
@@ -141,13 +149,22 @@ const waInviteText = (r: IntegrityRow) => {
 };
 
 export async function LeadsTab() {
-  const [kpiRes, dailyRes, sourceRes, byAgentRes, recentRes, integrity] = await Promise.all([
+  const [kpiRes, dailyRes, sourceRes, byAgentRes, recentRes, integrity, requestedRes] = await Promise.all([
     supabase.rpc("admin_lead_kpis", { p_days: 30 }),
     supabase.rpc("admin_leads_daily", { p_days: 14 }),
     supabase.rpc("admin_leads_by_source", { p_days: 30 }),
     supabase.rpc("admin_leads_by_agent", { p_days: 90, p_limit: 12 }),
     supabase.rpc("admin_recent_leads", { p_limit: 25 }),
     notificationIntegrity(),
+    // Requested = the seller asked for this agent by name. The admin_leads_by_agent
+    // RPC reads sg_lead_shortlist.status='requested', but the invite flow overwrites
+    // a picked+reachable agent's row to 'invited', destroying that marker. Recompute
+    // from sg_leads.requested_agent_id over the same 90d lead window the RPC uses.
+    supabase
+      .from("sg_leads")
+      .select("requested_agent_id")
+      .not("requested_agent_id", "is", null)
+      .gt("created_at", new Date(Date.now() - 90 * 86_400_000).toISOString()),
   ]);
 
   const k = (Array.isArray(kpiRes.data) ? kpiRes.data[0] : null) as Kpis | null;
@@ -158,8 +175,19 @@ export async function LeadsTab() {
   const unmatched = num(k?.unmatched_n);
   const avgShortlist = num(k?.avg_shortlist);
 
+  // Tally true "requested by name" counts, then override each agent's requested value.
+  const requestedByAgent = new Map<number, number>();
+  for (const r of (requestedRes.data ?? []) as { requested_agent_id: number | null }[]) {
+    if (r.requested_agent_id == null) continue;
+    const id = Number(r.requested_agent_id);
+    requestedByAgent.set(id, (requestedByAgent.get(id) ?? 0) + 1);
+  }
+
   const sources = (sourceRes.data ?? []) as SourceRow[];
-  const agents = (byAgentRes.data ?? []) as AgentRow[];
+  const agents = ((byAgentRes.data ?? []) as AgentRow[]).map((a) => ({
+    ...a,
+    requested: requestedByAgent.get(Number(a.agent_id)) ?? 0,
+  }));
   const leads = (recentRes.data ?? []) as LeadRow[];
 
   // 14-day sparkline, zero-filled.
@@ -202,12 +230,12 @@ export async function LeadsTab() {
         />
         <StatCard
           title="Matched to agents"
-          value={totalAll ? `${Math.round((matched / totalAll) * 100)}%` : "—"}
+          value={totalAll ? `${Math.round((matched / totalAll) * 100)}%` : "n/a"}
           sub={unmatched > 0 ? `${unmatched} had no agent (liquidity gap)` : "every lead reached a shortlist"}
           color="#8e44ad"
           danger={unmatched > 0}
         />
-        <StatCard title="Agents per lead" value={avgShortlist} sub="avg shortlist size" color="#e67e22" />
+        <StatCard title="Agents per lead" value={avgShortlist} sub="avg per lead, incl. unmatched" color="#e67e22" />
       </div>
 
       {/* Notification integrity: invited agents no provider ever accepted a
@@ -299,10 +327,10 @@ export async function LeadsTab() {
                         {tc(a.name)}
                       </Link>
                     </td>
-                    <td className="px-4 py-2.5 text-gray-600">{tc(a.area) || "—"}</td>
+                    <td className="px-4 py-2.5 text-gray-600">{tc(a.area) || "n/a"}</td>
                     <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-gray-900">{num(a.shortlisted)}</td>
-                    <td className="px-4 py-2.5 text-right tabular-nums text-gray-600">{num(a.requested) || "—"}</td>
-                    <td className="px-4 py-2.5 text-right tabular-nums text-gray-600">{num(a.top_ranked) || "—"}</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums text-gray-600">{num(a.requested) || "n/a"}</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums text-gray-600">{num(a.top_ranked) || "n/a"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -352,17 +380,17 @@ export async function LeadsTab() {
               {leads.map((l) => (
                 <tr key={l.id} className="border-b border-gray-100 last:border-0 align-top">
                   <td className="px-4 py-2.5 whitespace-nowrap text-gray-600">{fmtDate(l.created_at)}</td>
-                  <td className="px-4 py-2.5 font-medium text-gray-900">{l.full_name ?? "—"}</td>
+                  <td className="px-4 py-2.5 font-medium text-gray-900">{l.full_name ?? "n/a"}</td>
                   <td className="px-4 py-2.5 text-xs text-gray-600">
                     {l.email && <div>{l.email}</div>}
                     {(l.whatsapp || l.phone) && <div className="font-mono">{l.whatsapp || l.phone}</div>}
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">{tc(l.town) || l.district_code || "—"}</td>
-                  <td className="px-4 py-2.5 text-gray-600">{tc(l.property_type) || "—"}</td>
+                  <td className="px-4 py-2.5 text-gray-600">{tc(l.town) || l.district_code || "n/a"}</td>
+                  <td className="px-4 py-2.5 text-gray-600">{tc(l.property_type) || "n/a"}</td>
                   <td className="px-4 py-2.5 whitespace-nowrap text-gray-600">{valueRange(l.est_value_low, l.est_value_high)}</td>
-                  <td className="px-4 py-2.5 text-gray-600">{tc(l.timeline) || "—"}</td>
+                  <td className="px-4 py-2.5 text-gray-600">{tc(l.timeline) || "n/a"}</td>
                   <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-gray-900">{num(l.matched)}</td>
-                  <td className="px-4 py-2.5 text-gray-600">{l.requested_agent ? tc(l.requested_agent) : "—"}</td>
+                  <td className="px-4 py-2.5 text-gray-600">{l.requested_agent ? tc(l.requested_agent) : "n/a"}</td>
                   <td className="px-4 py-2.5"><Pill color={statusColor(l.status)}>{l.status ?? "new"}</Pill></td>
                 </tr>
               ))}

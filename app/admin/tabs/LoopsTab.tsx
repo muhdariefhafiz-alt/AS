@@ -23,9 +23,13 @@ async function countLeadEvent(eventType: string, since?: string): Promise<number
 }
 
 // One funnel stage: label, count, bar (vs top), and step conversion from prev.
+// step is clamped to 100%; a raw value over 100% is flagged as a data anomaly
+// (more agents at this stage than the one above, so not a cleanly nested funnel).
 function Stage({ label, n, top, prev, leak }: { label: string; n: number; top: number; prev?: number; leak?: boolean }) {
   const pct = top > 0 ? Math.max(Math.round((n / top) * 100), n > 0 ? 3 : 0) : 0;
-  const step = prev != null && prev > 0 ? Math.round((n / prev) * 100) : null;
+  const stepRaw = prev != null && prev > 0 ? Math.round((n / prev) * 100) : null;
+  const stepAnomaly = stepRaw != null && stepRaw > 100;
+  const step = stepRaw != null ? Math.min(stepRaw, 100) : null;
   return (
     <div className="grid grid-cols-[150px_1fr_120px] items-center gap-3 py-1.5">
       <span className="text-[13px] font-medium text-gray-700">{label}</span>
@@ -34,7 +38,14 @@ function Stage({ label, n, top, prev, leak }: { label: string; n: number; top: n
       </div>
       <span className="text-right text-[13px] tabular-nums text-gray-900">
         <span className="font-bold">{n.toLocaleString()}</span>
-        {step != null && <span className={`ml-2 text-[11px] ${step < 40 ? "text-red-600" : "text-gray-400"}`}>{step}%</span>}
+        {step != null && (
+          <span
+            title={stepAnomaly ? `Raw ${stepRaw}%: more here than the stage above, so not a cleanly nested funnel.` : undefined}
+            className={`ml-2 text-[11px] ${stepAnomaly ? "text-amber-600" : step < 40 ? "text-red-600" : "text-gray-400"}`}
+          >
+            {stepAnomaly ? "100%+" : `${step}%`}
+          </span>
+        )}
       </span>
     </div>
   );
@@ -51,7 +62,7 @@ export async function LoopsTab() {
   ] = await Promise.all([
     supabase.from("sg_lead_completions").select("agent_id, instruction_signed_at, completion_date"),
     supabase.from("sg_leads").select("id", { count: "exact", head: true }),
-    supabase.from("sg_lead_shortlist").select("lead_id, agent_id").limit(20000),
+    supabase.from("sg_lead_shortlist").select("lead_id, agent_id, invited_at").limit(20000),
     supabase.from("sg_lead_quotes").select("lead_id, agent_id").limit(20000),
     supabase.from("sg_agent_reviews").select("verified_completion, status, created_at").limit(20000),
     supabase.from("sg_agent_agreements").select("agent_id").limit(20000),
@@ -86,12 +97,16 @@ export async function LoopsTab() {
 
   // Agent supply loop
   const signedAgents = uniq(agreementsRes.data, "agent_id");
-  const agentsWithLead = uniq(shortlist, "agent_id");
+  // "Ranked on a shortlist" (any scored agent surfaced) is not the same as "received a lead".
+  // Only an invited_at-stamped row means the agent was actually sent the lead.
+  const agentsRanked = uniq(shortlist, "agent_id");
+  const agentsWithLead = uniq(shortlist.filter((s) => s.invited_at), "agent_id");
   const agentsResponded = uniq(quotes, "agent_id");
   const agentsClosed = uniq(comps.filter((c) => c.completion_date), "agent_id");
 
   // Reviews moat
-  const reviewsTotal = reviews.length;
+  const reviewsTotal = reviews.filter((r) => r.status === "published" || r.status === "approved").length;
+  const reviewsPending = reviews.filter((r) => r.status === "pending").length;
   const reviewsVerified = reviews.filter((r) => r.verified_completion).length;
   const reviews30 = reviews.filter((r) => r.created_at && new Date(r.created_at).getTime() > now - 30 * MS_DAY).length;
 
@@ -108,7 +123,8 @@ export async function LoopsTab() {
       <p className="text-sm text-gray-500">
         The constellation: the seller demand funnel, the agent supply loop, and the reviews moat that compound into a
         defensible marketplace. Counts are all-time and state-derived, so they are reliable even when event volume is
-        thin. Step % is conversion from the stage above; red flags a leak.
+        thin. Step % is conversion from the stage immediately above; red flags a leak, amber ("100%+") flags a data
+        anomaly (more here than the stage above, so not a cleanly nested funnel).
       </p>
 
       {/* Seller demand funnel */}
@@ -136,12 +152,12 @@ export async function LoopsTab() {
           <Stage label="Scored profiles" n={scored} top={scored || 1} />
           <Stage label="Claimed" n={claimed} top={scored || 1} prev={scored} />
           <Stage label="Profile complete" n={profileComplete} top={scored || 1} prev={claimed} />
-          <Stage label="Agreement signed" n={signedAgents} top={scored || 1} prev={claimed} />
-          <Stage label="Received a lead" n={agentsWithLead} top={scored || 1} prev={claimed} />
+          <Stage label="Agreement signed" n={signedAgents} top={scored || 1} prev={profileComplete} />
+          <Stage label="Received a lead" n={agentsWithLead} top={scored || 1} prev={signedAgents} />
           <Stage label="Responded (quoted)" n={agentsResponded} top={scored || 1} prev={agentsWithLead} />
           <Stage label="Closed a sale" n={agentsClosed} top={scored || 1} prev={agentsResponded} />
         </div>
-        <p className="mt-1 text-[11px] text-gray-400">{profilesTotal.toLocaleString()} total profiles · {scored.toLocaleString()} scored. Claim → active supply is the leading indicator of marketplace health.</p>
+        <p className="mt-1 text-[11px] text-gray-400">{profilesTotal.toLocaleString()} total profiles · {scored.toLocaleString()} scored · {agentsRanked.toLocaleString()} ranked on a shortlist, {agentsWithLead.toLocaleString()} actually invited (received a lead). Claim → active supply is the leading indicator of marketplace health.</p>
       </div>
 
       {/* Reviews moat + growth loops */}
@@ -149,7 +165,7 @@ export async function LoopsTab() {
         <div>
           <SectionHeading title="Reviews moat" hint="Verified reviews are the defensible asset; track the growth rate." />
           <div className="mt-3 grid gap-4 sm:grid-cols-3">
-            <StatCard title="Reviews" value={reviewsTotal} sub="total on file" />
+            <StatCard title="Reviews" value={reviewsTotal} sub={reviewsPending > 0 ? `published · ${reviewsPending} pending` : "published, on file"} />
             <StatCard title="Verified" value={reviewsVerified} sub="tied to a sale" />
             <StatCard title="New (30d)" value={reviews30} sub="moat growth" />
           </div>

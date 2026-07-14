@@ -17,7 +17,7 @@ function delta(cur: number, prev: number): { text: string; dir: "up" | "down" | 
 
 function Bars({ rows, total, label }: { rows: Bar[]; total: number; label: string }) {
   if (rows.length === 0) return <EmptyState title={`No ${label} yet`} hint="Fills automatically as FairComparisons traffic comes in." />;
-  // Scale bars by the largest row, not rows[0] — the arrival list is in fixed
+  // Scale bars by the largest row, not rows[0], the arrival list is in fixed
   // channel order (not sorted), so rows[0] is not the max and bars would overflow.
   const top = Math.max(...rows.map((r) => r.n), 1);
   return (
@@ -59,12 +59,19 @@ export async function SeoTab() {
   const gscPages = (gscPageRes.data ?? []) as GscRowT[];
   const last = (arr: GscDay[], n: number) => arr.slice(-n);
   const sum = (arr: GscDay[], k: "clicks" | "impressions") => arr.reduce((s, r) => s + Number(r[k] || 0), 0);
-  const avgPos = (arr: GscDay[]) => (arr.length ? arr.reduce((s, r) => s + Number(r.position || 0), 0) / arr.length : 0);
+  // GSC average position must be impression-weighted, not a flat daily mean:
+  // sum(position * impressions) / sum(impressions). A busy day at rank 20 should
+  // dominate the blended figure, not be offset one-for-one by a quiet day at rank 3.
+  const weightedPos = (arr: GscDay[]) => {
+    const impr = arr.reduce((s, r) => s + Number(r.impressions || 0), 0);
+    if (!impr) return 0;
+    return arr.reduce((s, r) => s + Number(r.position || 0) * Number(r.impressions || 0), 0) / impr;
+  };
   const g7 = last(gscDays, 7), gPrior7 = gscDays.slice(-14, -7), g28 = last(gscDays, 28);
   const impr7 = sum(g7, "impressions"), clicks7 = sum(g7, "clicks");
   const imprPrior7 = sum(gPrior7, "impressions");
   const ctr7 = impr7 > 0 ? (clicks7 / impr7) * 100 : 0;
-  const pos7 = avgPos(g7);
+  const pos7 = weightedPos(g7);
   const hasGsc = gscDays.length > 0 || gscQueries.length > 0;
   const shortPath = (u: string) => { try { return new URL(u).pathname || u; } catch { return u; } };
 
@@ -96,9 +103,10 @@ export async function SeoTab() {
   return (
     <div className="space-y-8">
       <p className="text-sm text-gray-500">
-        Two homebuilt sources, no Windsor: <strong>Search Console</strong> (Google organic — impressions, queries, SERP
-        rank, pulled daily by the <code>gsc-sync</code> cron) and our own <strong>page-view log</strong> (sessions, top
-        pages, referrers, scoped to FairComparisons since <code>page_views</code> is shared with the NL app).
+        Two homebuilt sources, no Windsor: <strong>Search Console</strong> (Google organic: impressions, queries, SERP
+        rank, pulled daily by the <code>gsc-sync</code> cron) and our own <strong>page-view log</strong> (page views, top
+        pages, referrers, scoped to FairComparisons since <code>page_views</code> is shared with the NL app). Every metric
+        below counts raw page-view rows, not distinct sessions.
       </p>
 
       {/* Google Search Console */}
@@ -110,7 +118,7 @@ export async function SeoTab() {
               <StatCard title="Impressions 7d" value={impr7.toLocaleString()} delta={delta(impr7, imprPrior7)} sparkline={g28.map((d) => Number(d.impressions || 0))} color="#2980b9" />
               <StatCard title="Clicks 7d" value={clicks7.toLocaleString()} sub={`${sum(g28, "clicks").toLocaleString()} in 28d`} color="#059669" />
               <StatCard title="CTR 7d" value={`${ctr7.toFixed(1)}%`} sub="clicks / impressions" color="#8e44ad" />
-              <StatCard title="Avg position 7d" value={pos7 ? pos7.toFixed(1) : "—"} sub="lower is better" color="#e67e22" />
+              <StatCard title="Avg position 7d" value={pos7 ? pos7.toFixed(1) : "n/a"} sub="lower is better" color="#e67e22" />
             </div>
             <div className="mt-4 grid gap-6 lg:grid-cols-2">
               <div>
@@ -147,6 +155,13 @@ export async function SeoTab() {
               <StatCard title="Pages viewed" value={n(cur, "distinct_pages").toLocaleString()} sub="distinct URLs (30d)" color="#8e44ad" />
               <StatCard title="Mobile share" value={`${mobilePct}%`} sub="of 30d views" color="#e67e22" />
             </div>
+            {n(cur, "bot") > 0 && (
+              <p className="mt-2 text-[11px] text-gray-400">
+                Data quality: {pv30.toLocaleString()} human page views kept,{" "}
+                {n(cur, "bot").toLocaleString()} bot views removed (
+                {Math.round((n(cur, "bot") / (pv30 + n(cur, "bot"))) * 100)}% of raw traffic filtered as form-spam bots).
+              </p>
+            )}
           </div>
 
           <div>
@@ -173,7 +188,7 @@ export async function SeoTab() {
               <Bars rows={topPages} total={pv30} label="pages" />
             </div>
             <div>
-              <SectionHeading title="Top organic landing pages (30d)" hint="Where search engines send traffic — your SEO winners." />
+              <SectionHeading title="Top organic landing pages (30d)" hint="Where search engines send traffic, your SEO winners." />
               <Bars rows={organicPages} total={organic30} label="organic pages" />
             </div>
           </div>
