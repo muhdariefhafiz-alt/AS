@@ -1,79 +1,9 @@
-import ProductBox, { MOCKUP_STYLE, MockChrome, MOCK } from "./ProductBox";
+import ProductBox from "./ProductBox";
+import { DealRadarMock, InboxMock, WidgetMock } from "./mocks";
 
 // The /for-agents feature showcase, built on the reusable ProductBox pattern.
-// Every box showcases a REAL FairComparisons feature; the mockups are pure-JSX,
-// clearly illustrative UI states (same standard as DashboardPreview).
-
-const mockShell: React.CSSProperties = { ...MOCKUP_STYLE, pointerEvents: "none", userSelect: "none" };
-
-// Creative 1: Deal Radar farm-area feed.
-function DealRadarMock() {
-  return (
-    <div aria-hidden="true" style={mockShell}>
-      <MockChrome />
-      <div style={{ padding: "14px 15px 16px" }}>
-        <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>DEAL RADAR · TAMPINES</div>
-        <div style={{ fontSize: 15, fontWeight: 700, marginTop: 4 }}>3 owners likely to sell soon</div>
-        <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-          {[
-            ["Blk 821 Tampines St 81", "MOP reached · held 6 yrs"],
-            ["Blk 476 Tampines Ave 9", "Bought 2013 · long tenure"],
-            ["Blk 138 Tampines St 11", "Nearby unit just listed"],
-          ].map(([a, b]) => (
-            <div key={a} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, background: MOCK.panel, borderRadius: 9, padding: "9px 11px" }}>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 600 }}>{a}</div>
-                <div style={{ fontSize: 10.5, color: MOCK.faint }}>{b}</div>
-              </div>
-              <span style={{ fontSize: 10, fontWeight: 700, color: MOCK.pillText, background: MOCK.pillBg, borderRadius: 999, padding: "3px 9px" }}>Signal</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Creative 2: AI-drafted first reply, grounded in the record.
-function InboxMock() {
-  return (
-    <div aria-hidden="true" style={mockShell}>
-      <MockChrome />
-      <div style={{ padding: "13px 14px 15px" }}>
-        <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>SUGGESTED REPLY</div>
-        <div style={{ fontSize: 11.5, lineHeight: 1.55, color: MOCK.body, marginTop: 8, background: MOCK.panel, borderRadius: 9, padding: "10px 11px" }}>
-          Hi Mdm Tan, thanks for shortlisting me. I have sold three 4-room units in Tampines in the last year, the most recent near your block. Happy to share a precise valuation. Could we speak this week?
-        </div>
-        <div style={{ display: "flex", gap: 7, marginTop: 10 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", background: "var(--blue)", borderRadius: 7, padding: "6px 11px" }}>Copy</span>
-          <span style={{ fontSize: 10.5, fontWeight: 600, color: "#c3d0ff", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 7, padding: "6px 11px" }}>Grounded in your record</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Creative 3: embeddable AgentScore badge + lead widget for the agent's own site.
-function WidgetMock() {
-  return (
-    <div aria-hidden="true" style={mockShell}>
-      <MockChrome />
-      <div style={{ padding: "14px 15px 16px" }}>
-        <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>ON YOUR WEBSITE</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: MOCK.panel, borderRadius: 10, padding: "11px 12px" }}>
-          <span style={{ width: 34, height: 34, borderRadius: 8, background: MOCK.pillBg, color: MOCK.pillText, display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14 }}>89</span>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700 }}>Verified on FairComparisons</div>
-            <div style={{ fontSize: 10.5, color: MOCK.faint }}>AgentScore from official records</div>
-          </div>
-        </div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "var(--blue)", borderRadius: 8, padding: "8px 11px", marginTop: 9, textAlign: "center" }}>
-          What is my home worth? →
-        </div>
-      </div>
-    </div>
-  );
-}
+// Every box showcases a REAL FairComparisons feature; the mockups live in the
+// shared mocks library (pure-JSX illustrative UI, same standard as DashboardPreview).
 
 export default function AgentFeatureShowcase() {
   return (

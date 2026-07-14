@@ -1,8 +1,19 @@
 import Link from "next/link";
 import type { AgentFeatureData } from "../lib/agentFeatures";
 import { FEATURE_LINKS } from "../lib/agentFeatures";
+import ProductBox from "./ProductBox";
+import { DealRadarMock, DemandMock, BuildingPageMock, WidgetMock } from "./mocks";
 
 type Stats = { scored: number; total: number; agencies: number };
+
+// A product-box creative per data-driven feature page. Slugs without an entry
+// fall back to the plain section cards.
+const MOCK_BY_SLUG: Record<string, React.ReactNode> = {
+  "deal-radar": <DealRadarMock />,
+  "demand-dashboard": <DemandMock />,
+  "building-pages": <BuildingPageMock />,
+  "badge-widget": <WidgetMock />,
+};
 
 // Shared renderer for the agent-feature marketing pages (/for-agents/<slug>).
 // Mirrors the Planner/Grow landing style (lp-hero + fc-card sections) and
@@ -31,6 +42,8 @@ export default function AgentFeaturePage({ data, stats }: { data: AgentFeatureDa
     isPartOf: { "@type": "WebSite", name: "FairComparisons", url: "https://fair-comparisons.com" },
   };
 
+  const featureMock = MOCK_BY_SLUG[data.slug] ?? null;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
@@ -55,7 +68,19 @@ export default function AgentFeaturePage({ data, stats }: { data: AgentFeatureDa
 
       <section className="lp-section">
         <div className="fc-wrap" style={{ padding: "56px 40px", display: "flex", flexDirection: "column", gap: 40 }}>
-          {data.sections.map((f) => (
+          {/* Lead the feature with a product box (mockup + the first section's
+              copy) when this feature has a creative; the rest render as cards. */}
+          {featureMock && data.sections[0] && (
+            <ProductBox
+              layout="hero"
+              eyebrow={data.sections[0].kicker}
+              title={data.sections[0].title}
+              body={data.sections[0].body}
+              mockup={featureMock}
+              cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
+            />
+          )}
+          {(featureMock ? data.sections.slice(1) : data.sections).map((f) => (
             <div key={f.kicker} className="fc-card fc-card--pad" style={{ background: "#fff" }}>
               <p className="kicker" style={{ color: "var(--blue-deep)" }}>{f.kicker}</p>
               <h2 className="serif" style={{ fontSize: "clamp(21px,2.6vw,28px)", fontWeight: 600, margin: "6px 0 0", color: "var(--ink)" }}>{f.title}</h2>

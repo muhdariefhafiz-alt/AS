@@ -62,6 +62,124 @@ export function ValuationMock() {
   );
 }
 
+// ---- Agent-facing creatives (feature pages + for-agents showcase) ----
+
+// Deal Radar farm-area feed.
+export function DealRadarMock() {
+  return (
+    <div aria-hidden="true" style={shell}>
+      <MockChrome />
+      <div style={{ padding: "14px 15px 16px" }}>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>DEAL RADAR · TAMPINES</div>
+        <div style={{ fontSize: 15, fontWeight: 700, marginTop: 4 }}>3 owners likely to sell soon</div>
+        <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+          {[
+            ["Blk 821 Tampines St 81", "MOP reached · held 6 yrs"],
+            ["Blk 476 Tampines Ave 9", "Bought 2013 · long tenure"],
+            ["Blk 138 Tampines St 11", "Nearby unit just listed"],
+          ].map(([a, b]) => (
+            <div key={a} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, background: MOCK.panel, borderRadius: 9, padding: "9px 11px" }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600 }}>{a}</div>
+                <div style={{ fontSize: 10.5, color: MOCK.faint }}>{b}</div>
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 700, color: MOCK.pillText, background: MOCK.pillBg, borderRadius: 999, padding: "3px 9px" }}>Signal</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// AI-drafted first reply, grounded in the record.
+export function InboxMock() {
+  return (
+    <div aria-hidden="true" style={shell}>
+      <MockChrome />
+      <div style={{ padding: "13px 14px 15px" }}>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>SUGGESTED REPLY</div>
+        <div style={{ fontSize: 11.5, lineHeight: 1.55, color: MOCK.body, marginTop: 8, background: MOCK.panel, borderRadius: 9, padding: "10px 11px" }}>
+          Hi Mdm Tan, thanks for shortlisting me. I have sold three 4-room units in Tampines in the last year, the most recent near your block. Happy to share a precise valuation. Could we speak this week?
+        </div>
+        <div style={{ display: "flex", gap: 7, marginTop: 10 }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", background: "var(--blue)", borderRadius: 7, padding: "6px 11px" }}>Copy</span>
+          <span style={{ fontSize: 10.5, fontWeight: 600, color: "#c3d0ff", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 7, padding: "6px 11px" }}>Grounded in your record</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Embeddable AgentScore badge + lead widget for the agent's own site.
+export function WidgetMock() {
+  return (
+    <div aria-hidden="true" style={shell}>
+      <MockChrome />
+      <div style={{ padding: "14px 15px 16px" }}>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>ON YOUR WEBSITE</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, background: MOCK.panel, borderRadius: 10, padding: "11px 12px" }}>
+          <span style={{ width: 34, height: 34, borderRadius: 8, background: MOCK.pillBg, color: MOCK.pillText, display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14 }}>89</span>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700 }}>Verified on FairComparisons</div>
+            <div style={{ fontSize: 10.5, color: MOCK.faint }}>AgentScore from official records</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "var(--blue)", borderRadius: 8, padding: "8px 11px", marginTop: 9, textAlign: "center" }}>
+          What is my home worth? →
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Demand Dashboard: how many sellers are viewing / comparing the agent.
+export function DemandMock() {
+  return (
+    <div aria-hidden="true" style={shell}>
+      <MockChrome />
+      <div style={{ padding: "14px 15px 16px" }}>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>DEMAND · LAST 30 DAYS</div>
+        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+          {[["Profile views", "218"], ["Compared", "34"], ["Shortlisted", "6"]].map(([a, b]) => (
+            <div key={a} style={{ flex: 1, background: MOCK.panel, borderRadius: 10, padding: "11px 10px", textAlign: "center" }}>
+              <div className="tnum" style={{ fontSize: 20, fontWeight: 800, color: MOCK.label }}>{b}</div>
+              <div style={{ fontSize: 10, color: MOCK.faint, marginTop: 2 }}>{a}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 44, marginTop: 12 }}>
+          {[35, 52, 40, 68, 58, 82, 74].map((h, i) => (
+            <span key={i} style={{ flex: 1, height: `${h}%`, background: i === 5 ? "var(--blue)" : MOCK.pillBg, borderRadius: 3 }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Building Pages: the agent owning a development's data page.
+export function BuildingPageMock() {
+  return (
+    <div aria-hidden="true" style={shell}>
+      <MockChrome />
+      <div style={{ padding: "14px 15px 16px" }}>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>THE SAIL @ MARINA BAY</div>
+        <div style={{ fontSize: 15, fontWeight: 700, marginTop: 4 }}>Your page for this development</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, background: MOCK.panel, borderRadius: 10, padding: "11px 12px" }}>
+          <span style={{ width: 34, height: 34, borderRadius: 999, background: MOCK.pillBg, color: MOCK.pillText, display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13 }}>★</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 700 }}>Your listing agent</div>
+            <div style={{ fontSize: 10.5, color: MOCK.faint }}>12 recent sales in this building</div>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: "var(--blue)", borderRadius: 999, padding: "4px 10px" }}>Book</span>
+        </div>
+        <div style={{ fontSize: 10.5, color: MOCK.faint, marginTop: 10 }}>One agent per building. First come, first served.</div>
+      </div>
+    </div>
+  );
+}
+
 // MOP eligibility tracker (/tools/mop-tracker).
 export function MopTrackerMock() {
   return (
