@@ -25,16 +25,31 @@ export default function PageTracker() {
     // real-time answer-engine fetchers like ChatGPT-User / Perplexity-User).
     if (isBotUA(navigator.userAgent)) return;
 
-    // Anonymous per-tab session id: lets analytics distinguish real browsing
-    // sessions (multiple pages, one id) from stateless bots that spoof browser
-    // UAs but hold no storage. Not a user identifier; resets when the tab closes.
+    // Anonymous session id: lets analytics distinguish a real visit (multiple
+    // pages under one id) from stateless bots that spoof browser UAs but hold no
+    // storage. Not a user identifier; anonymous UUID, no PII.
+    //
+    // Stored in localStorage with a 30-minute rolling inactivity window (the
+    // standard web-analytics session definition), NOT sessionStorage. The old
+    // per-tab sessionStorage id reset every time a visitor opened a link in a new
+    // tab or came back later, so almost every visit logged as a single-pageview
+    // "bounce" and multi-page sessions were unmeasurable. localStorage is shared
+    // across tabs of the same origin and the timestamp expires the session after
+    // 30 min idle, so a genuine visit now keeps one id across tabs and reloads.
     let sessionId: string | null = null;
     try {
-      sessionId = sessionStorage.getItem("fc_sid");
-      if (!sessionId) {
-        sessionId = crypto.randomUUID();
-        sessionStorage.setItem("fc_sid", sessionId);
+      const SESSION_TTL_MS = 30 * 60 * 1000;
+      const now = Date.now();
+      const raw = localStorage.getItem("fc_sid");
+      if (raw) {
+        const sep = raw.lastIndexOf(":");
+        const id = sep > 0 ? raw.slice(0, sep) : "";
+        const ts = sep > 0 ? Number(raw.slice(sep + 1)) : NaN;
+        if (id && Number.isFinite(ts) && now - ts < SESSION_TTL_MS) sessionId = id;
       }
+      if (!sessionId) sessionId = crypto.randomUUID();
+      // Re-stamp on every pageview so the 30-min window rolls forward while active.
+      localStorage.setItem("fc_sid", `${sessionId}:${now}`);
     } catch {}
 
     fetch("/api/track", {

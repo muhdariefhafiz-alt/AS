@@ -443,8 +443,11 @@ export default async function AgentPage({ params }: Props) {
                 </p>
               )}
             </div>
-            <div className="fc-col" style={{ gap: 10 }}>
-              <Link href={`/sell?agent=${slug}&utm_source=agent_profile`} className="fc-btn fc-btn--primary">View {given}&apos;s profile</Link>
+            <div className="fc-col" style={{ gap: 8, minWidth: 210 }}>
+              <Link href={`/sell?agent=${slug}&utm_source=agent_profile`} className="fc-btn fc-btn--primary">Request a quote from {given}</Link>
+              <p className="muted" style={{ margin: 0, fontSize: 12, lineHeight: 1.45, maxWidth: "26ch" }}>
+                Free, no obligation. We line {given} up with other strong{primaryShort ? ` ${primaryShort}` : ""} agents so you compare quotes side by side.
+              </p>
               <Link href={compareHref} className="fc-btn fc-btn--ghost fc-btn--sm">Compare with others{primaryShort ? ` in ${primaryShort}` : ""}</Link>
             </div>
           </div>
@@ -674,7 +677,7 @@ export default async function AgentPage({ params }: Props) {
           </aside>
         </div>
       </div>
-      <StickyMobileCta href={`/sell?agent=${slug}&utm_source=agent_sticky`} label={`View ${given}'s profile`} />
+      <StickyMobileCta href={`/sell?agent=${slug}&utm_source=agent_sticky`} label={`Request a quote from ${given}`} />
     </>
   );
 }
