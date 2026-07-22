@@ -96,9 +96,25 @@ function Header() {
               </Link>
             ))}
           </div>
+          {/* Agents had no way back into the product: the sign-in form only
+              renders inside /dashboard, and nothing linked there except the
+              post-claim screen. Secondary styling on purpose so the seller
+              funnel keeps the primary CTA. Points at /dashboard rather than a
+              session-aware label because reading the fc_agent cookie here would
+              make the root layout dynamic and drop static rendering across
+              every agent page. */}
+          <Link
+            href="/dashboard"
+            className="hidden font-semibold min-[840px]:inline"
+            style={{ color: "var(--ink-3)", fontSize: 14 }}
+          >
+            Sign in
+          </Link>
           <Link href="/sell" className="fc-btn fc-btn--primary fc-btn--sm">
-            <span className="min-[840px]:hidden">Sell</span>
-            <span className="hidden min-[840px]:inline">Sell your property</span>
+            {/* Short label until 960px so "Sign in" fits alongside without
+                overflowing the nav at the 840px expand point. */}
+            <span className="min-[960px]:hidden">Sell</span>
+            <span className="hidden min-[960px]:inline">Sell your property</span>
           </Link>
           {/* Mobile menu */}
           <details className="relative min-[840px]:hidden">
@@ -125,6 +141,13 @@ function Header() {
                   {label}
                 </Link>
               ))}
+              <Link
+                href="/dashboard"
+                className="mt-1 block rounded-[8px] border-t px-3 pb-2 pt-3 text-sm font-semibold"
+                style={{ color: "var(--blue)", borderColor: "var(--line)" }}
+              >
+                Sign in
+              </Link>
             </div>
           </details>
         </div>
@@ -166,6 +189,7 @@ function Footer() {
                   ["/tools", "Free tools"],
                   ["/guides", "Property guides"],
                   ["/for-agents", "For agents"],
+                  ["/dashboard", "Agent sign in"],
                 ].map(([href, label]) => (
                   <Link key={href} href={href} style={{ color: "rgba(255,255,255,0.78)" }}>
                     {label}

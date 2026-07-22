@@ -67,6 +67,15 @@ export default async function ForAgentsPage() {
           </div>
           <div className="fc-hero-in fc-hero-in--5">
             <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Claim your free profile</Link>
+            {/* Agents who already claimed had no route back to their dashboard
+                from the page written for them. Secondary, so claiming stays the
+                primary action for the (much larger) unclaimed audience. */}
+            <p style={{ marginTop: 14, fontSize: 14, color: "var(--slate-2)" }}>
+              Already claimed yours?{" "}
+              <Link href="/dashboard" style={{ color: "var(--blue)", fontWeight: 600 }}>
+                Sign in to your dashboard
+              </Link>
+            </p>
           </div>
 
           {/* Product-forward hero (housapp move): the real dashboard, in miniature. */}
