@@ -37,6 +37,7 @@ export default function PlannerPanel() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [cal, setCal] = useState<{ configured: boolean; connected: boolean; email?: string | null; provider?: string | null; google?: boolean; microsoft?: boolean } | null>(null);
+  const [calBusy, setCalBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -131,6 +132,25 @@ export default function PlannerPanel() {
                 &#10003; {cal.provider === "microsoft" ? "Outlook calendar" : "Google Calendar"} connected
               </span>
               {cal.email && <span className="muted small">· {cal.email}</span>}
+              {/* Deletes our stored tokens immediately (privacy-policy promise)
+                  and revokes the grant at Google. */}
+              <button
+                type="button"
+                className="fc-btn fc-btn--ghost fc-btn--sm"
+                style={{ marginLeft: "auto" }}
+                disabled={calBusy}
+                onClick={async () => {
+                  setCalBusy(true);
+                  try {
+                    await fetch("/api/agent/calendar/disconnect", { method: "POST" });
+                    await load();
+                  } finally {
+                    setCalBusy(false);
+                  }
+                }}
+              >
+                {calBusy ? "Disconnecting..." : "Disconnect"}
+              </button>
               <span className="muted small" style={{ flexBasis: "100%" }}>Every viewing you confirm is added to your calendar automatically.</span>
             </div>
           ) : (

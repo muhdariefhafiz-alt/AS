@@ -11,7 +11,7 @@ export default function PrivacyPage() {
     <article className="mx-auto max-w-3xl px-5 py-12 md:px-10">
       <h1 className="text-3xl font-bold text-gray-900">Privacy Policy</h1>
       <p className="mt-2 text-sm text-gray-400">
-        Last updated: 13 April 2026
+        Last updated: 24 July 2026
       </p>
 
       <div className="mt-8 space-y-8 text-sm leading-relaxed text-gray-600">
@@ -230,6 +230,84 @@ export default function PrivacyPage() {
             After you unsubscribe, we retain a hashed record of your email for
             up to 12 months to prevent accidental re-subscription, then delete
             it permanently.
+          </p>
+        </section>
+
+        {/* ---- 4c. GOOGLE USER DATA (required disclosure for OAuth verification) ---- */}
+        <section>
+          <h2 className="text-lg font-bold text-gray-900">
+            4c. Google user data (agent calendar connection)
+          </h2>
+          <p className="mt-2">
+            Agents who have claimed their profile can optionally connect their
+            Google Calendar so that viewing appointments they confirm on
+            FairComparisons are added to their own calendar. This section
+            describes exactly what Google user data we access when an agent
+            chooses to connect, and what we do with it.
+          </p>
+          <p className="mt-2">
+            <strong>What Google user data we access:</strong> when you connect,
+            Google asks for your consent to share the following with us:
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li>
+              Your Google account email address, which we display in your
+              dashboard so you can see which account is connected.
+            </li>
+            <li>
+              Permission to create events on your calendar (the
+              &quot;calendar.events&quot; scope). We use this permission only to
+              add viewing appointments that you confirm, containing the property
+              label, the confirmed date and time, and the attendee&apos;s name.
+              We never read, list, edit or delete your existing calendar events,
+              and we never access any other content of your calendar.
+            </li>
+          </ul>
+          <p className="mt-2">
+            To keep the connection working we store the OAuth tokens Google
+            issues to us, together with your connected email address, in our
+            database. Tokens are transmitted over encrypted connections and held
+            in a database table that is not publicly accessible and can only be
+            read by our server.
+          </p>
+          <p className="mt-2">
+            <strong>
+              With whom we share, transfer or disclose Google user data:
+            </strong>{" "}
+            no one. We do not sell Google user data, we do not share it with
+            advertisers, data brokers or any other third party, and we do not
+            transfer it to anyone else. It is processed only by the
+            infrastructure providers that host our application and database
+            (Vercel and Supabase), acting as data processors on our behalf, and
+            never for their own purposes.
+          </p>
+          <p className="mt-2">
+            FairComparisons&apos; use and transfer of information received from
+            Google APIs adheres to the{" "}
+            <a
+              href="https://developers.google.com/terms/api-services-user-data-policy"
+              className="text-blue-600 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Google API Services User Data Policy
+            </a>
+            , including the Limited Use requirements. We do not use Google user
+            data to develop, improve or train generalised artificial
+            intelligence or machine learning models.
+          </p>
+          <p className="mt-2">
+            <strong>Retention and deletion:</strong> we keep the OAuth tokens
+            and connected email address only while your calendar connection is
+            active. Selecting &quot;Disconnect&quot; in your dashboard deletes
+            our stored tokens immediately and revokes our access with Google.
+            You can also revoke access at any time from your Google Account
+            security settings, or email{" "}
+            <a href="mailto:hello@fair-comparisons.com" className="text-blue-600 hover:underline">
+              hello@fair-comparisons.com
+            </a>{" "}
+            to have the data deleted. Events already added to your calendar
+            belong to you and are unaffected by disconnection.
           </p>
         </section>
 
