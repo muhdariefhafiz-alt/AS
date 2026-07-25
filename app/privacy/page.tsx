@@ -11,7 +11,7 @@ export default function PrivacyPage() {
     <article className="mx-auto max-w-3xl px-5 py-12 md:px-10">
       <h1 className="text-3xl font-bold text-gray-900">Privacy Policy</h1>
       <p className="mt-2 text-sm text-gray-400">
-        Last updated: 24 July 2026
+        Last updated: 25 July 2026
       </p>
 
       <div className="mt-8 space-y-8 text-sm leading-relaxed text-gray-600">
@@ -266,10 +266,57 @@ export default function PrivacyPage() {
           <p className="mt-2">
             To keep the connection working we store the OAuth tokens Google
             issues to us, together with your connected email address, in our
-            database. Tokens are transmitted over encrypted connections and held
-            in a database table that is not publicly accessible and can only be
-            read by our server.
+            database.
           </p>
+          <p className="mt-2">
+            <strong>How we protect this data:</strong> we apply the following
+            safeguards to Google user data and other sensitive data we hold:
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li>
+              <strong>Encryption in transit:</strong> all connections to our
+              website, between our servers and between our servers and our
+              database use HTTPS/TLS. OAuth tokens are never transmitted over
+              unencrypted connections and never appear in URLs.
+            </li>
+            <li>
+              <strong>Encryption at rest:</strong> the database that holds
+              OAuth tokens encrypts all stored data at rest.
+            </li>
+            <li>
+              <strong>Access controls:</strong> tokens are held in a database
+              table that is locked down by default (row-level security with no
+              public access policies). It cannot be read through our public
+              API; only our server can access it, using credentials that are
+              never present in the browser or in client-side code.
+            </li>
+            <li>
+              <strong>Data minimisation:</strong> we request the narrowest
+              Google permission that makes the feature work, we only ever
+              create calendar events, and we store no calendar content from
+              your Google account.
+            </li>
+            <li>
+              <strong>No exposure in logs:</strong> token values are never
+              written to application logs.
+            </li>
+            <li>
+              <strong>Prompt deletion:</strong> disconnecting deletes our
+              stored tokens immediately and revokes our access with Google at
+              the same time.
+            </li>
+            <li>
+              <strong>Incident response:</strong> if we become aware of a data
+              breach affecting your personal data, we will assess it and notify
+              affected users and, where required, the Personal Data Protection
+              Commission, in line with our obligations under the PDPA. Security
+              concerns can be reported to{" "}
+              <a href="mailto:hello@fair-comparisons.com" className="text-blue-600 hover:underline">
+                hello@fair-comparisons.com
+              </a>
+              .
+            </li>
+          </ul>
           <p className="mt-2">
             <strong>
               With whom we share, transfer or disclose Google user data:
@@ -282,6 +329,13 @@ export default function PrivacyPage() {
             never for their own purposes.
           </p>
           <p className="mt-2">
+            <strong>Limited use:</strong> our use of Google user data is
+            limited to providing and improving the calendar feature described
+            above. We do not use Google user data for advertising of any kind
+            (including targeted, personalised or retargeted advertising), we do
+            not sell it or transfer it to data brokers or information
+            resellers, we do not use it to determine credit-worthiness or for
+            lending purposes, and we do not use it to build user profiles.
             FairComparisons&apos; use and transfer of information received from
             Google APIs adheres to the{" "}
             <a
