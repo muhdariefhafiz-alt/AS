@@ -278,9 +278,9 @@ export default function DashboardPage() {
           slim agent header + the adaptive "Today" hero instead. */}
       {lookupStatus !== "found" && (
         <>
-          <div className="eyebrow">Agent dashboard</div>
-          <h1 style={{ fontSize: "var(--t-h2)", margin: "10px 0 0" }}>Your FairComparisons account</h1>
-          <p className="muted" style={{ marginTop: 8, fontSize: 15 }}>
+          <div className="eyebrow fc-hero-in fc-hero-in--1">Agent dashboard</div>
+          <h1 className="fc-hero-in fc-hero-in--2" style={{ fontSize: "var(--t-h2)", margin: "10px 0 0" }}>Your FairComparisons account</h1>
+          <p className="muted fc-hero-in fc-hero-in--3" style={{ marginTop: 8, fontSize: 15 }}>
             Manage your profile, see how sellers find you, and track your reputation and analytics.
           </p>
         </>
@@ -298,9 +298,11 @@ export default function DashboardPage() {
         <p className="muted small" style={{ marginTop: 28 }}>Loading your dashboard…</p>
       )}
 
-      {/* Sign in via one-time magic link */}
+      {/* Sign in via one-time magic link: the agent's first-touch moment, so
+          the panel gets the scene-world framing instead of a bare form. */}
       {(lookupStatus === "idle" || lookupStatus === "loading" || lookupStatus === "error") && (
-        <form onSubmit={handleSignIn} className="lp-panel" style={{ marginTop: 28, padding: "26px 26px" }}>
+        <div className="fc-scene fc-scene--inbox fc-hero-in fc-hero-in--4" style={{ marginTop: 28, padding: "clamp(12px,2vw,18px)" }}>
+        <form onSubmit={handleSignIn} className="lp-panel" style={{ margin: 0, padding: "26px 26px", background: "#fff" }}>
           <div className="form-step">Sign in</div>
           <div className="fc-field" style={{ marginTop: 14 }}>
             <label className="fc-label">Enter the email you used to claim your profile</label>
@@ -319,7 +321,7 @@ export default function DashboardPage() {
               <button
                 type="submit"
                 disabled={lookupStatus === "loading"}
-                className="fc-btn fc-btn--primary"
+                className="fc-btn fc-btn--primary fc-btn--hairline"
                 style={{ flexShrink: 0 }}
               >
                 {lookupStatus === "loading" ? "…" : "Email me a sign-in link"}
@@ -335,6 +337,7 @@ export default function DashboardPage() {
             <p className="small" style={{ marginTop: 12, color: "var(--danger)" }}>Something went wrong. Please try again.</p>
           )}
         </form>
+        </div>
       )}
 
       {/* Sign-in link sent (anti-enumeration: same message regardless) */}
@@ -350,7 +353,7 @@ export default function DashboardPage() {
           {/* Operator announcements targeted at this agent's cohort */}
           <DashboardBanner />
           {/* Agent header with tier badge */}
-          <div className="fc-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px" }}>
+          <div className="fc-card fc-hero-in fc-hero-in--1" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px" }}>
             <div className="fc-row" style={{ gap: 12 }}>
               <span className="tick" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 999, background: "var(--ok)", color: "#fff", fontSize: 12 }}>&#10003;</span>
               <div>
@@ -371,7 +374,7 @@ export default function DashboardPage() {
           {/* Tabs: Home = activation + daily pulse; the tools live behind
               job-based tabs so a new agent is not buried in a 12-section wall,
               while the Home launcher keeps every tool discoverable. */}
-          <div style={{ display: "flex", gap: 4, overflowX: "auto", borderBottom: "1px solid var(--line)" }}>
+          <div className="fc-hero-in fc-hero-in--2" style={{ display: "flex", gap: 4, overflowX: "auto", borderBottom: "1px solid var(--line)" }}>
             {(([["home", "Home"], ["leads", "Leads"], ["grow", "Grow"], ["profile", "Profile"]]) as [TabId, string][]).map(([id, label]) => (
               <button
                 key={id}
@@ -580,6 +583,7 @@ export default function DashboardPage() {
               Gated behind the 7-day "aha moment". */}
           {activeTab === "profile" && agent.subscription_tier === "free" && (() => {
             const claimedDaysAgo = agent.claimed_at
+              // eslint-disable-next-line react-hooks/purity -- client-only gate: days-since-claim is relative to the actual current time by design
               ? (Date.now() - new Date(agent.claimed_at).getTime()) / (1000 * 60 * 60 * 24)
               : null;
             const hasReachedAha = claimedDaysAgo !== null && claimedDaysAgo >= 7;
@@ -727,7 +731,7 @@ export default function DashboardPage() {
                 <button
                   type="submit"
                   disabled={saveStatus === "saving"}
-                  className="fc-btn fc-btn--primary"
+                  className="fc-btn fc-btn--primary fc-btn--hairline"
                 >
                   {saveStatus === "saving" ? "Saving…" : "Save changes"}
                 </button>

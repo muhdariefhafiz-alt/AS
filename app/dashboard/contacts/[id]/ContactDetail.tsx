@@ -136,6 +136,7 @@ export default function ContactDetail({ shortlist, lead, proof, timeline: initia
       </div>
 
       <main style={{ maxWidth: 920, margin: "0 auto", padding: "24px 20px", display: "grid", gap: 20 }}>
+        <div className="fc-hero-in fc-hero-in--1">
         <ContactHeader
           lead={lead}
           shortlist={shortlist}
@@ -145,17 +146,20 @@ export default function ContactDetail({ shortlist, lead, proof, timeline: initia
           onToggleLabel={toggleLabel}
           onReplied={onReplied}
         />
+        </div>
 
+        <div className="fc-hero-in fc-hero-in--2">
         <AgentProof proof={proof} propertyType={lead.property_type} />
+        </div>
 
         {/* Draft a first reply, grounded in the record (free allowance metered
             server-side). The agent edits and sends via their own channel. */}
-        <section className="fc-card fc-card--pad">
+        <section className="fc-card fc-card--pad fc-hero-in fc-hero-in--3">
           <div className="kicker" style={{ marginBottom: 8 }}>Reply</div>
           <DraftReply shortlistId={shortlist.id} />
         </section>
 
-        <section className="fc-card fc-card--pad">
+        <section className="fc-card fc-card--pad fc-hero-in fc-hero-in--4">
           <div className="kicker" style={{ marginBottom: 10 }}>Timeline</div>
 
           {/* Private note composer. Lands in the timeline as an agent_note. */}

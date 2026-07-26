@@ -31,7 +31,7 @@ export default async function AgentWidget({ params }: { params: Promise<{ slug: 
 
   return (
     <div style={{ background: "transparent", padding: 12 }}>
-      <div className="fc-card fc-card--pad" style={{ background: "#fff", maxWidth: 380, margin: "0 auto" }}>
+      <div className="fc-card fc-card--pad fc-pop-in" style={{ background: "#fff", maxWidth: 380, margin: "0 auto" }}>
         <div className="fc-row" style={{ gap: 14, alignItems: "center" }}>
           {showPhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -59,7 +59,7 @@ export default async function AgentWidget({ params }: { params: Promise<{ slug: 
         </p>
 
         <Link href={`/sell?agent=${agent.slug}&utm_source=agent_widget`} target="_blank" rel="noopener"
-          className="fc-btn fc-btn--primary fc-btn--block" style={{ marginTop: 14 }}>
+          className="fc-btn fc-btn--primary fc-btn--block fc-btn--hairline" style={{ marginTop: 14 }}>
           Get a free valuation
         </Link>
 
