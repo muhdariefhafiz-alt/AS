@@ -102,22 +102,22 @@ export default async function LeadGenerationPage() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)] mt-4">
         <div className="mx-auto max-w-[900px] px-5 py-16 text-center md:px-8 md:py-24">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)]">
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)] fc-hero-in fc-hero-in--1">
             For Property Agents
           </p>
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-5xl">
+          <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-5xl fc-hero-in fc-hero-in--2">
             Buyers are already searching
             <br />
             <span className="text-[var(--slate-2)]">for agents like you</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">
+          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60 fc-hero-in fc-hero-in--3">
             FairComparisons ranks in Google for agent name, area, and district searches. When buyers
             search, they find your profile. Your track record sells itself.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 fc-hero-in fc-hero-in--4">
             <Link
               href="/search"
-              className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
+              className="fc-btn--hairline inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
             >
               Find your profile
             </Link>

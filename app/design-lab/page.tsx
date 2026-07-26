@@ -4,6 +4,7 @@ import CountUp from "../components/CountUp";
 import InboxDemo from "../components/demos/InboxDemo";
 import PlannerDemo from "../components/demos/PlannerDemo";
 import JourneyDemo from "../components/demos/JourneyDemo";
+import GrowDemo from "../components/demos/GrowDemo";
 import {
   HdbBlock, Shophouse, KeyLine, CalendarLine,
   CondoTower, TerraceRow, MrtTrain, SkylineStrip,
@@ -86,29 +87,13 @@ export default function DesignLabPage() {
         </div>
       </section>
 
-      {/* 5. Grow scene: staggered cards + counters ticking up */}
+      {/* 5. Grow scene: the GrowDemo (radar signal arrives, counters tick, standing climbs) */}
       <section style={{ marginBottom: 72 }}>
-        <p style={label}>5 · grow scene: staggered cards + live counters</p>
+        <p style={label}>5 · growdemo: radar signal arrives &gt; views count up &gt; standing climbs</p>
         <div className="fc-scene fc-scene--grow">
           <KeyLine className="fc-lineart fc-float" width={70} style={{ position: "absolute", right: 28, top: 22 }} />
-          <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", marginTop: 16 }}>
-            {[
-              { t: "Profile views", n: 41, suffix: "", s: "sellers viewed you this week" },
-              { t: "Deal Radar", n: 3, suffix: "", s: "Tampines owners hit MOP this month" },
-              { t: "Your standing", n: 2, suffix: " ↑", s: "places up in Tampines" },
-            ].map((c, i) => (
-              <div
-                key={c.t}
-                className="fc-scene__card fc-reveal"
-                style={{ ["--reveal-delay" as string]: `${0.14 * i}s`, padding: "16px 18px" }}
-              >
-                <div style={{ fontWeight: 700, fontSize: 13, color: "var(--slate)" }}>{c.t}</div>
-                <div style={{ fontSize: 30, fontWeight: 700, margin: "2px 0", fontVariantNumeric: "tabular-nums" }}>
-                  <CountUp value={c.n} suffix={c.suffix} />
-                </div>
-                <p className="muted small" style={{ margin: 0 }}>{c.s}</p>
-              </div>
-            ))}
+          <div style={{ marginTop: 4 }}>
+            <GrowDemo />
           </div>
         </div>
       </section>

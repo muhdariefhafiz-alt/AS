@@ -3,6 +3,9 @@ import Link from "next/link";
 import { getAgentStats } from "../../lib/agentStats";
 import ProductBox from "../../components/ProductBox";
 import { WidgetMock } from "../../components/mocks";
+import ScrollReveal from "../../components/ScrollReveal";
+import GrowDemo from "../../components/demos/GrowDemo";
+import { KeyLine, SkylineStrip } from "../../components/LineArt";
 
 export const revalidate = 86400;
 
@@ -52,20 +55,32 @@ export default async function GrowPage() {
 
   return (
     <>
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">For agents · Grow</div>
-          <h1>Turn your track record<br /><span className="accent">into your next listing.</span></h1>
-          <p className="lp-hero__sub">
+      <ScrollReveal />
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <KeyLine
+          className="fc-lineart fc-float"
+          width={84}
+          style={{ position: "absolute", right: "5%", top: 60, color: "var(--line-dk)" }}
+        />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">For agents · Grow</div>
+          <h1 className="fc-hero-in fc-hero-in--2">Turn your track record<br /><span className="accent">into your next listing.</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             FairComparisons ranks every CEA agent on real transaction data, for free. Grow is the toolkit on top: a daily prospecting feed, co-branded seller reports, a lead widget for your own site, and calculators you can embed anywhere.
           </p>
-          <div className="lp-hero__tags">
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">Free to be listed and ranked</span>
             <span className="lp-hero__tag">Built on CEA, URA and HDB data</span>
             <span className="lp-hero__tag">Never pay-to-rank</span>
           </div>
-          <div style={{ marginTop: 24 }}>
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+          <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 24 }}>
+            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
+          </div>
+          {/* The Grow pillar performing itself: the trilogy's third act. */}
+          <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 44 }}>
+            <div className="fc-scene fc-scene--grow" style={{ textAlign: "left" }}>
+              <GrowDemo />
+            </div>
           </div>
         </div>
       </header>

@@ -3,6 +3,8 @@ import type { AgentFeatureData } from "../lib/agentFeatures";
 import { FEATURE_LINKS } from "../lib/agentFeatures";
 import ProductBox from "./ProductBox";
 import { DealRadarMock, DemandMock, BuildingPageMock, WidgetMock } from "./mocks";
+import ScrollReveal from "./ScrollReveal";
+import { CondoTower, SkylineStrip } from "./LineArt";
 
 type Stats = { scored: number; total: number; agencies: number };
 
@@ -50,18 +52,25 @@ export default function AgentFeaturePage({ data, stats }: { data: AgentFeatureDa
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd).replace(/</g, "\\u003c") }} />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">{data.eyebrow}</div>
-          <h1>{data.heroH1}<br /><span className="accent">{data.heroAccent}</span></h1>
-          <p className="lp-hero__sub">{data.heroSub}</p>
-          <div className="lp-hero__tags">
+      <ScrollReveal />
+
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <CondoTower
+          className="fc-lineart fc-float"
+          width={96}
+          style={{ position: "absolute", right: "4%", bottom: 16, color: "var(--line-dk)" }}
+        />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">{data.eyebrow}</div>
+          <h1 className="fc-hero-in fc-hero-in--2">{data.heroH1}<br /><span className="accent">{data.heroAccent}</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">{data.heroSub}</p>
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             {data.tags.map((t) => (
               <span key={t} className="lp-hero__tag">{t}</span>
             ))}
           </div>
-          <div style={{ marginTop: 24 }}>
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+          <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 24 }}>
+            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
           </div>
         </div>
       </header>
@@ -80,8 +89,8 @@ export default function AgentFeaturePage({ data, stats }: { data: AgentFeatureDa
               cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
             />
           )}
-          {(featureMock ? data.sections.slice(1) : data.sections).map((f) => (
-            <div key={f.kicker} className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+          {(featureMock ? data.sections.slice(1) : data.sections).map((f, fi) => (
+            <div key={f.kicker} className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(fi * 0.1, 0.3)}s`, background: "#fff" }}>
               <p className="kicker" style={{ color: "var(--blue-deep)" }}>{f.kicker}</p>
               <h2 className="serif" style={{ fontSize: "clamp(21px,2.6vw,28px)", fontWeight: 600, margin: "6px 0 0", color: "var(--ink)" }}>{f.title}</h2>
               <p className="muted" style={{ marginTop: 10, fontSize: 15.5, lineHeight: 1.7, maxWidth: "68ch" }}>{f.body}</p>
@@ -129,11 +138,16 @@ export default function AgentFeaturePage({ data, stats }: { data: AgentFeatureDa
         </div>
       </section>
 
-      <section className="lp-hero">
-        <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px" }}>
+      <section className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <SkylineStrip
+          className="fc-lineart"
+          width={720}
+          style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: -8, color: "var(--line-dk)", maxWidth: "96%" }}
+        />
+        <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px 92px", position: "relative" }}>
           <h2 style={{ color: "#fff", fontSize: "clamp(26px,3vw,34px)" }}>Your profile is already live. Claim it free.</h2>
           <p className="lp-hero__sub" style={{ margin: "12px auto 22px" }}>No credit card. Your record, your tools, your leads.</p>
-          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
         </div>
       </section>
     </>

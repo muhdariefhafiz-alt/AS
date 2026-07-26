@@ -3,6 +3,9 @@ import Link from "next/link";
 import { getAgentStats } from "../../lib/agentStats";
 import ProductBox from "../../components/ProductBox";
 import { PlannerMock } from "../../components/mocks";
+import ScrollReveal from "../../components/ScrollReveal";
+import PlannerDemo from "../../components/demos/PlannerDemo";
+import { CalendarLine } from "../../components/LineArt";
 
 export const revalidate = 86400;
 
@@ -52,9 +55,15 @@ export default async function PlannerPage() {
 
   return (
     <>
-      <header className="lp-hero">
+      <ScrollReveal />
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <CalendarLine
+          className="fc-lineart fc-float"
+          width={72}
+          style={{ position: "absolute", right: "5%", top: 60, color: "var(--line-dk)" }}
+        />
         <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">For agents · Planner</div>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">For agents · Planner</div>
           <h1>Your viewings,<br /><span className="accent">all in one place.</span></h1>
           <p className="lp-hero__sub">
             Share one booking link. Buyers request a viewing time; you confirm, complete or cancel from your dashboard; and confirmed viewings sync into your Google Calendar automatically. No spreadsheets, no missed requests, no account needed for the buyer.
@@ -66,7 +75,14 @@ export default async function PlannerPage() {
             <span className="lp-hero__tag">Free</span>
           </div>
           <div style={{ marginTop: 24 }}>
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
+          </div>
+          {/* The Planner performing itself: chips pop in, a slot self-selects,
+              the calendar confirmation lands. */}
+          <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 44 }}>
+            <div className="fc-scene fc-scene--planner" style={{ textAlign: "left" }}>
+              <PlannerDemo />
+            </div>
           </div>
         </div>
       </header>

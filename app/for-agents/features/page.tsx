@@ -118,21 +118,21 @@ export default async function FeaturesHubPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">For agents · The full toolkit</div>
-          <h1>Every tool an agent needs.<br /><span className="accent">One free dashboard.</span></h1>
-          <p className="lp-hero__sub">
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">For agents · The full toolkit</div>
+          <h1 className="fc-hero-in fc-hero-in--2">Every tool an agent needs.<br /><span className="accent">One free dashboard.</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             Prospecting, viewings, seller leads and proof of your record, built on the same official CEA, URA and HDB
             data that scores {stats.scored.toLocaleString()} agents. Free to be listed. Free to be found. Free to win.
           </p>
-          <div className="lp-hero__tags">
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">Free forever listing</span>
             <span className="lp-hero__tag">No paid placement</span>
             <span className="lp-hero__tag">Built on official records</span>
           </div>
-          <div style={{ marginTop: 24 }}>
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+          <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 24 }}>
+            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
           </div>
         </div>
       </header>

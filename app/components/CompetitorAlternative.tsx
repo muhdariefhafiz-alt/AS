@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { CompetitorData } from "../lib/competitors";
+import ScrollReveal from "./ScrollReveal";
+import { Shophouse } from "./LineArt";
 
 type Stats = { scored: number; total: number; agencies: number };
 
@@ -57,18 +59,25 @@ export default function CompetitorAlternative({ data, stats }: { data: Competito
         </ol>
       </nav>
 
+      <ScrollReveal />
+
       {/* Hero */}
-      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)] mt-4">
-        <div className="mx-auto max-w-[900px] px-5 py-16 text-center md:px-8 md:py-24">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)]">For Property Agents</p>
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-5xl">
+      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)] mt-4 relative overflow-hidden">
+        <Shophouse
+          className="fc-lineart fc-float"
+          width={120}
+          style={{ position: "absolute", right: "5%", bottom: 18, color: "var(--line-dk)" }}
+        />
+        <div className="mx-auto max-w-[900px] px-5 py-16 text-center md:px-8 md:py-24 relative">
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)] fc-hero-in fc-hero-in--1">For Property Agents</p>
+          <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-5xl fc-hero-in fc-hero-in--2">
             {data.heroHeadline}
             <br />
             <span className="text-[var(--slate-2)]">{data.heroAccent}</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">{data.heroSub}</p>
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Link href="/search" className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue-deep)]">
+          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60 fc-hero-in fc-hero-in--3">{data.heroSub}</p>
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center fc-hero-in fc-hero-in--4">
+            <Link href="/search" className="fc-btn--hairline inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue-deep)]">
               Find your profile
             </Link>
             <Link href="/for-agents" className="inline-block rounded-lg border border-white/20 px-8 py-4 font-semibold text-white transition hover:bg-white/10">
@@ -79,7 +88,7 @@ export default function CompetitorAlternative({ data, stats }: { data: Competito
       </section>
 
       {/* Comparison table */}
-      <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
+      <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 fc-reveal">
         <h2 className="text-center text-2xl font-bold text-gray-900">{data.name} vs FairComparisons</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-sm text-gray-500">
           An honest, side-by-side look. {data.name} details are as published on {data.url.replace(/^https?:\/\/(www\.)?/, "")} and verified on {data.verifiedOn}. FairComparisons pricing is current as of today.

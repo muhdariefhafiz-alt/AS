@@ -133,15 +133,15 @@ export default async function InviteBriefPage({ params }: Props) {
     <>
       <section className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[720px] px-5 py-10 md:px-8 md:py-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)] fc-hero-in fc-hero-in--1">
             Seller request
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
+          <h1 className="mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl fc-hero-in fc-hero-in--2">
             {leadClosed
               ? "This seller request has closed."
               : `${firstName}, a homeowner in ${area} picked you.`}
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-gray-600">
+          <p className="mt-2 max-w-xl text-sm text-gray-600 fc-hero-in fc-hero-in--3">
             {leadClosed
               ? "The homeowner has already instructed an agent or the request expired. Claim your profile so the next request reaches you instantly."
               : "They found you on FairComparisons, ranked on your real transaction record, and asked you for a fee quote. Quotes are expected within 24 hours of the invite."}
