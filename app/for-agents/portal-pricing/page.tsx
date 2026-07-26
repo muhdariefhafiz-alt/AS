@@ -232,7 +232,7 @@ export default async function PortalPricingPage() {
           <h2 className="text-2xl font-bold text-white">Your record is already ranked here. Claim it free.</h2>
           <p className="mt-3 text-white/60">No packages, no credits, no pay-to-rank. Just your verified transactions, working for you.</p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Link href="/search" className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue-deep)]">
+            <Link href="/claim" className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue-deep)]">
               Find your profile
             </Link>
           </div>

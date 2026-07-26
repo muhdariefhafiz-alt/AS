@@ -75,7 +75,7 @@ export default async function PlannerPage() {
             <span className="lp-hero__tag">Free</span>
           </div>
           <div style={{ marginTop: 24 }}>
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
+            <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
           </div>
           {/* The Planner performing itself: chips pop in, a slot self-selects,
               the calendar confirmation lands. */}
@@ -95,7 +95,7 @@ export default async function PlannerPage() {
             title="One link that fills your calendar."
             body="Share your booking link in every listing and message. Buyers pick a viewing time themselves, you tap confirm, and it drops into your Google Calendar automatically. No spreadsheets, no double-booking, no account needed for the buyer."
             mockup={<PlannerMock />}
-            cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
+            cta={{ label: "Claim your free profile", href: "/claim", variant: "ink" }}
           />
           {FEATURES.map((f) => (
             <div key={f.kicker} className="fc-card fc-card--pad" style={{ background: "#fff" }}>
@@ -135,7 +135,7 @@ export default async function PlannerPage() {
         <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px" }}>
           <h2 style={{ color: "#fff", fontSize: "clamp(26px,3vw,34px)" }}>Claim your profile and get your booking link.</h2>
           <p className="lp-hero__sub" style={{ margin: "12px auto 22px" }}>Free, no credit card. Start taking viewing requests today.</p>
-          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+          <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
         </div>
       </section>
     </>

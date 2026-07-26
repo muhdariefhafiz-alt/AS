@@ -145,7 +145,7 @@ export default function PricingCards() {
           </div>
           {error && <p className="small" style={{ color: "var(--danger)", marginTop: 8 }}>{error}</p>}
           <p className="muted small" style={{ marginTop: 8 }}>
-            Haven&apos;t claimed your profile yet? <Link href="/search">Find and claim it first</Link> (free).
+            Haven&apos;t claimed your profile yet? <Link href="/claim">Find and claim it first</Link> (free).
           </p>
         </div>
       )}

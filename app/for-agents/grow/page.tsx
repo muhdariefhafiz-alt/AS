@@ -76,7 +76,7 @@ export default async function GrowPage() {
             <span className="lp-hero__tag">Never pay-to-rank</span>
           </div>
           <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 24 }}>
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
+            <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
           </div>
           {/* The Grow pillar performing itself: the trilogy's third act. */}
           <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 44 }}>
@@ -95,7 +95,7 @@ export default async function GrowPage() {
             title="Turn your record into your own lead source."
             body="Embed your verified AgentScore badge and a home-value widget on your own website, hand out co-branded seller reports, and let visitors asking what their home is worth become tracked enquiries, all built on your real record."
             mockup={<WidgetMock />}
-            cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
+            cta={{ label: "Claim your free profile", href: "/claim", variant: "ink" }}
           />
           {/* Each Grow feature performs itself in its own colour world
               (Gate-3b feedback: bespoke visuals, not text cards). */}
@@ -173,7 +173,7 @@ export default async function GrowPage() {
         <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px 92px", position: "relative" }}>
           <h2 style={{ color: "#fff", fontSize: "clamp(26px,3vw,34px)" }}>Your profile is already live. Claim it free to start growing.</h2>
           <p className="lp-hero__sub" style={{ margin: "12px auto 22px" }}>No credit card, no listing fees, no pay-to-rank. Just your track record, working for you.</p>
-          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
+          <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
         </div>
       </section>
     </>

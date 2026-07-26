@@ -118,7 +118,7 @@ export default async function LeadGenerationPage() {
           </p>
           <div className="mt-8 fc-hero-in fc-hero-in--4">
             <Link
-              href="/search"
+              href="/claim"
               className="fc-btn--hairline inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
             >
               Find your profile
@@ -151,7 +151,7 @@ export default async function LeadGenerationPage() {
           title="When a seller searches, they compare you on the record."
           body="Your FairComparisons profile ranks on real CEA, URA and HDB transactions. Sellers shortlist and invite the agents they choose, so your track record does the selling before you ever speak."
           mockup={<SellerCompareMock />}
-          cta={{ label: "Find and claim your profile", href: "/search", variant: "ink" }}
+          cta={{ label: "Find and claim your profile", href: "/claim", variant: "ink" }}
         />
       </section>
 
@@ -374,7 +374,7 @@ export default async function LeadGenerationPage() {
           </p>
           <div className="mt-8">
             <Link
-              href="/search"
+              href="/claim"
               className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
             >
               Find and claim your profile

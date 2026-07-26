@@ -77,7 +77,7 @@ export default function CompetitorAlternative({ data, stats }: { data: Competito
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60 fc-hero-in fc-hero-in--3">{data.heroSub}</p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center fc-hero-in fc-hero-in--4">
-            <Link href="/search" className="fc-btn--hairline inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue-deep)]">
+            <Link href="/claim" className="fc-btn--hairline inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue-deep)]">
               Find your profile
             </Link>
             <Link href="/for-agents" className="inline-block rounded-lg border border-white/20 px-8 py-4 font-semibold text-white transition hover:bg-white/10">
@@ -192,7 +192,7 @@ export default function CompetitorAlternative({ data, stats }: { data: Competito
           <h2 className="text-2xl font-bold text-white">Your profile is already live. Claim it for free.</h2>
           <p className="mt-3 text-white/60">No credit card. No listing fees. Just your track record, working for you.</p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Link href="/search" className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue-deep)]">
+            <Link href="/claim" className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue-deep)]">
               Find your profile
             </Link>
             <Link href="/for-agents" className="inline-block rounded-lg border border-white/20 px-8 py-4 font-semibold text-white transition hover:bg-white/10">

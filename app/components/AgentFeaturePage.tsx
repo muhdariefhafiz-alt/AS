@@ -70,7 +70,7 @@ export default function AgentFeaturePage({ data, stats }: { data: AgentFeatureDa
             ))}
           </div>
           <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 24 }}>
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
+            <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
           </div>
         </div>
       </header>
@@ -86,7 +86,7 @@ export default function AgentFeaturePage({ data, stats }: { data: AgentFeatureDa
               title={data.sections[0].title}
               body={data.sections[0].body}
               mockup={featureMock}
-              cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
+              cta={{ label: "Claim your free profile", href: "/claim", variant: "ink" }}
             />
           )}
           {(featureMock ? data.sections.slice(1) : data.sections).map((f, fi) => (
@@ -147,7 +147,7 @@ export default function AgentFeaturePage({ data, stats }: { data: AgentFeatureDa
         <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px 92px", position: "relative" }}>
           <h2 style={{ color: "#fff", fontSize: "clamp(26px,3vw,34px)" }}>Your profile is already live. Claim it free.</h2>
           <p className="lp-hero__sub" style={{ margin: "12px auto 22px" }}>No credit card. Your record, your tools, your leads.</p>
-          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
+          <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
         </div>
       </section>
     </>

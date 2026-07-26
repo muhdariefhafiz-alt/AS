@@ -80,7 +80,7 @@ export default async function ForAgentsPage() {
             <div className="hstat"><div className="n">0%</div><div className="l">Upfront cost</div></div>
           </div>
           <div className="fc-hero-in fc-hero-in--5">
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Claim your free profile</Link>
+            <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Claim your free profile</Link>
             {/* Agents who already claimed had no route back to their dashboard
                 from the page written for them. Secondary, so claiming stays the
                 primary action for the (much larger) unclaimed audience. */}
@@ -218,7 +218,7 @@ export default async function ForAgentsPage() {
                 ))}
               </ul>
               <div style={{ marginTop: 24, display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-                <Link href="/search" className="fc-btn fc-btn--primary">Claim your free profile</Link>
+                <Link href="/claim" className="fc-btn fc-btn--primary">Claim your free profile</Link>
                 <Link href="/for-agents/planner" style={{ color: "var(--blue)", fontWeight: 600, fontSize: 14.5 }}>
                   See how the Planner works &rarr;
                 </Link>
@@ -350,7 +350,7 @@ export default async function ForAgentsPage() {
         <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px 96px", position: "relative" }}>
           <h2 style={{ color: "#fff", fontSize: "clamp(26px,3vw,34px)" }}>Your profile is already being viewed by buyers.</h2>
           <p className="lp-hero__sub" style={{ margin: "12px auto 22px" }}>Claim it to control what they see.</p>
-          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
+          <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
           <p className="small" style={{ color: "var(--slate-2)", marginTop: 16 }}>
             Questions? <a href="mailto:hello@fair-comparisons.com" style={{ color: "#fff" }}>hello@fair-comparisons.com</a>
           </p>

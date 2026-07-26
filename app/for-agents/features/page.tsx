@@ -134,7 +134,7 @@ export default async function FeaturesHubPage() {
             <span className="lp-hero__tag">Built on official records</span>
           </div>
           <div className="fc-hero-in fc-hero-in--5" style={{ marginTop: 24 }}>
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
+            <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
           </div>
         </div>
       </header>
@@ -147,7 +147,7 @@ export default async function FeaturesHubPage() {
             title="Every lead in one inbox, replied to first."
             body="The tools all feed one place: every FairComparisons seller lead lands in your inbox with an AI draft grounded in your own CEA transactions, so you reply first, backed by your real numbers, in one tap."
             mockup={<InboxMock />}
-            cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
+            cta={{ label: "Claim your free profile", href: "/claim", variant: "ink" }}
           />
         </div>
       </section>
@@ -228,7 +228,7 @@ export default async function FeaturesHubPage() {
           <p className="lp-hero__sub" style={{ margin: "12px auto 22px" }}>
             Free, no credit card. {stats.total.toLocaleString()} agents profiled, {stats.scored.toLocaleString()} scored on real records.
           </p>
-          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+          <Link href="/claim" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
         </div>
       </section>
     </>

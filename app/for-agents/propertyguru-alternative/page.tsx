@@ -148,7 +148,7 @@ export default async function PropertyGuruAlternativePage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
-              href="/search"
+              href="/claim"
               className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
             >
               Find your profile
@@ -420,7 +420,7 @@ export default async function PropertyGuruAlternativePage() {
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
-              href="/search"
+              href="/claim"
               className="inline-block rounded-lg bg-[var(--blue)] px-8 py-4 font-semibold text-white shadow-lg transition hover:bg-[var(--blue)]"
             >
               Find your profile

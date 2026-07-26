@@ -21,7 +21,7 @@ export default function ClaimSuccessPage() {
           Complete your profile
         </Link>
         <Link
-          href="/search"
+          href="/claim"
           className="block text-sm hover:underline"
           style={{ color: "var(--blue)" }}
         >

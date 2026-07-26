@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { trackEvent } from "../lib/analytics";
 import { greetName } from "../lib/names";
+import { Icon } from "./Icons";
+import { KeyLine } from "./LineArt";
 
 /** Fire-and-forget funnel event to /api/funnel */
 function trackFunnel(event: string, agentId: number, metadata?: Record<string, unknown>) {
@@ -26,6 +28,16 @@ type Props = {
   profileViews7d?: number | null;
 };
 
+// The claim conversion surface on unclaimed profiles, rebuilt to the design
+// standard (amber scene world, icon-roundel value props that ARRIVE, hairline
+// CTA, reassurance microcopy) with every conversion mechanic preserved:
+// variants, funnel events, review/success states, both consents.
+const VALUE_PROPS: { icon: keyof typeof Icon; text: string }[] = [
+  { icon: "Mail", text: "Seller enquiries land in your inbox with an AI-drafted reply" },
+  { icon: "Calendar", text: "One booking link; confirmed viewings sync to Google Calendar" },
+  { icon: "Radar", text: "Deal Radar: owners reaching MOP in your farm area, daily" },
+];
+
 export default function ClaimBanner({
   agentId,
   agentName,
@@ -38,6 +50,7 @@ export default function ClaimBanner({
   profileViews7d = null,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [inView, setInView] = useState(false);
   const [email, setEmail] = useState("");
   const [ceaNumber, setCeaNumber] = useState("");
   const [consent, setConsent] = useState(false);
@@ -61,14 +74,19 @@ export default function ClaimBanner({
   }, []);
 
   useEffect(() => {
-    if (claimed || hasTrackedView.current) return;
+    if (claimed) return;
     const el = bannerRef.current;
     if (!el) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) setInView(true);
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasTrackedView.current) {
-          hasTrackedView.current = true;
-          trackFunnel("claim_banner_view", agentId, meta());
+        if (entry.isIntersecting) {
+          setInView(true);
+          if (!hasTrackedView.current) {
+            hasTrackedView.current = true;
+            trackFunnel("claim_banner_view", agentId, meta());
+          }
         }
       },
       { threshold: 0.5 }
@@ -90,11 +108,11 @@ export default function ClaimBanner({
 
   if (claimed) {
     return (
-      <div className="flex items-center gap-2.5 rounded-xl border border-green-200 bg-green-50/80 px-4 py-3">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-[11px] text-white">
+      <div className="flex items-center gap-2.5 rounded-xl border px-4 py-3" style={{ borderColor: "var(--ok)", background: "var(--ok-wash)" }}>
+        <span className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] text-white" style={{ background: "var(--ok)" }}>
           &#10003;
         </span>
-        <span className="text-sm font-medium text-green-800">Verified and claimed profile</span>
+        <span className="text-sm font-medium" style={{ color: "var(--ok)" }}>Verified and claimed profile</span>
       </div>
     );
   }
@@ -130,7 +148,7 @@ export default function ClaimBanner({
 
   if (status === "review") {
     return (
-      <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+      <div className="rounded-xl border p-5" style={{ borderColor: "var(--line-2)", background: "var(--blue-wash)" }}>
         <div className="flex items-center gap-2">
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--blue)] text-[11px] text-white">
             &#10003;
@@ -149,7 +167,7 @@ export default function ClaimBanner({
 
   if (status === "success") {
     return (
-      <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+      <div className="rounded-xl border p-5" style={{ borderColor: "var(--line-2)", background: "var(--blue-wash)" }}>
         <div className="flex items-center gap-2">
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--blue)] text-[11px] text-white">
             &#10003;
@@ -167,64 +185,74 @@ export default function ClaimBanner({
   }
 
   return (
-    <div
-      ref={bannerRef}
-      id="claim"
-      className="overflow-hidden rounded-xl border border-[var(--line-2)] bg-gradient-to-r from-[var(--blue-wash)] to-white"
-    >
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <p className="text-base font-bold text-gray-900">{headline}</p>
-            <p className="mt-1.5 text-sm text-gray-600">
+    <div ref={bannerRef} id="claim" className="fc-scene fc-scene--planner" style={{ padding: "clamp(14px,2vw,20px)" }}>
+      <KeyLine className="fc-lineart fc-float" width={64} style={{ position: "absolute", right: 16, top: 12 }} />
+      <div className="fc-scene__card" style={{ padding: "20px 22px", position: "relative" }}>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex-1" style={{ minWidth: 260 }}>
+            <p className="serif" style={{ fontSize: "clamp(19px,2.2vw,24px)", fontWeight: 600, color: "var(--ink)", margin: 0 }}>
+              {headline}
+            </p>
+            <p className="mt-1.5 text-sm" style={{ color: "var(--slate)" }}>
               Your CEA transaction record is already public, so this page exists whether you claim it or not.
-              Claim it to add your photo and bio and subscribe to agent tools.
+              Claiming it puts you in control, and unlocks the toolkit:
             </p>
             {variant === "B" && profileViews7d != null && profileViews7d > 0 && (
-              <p className="mt-2 text-sm font-semibold text-[var(--blue-deep)]">
-                {profileViews7d} {profileViews7d === 1 ? "person" : "people"} viewed your profile in the last 7 days.
+              <p
+                className="fc-cue fc-cue--pop mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-bold"
+                data-on={inView ? "1" : undefined}
+                style={{ background: "var(--blue-wash)", color: "var(--blue-deep)" }}
+              >
+                <Icon.TrendUp size={14} />
+                {profileViews7d} {profileViews7d === 1 ? "person" : "people"} viewed your profile in the last 7 days
               </p>
             )}
-            <div className="mt-3 space-y-1.5">
-              <div className="flex items-start gap-2 text-sm text-gray-700">
-                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">
-                  1
-                </span>
-                <span>Show sellers comparing agents in your area your photo, bio and record.</span>
-              </div>
-              <div className="flex items-start gap-2 text-sm text-gray-700">
-                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">
-                  2
-                </span>
-                <span>Add a photo, bio and message so sellers know who they are contacting.</span>
-              </div>
-              <div className="flex items-start gap-2 text-sm text-gray-700">
-                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-[10px] font-bold text-[var(--blue-deep)]">
-                  3
-                </span>
-                <span>Track your profile views and performance in your dashboard.</span>
-              </div>
+            <div className="mt-3" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {VALUE_PROPS.map((v, i) => {
+                const C = Icon[v.icon];
+                return (
+                  <div
+                    key={v.icon}
+                    className="fc-cue flex items-center gap-2.5 text-sm"
+                    data-on={inView ? "1" : undefined}
+                    style={{ transitionDelay: `${0.15 + i * 0.14}s`, color: "var(--ink)" }}
+                  >
+                    <span
+                      className="flex items-center justify-center"
+                      style={{ width: 28, height: 28, borderRadius: 9, background: "var(--blue-wash)", color: "var(--blue-deep)", flexShrink: 0 }}
+                    >
+                      <C size={15} />
+                    </span>
+                    <span>{v.text}</span>
+                  </div>
+                );
+              })}
             </div>
-            <p className="mt-3 text-xs text-gray-500">
-              Free. No paid placements, no ranking changes. We rank agents on CEA data, not on who pays.
+            <p className="mt-3 text-xs" style={{ color: "var(--slate)" }}>
+              Free forever. No paid placements, no ranking changes. We rank agents on CEA data, not on who pays.
             </p>
           </div>
           {!open && (
-            <button
-              onClick={() => {
-                trackEvent("claim_click", { agent_id: agentId, agent_name: agentName });
-                trackFunnel("claim_click", agentId, meta());
-                setOpen(true);
-              }}
-              className="flex-shrink-0 rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue-deep)] hover:shadow-md"
-            >
-              Claim profile
-            </button>
+            <div className="flex-shrink-0" style={{ textAlign: "center" }}>
+              <button
+                onClick={() => {
+                  trackEvent("claim_click", { agent_id: agentId, agent_name: agentName });
+                  trackFunnel("claim_click", agentId, meta());
+                  setOpen(true);
+                }}
+                className="fc-btn fc-btn--primary fc-btn--hairline"
+              >
+                Claim this profile
+              </button>
+              <p className="mt-2.5 text-[11px]" style={{ color: "var(--slate)" }}>
+                Free · takes 30 seconds
+              </p>
+            </div>
           )}
         </div>
 
         {open && (
-          <form onSubmit={handleSubmit} className="mt-5 rounded-lg border border-[var(--line)] bg-white p-4">
+          <form onSubmit={handleSubmit} className="mt-5 rounded-lg border p-4" style={{ borderColor: "var(--line)", background: "var(--cloud)" }}>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-medium text-gray-700">Email address</label>
@@ -235,7 +263,7 @@ export default function ClaimBanner({
                   placeholder="you@example.com"
                   required
                   autoComplete="email"
-                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
+                  className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
                 />
                 <p className="mt-1 text-[11px] text-gray-400">We send a verification link to this address.</p>
               </div>
@@ -248,7 +276,7 @@ export default function ClaimBanner({
                   placeholder="R012345A"
                   required
                   autoCapitalize="characters"
-                  className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
+                  className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-[var(--blue)] focus:outline-none focus:ring-1 focus:ring-[var(--blue)]"
                 />
                 <p className="mt-1 text-[11px] text-gray-400">We match this against your CEA public record to verify identity.</p>
               </div>
@@ -280,11 +308,11 @@ export default function ClaimBanner({
               </span>
             </label>
             {status === "error" && <p className="mt-3 text-sm text-red-600">{errorMsg}</p>}
-            <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
               <button
                 type="submit"
                 disabled={status === "loading" || !consent || !contactConsent}
-                className="rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="fc-btn fc-btn--primary disabled:opacity-50"
               >
                 {status === "loading" ? "Sending..." : "Send verification link"}
               </button>
