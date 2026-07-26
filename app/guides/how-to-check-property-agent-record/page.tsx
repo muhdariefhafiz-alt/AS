@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import ScrollReveal from "../../components/ScrollReveal";
+import { KeyLine } from "../../components/LineArt";
 
 export const metadata: Metadata = {
   title: "How to Check if a Property Agent Is Good: The 5-Step Record Check (2026)",
@@ -99,13 +101,15 @@ export default function CheckAgentRecordGuide() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Due Diligence</span>
-          <h1 className="mt-3 max-w-3xl text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <KeyLine className="fc-lineart fc-float" width={88} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Due Diligence</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 max-w-3xl text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
             How to check if a property agent is good: the 5-step record check
           </h1>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+          <p className="fc-hero-in fc-hero-in--3 mt-3 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             Every Singapore agent&apos;s transaction history is public. Most sellers never read it, and the ones who do
             often read it wrong: they count transactions when they should be counting recent, local, seller-side home
             sales. Here is the check we would run on any agent, plus the four things the record cannot tell you.
@@ -117,11 +121,12 @@ export default function CheckAgentRecordGuide() {
         <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
           <article className="space-y-10">
 
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">The 5-step check</h2>
-              <div className="mt-4 space-y-4">
+              <div className="fc-scene fc-scene--planner mt-4" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+              <div className="space-y-4">
                 {steps.map((s, i) => (
-                  <div key={s.title} className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                  <div key={s.title} className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                     <div className="flex items-start gap-3">
                       <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--blue-wash)] text-sm font-bold text-[var(--blue-deep)]">{i + 1}</span>
                       <div>
@@ -132,6 +137,7 @@ export default function CheckAgentRecordGuide() {
                   </div>
                 ))}
               </div>
+              </div>
               <p className="mt-4 text-[15px] leading-[1.75] text-gray-600">
                 All five checks run off the same public record. The fastest way is the{" "}
                 <Link href="/property-agents/check" className="font-medium text-[var(--blue)] underline">free agent checker</Link>,
@@ -139,7 +145,7 @@ export default function CheckAgentRecordGuide() {
               </p>
             </section>
 
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">What the record cannot tell you</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 We publish the record&apos;s limits as openly as its contents, because a check you half-trust is worse
@@ -159,7 +165,7 @@ export default function CheckAgentRecordGuide() {
               </p>
             </section>
 
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">The questions to ask once the record checks out</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -176,7 +182,7 @@ export default function CheckAgentRecordGuide() {
               </div>
             </section>
 
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently asked questions</h2>
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
@@ -190,6 +196,7 @@ export default function CheckAgentRecordGuide() {
           </article>
 
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
+            <div className="fc-scene fc-scene--grow fc-reveal" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Run the check now</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Look up any agent&apos;s real CEA transaction record: sales vs rentals, seller-side share, area focus, recency.</p>
@@ -197,7 +204,8 @@ export default function CheckAgentRecordGuide() {
                 Check an agent
               </Link>
             </div>
-            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+            </div>
+            <div className="fc-reveal rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
               <h3 className="text-sm font-bold text-gray-900">Why titles mislead</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-gray-600">
                 Our study of the CEA record: the busiest &ldquo;individual&rdquo; agents are credited across 23 of 26
@@ -205,7 +213,7 @@ export default function CheckAgentRecordGuide() {
               </p>
               <Link href="/insights/property-agent-league-tables-singapore" className="mt-3 inline-block text-sm font-semibold text-[var(--blue)]">Read the study &rarr;</Link>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
                 <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-[var(--blue)] hover:underline">How to choose an agent</Link></li>

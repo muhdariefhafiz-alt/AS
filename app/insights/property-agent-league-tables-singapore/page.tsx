@@ -3,6 +3,8 @@ import { supabase } from "../../lib/supabase";
 import { HDB_TOWNS, townDisplayName } from "../../lib/hdbData";
 import EmailCapture from "../../components/EmailCapture";
 import SellCtaBand from "../../components/SellCtaBand";
+import ScrollReveal from "../../components/ScrollReveal";
+import { CondoTower } from "../../components/LineArt";
 import type { Metadata } from "next";
 
 export const revalidate = 86400; // 24h; refreshed in-DB by the daily cron
@@ -147,13 +149,15 @@ export default async function LeagueTablesStudy() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Agent Market Study</span>
-          <h1 className="mt-3 max-w-3xl text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <CondoTower className="fc-lineart fc-float" width={90} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Agent Market Study</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 max-w-3xl text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
             Why the &ldquo;top producer&rdquo; on the flyer may not have sold a flat in your block
           </h1>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+          <p className="fc-hero-in fc-hero-in--3 mt-3 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             A small group of agents really does dominate Singapore&apos;s home sales. But when you break the CEA record
             down by property type and by town, the names at the very top are not lone star sellers or local specialists.
             They are teams, logging everyone&apos;s deals under one leader. Covering {wStart} to {wEnd}.
@@ -163,7 +167,7 @@ export default async function LeagueTablesStudy() {
 
       {/* Headline finding */}
       <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
-        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900">The headline: the top 20% really do most of the selling</h2>
           <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
             Across {nf(all.sales)} recorded home sales, the busiest <strong>20% of agents account for about {all.top20}%</strong>{" "}
@@ -180,7 +184,7 @@ export default async function LeagueTablesStudy() {
           <div className="space-y-10 lg:col-span-3">
 
             {/* Finding 1: concentration by segment */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">1. The concentration is not condo lead-farming</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 A common theory is that the top agents just farm leads in high-turnover condos. The data says the
@@ -188,7 +192,8 @@ export default async function LeagueTablesStudy() {
                 the most commoditised market of all, and <strong>lowest in private condo and EC resale</strong>. If
                 condo-farming were the story, condos would be the most concentrated. They are the least.
               </p>
-              <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
+              <div className="fc-scene fc-scene--planner mt-4" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+              <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-400">
@@ -210,13 +215,14 @@ export default async function LeagueTablesStudy() {
                   </tbody>
                 </table>
               </div>
+              </div>
               <p className="mt-3 text-[13px] leading-relaxed text-gray-400">
                 Share of each segment&apos;s recorded sales handled by its busiest 1% and 20% of agents, {wStart} to {wEnd}.
               </p>
             </section>
 
             {/* Finding 2: the town-spread reveal */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">2. The busiest HDB agents are not local specialists</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 If the most concentrated market is HDB resale, are the top names just block specialists who farm one
@@ -225,15 +231,15 @@ export default async function LeagueTablesStudy() {
                 opposite.
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-gray-100 bg-white p-4">
+                <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-4" style={{ ["--reveal-delay" as string]: "0s" }}>
                   <div className="text-2xl font-extrabold text-gray-900">{nf(th.median_deals)}</div>
                   <div className="mt-1 text-[13px] leading-snug text-gray-500">median HDB resale deals each</div>
                 </div>
-                <div className="rounded-xl border border-gray-100 bg-white p-4">
+                <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-4" style={{ ["--reveal-delay" as string]: "0.06s" }}>
                   <div className="text-2xl font-extrabold text-gray-900">{th.median_towns} of {totalTowns}</div>
                   <div className="mt-1 text-[13px] leading-snug text-gray-500">HDB towns they sell in (median)</div>
                 </div>
-                <div className="rounded-xl border border-gray-100 bg-white p-4">
+                <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-4" style={{ ["--reveal-delay" as string]: "0.12s" }}>
                   <div className="text-2xl font-extrabold text-gray-900">{th.median_top_town_share}%</div>
                   <div className="mt-1 text-[13px] leading-snug text-gray-500">share in their single biggest town</div>
                 </div>
@@ -249,7 +255,7 @@ export default async function LeagueTablesStudy() {
             </section>
 
             {/* Finding 3: the mechanism */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">3. The mechanism: teams logged under one name</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 Singapore agents work in teams, and a deal is often recorded under the team leader rather than the
@@ -270,7 +276,7 @@ export default async function LeagueTablesStudy() {
             </section>
 
             {/* What it means */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">What this means if you are selling</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -290,7 +296,7 @@ export default async function LeagueTablesStudy() {
             </section>
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently asked questions</h2>
               <div className="mt-4 space-y-5">
                 {faqItems.map((f, i) => (
@@ -303,7 +309,8 @@ export default async function LeagueTablesStudy() {
             </section>
 
             {/* Compare in your area */}
-            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6">
+            <div className="fc-scene fc-scene--grow fc-reveal" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
+            <div className="rounded-xl border border-[var(--line-2)] bg-white p-6">
               <h3 className="text-lg font-bold text-gray-900">See who actually sells in your town</h3>
               <p className="mt-2 text-[15px] text-gray-600">
                 Every ranking is built on real CEA sale transactions in that area, recency-weighted, with team-attributed
@@ -318,9 +325,10 @@ export default async function LeagueTablesStudy() {
                 ))}
               </div>
             </div>
+            </div>
 
             {/* Methodology */}
-            <section className="rounded-xl border border-gray-100 bg-gray-50 p-6">
+            <section className="fc-reveal rounded-xl border border-gray-100 bg-gray-50 p-6">
               <h2 className="text-base font-bold text-gray-900">Methodology and caveats</h2>
               <div className="mt-2 space-y-3 text-[13px] leading-[1.7] text-gray-500">
                 <p>
@@ -346,7 +354,7 @@ export default async function LeagueTablesStudy() {
 
           {/* Sidebar */}
           <aside className="space-y-6 lg:col-span-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Key Numbers</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-gray-500">Top 20% do</dt><dd className="font-bold text-gray-900">{all.top20}% of sales</dd></div>
@@ -357,7 +365,7 @@ export default async function LeagueTablesStudy() {
               </dl>
             </div>
 
-            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+            <div className="fc-reveal rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
               <h3 className="text-sm font-bold text-gray-900">Read the full agent study</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-gray-600">
                 Why 66% of registered agents have no sale on file, and 63% of activity is rentals.
@@ -373,7 +381,7 @@ export default async function LeagueTablesStudy() {
               description="New data analyses and market reports delivered to your inbox."
             />
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>
               <div className="mt-3 space-y-2">
                 <Link href="/insights/top-agents-2026" className="block text-sm text-gray-600 hover:text-[var(--blue)]">The actual top agents in Singapore</Link>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import MopTrackerForm from "./MopTrackerForm";
 import ProductBox from "../../components/ProductBox";
 import { SellerCompareMock } from "../../components/mocks";
+import ScrollReveal from "../../components/ScrollReveal";
+import { MrtTrain } from "../../components/LineArt";
 
 export const revalidate = 86400;
 
@@ -73,14 +75,16 @@ export default function MopTrackerPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">HDB MOP tracker</div>
-          <h1>When can you sell your HDB?<br /><span className="accent">And what is it worth right now?</span></h1>
-          <p className="lp-hero__sub">
+      <ScrollReveal />
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <MrtTrain className="fc-lineart fc-float" width={110} style={{ position: "absolute", right: "6%", top: 28, color: "var(--line-dk)" }} />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">HDB MOP tracker</div>
+          <h1 className="fc-hero-in fc-hero-in--2">When can you sell your HDB?<br /><span className="accent">And what is it worth right now?</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             Tell us your town, flat type, and roughly when you got your keys. We&apos;ll work out your MOP date and a value estimate from recent HDB resale data.
           </p>
-          <div className="lp-hero__tags">
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">Live HDB resale data</span>
             <span className="lp-hero__tag">Top CEA-licensed agents per town</span>
             <span className="lp-hero__tag">Free · PDPA-compliant</span>
@@ -88,40 +92,42 @@ export default function MopTrackerPage() {
         </div>
       </header>
 
-      <section className="lp-section">
+      <section className="lp-section" style={{ position: "relative" }}>
         <div className="fc-wrap" style={{ padding: "0 40px 56px" }}>
           <MopTrackerForm hdbTowns={HDB_TOWNS} />
         </div>
       </section>
 
       <section className="lp-section--paper">
-        <div className="fc-wrap" style={{ padding: "64px 40px" }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "64px 40px" }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)" }}>What we use to calculate this</h2>
-          <div className="fc-grid-3" style={{ marginTop: 28 }}>
-            <div className="fc-card fc-card--pad">
+          <div className="fc-scene fc-scene--grow" style={{ marginTop: 28, padding: "clamp(10px,1.6vw,14px)" }}>
+          <div className="fc-grid-3">
+            <div className="fc-card fc-card--pad fc-reveal" style={{ background: "#fff", ["--reveal-delay" as string]: "0s" }}>
               <div className="eyebrow">MOP</div>
               <p className="small" style={{ margin: "10px 0 0" }}>
                 Standard 5-year minimum occupation, measured from your key collection date. We use the 1st of your chosen month as a fuzzy approximation. Plus and Prime BTOs have longer MOPs; check your purchase documents.
               </p>
             </div>
-            <div className="fc-card fc-card--pad">
+            <div className="fc-card fc-card--pad fc-reveal" style={{ background: "#fff", ["--reveal-delay" as string]: "0.06s" }}>
               <div className="eyebrow">Value estimate</div>
               <p className="small" style={{ margin: "10px 0 0" }}>
                 Median resale price of the same flat type in your town over the last 6 months, sourced from HDB&apos;s public resale dataset on data.gov.sg.
               </p>
             </div>
-            <div className="fc-card fc-card--pad">
+            <div className="fc-card fc-card--pad fc-reveal" style={{ background: "#fff", ["--reveal-delay" as string]: "0.12s" }}>
               <div className="eyebrow">Top agents</div>
               <p className="small" style={{ margin: "10px 0 0" }}>
                 Top 3 CEA-licensed agents who actually do HDB deals in your town, ranked by AgentScore: transaction volume, recency, locality and verified reviews.
               </p>
             </div>
           </div>
+          </div>
         </div>
       </section>
 
       <section className="lp-section--paper">
-        <div className="fc-wrap" style={{ padding: "0 40px 64px" }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "0 40px 64px" }}>
           <ProductBox
             layout="hero"
             eyebrow="Next step"

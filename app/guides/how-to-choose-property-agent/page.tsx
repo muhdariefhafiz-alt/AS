@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import ScrollReveal from "../../components/ScrollReveal";
+import { KeyLine } from "../../components/LineArt";
 
 export const metadata: Metadata = {
   title: "How to Check & Choose a Property Agent in Singapore (2026)",
@@ -66,18 +68,21 @@ export default function HowToChooseAgentPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Agent Selection</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">How to Choose a Property Agent in Singapore</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <KeyLine className="fc-lineart fc-float" width={88} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Agent Selection</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">How to Choose a Property Agent in Singapore</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             Your property agent will handle one of the largest financial transactions of your life. Here is how to evaluate agents based on track record, specialization, and professionalism rather than marketing.
           </p>
         </div>
       </section>
 
       <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
-        <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5 md:flex md:items-center md:justify-between md:gap-6">
+        <div className="fc-scene fc-scene--grow fc-hero-in fc-hero-in--4" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
+        <div className="rounded-xl bg-white p-5 md:flex md:items-center md:justify-between md:gap-6">
           <div>
             <p className="text-base font-bold text-gray-900">Want to check a specific agent right now?</p>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-gray-600">
@@ -91,6 +96,7 @@ export default function HowToChooseAgentPage() {
             Check an agent &rarr;
           </Link>
         </div>
+        </div>
       </div>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
@@ -98,7 +104,7 @@ export default function HowToChooseAgentPage() {
           <article className="space-y-10">
 
             {/* Section 1: CEA Registration */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Start with CEA Registration</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -122,7 +128,7 @@ export default function HowToChooseAgentPage() {
             </section>
 
             {/* Section 2: Track Record */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Evaluate Their Track Record</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -150,7 +156,7 @@ export default function HowToChooseAgentPage() {
             </section>
 
             {/* Section 3: Specialization */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Check Their Specialization</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -174,7 +180,7 @@ export default function HowToChooseAgentPage() {
             </section>
 
             {/* Section 4: Red Flags */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Red Flags to Watch For</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -192,7 +198,7 @@ export default function HowToChooseAgentPage() {
             </section>
 
             {/* Section 5: Questions to Ask */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Questions to Ask Before Engaging an Agent</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -211,7 +217,7 @@ export default function HowToChooseAgentPage() {
             </section>
 
             {/* Section 6: How FairComparisons Helps */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Using Data to Compare Agents</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -234,7 +240,7 @@ export default function HowToChooseAgentPage() {
             </section>
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
@@ -250,21 +256,21 @@ export default function HowToChooseAgentPage() {
 
           {/* Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Find Top Agents</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Search by area, property type, or agent name. Compare agents on actual transaction data.</p>
               <Link href="/search" className="mt-4 block rounded-lg bg-[var(--blue)] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
                 Search agents
               </Link>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Are You an Agent?</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Your profile is already live on FairComparisons. Claim it to add your photo, contact details, and manage how buyers see you.</p>
               <Link href="/for-agents" className="mt-4 block rounded-lg border border-[var(--line-2)] px-4 py-2.5 text-center text-sm font-semibold text-[var(--blue-deep)] transition hover:bg-[var(--blue-wash)]">
                 Claim your profile
               </Link>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
                 <li><Link href="/guides/property-agent-commission" className="text-sm text-[var(--blue)] hover:underline">Agent commission rates</Link></li>

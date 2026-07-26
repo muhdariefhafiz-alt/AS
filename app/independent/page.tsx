@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { supabase } from "../lib/supabase";
+import ScrollReveal from "../components/ScrollReveal";
 
 export const revalidate = 86400;
 
@@ -83,11 +84,12 @@ export default async function IndependentPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
+      <ScrollReveal />
       <header className="lp-hero">
         <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">Why trust us</div>
-          <h1>Independent <span className="accent">by design</span>.</h1>
-          <p className="lp-hero__sub">
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">Why trust us</div>
+          <h1 className="fc-hero-in fc-hero-in--2">Independent <span className="accent">by design</span>.</h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             We rank Singapore property agents on government transaction records, not advertising. No agent can pay to appear higher. We list {total.toLocaleString()}+ CEA-registered agents and rank the {scored.toLocaleString()} with a recorded transaction, on the same public data for everyone.
           </p>
         </div>
@@ -96,15 +98,15 @@ export default async function IndependentPage() {
       <section className="lp-section">
         <div className="fc-wrap" style={{ padding: "8px 40px 48px", maxWidth: 860 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {PRINCIPLES.map((c) => (
-              <div key={c.h} className="fc-card fc-card--pad">
+            {PRINCIPLES.map((c, i) => (
+              <div key={c.h} className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                 <h2 className="serif" style={{ fontSize: 21, fontWeight: 600, margin: 0 }}>{c.h}</h2>
                 <p className="muted" style={{ margin: "8px 0 0", lineHeight: 1.7 }}>{c.p}</p>
               </div>
             ))}
           </div>
 
-          <div className="fc-card fc-card--pad" style={{ marginTop: 32, background: "var(--cloud)" }}>
+          <div className="fc-card fc-card--pad fc-reveal" style={{ marginTop: 32, background: "var(--cloud)" }}>
             <div className="kicker">How this differs from advertising-funded directories</div>
             <p style={{ margin: "10px 0 0", lineHeight: 1.7 }}>
               Most agent directories in Singapore are run by property listing portals funded by agent advertising. On those platforms, how prominently an agent appears is influenced by the subscription package they buy and how many listings they run, and the reviews shown usually come only from users who contacted that agent through the platform. None of that reflects how much property the agent has actually sold.
@@ -115,17 +117,17 @@ export default async function IndependentPage() {
             </p>
           </div>
 
-          <h2 style={{ fontSize: "clamp(24px,2.8vw,32px)", marginTop: 48 }}>Common questions</h2>
+          <h2 className="fc-reveal" style={{ fontSize: "clamp(24px,2.8vw,32px)", marginTop: 48 }}>Common questions</h2>
           <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 12 }}>
-            {FAQ.map((f) => (
-              <details key={f.q} className="fc-card fc-card--pad">
+            {FAQ.map((f, i) => (
+              <details key={f.q} className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                 <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 16, listStyle: "none" }}>{f.q}</summary>
                 <p className="muted" style={{ margin: "10px 0 0", fontSize: 14.5, lineHeight: 1.7 }}>{f.a}</p>
               </details>
             ))}
           </div>
 
-          <div className="fc-row" style={{ gap: 12, marginTop: 36, flexWrap: "wrap" }}>
+          <div className="fc-row fc-reveal" style={{ gap: 12, marginTop: 36, flexWrap: "wrap" }}>
             <Link href="/property-agents" className="fc-btn fc-btn--primary">Compare agents</Link>
             <Link href="/how-we-score" className="fc-btn fc-btn--ghost">How we score</Link>
           </div>

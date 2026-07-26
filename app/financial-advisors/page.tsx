@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { supabase } from "../lib/supabase";
 import type { Metadata } from "next";
+import ScrollReveal from "../components/ScrollReveal";
+import { Shophouse } from "../components/LineArt";
 
 export const revalidate = false;
 
@@ -43,19 +45,21 @@ export default async function FinancialAdvisorsHub() {
 
   return (
     <>
-      <section className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900">
-        <div className="mx-auto max-w-[1120px] px-5 py-16 md:px-8 md:py-24">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-300">Financial Services</p>
-          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl">
+      <ScrollReveal />
+      <section className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900" style={{ position: "relative", overflow: "hidden" }}>
+        <Shophouse className="fc-lineart fc-float" width={110} style={{ position: "absolute", right: "6%", top: 32, color: "var(--line-dk)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 py-16 md:px-8 md:py-24" style={{ position: "relative" }}>
+          <p className="fc-hero-in fc-hero-in--1 text-xs font-bold uppercase tracking-widest text-blue-300">Financial Services</p>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-4 text-4xl font-extrabold leading-tight text-white md:text-5xl">
             Every MAS-licensed financial<br />
             <span className="text-blue-300">institution in Singapore.</span>
           </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/60">
+          <p className="fc-hero-in fc-hero-in--3 mt-5 max-w-xl text-lg leading-relaxed text-white/60">
             {totalFi > 0 ? `${totalFi.toLocaleString()} financial institutions` : "Financial institutions"} regulated by the Monetary Authority of Singapore.
             Banks, insurers, financial advisors, capital markets firms, and payment providers.
           </p>
           {totalFi > 0 && (
-            <div className="mt-8 flex flex-wrap gap-6 border-t border-white/10 pt-8">
+            <div className="fc-hero-in fc-hero-in--4 mt-8 flex flex-wrap gap-6 border-t border-white/10 pt-8">
               {SECTORS.map(s => (
                 <div key={s.slug} className="text-center">
                   <span className="text-2xl font-extrabold text-white">{sectorCounts[s.name] ?? 0}</span>
@@ -69,11 +73,13 @@ export default async function FinancialAdvisorsHub() {
 
       {/* Sectors */}
       <section className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-        <h2 className="text-2xl font-bold text-gray-900">Browse by sector</h2>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {SECTORS.map(s => (
+        <h2 className="fc-reveal text-2xl font-bold text-gray-900">Browse by sector</h2>
+        <div className="mt-6 fc-scene fc-scene--grow" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {SECTORS.map((s, i) => (
             <Link key={s.slug} href={`/financial-advisors/${s.slug}`}
-              className="group rounded-xl border border-gray-200 bg-white p-5 transition hover:border-blue-300 hover:shadow-sm">
+              className="fc-reveal group rounded-xl border border-gray-200 bg-white p-5 transition hover:border-blue-300 hover:shadow-sm"
+              style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{s.icon}</span>
                 <div>
@@ -85,20 +91,23 @@ export default async function FinancialAdvisorsHub() {
             </Link>
           ))}
         </div>
+        </div>
       </section>
 
       {/* Top categories */}
       {topCategories.length > 0 && (
         <section className="border-t border-gray-100 bg-gray-50">
           <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8">
-            <h2 className="text-2xl font-bold text-gray-900">By licence type</h2>
-            <div className="mt-6 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-              {topCategories.map(([cat, count]) => (
-                <div key={cat} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3">
+            <h2 className="fc-reveal text-2xl font-bold text-gray-900">By licence type</h2>
+            <div className="mt-6 fc-scene fc-scene--planner" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+              {topCategories.map(([cat, count], i) => (
+                <div key={cat} className="fc-reveal flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                   <span className="text-sm text-gray-700 truncate">{cat}</span>
                   <span className="shrink-0 text-sm text-gray-400">{count}</span>
                 </div>
               ))}
+            </div>
             </div>
           </div>
         </section>
@@ -106,7 +115,7 @@ export default async function FinancialAdvisorsHub() {
 
       {/* Data source */}
       <section className="border-t border-gray-100">
-        <div className="mx-auto max-w-[1120px] px-5 py-8 text-center md:px-8">
+        <div className="fc-reveal mx-auto max-w-[1120px] px-5 py-8 text-center md:px-8">
           <p className="text-xs text-gray-400">
             All data from the Monetary Authority of Singapore (MAS) Financial Institutions Directory.
             Updated regularly. For the most current information, visit eservices.mas.gov.sg.

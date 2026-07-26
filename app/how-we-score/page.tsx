@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ScrollReveal from "../components/ScrollReveal";
 
 export const metadata: Metadata = {
   title: "How AgentScore works: the methodology",
@@ -92,11 +93,12 @@ export default function HowWeScorePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
+      <ScrollReveal />
       <header className="lp-hero">
         <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">Methodology</div>
-          <h1>How <span className="accent">AgentScore</span> works.</h1>
-          <p className="lp-hero__sub">
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">Methodology</div>
+          <h1 className="fc-hero-in fc-hero-in--2">How <span className="accent">AgentScore</span> works.</h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             AgentScore rates every CEA-registered Singapore property agent from 0 to 100 on actual government transaction records, not advertising spend. Here is exactly how it is built, what it measures, and why no agent can buy a higher position.
           </p>
         </div>
@@ -104,14 +106,14 @@ export default function HowWeScorePage() {
 
       <section className="lp-section">
         <div className="fc-wrap" style={{ padding: "8px 40px 56px", maxWidth: 860 }}>
-          <h2 style={{ fontSize: "clamp(24px,2.8vw,32px)" }}>The five dimensions</h2>
-          <p className="muted" style={{ margin: "10px 0 24px", lineHeight: 1.7 }}>
+          <h2 className="fc-reveal" style={{ fontSize: "clamp(24px,2.8vw,32px)" }}>The five dimensions</h2>
+          <p className="muted fc-reveal" style={{ margin: "10px 0 24px", lineHeight: 1.7 }}>
             The score is the sum of five weighted dimensions. Seventy of the hundred points come from what an agent has actually transacted; the rest reflects experience and the agency&apos;s public review standing.
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {DIMENSIONS.map((d) => (
-              <div key={d.name} className="fc-card fc-card--pad">
+            {DIMENSIONS.map((d, i) => (
+              <div key={d.name} className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                 <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
                   <h3 className="serif" style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>{d.name}</h3>
                   <span className="mono" style={{ color: "var(--blue)", fontSize: 14, fontWeight: 600 }}>{d.pts} pts</span>
@@ -121,8 +123,8 @@ export default function HowWeScorePage() {
             ))}
           </div>
 
-          <h2 style={{ fontSize: "clamp(24px,2.8vw,32px)", marginTop: 48 }}>Where the data comes from</h2>
-          <ul style={{ margin: "14px 0 0", paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
+          <h2 className="fc-reveal" style={{ fontSize: "clamp(24px,2.8vw,32px)", marginTop: 48 }}>Where the data comes from</h2>
+          <ul className="fc-reveal" style={{ margin: "14px 0 0", paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
             {DATA_SOURCES.map((s) => (
               <li key={s} className="fc-row" style={{ gap: 10, alignItems: "flex-start" }}>
                 <span style={{ color: "var(--blue)", fontWeight: 700, lineHeight: 1.6 }}>&#8226;</span>
@@ -130,29 +132,29 @@ export default function HowWeScorePage() {
               </li>
             ))}
           </ul>
-          <p className="muted small" style={{ marginTop: 16 }}>
+          <p className="muted small fc-reveal" style={{ marginTop: 16 }}>
             Recalculated weekly as new CEA data is ingested. Registration status can be confirmed directly on the{" "}
             <a href="https://www.cea.gov.sg/aceas/public-register/sales/1" target="_blank" rel="noopener noreferrer nofollow" style={{ color: "var(--blue)" }}>CEA public register</a>.
           </p>
 
-          <div className="fc-card fc-card--pad" style={{ marginTop: 32, background: "var(--cloud)" }}>
+          <div className="fc-card fc-card--pad fc-reveal" style={{ marginTop: 32, background: "var(--cloud)" }}>
             <div className="kicker">Integrity</div>
             <p style={{ margin: "8px 0 0", lineHeight: 1.7 }}>
               There is no paid placement and rankings cannot be bought. No input that feeds AgentScore can be purchased, and we are paid the same regardless of which agent a seller chooses. Thin data is shown as thin, never inflated.
             </p>
           </div>
 
-          <h2 style={{ fontSize: "clamp(24px,2.8vw,32px)", marginTop: 48 }}>Common questions</h2>
+          <h2 className="fc-reveal" style={{ fontSize: "clamp(24px,2.8vw,32px)", marginTop: 48 }}>Common questions</h2>
           <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 12 }}>
-            {FAQ.map((f) => (
-              <details key={f.q} className="fc-card fc-card--pad">
+            {FAQ.map((f, i) => (
+              <details key={f.q} className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                 <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 16, listStyle: "none" }}>{f.q}</summary>
                 <p className="muted" style={{ margin: "10px 0 0", fontSize: 14.5, lineHeight: 1.7 }}>{f.a}</p>
               </details>
             ))}
           </div>
 
-          <div className="fc-row" style={{ gap: 12, marginTop: 36, flexWrap: "wrap" }}>
+          <div className="fc-row fc-reveal" style={{ gap: 12, marginTop: 36, flexWrap: "wrap" }}>
             <Link href="/property-agents" className="fc-btn fc-btn--primary">Compare agents</Link>
             <Link href="/trust" className="fc-btn fc-btn--ghost">Trust &amp; data</Link>
           </div>

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import ShareButtons from "../../components/ShareButtons";
 import EmailCapture from "../../components/EmailCapture";
+import ScrollReveal from "../../components/ScrollReveal";
+import { CondoTower } from "../../components/LineArt";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -134,9 +136,11 @@ export default async function TopAgents2026Page() {
       </nav>
 
       {/* Hero */}
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[900px] px-5 pb-10 pt-10 md:px-8">
-          <div className="flex flex-wrap items-center gap-2">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <CondoTower className="fc-lineart fc-float" width={90} style={{ position: "absolute", right: "6%", bottom: 18, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[900px] px-5 pb-10 pt-10 md:px-8" style={{ position: "relative" }}>
+          <div className="fc-hero-in fc-hero-in--1 flex flex-wrap items-center gap-2">
             <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">
               2026 Rankings
             </span>
@@ -144,15 +148,15 @@ export default async function TopAgents2026Page() {
               Updated {new Date().toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}
             </span>
           </div>
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
+          <h1 className="fc-hero-in fc-hero-in--2 mt-4 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">
             Top Property Agents in Singapore 2026
           </h1>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+          <p className="fc-hero-in fc-hero-in--3 mt-3 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             Who are Singapore's most active and effective property agents? We analyzed {totalTxns.toLocaleString()} CEA-recorded
             transactions across {scoredCount.toLocaleString()} scored agents to produce these data-driven rankings.
             No paid placements. No advertising bias. Just public transaction data.
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-4">
+          <div className="fc-hero-in fc-hero-in--4 mt-5 flex flex-wrap items-center gap-4">
             <div className="flex gap-6">
               <div><span className="text-2xl font-extrabold text-[var(--blue)]">{scoredCount.toLocaleString()}</span><p className="text-[10px] text-gray-400">agents scored</p></div>
               <div><span className="text-2xl font-extrabold text-[var(--blue)]">{totalTxns.toLocaleString()}</span><p className="text-[10px] text-gray-400">transactions analyzed</p></div>
@@ -169,7 +173,7 @@ export default async function TopAgents2026Page() {
       <div className="mx-auto max-w-[900px] px-5 py-10 md:px-8">
 
         {/* Methodology */}
-        <section className="mb-10">
+        <section className="fc-reveal mb-10">
           <h2 className="text-xl font-bold text-gray-900">How we rank agents</h2>
           <p className="mt-3 text-[15px] leading-relaxed text-gray-600">
             Every agent is scored using the AgentScore algorithm, which weighs four factors from public CEA data:
@@ -180,16 +184,18 @@ export default async function TopAgents2026Page() {
         </section>
 
         {/* Top 20 nationwide */}
-        <section className="mb-12">
+        <section className="fc-reveal mb-12">
           <h2 className="text-xl font-bold text-gray-900">Top 20 Agents Nationwide</h2>
           <p className="mt-2 text-sm text-gray-500">Ranked by AgentScore across all districts and property types.</p>
 
-          <div className="mt-6 space-y-3">
+          <div className="fc-scene fc-scene--planner mt-6" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+          <div className="space-y-3">
             {topAgents.map((agent, i) => (
               <Link
                 key={agent.slug}
                 href={`/property-agents/agent/${agent.slug}`}
-                className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-[var(--line-2)] hover:shadow-sm"
+                className="fc-reveal group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:border-[var(--line-2)] hover:shadow-sm"
+                style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}
               >
                 <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${i < 3 ? "bg-[var(--blue)]" : i < 10 ? "bg-[var(--blue)]" : "bg-gray-300"}`}>
                   {i + 1}
@@ -216,19 +222,20 @@ export default async function TopAgents2026Page() {
               </Link>
             ))}
           </div>
+          </div>
         </section>
 
         {/* District leaders */}
-        <section className="mb-12">
+        <section className="fc-reveal mb-12">
           <h2 className="text-xl font-bold text-gray-900">Top Agent by District</h2>
           <p className="mt-2 text-sm text-gray-500">The highest-scoring agent in each major district based on area-specific transaction data.</p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {DISTRICTS.map((d) => {
+            {DISTRICTS.map((d, i) => {
               const leader = districtLeaders.find((l) => l.area_name === d.areaName);
               if (!leader) return null;
               return (
-                <div key={d.slug} className="rounded-xl border border-gray-100 bg-white p-4">
+                <div key={d.slug} className="fc-reveal rounded-xl border border-gray-100 bg-white p-4" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[var(--blue)]">{d.code}</span>
                     <span className="text-xs text-gray-400">{leader.area_txns} area txns</span>
@@ -253,7 +260,7 @@ export default async function TopAgents2026Page() {
         </section>
 
         {/* Key findings */}
-        <section className="mb-12 rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-6">
+        <section className="fc-reveal mb-12 rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-6">
           <h2 className="text-lg font-bold text-gray-900">Key Findings</h2>
           <ul className="mt-4 space-y-3 text-[15px] leading-relaxed text-gray-700">
             {topAgents.length > 0 && (
@@ -278,7 +285,8 @@ export default async function TopAgents2026Page() {
         </section>
 
         {/* CTA: Are you on this list? */}
-        <section className="mb-12 rounded-xl border-2 border-[var(--line-2)] bg-gradient-to-r from-[var(--blue-wash)] to-white p-6">
+        <div className="fc-scene fc-scene--grow fc-reveal mb-12" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
+        <section className="rounded-xl border-2 border-[var(--line-2)] bg-white p-6">
           <h2 className="text-lg font-bold text-gray-900">Are you on this list?</h2>
           <p className="mt-2 text-sm text-gray-600">
             If you are a CEA-registered agent, your profile and score are already live on FairComparisons.
@@ -293,16 +301,18 @@ export default async function TopAgents2026Page() {
             </Link>
           </div>
         </section>
+        </div>
 
         {/* All district links */}
-        <section className="mb-12">
+        <section className="fc-reveal mb-12">
           <h2 className="text-lg font-bold text-gray-900">Rankings by District</h2>
           <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {DISTRICTS.map((d) => (
+            {DISTRICTS.map((d, i) => (
               <Link
                 key={d.slug}
                 href={`/property-agents/best/${d.slug}`}
-                className="flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 text-sm transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
+                className="fc-reveal flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 text-sm transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
+                style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}
               >
                 <span className="font-medium text-gray-900">{d.short}</span>
                 <span className="text-xs text-gray-400">{d.code}</span>

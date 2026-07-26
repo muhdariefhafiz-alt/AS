@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ScrollReveal from "../components/ScrollReveal";
+import { MrtTrain } from "../components/LineArt";
 
 export const revalidate = 86400;
 
@@ -47,11 +49,13 @@ export default function ToolsHubPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd).replace(/</g, "\\u003c") }} />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">Free tools</div>
-          <h1>Every number in a Singapore<br /><span className="accent">property move, worked out.</span></h1>
-          <p className="lp-hero__sub">
+      <ScrollReveal />
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <MrtTrain className="fc-lineart fc-float" width={120} style={{ position: "absolute", right: "5%", bottom: 18, color: "var(--line-dk)" }} />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">Free tools</div>
+          <h1 className="fc-hero-in fc-hero-in--2">Every number in a Singapore<br /><span className="accent">property move, worked out.</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             Free calculators and checkers built on real CEA, URA, HDB, IRAS and MAS data. No sign-up, nothing stored, always free.
           </p>
         </div>
@@ -60,8 +64,8 @@ export default function ToolsHubPage() {
       <section className="lp-section">
         <div className="fc-wrap" style={{ padding: "40px 40px 64px" }}>
           <div className="fc-grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
-            {TOOLS.map((t) => (
-              <Link key={t.href} href={t.href} className="fc-card fc-card--pad" style={{ display: "block", background: "#fff" }}>
+            {TOOLS.map((t, i) => (
+              <Link key={t.href} href={t.href} className="fc-card fc-card--pad fc-reveal" style={{ display: "block", background: "#fff", ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                 <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                   <span className="fc-badge fc-badge--source" style={{ fontSize: 11 }}>{t.tag}</span>
                   <span className="mono" style={{ fontSize: 11, color: "var(--slate)" }}>{t.forWhom}</span>

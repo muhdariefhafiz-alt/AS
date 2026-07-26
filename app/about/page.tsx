@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import ScrollReveal from "../components/ScrollReveal";
 
 export const metadata: Metadata = {
   title: "About AgentScore - How We Rate Property Agents",
@@ -9,13 +10,14 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <article className="mx-auto max-w-3xl px-5 py-12 md:px-10">
-      <h1 className="text-3xl font-bold text-gray-900">How we rate property agents</h1>
-      <p className="mt-4 text-lg text-gray-500">
+      <ScrollReveal />
+      <h1 className="fc-hero-in fc-hero-in--1 text-3xl font-bold text-gray-900">How we rate property agents</h1>
+      <p className="fc-hero-in fc-hero-in--2 mt-4 text-lg text-gray-500">
         An independent quality score based on public data, not influenced by agents or agencies.
       </p>
 
       <div className="mt-10 space-y-8 text-[15px] leading-relaxed text-gray-600">
-        <section>
+        <section className="fc-reveal">
           <h2 className="text-xl font-bold text-gray-900">Why AgentScore?</h2>
           <p className="mt-3">
             Choosing a property agent is one of the most important financial decisions you make
@@ -33,7 +35,7 @@ export default function AboutPage() {
           </p>
         </section>
 
-        <section>
+        <section className="fc-reveal">
           <h2 className="text-xl font-bold text-gray-900">What data do we use?</h2>
           <div className="mt-4 space-y-3">
             {[
@@ -42,8 +44,8 @@ export default function AboutPage() {
               { name: "CEA Public Register", desc: "Registration numbers and agency membership for all 30,000+ agents. Each agent's current registration status can be confirmed directly on the CEA public register." },
               { name: "URA Transaction Data", desc: "Private residential property prices from URA, used for district-level market analysis and development profiles." },
               { name: "HDB Resale Data", desc: "208,000+ HDB resale transactions from data.gov.sg, used for town-level pricing analysis." },
-            ].map((s) => (
-              <div key={s.name} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            ].map((s, i) => (
+              <div key={s.name} className="fc-reveal rounded-lg border border-gray-200 bg-gray-50 p-4" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                 <h3 className="font-semibold text-gray-900">{s.name}</h3>
                 <p className="mt-1 text-sm text-gray-500">{s.desc}</p>
               </div>
@@ -51,20 +53,21 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section>
+        <section className="fc-reveal">
           <h2 className="text-xl font-bold text-gray-900">How is the score calculated?</h2>
           <p className="mt-3">
             The AgentScore (0-100) combines five dimensions, each weighted by relevance to the consumer:
           </p>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 fc-scene fc-scene--planner" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+          <div className="space-y-3">
             {[
               { name: "Volume", weight: "30 points", desc: "Sale-weighted CEA transactions: completed sales count most (seller-side sales highest), rentals least, so the score reflects an agent's record of actually selling homes, not raw deal count." },
               { name: "Recency", weight: "25 points", desc: "How recently the agent has completed transactions. Recent activity is weighted higher than historical volume." },
               { name: "Diversity", weight: "15 points", desc: "Range of property types (HDB, condo, landed) and transaction types (sale, purchase, rental) handled." },
               { name: "Experience", weight: "15 points", desc: "Years of CEA registration and consistency of transaction activity over time." },
               { name: "Reviews", weight: "15 points", desc: "Google review rating of the agent's agency, Bayesian-corrected to account for agencies with few reviews." },
-            ].map((d) => (
-              <div key={d.name} className="flex items-start gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            ].map((d, i) => (
+              <div key={d.name} className="fc-reveal flex items-start gap-4 rounded-lg border border-gray-200 bg-white p-4" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--blue-wash)] text-xs font-bold text-[var(--blue-deep)]">{d.weight.split(" ")[0]}</div>
                 <div>
                   <h3 className="font-semibold text-gray-900">{d.name} <span className="text-sm font-normal text-gray-400">({d.weight})</span></h3>
@@ -73,6 +76,7 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
+          </div>
           <p className="mt-4">
             The score is fully automated and recalculated weekly as new CEA data is ingested.
             Payment does not influence ranking position. The only way to improve a score is to
@@ -80,7 +84,7 @@ export default function AboutPage() {
           </p>
         </section>
 
-        <section>
+        <section className="fc-reveal">
           <h2 className="text-xl font-bold text-gray-900">Frequently asked questions</h2>
           <div className="mt-4 space-y-4">
             <div>
@@ -109,7 +113,7 @@ export default function AboutPage() {
         </section>
 
         {/* Contact */}
-        <div className="mt-12 rounded-xl border border-gray-200 bg-gray-50 p-6">
+        <div className="fc-reveal mt-12 rounded-xl border border-gray-200 bg-gray-50 p-6">
           <h2 className="text-lg font-bold text-gray-900">Questions or feedback?</h2>
           <p className="mt-2 text-sm text-gray-600">
             Reach us at{" "}
@@ -119,12 +123,14 @@ export default function AboutPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-6 rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6 text-center">
+        <div className="fc-reveal mt-6 fc-scene fc-scene--grow" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
+        <div className="rounded-xl border border-[var(--line-2)] bg-white p-6 text-center">
           <h2 className="text-xl font-bold text-gray-900">Ready to choose on evidence?</h2>
           <p className="mt-2 text-gray-600">Compare the agents who actually sell homes like yours, ranked on government data, then contact the ones you choose. Free, and we never take a cut of a sale.</p>
           <a href="/sell?utm_source=about" className="mt-4 inline-block rounded-lg bg-[var(--blue)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
             Compare agents
           </a>
+        </div>
         </div>
       </div>
     </article>

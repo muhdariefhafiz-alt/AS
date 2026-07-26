@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import ScrollReveal from "../components/ScrollReveal";
 
 export const metadata: Metadata = {
   title: "Contact FairComparisons",
@@ -28,6 +29,7 @@ const ROUTES: { eyebrow: string; title: string; body: string; href: string; cta:
 export default function ContactPage() {
   return (
     <>
+      <ScrollReveal />
       <header className="fc-wrap" style={{ padding: "26px 40px 0" }}>
         <div className="sr-crumb">
           <Link href="/">Home</Link> / Contact
@@ -35,14 +37,15 @@ export default function ContactPage() {
       </header>
 
       <section className="fc-wrap" style={{ padding: "20px 40px 8px", maxWidth: 760 }}>
-        <div className="eyebrow">Contact</div>
-        <h1 style={{ margin: "12px 0 0", fontSize: "clamp(30px,4vw,46px)" }}>Get in touch.</h1>
-        <p className="lede" style={{ marginTop: 14, maxWidth: "58ch" }}>
+        <div className="eyebrow fc-hero-in fc-hero-in--1">Contact</div>
+        <h1 className="fc-hero-in fc-hero-in--2" style={{ margin: "12px 0 0", fontSize: "clamp(30px,4vw,46px)" }}>Get in touch.</h1>
+        <p className="lede fc-hero-in fc-hero-in--3" style={{ marginTop: 14, maxWidth: "58ch" }}>
           We are a small, independent team in Singapore. Rankings are built from government data, never advertising. If
           you have a question, a correction, or a data request, we want to hear it.
         </p>
 
-        <div className="fc-card fc-card--pad" style={{ marginTop: 24, background: "var(--cloud)", borderColor: "transparent" }}>
+        <div className="fc-scene fc-scene--grow fc-hero-in fc-hero-in--4" style={{ marginTop: 24, padding: "clamp(10px,1.6vw,14px)" }}>
+        <div className="fc-card fc-card--pad" style={{ background: "#fff", borderColor: "transparent" }}>
           <div className="kicker">Email us</div>
           <a
             href="mailto:hello@fair-comparisons.com"
@@ -56,10 +59,11 @@ export default function ContactPage() {
             page URL so we can verify against the source records.
           </p>
         </div>
+        </div>
 
         <div className="fc-grid-2" style={{ marginTop: 20 }}>
-          {ROUTES.map((r) => (
-            <div key={r.href} className="fc-card fc-card--pad">
+          {ROUTES.map((r, i) => (
+            <div key={r.href} className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
               <div className="eyebrow">{r.eyebrow}</div>
               <div className="serif" style={{ fontWeight: 600, fontSize: 19, margin: "8px 0 6px" }}>
                 {r.title}
@@ -74,7 +78,7 @@ export default function ContactPage() {
           ))}
         </div>
 
-        <p className="muted small" style={{ marginTop: 22 }}>
+        <p className="muted small fc-reveal" style={{ marginTop: 22 }}>
           Common questions about how the comparison works and what it costs are answered on the{" "}
           <Link href="/sell#faq" style={{ color: "var(--blue)", fontWeight: 600 }}>
             sell-your-property FAQ

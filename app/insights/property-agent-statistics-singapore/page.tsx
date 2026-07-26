@@ -3,6 +3,8 @@ import { supabase } from "../../lib/supabase";
 import { HDB_TOWNS, townDisplayName } from "../../lib/hdbData";
 import EmailCapture from "../../components/EmailCapture";
 import SellCtaBand from "../../components/SellCtaBand";
+import ScrollReveal from "../../components/ScrollReveal";
+import { CondoTower } from "../../components/LineArt";
 import type { Metadata } from "next";
 
 export const revalidate = 86400; // 24h; study refreshes as the dataset grows
@@ -158,11 +160,13 @@ export default async function PropertyAgentStatisticsPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Agent Market Study</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Singapore Property Agent Statistics</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <CondoTower className="fc-lineart fc-float" width={90} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Agent Market Study</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Singapore Property Agent Statistics</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             What {nf(d.total_txns)} CEA transaction records reveal about Singapore&apos;s {nf(d.register_total)} property
             agents: how many actually transact, how concentrated the market is, and why a high deal count rarely means an
             agent sells homes. Covering {windowStart} to {windowEnd}.
@@ -172,7 +176,7 @@ export default async function PropertyAgentStatisticsPage() {
 
       {/* Lede / headline finding */}
       <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
-        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900">The headline: most registered agents barely transact</h2>
           <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
             Singapore has <strong>{nf(d.register_total)} property salespersons</strong> on the public CEA register. Yet only{" "}
@@ -189,7 +193,7 @@ export default async function PropertyAgentStatisticsPage() {
           <div className="space-y-10 lg:col-span-3">
 
             {/* Finding 1 */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">1. A small minority does most of the work</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 Among the {nf(d.ever_transacted)} agents who do transact, activity is heavily concentrated. The busiest{" "}
@@ -198,9 +202,10 @@ export default async function PropertyAgentStatisticsPage() {
                 {d.median_active} transactions across the whole {windowStart} to {windowEnd} window, roughly two to
                 three a year.
               </p>
-              <div className="mt-4 space-y-2.5">
-                {concentration.map((c) => (
-                  <div key={c.label} className="rounded-lg border border-gray-100 bg-white px-4 py-3">
+              <div className="fc-scene fc-scene--planner mt-4" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+              <div className="space-y-2.5">
+                {concentration.map((c, i) => (
+                  <div key={c.label} className="fc-reveal rounded-lg border border-gray-100 bg-white px-4 py-3" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-gray-900">{c.label}</span>
                       <span className="font-bold text-gray-900">{c.share}% of all deals</span>
@@ -211,10 +216,11 @@ export default async function PropertyAgentStatisticsPage() {
                   </div>
                 ))}
               </div>
+              </div>
             </section>
 
             {/* Finding 2 */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">2. Most agent activity is renting, not selling</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 Of the {nf(d.total_txns)} transactions in the record, <strong>{rentalPct}% are rentals</strong> and only{" "}
@@ -227,7 +233,7 @@ export default async function PropertyAgentStatisticsPage() {
             </section>
 
             {/* Finding 3 */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">3. Even among agents who sell, output is thin</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 Only <strong>{nf(d.agents_who_sold)} agents</strong>, about {everSoldPct}% of the register, have
@@ -239,7 +245,7 @@ export default async function PropertyAgentStatisticsPage() {
             </section>
 
             {/* What it means */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">What this means if you are selling</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -259,7 +265,7 @@ export default async function PropertyAgentStatisticsPage() {
             </section>
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently asked questions</h2>
               <div className="mt-4 space-y-5">
                 {faqItems.map((f, i) => (
@@ -272,7 +278,8 @@ export default async function PropertyAgentStatisticsPage() {
             </section>
 
             {/* Compare in your area */}
-            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6">
+            <div className="fc-scene fc-scene--grow fc-reveal" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
+            <div className="rounded-xl border border-[var(--line-2)] bg-white p-6">
               <h3 className="text-lg font-bold text-gray-900">See the agents who actually sell in your area</h3>
               <p className="mt-2 text-[15px] text-gray-600">
                 Every ranking below is built on real CEA sale transactions, recency-weighted, not on advertising.
@@ -286,9 +293,10 @@ export default async function PropertyAgentStatisticsPage() {
                 ))}
               </div>
             </div>
+            </div>
 
             {/* Methodology */}
-            <section className="rounded-xl border border-gray-100 bg-gray-50 p-6">
+            <section className="fc-reveal rounded-xl border border-gray-100 bg-gray-50 p-6">
               <h2 className="text-base font-bold text-gray-900">Methodology and caveats</h2>
               <div className="mt-2 space-y-3 text-[13px] leading-[1.7] text-gray-500">
                 <p>
@@ -322,7 +330,7 @@ export default async function PropertyAgentStatisticsPage() {
           </div>
 
           <aside className="space-y-6 lg:col-span-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Key Numbers</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-gray-500">Agents on register</dt><dd className="font-bold text-gray-900">{nf(d.register_total)}</dd></div>
@@ -333,7 +341,7 @@ export default async function PropertyAgentStatisticsPage() {
               </dl>
             </div>
 
-            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+            <div className="fc-reveal rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
               <h3 className="text-sm font-bold text-gray-900">See the actual top agents</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-gray-600">
                 We rank every CEA-registered agent on real sale transactions, not advertising.
@@ -349,7 +357,7 @@ export default async function PropertyAgentStatisticsPage() {
               description="New data analyses and market reports delivered to your inbox."
             />
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>
               <div className="mt-3 space-y-2">
                 <Link href="/insights/property-agent-league-tables-singapore" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Why the &ldquo;top producer&rdquo; label misleads</Link>

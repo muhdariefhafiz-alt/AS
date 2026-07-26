@@ -33,18 +33,18 @@ export default async function TelegramAlertsPage({ searchParams }: Props) {
   return (
     <section className="bg-gray-50 py-16">
       <div className="mx-auto max-w-[560px] px-5 text-center">
-        <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
+        <p className="fc-hero-in fc-hero-in--1 text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
           Coming soon
         </p>
-        <h1 className="mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
+        <h1 className="fc-hero-in fc-hero-in--2 mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
           Instant lead alerts on Telegram.
         </h1>
-        <p className="mt-3 text-sm text-gray-600">
+        <p className="fc-hero-in fc-hero-in--3 mt-3 text-sm text-gray-600">
           When a homeowner shortlists you, a Telegram message reaches you in
           seconds so you can quote before the 24 hour window closes. We are
           building this now and switch it on for the agents who want it first.
         </p>
-        <div className="mt-6">
+        <div className="fc-hero-in fc-hero-in--4 mt-6">
           <TelegramInterestButton src={(src ?? "direct").slice(0, 40)} />
         </div>
         <p className="mt-4 text-xs text-gray-400">

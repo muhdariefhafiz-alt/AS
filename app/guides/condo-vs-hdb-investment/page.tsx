@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import ScrollReveal from "../../components/ScrollReveal";
+import { KeyLine } from "../../components/LineArt";
 
 export const metadata: Metadata = {
   title: "Condo vs HDB as an Investment in Singapore (2026 Guide)",
@@ -104,11 +106,13 @@ export default function CondoVsHdbInvestmentPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">Investment</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Condo vs HDB as an Investment in Singapore</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <KeyLine className="fc-lineart fc-float" width={88} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">Investment</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Condo vs HDB as an Investment in Singapore</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             A factual comparison of condos and HDB flats as investment properties. Covers ABSD, rental yield, capital appreciation, MOP restrictions, lease decay, and financing differences.
           </p>
         </div>
@@ -119,7 +123,7 @@ export default function CondoVsHdbInvestmentPage() {
           <article className="space-y-10">
 
             {/* Context */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Context: Singapore Property as Investment</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -135,11 +139,11 @@ export default function CondoVsHdbInvestmentPage() {
             </section>
 
             {/* Comparison Table */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Side-by-Side Comparison</h2>
               <div className="mt-4 space-y-4">
-                {comparisonItems.map((item) => (
-                  <div key={item.factor} className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                {comparisonItems.map((item, i) => (
+                  <div key={item.factor} className="fc-reveal rounded-xl border border-gray-100 bg-white shadow-sm" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                     <div className="border-b border-gray-100 px-5 py-3">
                       <h3 className="text-[15px] font-bold text-gray-900">{item.factor}</h3>
                     </div>
@@ -159,13 +163,14 @@ export default function CondoVsHdbInvestmentPage() {
             </section>
 
             {/* ABSD Deep Dive */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">ABSD: The Biggest Cost Factor</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
                   The Additional Buyer&apos;s Stamp Duty is the single largest barrier to property investment in Singapore. The current ABSD rates (effective from April 2023) are:
                 </p>
-                <div className="overflow-x-auto">
+                <div className="fc-scene fc-scene--planner" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+                <div className="overflow-x-auto rounded-xl bg-white p-4">
                   <table className="mt-2 w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-200 text-left">
@@ -197,6 +202,7 @@ export default function CondoVsHdbInvestmentPage() {
                     </tbody>
                   </table>
                 </div>
+                </div>
                 <p>
                   For a Singapore Citizen buying a S$1.5 million condo as a second property, the ABSD alone is S$300,000. This upfront cost dramatically changes the investment calculus and is why many investors sell their existing property before buying to qualify for the 0% first-property rate.
                 </p>
@@ -204,7 +210,7 @@ export default function CondoVsHdbInvestmentPage() {
             </section>
 
             {/* Practical Considerations */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Practical Considerations</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -224,7 +230,7 @@ export default function CondoVsHdbInvestmentPage() {
             </section>
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
@@ -240,6 +246,7 @@ export default function CondoVsHdbInvestmentPage() {
 
           {/* Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
+            <div className="fc-reveal fc-scene fc-scene--grow" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Find Investment-Focused Agents</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Search for agents with strong track records in your target area and property type.</p>
@@ -247,14 +254,15 @@ export default function CondoVsHdbInvestmentPage() {
                 Search agents
               </Link>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            </div>
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Market Data</h3>
               <ul className="mt-3 space-y-2 text-sm">
                 <li><Link href="/insights/freehold-premium" className="text-[var(--blue)] hover:underline">Freehold Premium by District</Link></li>
                 <li><Link href="/insights/million-dollar-hdb" className="text-[var(--blue)] hover:underline">Million-Dollar HDB Tracker</Link></li>
               </ul>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
                 <li><Link href="/guides/property-agent-commission" className="text-sm text-[var(--blue)] hover:underline">Agent commission rates</Link></li>

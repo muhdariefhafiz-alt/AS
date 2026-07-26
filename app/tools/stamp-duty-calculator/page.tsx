@@ -3,6 +3,8 @@ import Link from "next/link";
 import StampDutyCalculator from "./StampDutyCalculator";
 import EmbedSnippet from "./EmbedSnippet";
 import SellCtaBand from "../../components/SellCtaBand";
+import ScrollReveal from "../../components/ScrollReveal";
+import { MrtTrain } from "../../components/LineArt";
 import { RATES_VERIFIED_ON, IRAS_BSD_URL, IRAS_ABSD_URL, IRAS_SSD_URL } from "../../lib/stamp-duty";
 
 export const revalidate = 86400;
@@ -85,14 +87,16 @@ export default function StampDutyCalculatorPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">Free stamp duty calculator</div>
-          <h1>Singapore stamp duty,<br /><span className="accent">worked out in seconds.</span></h1>
-          <p className="lp-hero__sub">
+      <ScrollReveal />
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <MrtTrain className="fc-lineart fc-float" width={110} style={{ position: "absolute", right: "6%", top: 28, color: "var(--line-dk)" }} />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">Free stamp duty calculator</div>
+          <h1 className="fc-hero-in fc-hero-in--2">Singapore stamp duty,<br /><span className="accent">worked out in seconds.</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             Calculate Buyer&#39;s Stamp Duty, ABSD and Seller&#39;s Stamp Duty on HDB, condo and landed property. Rates verified against IRAS, with every dollar shown.
           </p>
-          <div className="lp-hero__tags">
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">BSD + ABSD + SSD</span>
             <span className="lp-hero__tag">Verified vs IRAS {RATES_VERIFIED_ON}</span>
             <span className="lp-hero__tag">Free</span>
@@ -100,14 +104,14 @@ export default function StampDutyCalculatorPage() {
         </div>
       </header>
 
-      <section className="lp-section">
+      <section className="lp-section" style={{ position: "relative" }}>
         <div className="fc-wrap" style={{ padding: "0 40px 56px" }}>
           <StampDutyCalculator />
         </div>
       </section>
 
       <section className="lp-section--paper">
-        <div className="fc-wrap" style={{ padding: "56px 40px", maxWidth: 860 }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px", maxWidth: 860 }}>
           <h2 style={{ fontSize: "clamp(24px,3vw,32px)" }}>How Singapore stamp duty works</h2>
           <p className="muted" style={{ marginTop: 12, fontSize: 15.5, lineHeight: 1.7 }}>
             There are three property stamp duties. Buyers pay <strong>Buyer&#39;s Stamp Duty (BSD)</strong> on every purchase, plus{" "}
@@ -116,7 +120,8 @@ export default function StampDutyCalculatorPage() {
           </p>
 
           <h3 className="serif" style={{ fontSize: 19, fontWeight: 600, marginTop: 28 }}>ABSD rates (residential, from 27 Apr 2023)</h3>
-          <div style={{ overflowX: "auto", marginTop: 12 }}>
+          <div className="fc-scene fc-scene--planner" style={{ marginTop: 12, padding: "clamp(14px,2.5vw,20px)" }}>
+          <div style={{ overflowX: "auto", background: "#fff", borderRadius: 12, padding: "4px 14px" }}>
             <table style={{ width: "100%", minWidth: 520, borderCollapse: "collapse", fontSize: 14 }}>
               <thead>
                 <tr style={{ textAlign: "left", color: "var(--slate)" }}>
@@ -138,6 +143,7 @@ export default function StampDutyCalculatorPage() {
               </tbody>
             </table>
           </div>
+          </div>
 
           <h3 className="serif" style={{ fontSize: 19, fontWeight: 600, marginTop: 28 }}>SSD rates (residential)</h3>
           <p className="muted" style={{ marginTop: 8, fontSize: 14.5, lineHeight: 1.65 }}>
@@ -154,7 +160,7 @@ export default function StampDutyCalculatorPage() {
       </section>
 
       <section className="lp-section">
-        <div className="fc-wrap" style={{ padding: "56px 40px", maxWidth: 820 }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px", maxWidth: 820 }}>
           <h2 style={{ fontSize: "clamp(24px,3vw,32px)" }}>Frequently asked questions</h2>
           <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 18 }}>
             {FAQ.map(([q, a]) => (

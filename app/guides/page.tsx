@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import SellCtaBand from "../components/SellCtaBand";
+import ScrollReveal from "../components/ScrollReveal";
+import { KeyLine } from "../components/LineArt";
 
 export const metadata: Metadata = {
   title: "Property Guides - Singapore Buyer & Seller Resources",
@@ -64,10 +66,12 @@ export default function GuidesPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--cloud)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Property Guides</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--cloud)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <KeyLine className="fc-lineart fc-float" width={88} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <h1 className="fc-hero-in fc-hero-in--1 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Property Guides</h1>
+          <p className="fc-hero-in fc-hero-in--2 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             Practical, Singapore-specific guides for buyers, sellers, and investors. No fluff, no sales pitch. Every guide is based on public regulations, CEA rules, and actual market data.
           </p>
         </div>
@@ -75,11 +79,12 @@ export default function GuidesPage() {
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {guides.map((g) => (
+          {guides.map((g, i) => (
             <Link
               key={g.slug}
               href={`/guides/${g.slug}`}
-              className="group rounded-xl border border-gray-100 bg-white p-6 transition hover:border-[var(--line-2)] hover:shadow-md"
+              className="fc-reveal group rounded-xl border border-gray-100 bg-white p-6 transition hover:border-[var(--line-2)] hover:shadow-md"
+              style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}
             >
               <span className={`inline-block rounded-full border px-3 py-1 text-xs font-semibold ${g.tagColor}`}>{g.tag}</span>
               <h2 className="mt-3 text-lg font-bold text-gray-900 group-hover:text-[var(--blue)]">{g.title}</h2>

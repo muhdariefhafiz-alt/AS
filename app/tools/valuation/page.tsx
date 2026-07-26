@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import ValuationForm from "./ValuationForm";
 import ProductBox from "../../components/ProductBox";
 import { SellerCompareMock } from "../../components/mocks";
+import ScrollReveal from "../../components/ScrollReveal";
+import { MrtTrain } from "../../components/LineArt";
 
 export const revalidate = 86400;
 
@@ -52,14 +54,16 @@ export default function ValuationPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">Free home valuation</div>
-          <h1>What&apos;s your home worth?<br /><span className="accent">A real range, not a guess.</span></h1>
-          <p className="lp-hero__sub">
+      <ScrollReveal />
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <MrtTrain className="fc-lineart fc-float" width={110} style={{ position: "absolute", right: "6%", top: 28, color: "var(--line-dk)" }} />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">Free home valuation</div>
+          <h1 className="fc-hero-in fc-hero-in--2">What&apos;s your home worth?<br /><span className="accent">A real range, not a guess.</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             We estimate from actual HDB resale and URA private transaction data and give you a value range with a confidence score. No agent call required.
           </p>
-          <div className="lp-hero__tags">
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">Real transaction data</span>
             <span className="lp-hero__tag">Range + confidence, not a single number</span>
             <span className="lp-hero__tag">Free · PDPA-compliant</span>
@@ -67,14 +71,14 @@ export default function ValuationPage() {
         </div>
       </header>
 
-      <section className="lp-section">
+      <section className="lp-section" style={{ position: "relative" }}>
         <div className="fc-wrap" style={{ padding: "0 40px 56px" }}>
           <ValuationForm hdbTowns={HDB_TOWNS} />
         </div>
       </section>
 
       <section className="lp-section--paper">
-        <div className="fc-wrap" style={{ padding: "64px 40px", textAlign: "center" }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "64px 40px", textAlign: "center" }}>
           <h2 style={{ fontSize: "clamp(26px,3vw,34px)" }}>Why a range, not a single number?</h2>
           <p className="lede" style={{ margin: "16px auto 0", maxWidth: "64ch", color: "var(--slate)" }}>
             Any tool that gives you one exact figure is guessing with false precision. Two identical-looking flats can sell 10 to 15% apart on floor, facing, renovation and timing. We show you the band that recent comparable sales actually landed in, plus how many sales we based it on, so you know how much to trust it.
@@ -83,7 +87,7 @@ export default function ValuationPage() {
       </section>
 
       <section className="lp-section">
-        <div className="fc-wrap" style={{ padding: "0 40px 64px" }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "0 40px 64px" }}>
           <ProductBox
             layout="hero"
             eyebrow="Next step"

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import EmailCapture from "../../components/EmailCapture";
+import ScrollReveal from "../../components/ScrollReveal";
+import { CondoTower } from "../../components/LineArt";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -93,11 +95,13 @@ export default async function CourtCaseStatsPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-slate-600 bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-200">Legal Data</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-white md:text-4xl">Singapore Court Case Statistics</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-white/60">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" style={{ position: "relative", overflow: "hidden" }}>
+        <CondoTower className="fc-lineart fc-float" width={100} style={{ position: "absolute", right: "6%", bottom: 18, color: "var(--line-dk)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-slate-600 bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-200">Legal Data</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-white md:text-4xl">Singapore Court Case Statistics</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-white/60">
             {totalCases.toLocaleString()} published judgments from eLitigation.sg, analyzed by practice area, court level, and legal representation.
           </p>
         </div>
@@ -105,7 +109,8 @@ export default async function CourtCaseStatsPage() {
 
       {/* Definition Block */}
       <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
-        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="fc-scene fc-scene--grow fc-hero-in fc-hero-in--4" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
+        <div className="rounded-xl bg-white p-6">
           <h2 className="text-lg font-bold text-gray-900">Singapore court case data at a glance</h2>
           <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
             Our database tracks <strong>{totalCases.toLocaleString()} published court judgments</strong> from eLitigation.sg,
@@ -115,6 +120,7 @@ export default async function CourtCaseStatsPage() {
             All data is sourced from publicly available judgments on Singapore's official eLitigation portal.
           </p>
         </div>
+        </div>
       </div>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
@@ -122,7 +128,7 @@ export default async function CourtCaseStatsPage() {
           <div className="space-y-10 lg:col-span-3">
 
             {/* Practice Areas */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Cases by Practice Area</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 {practiceAreas[0] && `${practiceAreas[0].name} dominates with ${practiceAreas[0].case_count} published cases, involving ${practiceAreas[0].lawyer_count} lawyers.`}
@@ -134,7 +140,8 @@ export default async function CourtCaseStatsPage() {
                   const w = Math.max(10, Math.round((a.case_count / practiceAreas[0].case_count) * 100));
                   return (
                     <Link key={a.slug} href={`/lawyers/practice/${a.slug}`}
-                      className="block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
+                      className="fc-reveal block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm"
+                      style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-slate-700" : "bg-gray-400"}`}>{i + 1}</span>
@@ -156,7 +163,7 @@ export default async function CourtCaseStatsPage() {
 
             {/* Court Breakdown */}
             {courts.length >= 3 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Cases by Court</h2>
                 <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                   The {courts[0][0]} has the most published judgments ({courts[0][1].toLocaleString()}),
@@ -186,7 +193,7 @@ export default async function CourtCaseStatsPage() {
             )}
 
             {/* Top Firms */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Most Active Law Firms</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 These firms have the most appearances in published Singapore court judgments.
@@ -196,7 +203,8 @@ export default async function CourtCaseStatsPage() {
               <div className="mt-4 space-y-2">
                 {topFirms.slice(0, 10).map((f, i) => (
                   <Link key={f.slug} href={`/lawyers/firm/${f.slug}`}
-                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
+                    className="fc-reveal group flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm"
+                    style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                     <div className="flex items-center gap-3">
                       <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-slate-700" : "bg-gray-400"}`}>{i + 1}</span>
                       <div>
@@ -214,7 +222,7 @@ export default async function CourtCaseStatsPage() {
             </section>
 
             {/* Top Lawyers */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Most Active Lawyers</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 These lawyers have appeared in the most published court judgments. High activity
@@ -223,7 +231,8 @@ export default async function CourtCaseStatsPage() {
               <div className="mt-4 space-y-2">
                 {topLawyers.slice(0, 10).map((l, i) => (
                   <Link key={l.slug} href={`/lawyers/${l.slug}`}
-                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
+                    className="fc-reveal group flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm"
+                    style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                     <div className="flex items-center gap-3">
                       <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-slate-700" : "bg-gray-400"}`}>{i + 1}</span>
                       <div>
@@ -242,7 +251,7 @@ export default async function CourtCaseStatsPage() {
 
             {/* Yearly trend */}
             {years.length >= 3 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Published Judgments by Year</h2>
                 <div className="mt-4 overflow-x-auto">
                   <table className="w-full text-sm">
@@ -266,7 +275,7 @@ export default async function CourtCaseStatsPage() {
             )}
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
               <div className="mt-4 space-y-5">
                 {faqItems.map((f, i) => (
@@ -279,7 +288,8 @@ export default async function CourtCaseStatsPage() {
             </section>
 
             {/* CTA */}
-            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6">
+            <div className="fc-scene fc-scene--planner fc-reveal" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+            <div className="rounded-xl bg-white p-6">
               <h3 className="text-lg font-bold text-gray-900">Find a lawyer by practice area</h3>
               <p className="mt-2 text-[15px] text-gray-600">
                 Browse lawyers by their court case experience. All data from publicly available eLitigation.sg judgments.
@@ -293,12 +303,13 @@ export default async function CourtCaseStatsPage() {
                 ))}
               </div>
             </div>
+            </div>
 
             <p className="text-[11px] text-gray-400">Source: eLitigation.sg published court judgments. Analysis by FairComparisons. Disclaimer: case counts reflect published judgments only and do not represent the total volume of legal work.</p>
           </div>
 
           <aside className="space-y-6 lg:col-span-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Key Numbers</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-gray-500">Published judgments</dt><dd className="font-bold text-gray-900">{totalCases.toLocaleString()}</dd></div>
@@ -308,7 +319,7 @@ export default async function CourtCaseStatsPage() {
               </dl>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>
               <div className="mt-3 space-y-2">
                 <Link href="/insights/million-dollar-hdb" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Million-Dollar HDB Tracker</Link>

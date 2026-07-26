@@ -2,6 +2,8 @@ import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { formatPrice, formatPriceFull } from "../../lib/narrativeHelpers";
 import EmailCapture from "../../components/EmailCapture";
+import ScrollReveal from "../../components/ScrollReveal";
+import { CondoTower } from "../../components/LineArt";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -118,11 +120,13 @@ export default async function FreeholdPremiumPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Private Property</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Freehold Premium by District</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <CondoTower className="fc-lineart fc-float" width={96} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Private Property</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Freehold Premium by District</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             How much more does freehold cost than leasehold in each Singapore district? A data-driven breakdown based on {(totalFreehold + totalLeasehold).toLocaleString()} URA transactions.
           </p>
         </div>
@@ -130,7 +134,7 @@ export default async function FreeholdPremiumPage() {
 
       {/* Definition Block */}
       <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
-        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="fc-hero-in fc-hero-in--4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900">How much more does freehold cost in Singapore?</h2>
           <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
             Across {districtData.length} districts with sufficient data, freehold properties cost an average of <strong>{avgPremium}% more</strong> than
@@ -146,7 +150,7 @@ export default async function FreeholdPremiumPage() {
           <div className="space-y-10 lg:col-span-3">
 
             {/* Analysis */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">The Freehold Premium Explained</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -169,14 +173,16 @@ export default async function FreeholdPremiumPage() {
             </section>
 
             {/* District Table */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Freehold vs Leasehold by District</h2>
-              <div className="mt-4 space-y-2">
+              <div className="fc-scene fc-scene--planner mt-4" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+              <div className="space-y-2">
                 {districtData.map((d, i) => {
                   const barW = Math.max(10, Math.min(100, Math.round((d.premiumPct / highestPremium.premiumPct) * 100)));
                   return (
                     <Link key={d.district} href={`/property-agents/district/${d.districtSlug}`}
-                      className="block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
+                      className="fc-reveal block rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm"
+                      style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${i < 3 ? "bg-[var(--blue)]" : i < 10 ? "bg-[var(--blue)]" : "bg-gray-400"}`}>{i + 1}</span>
@@ -199,10 +205,12 @@ export default async function FreeholdPremiumPage() {
                   );
                 })}
               </div>
+              </div>
             </section>
 
             {/* Buyer advice */}
-            <section className="rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-6">
+            <div className="fc-scene fc-scene--grow fc-reveal" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
+            <section className="rounded-xl bg-white p-6">
               <h2 className="text-lg font-bold text-gray-900">Should You Buy Freehold or Leasehold?</h2>
               <div className="mt-3 space-y-3 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -223,9 +231,10 @@ export default async function FreeholdPremiumPage() {
                 </p>
               </div>
             </section>
+            </div>
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
               <div className="mt-4 space-y-5">
                 {faqItems.map((f, i) => (
@@ -241,7 +250,7 @@ export default async function FreeholdPremiumPage() {
           </div>
 
           <aside className="space-y-6 lg:col-span-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Key Numbers</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-gray-500">Avg premium</dt><dd className="font-bold text-[var(--blue)]">+{avgPremium}%</dd></div>
@@ -259,7 +268,7 @@ export default async function FreeholdPremiumPage() {
               description="New data analyses and market reports delivered to your inbox."
             />
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">More Insights</h3>
               <div className="mt-3 space-y-2">
                 <Link href="/insights/million-dollar-hdb" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Million-Dollar HDB Tracker</Link>

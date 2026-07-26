@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CeaAdvertChecker from "./CeaAdvertChecker";
 import { CEA_ADVERT_SOURCE_URL, CEA_PUBLIC_REGISTER_URL } from "../../lib/cea-advert";
+import ScrollReveal from "../../components/ScrollReveal";
+import { MrtTrain } from "../../components/LineArt";
 
 export const revalidate = 86400;
 
@@ -75,14 +77,16 @@ export default function CeaAdvertisingCheckerPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">Free tool for agents</div>
-          <h1>Is your listing ad<br /><span className="accent">CEA-compliant?</span></h1>
-          <p className="lp-hero__sub">
+      <ScrollReveal />
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <MrtTrain className="fc-lineart fc-float" width={110} style={{ position: "absolute", right: "6%", top: 28, color: "var(--line-dk)" }} />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">Free tool for agents</div>
+          <h1 className="fc-hero-in fc-hero-in--2">Is your listing ad<br /><span className="accent">CEA-compliant?</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             Paste your property advertisement and check it against CEA&#39;s requirements before you publish: registration number, agency licence, phone, and no misleading claims. Runs entirely in your browser.
           </p>
-          <div className="lp-hero__tags">
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">Checks CEA particulars</span>
             <span className="lp-hero__tag">Flags risky claims</span>
             <span className="lp-hero__tag">Nothing stored</span>
@@ -90,14 +94,14 @@ export default function CeaAdvertisingCheckerPage() {
         </div>
       </header>
 
-      <section className="lp-section">
+      <section className="lp-section" style={{ position: "relative" }}>
         <div className="fc-wrap" style={{ padding: "0 40px 56px" }}>
           <CeaAdvertChecker />
         </div>
       </section>
 
       <section className="lp-section--paper">
-        <div className="fc-wrap" style={{ padding: "56px 40px", maxWidth: 820 }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px", maxWidth: 820 }}>
           <h2 style={{ fontSize: "clamp(24px,3vw,32px)" }}>What CEA requires in a property advertisement</h2>
           <p className="muted" style={{ marginTop: 12, fontSize: 15.5, lineHeight: 1.7 }}>
             Every advertisement on a property portal, website or social channel must show:
@@ -119,7 +123,7 @@ export default function CeaAdvertisingCheckerPage() {
       </section>
 
       <section className="lp-section">
-        <div className="fc-wrap" style={{ padding: "56px 40px", maxWidth: 820 }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px", maxWidth: 820 }}>
           <h2 style={{ fontSize: "clamp(24px,3vw,32px)" }}>Frequently asked questions</h2>
           <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 18 }}>
             {FAQ.map(([q, a]) => (

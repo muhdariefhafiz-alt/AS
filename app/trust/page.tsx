@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "../lib/supabase";
 import DataLimits from "../components/DataLimits";
+import ScrollReveal from "../components/ScrollReveal";
 
 export const revalidate = 43200; // 12h
 
@@ -59,8 +60,8 @@ export default async function TrustPage() {
     ],
   };
 
-  const Stat = ({ n, l }: { n: string; l: string }) => (
-    <div className="fc-card fc-card--pad" style={{ textAlign: "center", background: "#fff" }}>
+  const Stat = ({ n, l, d }: { n: string; l: string; d?: string }) => (
+    <div className="fc-card fc-card--pad fc-reveal" style={{ textAlign: "center", background: "#fff", ["--reveal-delay" as string]: d }}>
       <div className="serif" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{n}</div>
       <div className="muted small" style={{ marginTop: 4 }}>{l}</div>
     </div>
@@ -70,13 +71,14 @@ export default async function TrustPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
 
+      <ScrollReveal />
       <header style={{ background: "var(--ink)", color: "#fff" }}>
         <div className="fc-wrap" style={{ padding: "60px 40px 52px" }}>
-          <div className="eyebrow" style={{ color: "var(--slate-2)", marginBottom: 16 }}>Trust &amp; data</div>
-          <h1 style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0, maxWidth: "20ch" }}>
+          <div className="eyebrow fc-hero-in fc-hero-in--1" style={{ color: "var(--slate-2)", marginBottom: 16 }}>Trust &amp; data</div>
+          <h1 className="fc-hero-in fc-hero-in--2" style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0, maxWidth: "20ch" }}>
             Built on government data, <span className="italic-serif">not advertising.</span>
           </h1>
-          <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16, maxWidth: "62ch" }}>
+          <p className="lede fc-hero-in fc-hero-in--3" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16, maxWidth: "62ch" }}>
             FairComparisons ranks every CEA-registered agent in Singapore on the public transaction record. Every number
             traces to a government source, and nothing on this site can be paid for. Here is exactly how it works.
           </p>
@@ -84,12 +86,12 @@ export default async function TrustPage() {
       </header>
 
       {/* Independence */}
-      <section className="fc-wrap" style={{ padding: "56px 40px" }}>
+      <section className="fc-wrap fc-reveal" style={{ padding: "56px 40px" }}>
         <div className="eyebrow">Independence</div>
         <h2 style={{ marginTop: 12 }}>Why you can trust the ranking.</h2>
         <div className="fc-grid-3" style={{ marginTop: 24 }}>
-          {GUARANTEES.map(([t, d]) => (
-            <div key={t} className="fc-card fc-card--pad">
+          {GUARANTEES.map(([t, d], i) => (
+            <div key={t} className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
               <div className="serif" style={{ fontWeight: 600, fontSize: 19 }}>{t}</div>
               <p className="muted" style={{ margin: "8px 0 0", fontSize: 14 }}>{d}</p>
             </div>
@@ -99,7 +101,7 @@ export default async function TrustPage() {
 
       {/* Sources + freshness */}
       <section style={{ background: "var(--cloud)" }}>
-        <div className="fc-wrap" style={{ padding: "56px 40px" }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px" }}>
           <div className="eyebrow">Where the data comes from</div>
           <h2 style={{ marginTop: 12 }}>Four sources, all auditable.</h2>
           {updated && (
@@ -108,8 +110,8 @@ export default async function TrustPage() {
             </p>
           )}
           <div className="fc-grid-2" style={{ marginTop: 24 }}>
-            {SOURCES.map(([t, d]) => (
-              <div key={t} className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+            {SOURCES.map(([t, d], i) => (
+              <div key={t} className="fc-card fc-card--pad fc-reveal" style={{ background: "#fff", ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                 <div className="serif" style={{ fontWeight: 600, fontSize: 18 }}>{t}</div>
                 <p className="muted" style={{ margin: "8px 0 0", fontSize: 14 }}>{d}</p>
               </div>
@@ -119,22 +121,22 @@ export default async function TrustPage() {
       </section>
 
       {/* Coverage */}
-      <section className="fc-wrap" style={{ padding: "56px 40px" }}>
+      <section className="fc-wrap fc-reveal" style={{ padding: "56px 40px" }}>
         <div className="eyebrow">Coverage</div>
         <h2 style={{ marginTop: 12 }}>The scale behind the scores.</h2>
         <div className="fc-grid-4" style={{ marginTop: 24 }}>
-          <Stat n={scored.toLocaleString()} l="Agents scored on real data" />
-          <Stat n={`${txns >= 1000 ? Math.round(txns / 1000).toLocaleString() + "k" : txns}+`} l="CEA transaction records" />
-          <Stat n={agencies.toLocaleString()} l="Agencies covered" />
-          <Stat n="28" l="Singapore districts" />
+          <Stat n={scored.toLocaleString()} l="Agents scored on real data" d="0s" />
+          <Stat n={`${txns >= 1000 ? Math.round(txns / 1000).toLocaleString() + "k" : txns}+`} l="CEA transaction records" d="0.06s" />
+          <Stat n={agencies.toLocaleString()} l="Agencies covered" d="0.12s" />
+          <Stat n="28" l="Singapore districts" d="0.18s" />
         </div>
       </section>
 
       {/* How we score + business model */}
       <section style={{ background: "var(--cloud)" }}>
-        <div className="fc-wrap" style={{ padding: "56px 40px" }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px" }}>
           <div className="fc-grid-2" style={{ gap: 24 }}>
-            <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+            <div className="fc-card fc-card--pad fc-reveal" style={{ background: "#fff", ["--reveal-delay" as string]: "0s" }}>
               <div className="eyebrow">How we score</div>
               <h2 style={{ marginTop: 10, fontSize: 24 }}>The AgentScore, in full.</h2>
               <p className="muted" style={{ marginTop: 8, fontSize: 14.5 }}>
@@ -147,7 +149,7 @@ export default async function TrustPage() {
                 <Link href="/ai/methodology.json" className="fc-btn fc-btn--quiet fc-btn--sm">Machine-readable</Link>
               </div>
             </div>
-            <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+            <div className="fc-card fc-card--pad fc-reveal" style={{ background: "#fff", ["--reveal-delay" as string]: "0.06s" }}>
               <div className="eyebrow">How we make money</div>
               <h2 style={{ marginTop: 10, fontSize: 24 }}>Paid by subscriptions, not by sales.</h2>
               <p className="muted" style={{ marginTop: 8, fontSize: 14.5 }}>
@@ -165,7 +167,7 @@ export default async function TrustPage() {
 
       {/* Google-rating caveat is specific to the score, not the raw record, so it
           stays here rather than in the shared data-limits panel. */}
-      <section className="fc-wrap" style={{ padding: "0 40px 56px", maxWidth: 880 }}>
+      <section className="fc-wrap fc-reveal" style={{ padding: "0 40px 56px", maxWidth: 880 }}>
         <p className="muted small" style={{ maxWidth: "70ch" }}>
           One more limit on the score itself: Google ratings are a minority input, capped at 15 of 100 points and
           corrected for review volume. They reflect client sentiment, not selling skill, and they can never move an agent
@@ -175,7 +177,7 @@ export default async function TrustPage() {
 
       {/* CTA */}
       <section className="fc-section fc-section--dark">
-        <div className="fc-wrap" style={{ textAlign: "center" }}>
+        <div className="fc-wrap fc-reveal" style={{ textAlign: "center" }}>
           <h2 style={{ color: "#fff" }}>Choose your agent on evidence.</h2>
           <p className="lede" style={{ margin: "14px auto 24px", textAlign: "center" }}>
             Compare the agents who actually sell homes like yours, ranked on the data above, then contact the ones you choose.

@@ -3,6 +3,8 @@ import Link from "next/link";
 import AffordabilityCalculator from "./AffordabilityCalculator";
 import EmbedSnippet from "./EmbedSnippet";
 import SellCtaBand from "../../components/SellCtaBand";
+import ScrollReveal from "../../components/ScrollReveal";
+import { MrtTrain } from "../../components/LineArt";
 import { MAS_RULES_VERIFIED_ON, MAS_TDSR_URL, MAS_LTV_URL } from "../../lib/affordability";
 
 export const revalidate = 86400;
@@ -76,14 +78,16 @@ export default function AffordabilityCalculatorPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">Free affordability calculator</div>
-          <h1>How much home <span className="accent">can you afford?</span></h1>
-          <p className="lp-hero__sub">
+      <ScrollReveal />
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <MrtTrain className="fc-lineart fc-float" width={110} style={{ position: "absolute", right: "6%", top: 28, color: "var(--line-dk)" }} />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">Free affordability calculator</div>
+          <h1 className="fc-hero-in fc-hero-in--2">How much home <span className="accent">can you afford?</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             See the maximum property price and loan you qualify for under Singapore&#39;s TDSR and MSR rules, stress-tested at 4%, with your downpayment split into cash and CPF.
           </p>
-          <div className="lp-hero__tags">
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">TDSR 55% + MSR 30%</span>
             <span className="lp-hero__tag">MAS rules verified {MAS_RULES_VERIFIED_ON}</span>
             <span className="lp-hero__tag">Free</span>
@@ -91,14 +95,14 @@ export default function AffordabilityCalculatorPage() {
         </div>
       </header>
 
-      <section className="lp-section">
+      <section className="lp-section" style={{ position: "relative" }}>
         <div className="fc-wrap" style={{ padding: "0 40px 56px" }}>
           <AffordabilityCalculator />
         </div>
       </section>
 
       <section className="lp-section--paper">
-        <div className="fc-wrap" style={{ padding: "56px 40px", maxWidth: 820 }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px", maxWidth: 820 }}>
           <h2 style={{ fontSize: "clamp(24px,3vw,32px)" }}>Frequently asked questions</h2>
           <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 18 }}>
             {FAQ.map(([q, a]) => (

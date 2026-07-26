@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import ScrollReveal from "../../components/ScrollReveal";
+import { KeyLine } from "../../components/LineArt";
 
 export const metadata: Metadata = {
   title: "HDB Resale Process in Singapore: Complete Step-by-Step Guide (2026)",
@@ -126,11 +128,13 @@ export default function HdbResaleProcessPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">HDB</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">HDB Resale Process: Step-by-Step Guide</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <KeyLine className="fc-lineart fc-float" width={88} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">HDB</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">HDB Resale Process: Step-by-Step Guide</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             The complete process for selling an HDB resale flat in Singapore, from eligibility check to key handover. Covers timeline, costs, the HDB Resale Portal, and the role of a property agent.
           </p>
         </div>
@@ -141,7 +145,7 @@ export default function HdbResaleProcessPage() {
           <article className="space-y-10">
 
             {/* Overview */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Overview</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -157,7 +161,7 @@ export default function HdbResaleProcessPage() {
             </section>
 
             {/* Timeline */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Step-by-Step Timeline</h2>
               <div className="mt-6 space-y-0">
                 {timelineSteps.map((s, i) => (
@@ -180,11 +184,12 @@ export default function HdbResaleProcessPage() {
             </section>
 
             {/* Costs */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Costs Involved in Selling an HDB Flat</h2>
-              <div className="mt-4 space-y-3">
-                {costItems.map((c) => (
-                  <div key={c.item} className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+              <div className="fc-scene fc-scene--planner mt-4" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+              <div className="space-y-3">
+                {costItems.map((c, i) => (
+                  <div key={c.item} className="fc-reveal rounded-lg border border-gray-100 bg-white p-4" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h3 className="font-semibold text-gray-900">{c.item}</h3>
@@ -195,6 +200,7 @@ export default function HdbResaleProcessPage() {
                   </div>
                 ))}
               </div>
+              </div>
               <p className="mt-4 text-[15px] leading-[1.75] text-gray-600">
                 For a detailed breakdown of agent fees, see our{" "}
                 <Link href="/guides/property-agent-commission" className="text-[var(--blue)] underline hover:text-[var(--blue-deep)]">guide on agent commission rates</Link>.
@@ -202,7 +208,7 @@ export default function HdbResaleProcessPage() {
             </section>
 
             {/* Role of the Agent */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">What Does a Property Agent Do in an HDB Resale?</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -227,7 +233,7 @@ export default function HdbResaleProcessPage() {
             </section>
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
@@ -243,6 +249,7 @@ export default function HdbResaleProcessPage() {
 
           {/* Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
+            <div className="fc-scene fc-scene--grow fc-reveal" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Find HDB Specialists</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Search for agents who have the strongest HDB resale track record in your town.</p>
@@ -250,14 +257,15 @@ export default function HdbResaleProcessPage() {
                 Search agents
               </Link>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            </div>
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">HDB Resources</h3>
               <ul className="mt-3 space-y-2 text-sm">
                 <li><a href="https://www.hdb.gov.sg/residential/selling-a-flat" target="_blank" rel="noopener noreferrer" className="text-[var(--blue)] hover:underline">HDB: Selling a Flat (official)</a></li>
                 <li><Link href="/insights/million-dollar-hdb" className="text-[var(--blue)] hover:underline">Million-Dollar HDB Tracker</Link></li>
               </ul>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
                 <li><Link href="/guides/property-agent-commission" className="text-sm text-[var(--blue)] hover:underline">Agent commission rates</Link></li>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import SellCtaBand from "../../components/SellCtaBand";
+import ScrollReveal from "../../components/ScrollReveal";
+import { KeyLine } from "../../components/LineArt";
 
 export const metadata: Metadata = {
   title: { absolute: "Property Agent Commission Singapore (2026) | FairComparisons" },
@@ -119,11 +121,13 @@ export default function PropertyAgentCommissionPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">Costs</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Property Agent Commission Rates in Singapore</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <KeyLine className="fc-lineart fc-float" width={88} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">Costs</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Property Agent Commission Rates in Singapore</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             How much do property agents charge? A clear breakdown of commission rates for HDB, condo, landed, new launches, and rental transactions. All rates reflect current market norms, not fixed regulations.
           </p>
         </div>
@@ -134,7 +138,8 @@ export default function PropertyAgentCommissionPage() {
           <article className="space-y-10">
 
             {/* Key Point */}
-            <div className="rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-6">
+            <div className="fc-reveal fc-scene fc-scene--grow" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
+            <div className="rounded-xl border border-[var(--line)] bg-white p-6">
               <h2 className="text-lg font-bold text-gray-900">The key thing to know</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 There is no legally fixed property agent commission rate in Singapore. The Council for Estate Agencies (CEA) does not set rates. The percentages below are market norms that have been stable for years, but they are always negotiable between agent and client. Always agree on the rate in writing before signing an agency agreement.
@@ -145,13 +150,14 @@ export default function PropertyAgentCommissionPage() {
                 found the median agent who does sell closes about one home a year, so who you hire matters far more than shaving 0.25% off the rate.
               </p>
             </div>
+            </div>
 
             {/* Commission Table */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Commission Rates by Property Type</h2>
               <div className="mt-4 space-y-4">
-                {commissionRates.map((r) => (
-                  <div key={r.type} className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                {commissionRates.map((r, i) => (
+                  <div key={r.type} className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                     <h3 className="text-[15px] font-bold text-gray-900">{r.type}</h3>
                     <div className="mt-3 grid grid-cols-2 gap-3">
                       <div className="rounded-lg bg-gray-50 p-3">
@@ -170,12 +176,13 @@ export default function PropertyAgentCommissionPage() {
             </section>
 
             {/* Worked examples */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">How Much Will You Actually Pay?</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 Because commission is a percentage of the price, the dollar amount scales with your property. Here is what a seller typically pays at current market rates, before GST:
               </p>
-              <div className="mt-4 overflow-x-auto">
+              <div className="fc-scene fc-scene--planner mt-4" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+              <div className="overflow-x-auto rounded-xl bg-white p-4">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-gray-400">
@@ -193,6 +200,7 @@ export default function PropertyAgentCommissionPage() {
                   </tbody>
                 </table>
               </div>
+              </div>
               <p className="mt-4 text-[15px] leading-[1.75] text-gray-600">
                 <strong>Rental agent fee:</strong> for a residential lease, the landlord typically pays 1 month&apos;s rent on a 2-year lease (0.5 month on a 1-year lease), and the tenant may pay 0.5 to 1 month. On a S$3,500 per month flat, that is about S$3,500 for the landlord on a 2-year lease. If the agency is GST-registered, add 9% GST on top of any commission.
               </p>
@@ -205,7 +213,7 @@ export default function PropertyAgentCommissionPage() {
             </section>
 
             {/* What's Included */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">What Is Included in the Commission?</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -226,7 +234,7 @@ export default function PropertyAgentCommissionPage() {
             </section>
 
             {/* Buyer vs Seller */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Buyer vs Seller Commission</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -245,7 +253,7 @@ export default function PropertyAgentCommissionPage() {
             </section>
 
             {/* Portal fees vs commission */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Portal Fees vs Agent Commission: What Is the 99.co or PropertyGuru Fee?</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -262,7 +270,7 @@ export default function PropertyAgentCommissionPage() {
             </section>
 
             {/* Negotiation Tips */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Negotiating Commission</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -278,7 +286,7 @@ export default function PropertyAgentCommissionPage() {
             </section>
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
@@ -294,21 +302,21 @@ export default function PropertyAgentCommissionPage() {
 
           {/* Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Compare Agents</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">See how agents compare on transaction volume, area specialization, and client reviews.</p>
               <Link href="/property-agents/compare" className="mt-4 block rounded-lg bg-[var(--blue)] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
                 Compare agents
               </Link>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">For Agents</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Your profile and AgentScore are already live. Claim it to add contact details and manage your listing.</p>
               <Link href="/for-agents" className="mt-4 block rounded-lg border border-[var(--line-2)] px-4 py-2.5 text-center text-sm font-semibold text-[var(--blue-deep)] transition hover:bg-[var(--blue-wash)]">
                 Claim your profile
               </Link>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
                 <li><Link href="/tools/commission-calculator" className="text-sm font-semibold text-[var(--blue)] hover:underline">Commission calculator (free tool)</Link></li>

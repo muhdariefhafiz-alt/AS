@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import ScrollReveal from "../../components/ScrollReveal";
+import { KeyLine } from "../../components/LineArt";
 
 export const metadata: Metadata = {
   title: "Selling Property Without an Agent in Singapore: DIY Guide (2026)",
@@ -103,11 +105,13 @@ export default function PropertyAgentVsDiyPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">DIY</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Selling Property Without an Agent in Singapore</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+      <ScrollReveal />
+      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white" style={{ position: "relative", overflow: "hidden" }}>
+        <KeyLine className="fc-lineart fc-float" width={88} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
+        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">DIY</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Selling Property Without an Agent in Singapore</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             Can you sell your property without an agent? A practical breakdown of what agents do, which tasks you can handle yourself, and when it makes sense to go solo vs hiring a professional.
           </p>
         </div>
@@ -118,7 +122,7 @@ export default function PropertyAgentVsDiyPage() {
           <article className="space-y-10">
 
             {/* Overview */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">The Short Answer</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -134,11 +138,12 @@ export default function PropertyAgentVsDiyPage() {
             </section>
 
             {/* Task Breakdown */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">What Does an Agent Actually Do?</h2>
-              <div className="mt-4 space-y-4">
-                {agentTasks.map((t) => (
-                  <div key={t.task} className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+              <div className="fc-scene fc-scene--planner mt-4" style={{ padding: "clamp(14px,2.5vw,20px)" }}>
+              <div className="space-y-4">
+                {agentTasks.map((t, i) => (
+                  <div key={t.task} className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s` }}>
                     <div className="flex items-start justify-between gap-3">
                       <h3 className="text-[15px] font-bold text-gray-900">{t.task}</h3>
                       <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
@@ -155,10 +160,11 @@ export default function PropertyAgentVsDiyPage() {
                   </div>
                 ))}
               </div>
+              </div>
             </section>
 
             {/* When DIY Makes Sense */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">When DIY Makes Sense</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -175,7 +181,7 @@ export default function PropertyAgentVsDiyPage() {
             </section>
 
             {/* When to Hire an Agent */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">When to Hire an Agent</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -199,7 +205,7 @@ export default function PropertyAgentVsDiyPage() {
             </section>
 
             {/* Legal Requirements */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Legal Requirements for DIY Sellers</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -220,7 +226,7 @@ export default function PropertyAgentVsDiyPage() {
             </section>
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
               <div className="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-100">
                 {faqItems.map((f) => (
@@ -236,6 +242,7 @@ export default function PropertyAgentVsDiyPage() {
 
           {/* Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
+            <div className="fc-reveal fc-scene fc-scene--grow" style={{ padding: "clamp(10px,1.6vw,14px)" }}>
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Decided to Hire an Agent?</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Compare agents on actual transaction data. Find the best-performing agents in your area.</p>
@@ -243,14 +250,15 @@ export default function PropertyAgentVsDiyPage() {
                 Search agents
               </Link>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            </div>
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Compare Side by Side</h3>
               <p className="mt-2 text-xs leading-relaxed text-gray-500">Pick any two agents and compare their transaction history, area focus, and AgentScore breakdown.</p>
               <Link href="/property-agents/compare" className="mt-4 block rounded-lg border border-[var(--line-2)] px-4 py-2.5 text-center text-sm font-semibold text-[var(--blue-deep)] transition hover:bg-[var(--blue-wash)]">
                 Compare agents
               </Link>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
                 <li><Link href="/guides/property-agent-commission" className="text-sm text-[var(--blue)] hover:underline">Agent commission rates</Link></li>

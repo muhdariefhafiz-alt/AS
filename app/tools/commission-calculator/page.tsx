@@ -3,6 +3,8 @@ import Link from "next/link";
 import CommissionCalculator from "./CommissionCalculator";
 import EmbedSnippet from "./EmbedSnippet";
 import SellCtaBand from "../../components/SellCtaBand";
+import ScrollReveal from "../../components/ScrollReveal";
+import { MrtTrain } from "../../components/LineArt";
 
 export const revalidate = 86400;
 
@@ -50,14 +52,16 @@ export default function CommissionCalculatorPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">Free commission calculator</div>
-          <h1>How much agent commission<br /><span className="accent">will you actually pay?</span></h1>
-          <p className="lp-hero__sub">
+      <ScrollReveal />
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <MrtTrain className="fc-lineart fc-float" width={110} style={{ position: "absolute", right: "6%", top: 28, color: "var(--line-dk)" }} />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">Free commission calculator</div>
+          <h1 className="fc-hero-in fc-hero-in--2">How much agent commission<br /><span className="accent">will you actually pay?</span></h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             Calculate property agent commission in Singapore for HDB, condo, landed and rental, with GST. Based on real market rates, not a sales pitch.
           </p>
-          <div className="lp-hero__tags">
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">HDB, condo, landed, rental</span>
             <span className="lp-hero__tag">Includes 9% GST</span>
             <span className="lp-hero__tag">Free</span>
@@ -65,14 +69,14 @@ export default function CommissionCalculatorPage() {
         </div>
       </header>
 
-      <section className="lp-section">
+      <section className="lp-section" style={{ position: "relative" }}>
         <div className="fc-wrap" style={{ padding: "0 40px 56px" }}>
           <CommissionCalculator />
         </div>
       </section>
 
       <section className="lp-section--paper">
-        <div className="fc-wrap" style={{ padding: "56px 40px", maxWidth: 820 }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px", maxWidth: 820 }}>
           <h2 style={{ fontSize: "clamp(24px,3vw,32px)" }}>Frequently asked questions</h2>
           <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 18 }}>
             {FAQ.map(([q, a]) => (
