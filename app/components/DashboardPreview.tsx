@@ -1,10 +1,49 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import CountUp from "./CountUp";
+
 // Product-forward hero visual (the housapp move): a miniature, non-interactive
 // render of the REAL agent dashboard Home tab, built from the same design
-// tokens. Pure JSX/CSS (crisp at any DPI, no screenshot asset, no fake person —
-// values are clearly illustrative UI states). aria-hidden: decorative.
+// tokens. Choreographed like the scene demos: standing card lands, the score
+// counts up, a worklist item ARRIVES, the profile bar fills, the next action
+// pops. Values are illustrative and deliberately match no real agent (the
+// previous 89/Yishun combination mirrored an actual claimed agent's stats).
+// Server HTML renders the final state; reduced-motion/no-JS see it complete.
+// aria-hidden: decorative.
 export default function DashboardPreview() {
+  const [step, setStep] = useState(4); // server state = fully played
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timers: number[] = [];
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting) || started.current) return;
+        started.current = true;
+        io.disconnect();
+        setStep(0);
+        timers.push(window.setTimeout(() => setStep(1), 350)); // standing lands
+        timers.push(window.setTimeout(() => setStep(2), 1050)); // worklist arrives
+        timers.push(window.setTimeout(() => setStep(3), 1700)); // bar fills
+        timers.push(window.setTimeout(() => setStep(4), 2350)); // action pops
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      timers.forEach((t) => window.clearTimeout(t));
+    };
+  }, []);
+
   return (
     <div
+      ref={ref}
       aria-hidden="true"
       style={{
         maxWidth: 660,
@@ -53,18 +92,20 @@ export default function DashboardPreview() {
           ))}
         </div>
 
-        {/* Mini standing */}
-        <div style={{ marginTop: 12, borderRadius: 10, background: "var(--blue-wash)", padding: "12px 14px" }}>
+        {/* Mini standing: lands first, score counts up */}
+        <div className="fc-cue" data-on={step >= 1 ? "1" : undefined} style={{ marginTop: 12, borderRadius: 10, background: "var(--blue-wash)", padding: "12px 14px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 9, letterSpacing: 1.2, fontWeight: 700, color: "var(--slate)" }}>YOUR STANDING</span>
-            <span style={{ fontSize: 10, fontWeight: 700, background: "#fff", borderRadius: 999, padding: "3px 9px", color: "var(--ink)" }}>AgentScore 89</span>
+            <span style={{ fontSize: 10, fontWeight: 700, background: "#fff", borderRadius: 999, padding: "3px 9px", color: "var(--ink)" }}>
+              AgentScore <CountUp value={84} duration={900} />
+            </span>
           </div>
-          <div className="serif" style={{ fontSize: 17, fontWeight: 600, color: "var(--blue-deep)", marginTop: 5 }}>Top 25% of agents in Yishun</div>
+          <div className="serif" style={{ fontSize: 17, fontWeight: 600, color: "var(--blue-deep)", marginTop: 5 }}>Top 25% of agents in Tampines</div>
           <div style={{ fontSize: 10.5, color: "var(--slate)", marginTop: 3 }}>Computed from official CEA transaction records.</div>
         </div>
 
-        {/* Mini worklist */}
-        <div style={{ marginTop: 10, borderRadius: 10, border: "1px solid var(--line)", borderLeft: "3px solid var(--ok)", padding: "10px 13px" }}>
+        {/* Mini worklist: the enquiry ARRIVES */}
+        <div className="fc-cue" data-on={step >= 2 ? "1" : undefined} style={{ marginTop: 10, borderRadius: 10, border: "1px solid var(--line)", borderLeft: "3px solid var(--ok)", padding: "10px 13px" }}>
           <span style={{ fontSize: 9, letterSpacing: 1.2, fontWeight: 700, color: "var(--ok)" }}>WHAT NEEDS YOU TODAY</span>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6, fontSize: 11.5, color: "var(--ink)" }}>
             <span><strong>1</strong> seller enquiry is awaiting your quote</span>
@@ -72,16 +113,23 @@ export default function DashboardPreview() {
           </div>
         </div>
 
-        {/* Mini completeness */}
-        <div style={{ marginTop: 10, borderRadius: 10, border: "1px solid var(--line)", borderLeft: "3px solid var(--blue)", padding: "10px 13px" }}>
+        {/* Mini completeness: bar fills, then the next action pops */}
+        <div className="fc-cue" data-on={step >= 3 ? "1" : undefined} style={{ marginTop: 10, borderRadius: 10, border: "1px solid var(--line)", borderLeft: "3px solid var(--blue)", padding: "10px 13px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--ink)" }}>Finish your profile — 80% done</span>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--ink)" }}>Finish your profile: 80% done</span>
             <span style={{ fontSize: 10, color: "var(--slate)" }}>4 of 5 steps</span>
           </div>
           <div style={{ marginTop: 7, height: 6, borderRadius: 999, background: "var(--cloud)", overflow: "hidden" }}>
-            <div style={{ width: "80%", height: "100%", background: "var(--blue)" }} />
+            <div
+              style={{
+                width: step >= 3 ? "80%" : "20%",
+                height: "100%",
+                background: "var(--blue)",
+                transition: "width .9s cubic-bezier(.22,1,.32,1)",
+              }}
+            />
           </div>
-          <span style={{ display: "inline-block", marginTop: 8, fontSize: 10.5, fontWeight: 700, color: "#fff", background: "var(--blue)", borderRadius: 7, padding: "5px 10px" }}>
+          <span className="fc-cue fc-cue--pop" data-on={step >= 4 ? "1" : undefined} style={{ display: "inline-block", marginTop: 8, fontSize: 10.5, fontWeight: 700, color: "#fff", background: "var(--blue)", borderRadius: 7, padding: "5px 10px" }}>
             Add your WhatsApp →
           </span>
         </div>

@@ -131,11 +131,25 @@ export default async function ForAgentsPage() {
           actions appear). The AI-drafted replies are a live dashboard feature. */}
       <section className="lp-section">
         <div className="fc-wrap" style={{ padding: "8px 40px 64px" }}>
+          {/* Honest state marker: AI drafts are live in the dashboard, but the
+              full two-way reply loop is still being switched on. */}
+          <p className="fc-reveal" style={{ textAlign: "center", margin: "0 0 12px" }}>
+            <span
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 7, background: "var(--blue-wash)",
+                color: "var(--blue-deep)", borderRadius: 999, padding: "5px 14px", fontSize: 12,
+                fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--blue)" }} />
+              Coming soon
+            </span>
+          </p>
           <h2 className="fc-reveal" style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)", maxWidth: "24ch", margin: "0 auto" }}>
             Every enquiry answered <span className="accent">while it&apos;s hot.</span>
           </h2>
           <p className="muted fc-reveal" style={{ textAlign: "center", maxWidth: "56ch", margin: "12px auto 26px" }}>
-            Seller and buyer enquiries land in your dashboard with an AI-drafted reply grounded in your own record. Read, adjust, send.
+            Seller and buyer enquiries will land in your dashboard with an AI-drafted reply grounded in your own record. Read, adjust, send. Rolling out to claimed agents first.
           </p>
           <div className="fc-scene fc-scene--inbox fc-reveal">
             <Shophouse className="fc-lineart fc-float" width={110} style={{ position: "absolute", right: 22, bottom: 14 }} />
