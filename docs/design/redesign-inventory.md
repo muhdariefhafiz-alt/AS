@@ -108,3 +108,49 @@ post-deploy marker + anonymity checks -> USER visual gate before next wave.
 Wave 3a (Group A) -> 3b (B) -> 3c (C) -> 3d (D) -> 3e (E) -> 3f (F) -> 3g (G).
 P1 first because activation outreach lands on A+B; C next because it is 99%
 of indexed URLs; D before E because money moments outrank reading moments.
+
+---
+
+# Execution plan (agreed 2026-07-26)
+
+## The quality mechanism (how aesthetics survive scale)
+
+1. **Lab-first rule.** Every NEW primitive or section composition debuts in
+   /design-lab and passes the owner's eye BEFORE touching a real page. The lab
+   is the contract; real pages only compose approved pieces.
+2. **One bespoke moment per page.** Every redesigned page gets exactly one
+   thesis moment designed by hand for THAT page (its own demo, hero, or data
+   moment). Everything else composes the kit. This is the anti-slop rule:
+   composition is shared, the soul is per-page.
+3. **Single hand on composition, fan-out on application.** New primitives,
+   hero theses and section rhythms are designed centrally. Parallel agents only
+   apply locked specs to sibling pages (the 7 alternatives, the 17 SEO
+   templates, the 14 guides/insights), and every fanned-out page is browser-
+   reviewed centrally afterward. No agent invents design.
+4. **Verification is the same every wave** (non-negotiable, live product):
+   tsc + eslint -> link-inventory diff per page -> local scroll-through at
+   375/860/1280 + console + choreography check -> push (git deploy only) ->
+   post-deploy marker + anonymity checks -> owner scrolls -> gate verdict.
+5. **Floors.** Performance: no LCP regression, scenes are CSS, zero JS added
+   to programmatic templates (3c is static-only treatment). Honesty: live
+   counts only, no invented numbers, testimonials or logos, privacy/terms
+   structure untouched. Consistency: zero new colors or fonts outside
+   globals.css tokens.
+
+## Per-wave specs
+
+| Wave | New primitives to design in lab FIRST | Pages | Fan-out? |
+|---|---|---|---|
+| 3a | JourneyDemo (seller compare->shortlist->quotes choreography), QuoteCardsDemo (quotes arriving as cards) | /, /sell, /search, /property-agents | No: all four by hand |
+| 3b | GrowDemo (CountUp trilogy completion), comparison-shell composition | features, grow, planner, lead-gen, 4 feature shells, 8 comparison pages, invite/claim-success | Yes: shells + alternatives after spec locked |
+| 3c | HeroBand (compact programmatic hero), unified statchip/icon row, skyline pre-footer divider | 17 templates / ~39k URLs | Yes: shared components by hand, template application fanned |
+| 3d | Decision-surface polish kit (quote card, progress spine, confirmation states) | picker, quotes, contact, review, book, 2 results, report | No: money moments by hand |
+| 3e | Editorial template (serif scale, pull-quotes, line-art vignettes), data-editorial chart styling | 8 tools, 14 guides+insights, 7 company pages, privacy/terms typography | Yes: guides/insights after template locked |
+| 3f | Product-chrome kit (scene section headers, empty states from lab) | dashboard, contacts workspace, sign-in state | No: product by hand, feature-regression tested |
+| 3g | OG image template (skyline + serif), email accent pass, 404 vignette | 5 embeds, emailShell, OG, not-found | Partly |
+
+## Cadence
+
+One wave per working session, gate between each. Order 3a -> 3g as listed.
+Estimated 7-9 sessions total. Wave 3a starts only after Gate 2 (live
+/for-agents) passes the owner's scroll.
