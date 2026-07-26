@@ -5,6 +5,8 @@ import ProductBox from "../../components/ProductBox";
 import { WidgetMock } from "../../components/mocks";
 import ScrollReveal from "../../components/ScrollReveal";
 import GrowDemo from "../../components/demos/GrowDemo";
+import { DealRadarDemo, ReportDemo, WidgetDemo } from "../../components/demos/FeatureDemos";
+import CountUp from "../../components/CountUp";
 import { KeyLine, SkylineStrip } from "../../components/LineArt";
 
 export const revalidate = 86400;
@@ -95,20 +97,50 @@ export default async function GrowPage() {
             mockup={<WidgetMock />}
             cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
           />
-          {FEATURES.map((f) => (
-            <div key={f.kicker} className="fc-card fc-card--pad" style={{ background: "#fff" }}>
-              <p className="kicker" style={{ color: "var(--blue-deep)" }}>{f.kicker}</p>
-              <h2 className="serif" style={{ fontSize: "clamp(21px,2.6vw,28px)", fontWeight: 600, margin: "6px 0 0", color: "var(--ink)" }}>{f.title}</h2>
-              <p className="muted" style={{ marginTop: 10, fontSize: 15.5, lineHeight: 1.7, maxWidth: "68ch" }}>{f.body}</p>
-              <ul style={{ marginTop: 14, paddingLeft: 0, listStyle: "none", display: "flex", flexWrap: "wrap", gap: "8px 20px" }}>
-                {f.points.map((p) => (
-                  <li key={p} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14, color: "var(--slate)" }}>
-                    <span style={{ color: "var(--blue)", fontWeight: 700 }}>+</span> {p}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Each Grow feature performs itself in its own colour world
+              (Gate-3b feedback: bespoke visuals, not text cards). */}
+          {FEATURES.map((f, fi) => {
+            const DEMOS: Record<string, React.ReactNode> = {
+              "Deal Radar": <div className="fc-scene fc-scene--grow"><DealRadarDemo /></div>,
+              "Co-branded seller reports": <div className="fc-scene fc-scene--inbox"><ReportDemo /></div>,
+              "Lead widget": <div className="fc-scene fc-scene--planner" style={{ paddingBottom: 40 }}><WidgetDemo /></div>,
+              "Embeddable tools": (
+                <div className="fc-scene fc-scene--ink" style={{ textAlign: "center" }}>
+                  <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                    {["Stamp duty", "Affordability", "Net proceeds", "Commission"].map((t) => (
+                      <span key={t} style={{ background: "rgba(255,255,255,0.12)", color: "#fff", borderRadius: 999, padding: "6px 14px", fontSize: 12.5, fontWeight: 700 }}>{t}</span>
+                    ))}
+                  </div>
+                  <div className="fc-scene__card" style={{ maxWidth: 300, margin: "16px auto 0", padding: "16px 18px" }}>
+                    <div className="muted" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>BSD on S$720,000</div>
+                    <div style={{ fontSize: 30, fontWeight: 700, color: "var(--ink)", fontVariantNumeric: "tabular-nums" }}>
+                      S$<CountUp value={21600} duration={1200} />
+                    </div>
+                    <div className="muted" style={{ fontSize: 11.5 }}>Verified against IRAS rates</div>
+                  </div>
+                </div>
+              ),
+            };
+            const demo = DEMOS[f.kicker] ?? null;
+            const flip = fi % 2 === 1;
+            return (
+              <div key={f.kicker} className="fc-grid-2 fc-reveal" style={{ gap: 40, alignItems: "center" }}>
+                <div style={{ order: flip ? 2 : 1 }}>
+                  <p className="kicker" style={{ color: "var(--blue-deep)" }}>{f.kicker}</p>
+                  <h2 className="serif" style={{ fontSize: "clamp(21px,2.6vw,28px)", fontWeight: 600, margin: "6px 0 0", color: "var(--ink)" }}>{f.title}</h2>
+                  <p className="muted" style={{ marginTop: 10, fontSize: 15.5, lineHeight: 1.7 }}>{f.body}</p>
+                  <ul style={{ marginTop: 14, paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+                    {f.points.map((p) => (
+                      <li key={p} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14, color: "var(--slate)" }}>
+                        <span style={{ color: "var(--blue)", fontWeight: 700 }}>+</span> {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div style={{ order: flip ? 1 : 2 }}>{demo}</div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -132,11 +164,16 @@ export default async function GrowPage() {
         </div>
       </section>
 
-      <section className="lp-hero">
-        <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px" }}>
+      <section className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <SkylineStrip
+          className="fc-lineart"
+          width={720}
+          style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: -8, color: "var(--line-dk)", maxWidth: "96%" }}
+        />
+        <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px 92px", position: "relative" }}>
           <h2 style={{ color: "#fff", fontSize: "clamp(26px,3vw,34px)" }}>Your profile is already live. Claim it free to start growing.</h2>
           <p className="lp-hero__sub" style={{ margin: "12px auto 22px" }}>No credit card, no listing fees, no pay-to-rank. Just your track record, working for you.</p>
-          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
         </div>
       </section>
     </>

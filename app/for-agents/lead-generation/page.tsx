@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { supabase } from "../../lib/supabase";
+import { WorkflowChain } from "../../components/demos/FeatureDemos";
+import { Icon } from "../../components/Icons";
 import ProductBox from "../../components/ProductBox";
 import { SellerCompareMock } from "../../components/mocks";
 
@@ -122,6 +124,22 @@ export default async function LeadGenerationPage() {
               Find your profile
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* The journey performing itself: search > found > enquiry (housapp chain) */}
+      <section className="mx-auto max-w-[1120px] px-5 pt-12 md:px-8">
+        <div className="fc-scene fc-scene--grow">
+          <div className="text-center" style={{ marginBottom: 18 }}>
+            <p className="kicker" style={{ color: "var(--ok)" }}>How a search becomes your lead</p>
+          </div>
+          <WorkflowChain
+            steps={[
+              { icon: <Icon.Search size={18} />, title: "A seller searches their area", sub: '"best property agent Bishan"' },
+              { icon: <Icon.TrendUp size={18} />, title: "They find you, ranked on the record", sub: "Your AgentScore and real transactions" },
+              { icon: <Icon.Mail size={18} />, title: "The enquiry lands in your inbox", sub: "With an AI draft ready to send" },
+            ]}
+          />
         </div>
       </section>
 

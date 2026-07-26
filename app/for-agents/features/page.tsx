@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getAgentStats } from "../../lib/agentStats";
 import ProductBox from "../../components/ProductBox";
 import { InboxMock } from "../../components/mocks";
+import PlannerDemo from "../../components/demos/PlannerDemo";
+import { DealRadarDemo, WidgetDemo } from "../../components/demos/FeatureDemos";
 
 export const revalidate = 86400;
 
@@ -156,6 +158,16 @@ export default async function FeaturesHubPage() {
             <p className="kicker" style={{ color: "var(--blue-deep)", textAlign: "center" }}>Pillar {pi + 1}</p>
             <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,32px)", marginTop: 6 }}>{p.pillar}</h2>
             <p className="muted" style={{ textAlign: "center", maxWidth: "56ch", margin: "10px auto 0" }}>{p.story}</p>
+            {/* Each pillar demos itself before listing its tools. */}
+            {p.pillar === "Win the listing" && (
+              <div className="fc-scene fc-scene--grow" style={{ marginTop: 26 }}><DealRadarDemo /></div>
+            )}
+            {p.pillar === "Run the deal" && (
+              <div className="fc-scene fc-scene--planner" style={{ marginTop: 26 }}><PlannerDemo /></div>
+            )}
+            {p.pillar === "Grow your name" && (
+              <div className="fc-scene fc-scene--inbox" style={{ marginTop: 26, paddingBottom: 44 }}><WidgetDemo /></div>
+            )}
             <div className="fc-grid-3" style={{ marginTop: 28 }}>
               {p.items.map((i) => (
                 <Link key={i.name + i.href} href={i.href} className="fc-card fc-card--pad" style={{ background: "#fff", display: "block", textDecoration: "none" }}>

@@ -544,6 +544,40 @@ a.dev--link:hover .dev__name{color:var(--blue-deep);}
   .fc-cue--pop{ transform:scale(.7); }
   .fc-cue--pop[data-on="1"]{ transition:opacity .35s ease-out, transform .45s cubic-bezier(.2,1.6,.35,1); }
 }
+/* Workflow chain (housapp style): step cards linked by dotted connectors that
+   draw in as each step lands. The connector is a bordered element, not SVG. */
+.fc-chain__link{ width:2px; height:26px; margin:2px 0 2px 27px;
+  border-left:2px dotted var(--line-2); }
+@media(prefers-reduced-motion: no-preference){
+  .fc-chain__link{ transform-origin:top; transform:scaleY(0); transition:transform .4s ease-out; }
+  .fc-chain__link[data-on="1"]{ transform:scaleY(1); }
+}
+
+/* Demo cursor: a small dot that glides to a target and "clicks" (scale pulse).
+   Positioned absolutely inside a mockup; coordinates set per demo via CSS vars. */
+.fc-democursor{ position:absolute; width:14px; height:14px; border-radius:50%;
+  background:var(--ink); opacity:0; box-shadow:0 0 0 3px rgba(255,255,255,0.7); z-index:3;
+  left:var(--cx-from, 80%); top:var(--cy-from, 80%); }
+@media(prefers-reduced-motion: no-preference){
+  .fc-democursor[data-on="1"]{ animation:fcCursorGo 1.15s cubic-bezier(.4,.1,.2,1) forwards; }
+}
+@keyframes fcCursorGo{
+  0%{ opacity:0; left:var(--cx-from, 80%); top:var(--cy-from, 80%); transform:scale(1); }
+  18%{ opacity:1; }
+  70%{ left:var(--cx-to, 50%); top:var(--cy-to, 50%); transform:scale(1); }
+  82%{ transform:scale(0.72); }
+  100%{ opacity:0; left:var(--cx-to, 50%); top:var(--cy-to, 50%); transform:scale(1); }
+}
+
+/* Radar ping for the Deal Radar demo. */
+.fc-ping{ position:relative; }
+.fc-ping::after{ content:""; position:absolute; inset:0; border-radius:50%;
+  border:2px solid var(--ok); opacity:0; }
+@media(prefers-reduced-motion: no-preference){
+  .fc-ping::after{ animation:fcPing 2.4s ease-out infinite; }
+}
+@keyframes fcPing{ 0%{ opacity:.8; transform:scale(1); } 70%{ opacity:0; transform:scale(2.1); } 100%{ opacity:0; } }
+
 /* Ambient float: scenes never sit frozen. Very slow, very small. */
 @media(prefers-reduced-motion: no-preference){
   .fc-float{ animation:fcFloat 7s ease-in-out infinite alternate; animation-delay:var(--float-delay, 0s); }
