@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../../lib/supabase";
 import { titleName, cleanAgency } from "../../../../lib/names";
+import ScrollReveal from "../../../../components/ScrollReveal";
 
 export const revalidate = 86400;
 
@@ -70,11 +71,16 @@ export default async function SellerReportPage({
   const showPhoto = agent.photo_url && agent.photo_status === "approved";
   const isHdb = type === "town";
 
+  // Max over the 8 rows actually shown, so every bar is relative to this list.
+  const shownPrices = sales.slice(0, 8).map((s) => Number(s.price)).filter((n) => n > 0);
+  const maxPrice = shownPrices.length ? Math.max(...shownPrices) : null;
+
   return (
     <div style={{ background: "var(--paper, #f7f8fb)", minHeight: "100vh" }}>
+      <ScrollReveal />
       <div className="fc-wrap" style={{ maxWidth: 780, padding: "32px 24px 64px" }}>
         {/* Agent header */}
-        <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+        <div className="fc-card fc-card--pad fc-hero-in fc-hero-in--1" style={{ background: "#fff" }}>
           <div className="fc-row" style={{ gap: 16, alignItems: "center", flexWrap: "wrap" }}>
             {showPhoto ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -99,7 +105,7 @@ export default async function SellerReportPage({
         </div>
 
         {/* Report title */}
-        <div style={{ marginTop: 24 }}>
+        <div className="fc-hero-in fc-hero-in--2" style={{ marginTop: 24 }}>
           <p className="kicker" style={{ color: "var(--blue-deep)" }}>Market report, prepared for you</p>
           <h1 className="serif" style={{ fontSize: "clamp(26px,4vw,36px)", fontWeight: 600, margin: "6px 0 0", color: "var(--ink)" }}>
             What&#39;s selling in {area}
@@ -109,32 +115,39 @@ export default async function SellerReportPage({
           </p>
         </div>
 
-        {/* Stat cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 14, marginTop: 20 }}>
-          <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
-            <div className="kicker">Recent transactions</div>
-            <div className="serif tnum" style={{ fontSize: 28, fontWeight: 600, marginTop: 2 }}>{sales.length}</div>
-            <div className="muted small">latest deals on record</div>
-          </div>
-          <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
-            <div className="kicker">Median price</div>
-            <div className="serif tnum" style={{ fontSize: 28, fontWeight: 600, marginTop: 2 }}>{median != null ? money(median) : "—"}</div>
-            <div className="muted small">across these deals</div>
-          </div>
-          <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
-            <div className="kicker">Most recent</div>
-            <div className="serif tnum" style={{ fontSize: 28, fontWeight: 600, marginTop: 2 }}>{latest || "—"}</div>
-            <div className="muted small">last transaction</div>
+        {/* Stat cards: the headline numbers arrive in the mint world */}
+        <div className="fc-scene fc-scene--grow fc-hero-in fc-hero-in--3" style={{ marginTop: 20, padding: "clamp(14px,2.5vw,20px)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 14 }}>
+            <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+              <div className="kicker">Recent transactions</div>
+              <div className="serif tnum" style={{ fontSize: 28, fontWeight: 600, marginTop: 2 }}>{sales.length}</div>
+              <div className="muted small">latest deals on record</div>
+            </div>
+            <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+              <div className="kicker">Median price</div>
+              <div className="serif tnum" style={{ fontSize: 28, fontWeight: 600, marginTop: 2 }}>{median != null ? money(median) : "—"}</div>
+              <div className="muted small">across these deals</div>
+            </div>
+            <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+              <div className="kicker">Most recent</div>
+              <div className="serif tnum" style={{ fontSize: 28, fontWeight: 600, marginTop: 2 }}>{latest || "—"}</div>
+              <div className="muted small">last transaction</div>
+            </div>
           </div>
         </div>
 
-        {/* Recent sales */}
+        {/* Recent sales: each row carries a real price-spread bar (width =
+            price relative to the highest deal shown), so the list reads as a
+            chart without inventing any data. */}
         {sales.length > 0 && (
-          <div style={{ marginTop: 24 }}>
-            <h2 className="serif" style={{ fontSize: 18, fontWeight: 600 }}>Recent sales near you</h2>
+          <div className="fc-scene fc-scene--planner fc-reveal" style={{ marginTop: 24, padding: "clamp(14px,2.5vw,20px)" }}>
+            <h2 className="serif" style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Recent sales near you</h2>
             <ul style={{ listStyle: "none", padding: 0, margin: "12px 0 0", display: "flex", flexDirection: "column", gap: 8 }}>
               {sales.slice(0, 8).map((s, i) => (
-                <li key={i} className="fc-card" style={{ padding: "12px 16px", background: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+                <li key={i} className="fc-card fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.06, 0.42)}s`, padding: "12px 16px", background: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, position: "relative", overflow: "hidden" }}>
+                  {maxPrice != null && Number(s.price) > 0 && (
+                    <div aria-hidden style={{ position: "absolute", left: 0, bottom: 0, height: 3, width: `${Math.round((Number(s.price) / maxPrice) * 100)}%`, background: "var(--blue)", opacity: 0.22 }} />
+                  )}
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: 14.5, color: "var(--ink)" }}>{s.title}</div>
                     <div className="muted small">{s.subtitle} · {fmtMonth(s.event_date)}</div>
@@ -147,12 +160,12 @@ export default async function SellerReportPage({
         )}
 
         {/* CTA */}
-        <div className="fc-card fc-card--pad" style={{ marginTop: 28, background: "var(--ink)", color: "#fff" }}>
+        <div className="fc-card fc-card--pad fc-reveal" style={{ marginTop: 28, background: "var(--ink)", color: "#fff" }}>
           <h2 className="serif" style={{ fontSize: 22, fontWeight: 600, color: "#fff", margin: 0 }}>Thinking of selling in {area}?</h2>
           <p style={{ marginTop: 8, color: "rgba(255,255,255,0.75)", fontSize: 15, lineHeight: 1.6 }}>
             {name} can give you a free, no-obligation valuation and a plan to get the best price, based on exactly these records.
           </p>
-          <Link href={`/sell?agent=${agent.slug}&utm_source=seller_report`} className="fc-btn fc-btn--primary fc-btn--lg" style={{ marginTop: 16 }}>
+          <Link href={`/sell?agent=${agent.slug}&utm_source=seller_report`} className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline" style={{ marginTop: 16 }}>
             Get my free valuation
           </Link>
         </div>

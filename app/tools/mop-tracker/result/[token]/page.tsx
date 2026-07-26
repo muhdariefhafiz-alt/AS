@@ -99,13 +99,13 @@ export default async function MopResultPage({ params }: Props) {
     <>
       <section className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[860px] px-5 py-10 md:px-8 md:py-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
+          <p className="fc-hero-in fc-hero-in--1 text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
             Saved MOP result
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
+          <h1 className="fc-hero-in fc-hero-in--2 mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
             {propertyTypeLabel} in {town}
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-gray-600">
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-xl text-sm text-gray-600">
             We&apos;ll alert you 3 months before your MOP with a refreshed
             valuation and a ranked shortlist to compare. You can share this
             snapshot with the person deciding alongside you.
@@ -116,7 +116,9 @@ export default async function MopResultPage({ params }: Props) {
       <section className="bg-gray-50 py-10">
         <div className="mx-auto max-w-[680px] px-5 md:px-8">
           {result ? (
-            <div className="rounded-2xl border border-[var(--line-2)] bg-gradient-to-br from-[var(--blue-wash)] to-white p-6 shadow-sm">
+            // MOP is a timing moment: it lives in the amber (planner) world.
+            <div className="fc-scene fc-scene--planner fc-hero-in fc-hero-in--4" style={{ padding: "clamp(12px,2vw,18px)" }}>
+            <div className="rounded-2xl bg-white p-6 shadow-sm">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -160,10 +162,11 @@ export default async function MopResultPage({ params }: Props) {
                     Top 3 HDB agents in {town}
                   </p>
                   <ul className="mt-2 space-y-2">
-                    {result.top_agents.map((a) => (
+                    {result.top_agents.map((a, i) => (
                       <li
                         key={a.agent_id}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-white p-3"
+                        className="fc-pop-in flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-white p-3"
+                        style={{ animationDelay: `${200 + i * 90}ms` }}
                       >
                         <div>
                           <p className="text-sm font-semibold text-gray-900">
@@ -202,6 +205,7 @@ export default async function MopResultPage({ params }: Props) {
                   Run the tracker again
                 </Link>
               </div>
+            </div>
             </div>
           ) : (
             <div className="rounded-2xl border border-gray-200 bg-white p-6">

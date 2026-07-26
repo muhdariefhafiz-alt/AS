@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { titleName, cleanAgency } from "../../lib/names";
+import { CalendarLine } from "../../components/LineArt";
 import BookingForm from "./BookingForm";
 
 export const revalidate = 3600;
@@ -28,7 +29,11 @@ export default async function BookPage({ params }: { params: Promise<{ agentSlug
   return (
     <div style={{ background: "var(--paper, #f7f8fb)", minHeight: "100vh" }}>
       <div className="fc-wrap" style={{ maxWidth: 640, padding: "36px 24px 64px" }}>
-        <div className="fc-card fc-card--pad" style={{ background: "#fff" }}>
+        {/* The agent's shared link: their identity card gets the scene-world
+            framing so the page feels prepared for them, not generic. */}
+        <div className="fc-scene fc-scene--inbox fc-hero-in fc-hero-in--1" style={{ position: "relative", overflow: "hidden", padding: "clamp(14px,2.5vw,22px)" }}>
+          <CalendarLine className="fc-lineart fc-float" width={64} style={{ position: "absolute", right: 16, top: 8, color: "var(--line-2)", opacity: 0.7 }} />
+          <div className="fc-card fc-card--pad" style={{ background: "#fff", position: "relative" }}>
           <div className="fc-row" style={{ gap: 16, alignItems: "center", flexWrap: "wrap" }}>
             {showPhoto ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -49,9 +54,10 @@ export default async function BookPage({ params }: { params: Promise<{ agentSlug
               </div>
             )}
           </div>
+          </div>
         </div>
 
-        <div style={{ marginTop: 24, marginBottom: 14 }}>
+        <div className="fc-hero-in fc-hero-in--2" style={{ marginTop: 24, marginBottom: 14 }}>
           <p className="kicker" style={{ color: "var(--blue-deep)" }}>Book a viewing</p>
           <h1 className="serif" style={{ fontSize: "clamp(24px,4vw,32px)", fontWeight: 600, margin: "6px 0 0", color: "var(--ink)" }}>
             Arrange a viewing with {name}
@@ -61,7 +67,9 @@ export default async function BookPage({ params }: { params: Promise<{ agentSlug
           </p>
         </div>
 
-        <BookingForm agentSlug={agent.slug as string} agentName={name} />
+        <div className="fc-hero-in fc-hero-in--3">
+          <BookingForm agentSlug={agent.slug as string} agentName={name} />
+        </div>
       </div>
     </div>
   );

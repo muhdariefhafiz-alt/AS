@@ -161,7 +161,7 @@ export default function ShortlistPicker({
           {max} agents below and we will send your request out fresh.
         </div>
       )}
-      <div className="mb-3 rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-4 text-sm text-[var(--ink)]">
+      <div className="fc-pop-in mb-3 rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-4 text-sm text-[var(--ink)]">
         <strong className="font-semibold">
           {rows.length} agents matched for {propertyType} in {area}.
         </strong>{" "}
@@ -174,7 +174,7 @@ export default function ShortlistPicker({
           contains (real fields agents submit + public CEA fact on fees) and
           how to choose. Two stacked full-width cards pushed the first agent
           below the fold, which reads as instructions before value. */}
-      <div className="mb-6 grid gap-4 rounded-xl border border-gray-200 bg-white p-4 text-sm sm:grid-cols-2">
+      <div className="fc-pop-in mb-6 grid gap-4 rounded-xl border border-gray-200 bg-white p-4 text-sm sm:grid-cols-2" style={{ animationDelay: "80ms" }}>
         <div>
           <p className="font-semibold text-gray-900">
             What each invited agent sends you
@@ -203,7 +203,7 @@ export default function ShortlistPicker({
       </div>
 
       <ul className="space-y-3">
-        {rows.map((a) => {
+        {rows.map((a, i) => {
           const isPicked = picked.has(a.agent_id);
           const isInvited = a.invite_status === "invited";
           const isRequested = a.invite_status === "requested";
@@ -212,13 +212,14 @@ export default function ShortlistPicker({
             <li
               key={a.agent_id}
               className={
-                "rounded-2xl border p-4 transition md:p-5 " +
+                "fc-pop-in rounded-2xl border p-4 transition md:p-5 " +
                 (isPicked
                   ? "border-[var(--blue)] bg-[var(--blue-wash)] shadow-md"
                   : isInvited
                     ? "border-amber-300 bg-amber-50"
                     : "border-gray-200 bg-white hover:border-gray-300")
               }
+              style={{ animationDelay: `${Math.min(160 + i * 70, 580)}ms` }}
             >
               <div className="flex flex-wrap items-start gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--blue)] text-base font-bold text-white">

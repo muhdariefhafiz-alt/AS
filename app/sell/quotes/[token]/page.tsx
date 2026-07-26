@@ -206,10 +206,10 @@ export default async function QuotesPage({ params }: Props) {
     <>
       <section className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[860px] px-5 py-10 md:px-8 md:py-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
+          <p className="fc-hero-in fc-hero-in--1 text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
             Your quotes
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
+          <h1 className="fc-hero-in fc-hero-in--2 mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
             {alreadyPicked
               ? `You instructed ${pickedRow?.agent_name ?? "an agent"}.`
               : rows.length === 0
@@ -226,7 +226,10 @@ export default async function QuotesPage({ params }: Props) {
       <section className="bg-gray-50 py-10">
         <div className="mx-auto max-w-[860px] px-5 md:px-8">
           {!alreadyPicked && waitingAgents.length > 0 && (
-            <div className="mb-6 rounded-2xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5 md:p-6">
+            // The waiting moment lives in the amber (planner/time) world: the
+            // seller's request is out with agents and the clock is running.
+            <div className="fc-scene fc-scene--planner fc-pop-in mb-6" style={{ padding: "clamp(12px,2vw,18px)" }}>
+            <div className="rounded-2xl bg-white p-5 md:p-6">
               <p className="text-sm font-bold text-gray-900">
                 {rows.length > 0
                   ? `Still waiting on ${waitingAgents.length} more agent${waitingAgents.length === 1 ? "" : "s"} to quote.`
@@ -276,6 +279,7 @@ export default async function QuotesPage({ params }: Props) {
                   <AddMoreAgentsButton token={lead.token} />
                 </div>
               )}
+            </div>
             </div>
           )}
           {!alreadyPicked && unreachableAgents.length > 0 && (

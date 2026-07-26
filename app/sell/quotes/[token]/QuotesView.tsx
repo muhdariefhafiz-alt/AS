@@ -130,7 +130,8 @@ export default function QuotesView({
         // Post-pick next steps: the handoff email (api/sell/pick) has sent the
         // seller's contact details to this one agent, so tell the seller
         // exactly what to expect instead of leaving a bare badge.
-        <div className="rounded-2xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+        <div className="fc-pop-in rounded-2xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full" style={{ background: "var(--ok-wash)", color: "var(--ok)", fontSize: 15, fontWeight: 700 }}>&#10003;</div>
           <p className="text-sm font-bold text-gray-900">What happens next</p>
           <p className="mt-1 text-sm text-gray-700">
             {winner.agent_name} has been sent your contact details and is
@@ -147,20 +148,21 @@ export default function QuotesView({
           </p>
         </div>
       )}
-      {rows.map((q) => {
+      {rows.map((q, i) => {
         const isWinner = pickedQuoteId === q.quote_id;
         const isLoser = alreadyPicked && !isWinner;
         return (
           <div
             key={q.quote_id}
             className={
-              "rounded-2xl border p-5 transition " +
+              "fc-pop-in rounded-2xl border p-5 transition " +
               (isWinner
                 ? "border-[var(--blue)] bg-[var(--blue-wash)]"
                 : isLoser
                   ? "border-gray-200 bg-gray-50 opacity-70"
                   : "border-gray-200 bg-white")
             }
+            style={{ animationDelay: `${Math.min(120 + i * 90, 480)}ms` }}
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>

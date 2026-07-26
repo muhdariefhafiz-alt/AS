@@ -26,21 +26,21 @@ export default async function ContactPage({ params }: Props) {
     <>
       <section className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[560px] px-5 py-10 md:px-8 md:py-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
+          <p className="fc-hero-in fc-hero-in--1 text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
             Your details
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold text-gray-900">
+          <h1 className="fc-hero-in fc-hero-in--2 mt-2 text-2xl font-extrabold text-gray-900">
             {lead.full_name?.split(" ")[0] ?? "Hi"}, keep your contact details
             current
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="fc-hero-in fc-hero-in--3 mt-2 text-sm text-gray-600">
             We send shortlists, quotes and updates here. Change them any time.
           </p>
         </div>
       </section>
 
       <section className="bg-gray-50 py-10">
-        <div className="mx-auto max-w-[560px] px-5 md:px-8">
+        <div className="fc-hero-in fc-hero-in--4 mx-auto max-w-[560px] px-5 md:px-8">
           <ContactForm
             token={lead.token}
             initialEmail={lead.email ?? ""}

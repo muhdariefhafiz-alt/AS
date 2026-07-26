@@ -47,7 +47,8 @@ export default function BookingForm({ agentSlug, agentName }: { agentSlug: strin
 
   if (done) {
     return (
-      <div className="fc-card fc-card--fill" style={{ padding: "24px 22px", textAlign: "center" }}>
+      <div className="fc-card fc-card--fill fc-pop-in" style={{ padding: "24px 22px", textAlign: "center" }}>
+        <div style={{ margin: "0 auto 12px", width: 44, height: 44, borderRadius: "50%", background: "var(--ok-wash)", color: "var(--ok)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700 }}>&#10003;</div>
         <div className="serif" style={{ fontSize: 22, fontWeight: 600, color: "var(--ink)" }}>Viewing requested</div>
         <p className="muted" style={{ marginTop: 8, fontSize: 15 }}>
           {agentName} has received your request for <strong>{propertyLabel}</strong> and will confirm the time with you shortly.
@@ -95,7 +96,7 @@ export default function BookingForm({ agentSlug, agentName }: { agentSlug: strin
 
       {error && <div className="fc-alert fc-alert--warn" style={{ marginTop: 14 }}>{error}</div>}
 
-      <button type="submit" className="fc-btn fc-btn--primary fc-btn--block" disabled={busy} style={{ marginTop: 16 }}>
+      <button type="submit" className="fc-btn fc-btn--primary fc-btn--block fc-btn--hairline" disabled={busy} style={{ marginTop: 16 }}>
         {busy ? "Requesting..." : "Request viewing"}
       </button>
       <p className="muted small" style={{ marginTop: 10, textAlign: "center" }}>

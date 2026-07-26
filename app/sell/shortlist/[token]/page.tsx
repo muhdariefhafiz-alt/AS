@@ -202,18 +202,18 @@ export default async function ShortlistPage({ params }: Props) {
     <>
       <section className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[860px] px-5 py-10 md:px-8 md:py-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
+          <p className="fc-hero-in fc-hero-in--1 text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
             Your shortlist
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
+          <h1 className="fc-hero-in fc-hero-in--2 mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
             {lead.full_name?.split(" ")[0] ?? "Hi"}, here are the top agents for
             your {propertyTypeLabel} in {area}.
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-gray-600">
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-sm text-gray-600">
             Ranked by actual transaction record. Compare their track records,
             then invite up to 3 to send you a fee quote. Always free for you.
           </p>
-          <p className="mt-2 max-w-2xl text-xs text-gray-500">
+          <p className="fc-hero-in fc-hero-in--4 mt-2 max-w-2xl text-xs text-gray-500">
             How this list is made: we rank the agents with recorded activity in{" "}
             {area} by their CEA transactions, local focus and {propertyTypeLabel}{" "}
             match. No agent can pay to be here, and quoting or subscribing never

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { hdbValuation, isValidHdbFlatType, type AvmRange } from "../../../../lib/avm";
+import ScrollReveal from "../../../../components/ScrollReveal";
 import KeysDateForm from "./KeysDateForm";
 
 // My Home: the persistent tracked-homeowner surface (board Option A v1).
@@ -81,13 +82,14 @@ export default async function MyHomePage({ params }: Props) {
 
   return (
     <>
+      <ScrollReveal />
       <section className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[680px] px-5 py-10 md:px-8 md:py-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">My Home</p>
-          <h1 className="mt-2 text-2xl font-extrabold text-gray-900">
+          <p className="fc-hero-in fc-hero-in--1 text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">My Home</p>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-2 text-2xl font-extrabold text-gray-900">
             {isHdb ? `${flat.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())} HDB in ${tc(area)}` : `Private home in ${area}`}
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="fc-hero-in fc-hero-in--3 mt-2 text-sm text-gray-600">
             Your saved home. We re-estimate it from official transaction records every time you open this page, and alert you when it moves more than 2%.
           </p>
         </div>
@@ -95,8 +97,9 @@ export default async function MyHomePage({ params }: Props) {
 
       <section className="bg-gray-50 py-10">
         <div className="mx-auto max-w-[680px] space-y-6 px-5 md:px-8">
-          {/* Value card */}
-          <div className="rounded-2xl border border-[var(--line-2)] bg-gradient-to-br from-[var(--blue-wash)] to-white p-6 shadow-sm">
+          {/* Value card: the number moment lives in the mint (value) world */}
+          <div className="fc-scene fc-scene--grow fc-hero-in fc-hero-in--4" style={{ padding: "clamp(12px,2vw,18px)" }}>
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">Estimated value today</p>
               {result && <span className="text-xs text-gray-500">{confidenceLabel} · {result.comp_count} comparable sales · last {result.window_months} months</span>}
@@ -129,10 +132,11 @@ export default async function MyHomePage({ params }: Props) {
               Thinking of selling? Compare agents free
             </Link>
           </div>
+          </div>
 
           {/* MOP card */}
           {isHdb && (
-            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className="fc-reveal rounded-2xl border border-gray-200 bg-white p-6">
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400">MOP countdown</p>
               {mop ? (
                 mop.state === "past" ? (
@@ -166,11 +170,11 @@ export default async function MyHomePage({ params }: Props) {
 
           {/* Comps card */}
           {result && result.recent.length > 0 && (
-            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className="fc-reveal rounded-2xl border border-gray-200 bg-white p-6">
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Recent comparable sales</p>
               <ul className="mt-3 divide-y divide-gray-100">
                 {result.recent.slice(0, 5).map((c, i) => (
-                  <li key={i} className="flex items-center justify-between gap-3 py-2.5">
+                  <li key={i} className="fc-reveal flex items-center justify-between gap-3 py-2.5" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.07, 0.35)}s` }}>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-gray-900">{c.label}</p>
                       <p className="text-xs text-gray-500">{c.detail}</p>
@@ -183,7 +187,7 @@ export default async function MyHomePage({ params }: Props) {
           )}
 
           {/* Footer actions */}
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="fc-reveal flex flex-col gap-3 sm:flex-row">
             <Link href="/tools/valuation" className="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
               Run a new estimate
             </Link>

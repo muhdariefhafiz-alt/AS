@@ -66,13 +66,13 @@ export default async function ReviewPage({ params }: Props) {
     <>
       <section className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[640px] px-5 py-10 md:px-8 md:py-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
+          <p className="fc-hero-in fc-hero-in--1 text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">
             Leave a review
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
+          <h1 className="fc-hero-in fc-hero-in--2 mt-2 text-2xl font-extrabold text-gray-900 md:text-3xl">
             How did {agent.name} do?
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="fc-hero-in fc-hero-in--3 mt-2 text-sm text-gray-600">
             Two minutes. Public reviews show initials only. Honest reviews
             help the next seller in your area pick well.
           </p>
@@ -80,7 +80,7 @@ export default async function ReviewPage({ params }: Props) {
       </section>
 
       <section className="bg-gray-50 py-10">
-        <div className="mx-auto max-w-[640px] px-5 md:px-8">
+        <div className="fc-hero-in fc-hero-in--4 mx-auto max-w-[640px] px-5 md:px-8">
           <ReviewForm
             token={token}
             agentName={agent.name ?? "your agent"}
