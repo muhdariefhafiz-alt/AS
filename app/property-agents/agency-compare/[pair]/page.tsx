@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { seoTitle } from "../../../lib/seoTitle";
 import EmailCapture from "../../../components/EmailCapture";
+import HeroBand from "../../../components/HeroBand";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import type { Metadata } from "next";
 
 export const revalidate = false;
@@ -268,48 +270,32 @@ export default async function AgencyComparePage({ params }: Props) {
       </nav>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)]">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)]">Agency Comparison</p>
-          <h1 className="mt-3 text-3xl font-extrabold text-white md:text-4xl">
-            {nameA} vs {nameB}
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-[var(--slate-2)]">
-            Head-to-head comparison based on CEA transaction records, AgentScore data, and Google reviews.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue)]">
-              Compare top agents from both
-            </Link>
-            <Link href="/search" className="inline-flex items-center rounded-lg border border-white/20 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/10">
-              Search agents by name
-            </Link>
-          </div>
-
-          {/* Quick stats */}
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{agencyA.agent_count.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-[var(--slate-2)]">{nameA} agents</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{agencyB.agent_count.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-[var(--slate-2)]">{nameB} agents</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-[var(--slate-2)]">{metricsA.avg_score}</p>
-              <p className="mt-1 text-xs text-[var(--slate-2)]">{nameA} avg score</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-[var(--slate-2)]">{metricsB.avg_score}</p>
-              <p className="mt-1 text-xs text-[var(--slate-2)]">{nameB} avg score</p>
-            </div>
-          </div>
+      <HeroBand
+        eyebrow="Agency Comparison"
+        title={<>{nameA} vs</>}
+        accent={<>{nameB}</>}
+        sub="Head-to-head comparison based on CEA transaction records, AgentScore data, and Google reviews."
+        chips={[
+          `${agencyA.agent_count.toLocaleString()} ${nameA} agents`,
+          `${agencyB.agent_count.toLocaleString()} ${nameB} agents`,
+          `${metricsA.avg_score} ${nameA} avg score`,
+          `${metricsB.avg_score} ${nameB} avg score`,
+        ]}
+        art="shophouse"
+      >
+        <div className="flex flex-wrap gap-3">
+          <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue)]">
+            Compare top agents from both
+          </Link>
+          <Link href="/search" className="inline-flex items-center rounded-lg border border-white/20 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:bg-white/10">
+            Search agents by name
+          </Link>
         </div>
-      </section>
+      </HeroBand>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         {/* Definition block */}
+        <div className="fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900">Which agency is better, {nameA} or {nameB}?</h2>
           <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
@@ -322,11 +308,13 @@ export default async function AgencyComparePage({ params }: Props) {
             {" The right agency depends on your property type, location, and whether you need a specialist or generalist agent."}
           </p>
         </div>
+        </div>
 
         {/* Comparison table */}
-        <section className="mt-10">
+        <section className="mt-10 fc-reveal">
           <h2 className="text-xl font-bold text-gray-900">{nameA} vs {nameB} by the numbers</h2>
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 fc-scene fc-scene--planner" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+          <div className="fc-scene__card fc-pop-in overflow-x-auto" style={{ padding: "14px 18px" }}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
@@ -361,13 +349,14 @@ export default async function AgencyComparePage({ params }: Props) {
               </tbody>
             </table>
           </div>
+          </div>
         </section>
 
         {/* Top agents */}
-        <section className="mt-10 grid gap-8 md:grid-cols-2">
+        <section className="mt-10 grid gap-8 md:grid-cols-2 fc-reveal">
           <div>
             <h3 className="text-lg font-bold text-gray-900">Top {nameA} agents</h3>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2 fc-pop-in">
               {metricsA.top_agents.map((a, i) => (
                 <Link key={a.slug} href={`/property-agents/agent/${a.slug}`}
                   className="group flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)]">
@@ -385,7 +374,7 @@ export default async function AgencyComparePage({ params }: Props) {
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-900">Top {nameB} agents</h3>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2 fc-pop-in">
               {metricsB.top_agents.map((a, i) => (
                 <Link key={a.slug} href={`/property-agents/agent/${a.slug}`}
                   className="group flex items-center gap-3 rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)]">
@@ -405,7 +394,7 @@ export default async function AgencyComparePage({ params }: Props) {
 
         {/* Specialization breakdown */}
         {(topSpecsA.length > 0 || topSpecsB.length > 0) && (
-          <section className="mt-10 grid gap-8 md:grid-cols-2">
+          <section className="mt-10 grid gap-8 md:grid-cols-2 fc-reveal">
             <div>
               <h3 className="text-lg font-bold text-gray-900">{nameA} specializations</h3>
               <div className="mt-3 space-y-2">
@@ -453,7 +442,7 @@ export default async function AgencyComparePage({ params }: Props) {
 
         {/* Area coverage */}
         {(topAreasA.length > 0 || topAreasB.length > 0) && (
-          <section className="mt-10 grid gap-8 md:grid-cols-2">
+          <section className="mt-10 grid gap-8 md:grid-cols-2 fc-reveal">
             <div>
               <h3 className="text-lg font-bold text-gray-900">{nameA} top areas</h3>
               <div className="mt-3 space-y-1.5">
@@ -480,14 +469,14 @@ export default async function AgencyComparePage({ params }: Props) {
         )}
 
         {/* CTA - Find the right agent */}
-        <section className="mt-10 rounded-xl border-2 border-[var(--line-2)] bg-gradient-to-r from-[var(--blue-wash)] to-white p-6 md:p-8">
+        <section className="mt-10 rounded-xl border-2 border-[var(--line-2)] bg-gradient-to-r from-[var(--blue-wash)] to-white p-6 md:p-8 fc-reveal">
           <h2 className="text-xl font-bold text-gray-900">Deciding between {nameA} and {nameB}? Compare their agents directly.</h2>
           <p className="mt-2 text-[15px] text-gray-600">
             Aggregate numbers only tell part of the story. The agent you work with matters more than the agency name.
             Compare top agents from {nameA} and {nameB} side by side on transaction history, area expertise, and AgentScore to find the right fit.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)]">
+            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue-deep)] fc-btn--hairline">
               Compare agents
             </Link>
             <Link href="/search" className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]">
@@ -497,7 +486,7 @@ export default async function AgencyComparePage({ params }: Props) {
         </section>
 
         {/* FAQ */}
-        <section className="mt-10">
+        <section className="mt-10 fc-reveal">
           <h2 className="text-xl font-bold text-gray-900">FAQ</h2>
           <div className="mt-4 space-y-5">
             {(faqLd.mainEntity as Array<{ name: string; acceptedAnswer: { text: string } }>).map((q, i) => (
@@ -510,7 +499,7 @@ export default async function AgencyComparePage({ params }: Props) {
         </section>
 
         {/* Email capture */}
-        <div className="mt-10">
+        <div className="mt-10 fc-reveal">
           <EmailCapture
             variant="inline"
             source="agency-compare"
@@ -535,11 +524,12 @@ export default async function AgencyComparePage({ params }: Props) {
                 ];
               })
               .slice(0, 6)
-              .map((item) => (
+              .map((item, i) => (
                 <Link
                   key={item.pair}
                   href={`/property-agents/agency-compare/${item.pair}`}
-                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
+                  className="fc-reveal rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
+                  style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}
                 >
                   {item.label}
                 </Link>
@@ -552,6 +542,7 @@ export default async function AgencyComparePage({ params }: Props) {
           Rankings are calculated, not purchased. This comparison is for informational purposes only.
         </p>
       </div>
+      <SkylinePreFooter />
     </>
   );
 }

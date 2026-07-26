@@ -9,6 +9,8 @@ import {
   fmtSgd,
 } from "../../../lib/sellAreaContent";
 import { seoTitle } from "../../../lib/seoTitle";
+import HeroBand from "../../../components/HeroBand";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 
 export const revalidate = 86400;
 
@@ -138,36 +140,27 @@ export default async function SellCondoDistrictPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
 
-      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)]">
-        <div className="mx-auto max-w-[1120px] px-5 py-12 md:px-8 md:py-16">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--slate-2)]">
-            Sell your condo · {label}
-          </p>
-          <h1 className="mt-3 text-3xl font-extrabold leading-tight text-white md:text-4xl">
-            Sell your private property in {shortName} with the agents who close
-            here
-          </h1>
-          {stats.median && (
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs">
-              <span className="rounded-full border border-white/15 px-3 py-1 text-white/70">
-                Median {fmtSgd(stats.median)}
-              </span>
-              <span className="rounded-full border border-white/15 px-3 py-1 text-white/70">
-                {stats.count12mo} recent sales
-              </span>
-              {stats.topSegment && (
-                <span className="rounded-full border border-white/15 px-3 py-1 text-white/70">
-                  Most active: {stats.topSegment}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
+      <HeroBand
+        eyebrow={`Sell your condo · ${label}`}
+        title={<>Sell your private property in {shortName} with the agents</>}
+        accent={<>who close here</>}
+        chips={
+          stats.median
+            ? [
+                `Median ${fmtSgd(stats.median)}`,
+                `${stats.count12mo} recent sales`,
+                ...(stats.topSegment
+                  ? [`Most active: ${stats.topSegment}`]
+                  : []),
+              ]
+            : []
+        }
+        art="terrace"
+      />
 
       <section className="bg-white py-10">
         <div className="mx-auto max-w-[860px] px-5 md:px-8">
-          <div className="space-y-4 text-[15px] leading-relaxed text-gray-700">
+          <div className="fc-reveal space-y-4 text-[15px] leading-relaxed text-gray-700">
             {narrative.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
@@ -177,11 +170,15 @@ export default async function SellCondoDistrictPage({ params }: Props) {
 
       {topAgents.length > 0 && (
         <section className="border-t border-gray-100 bg-gray-50 py-10">
-          <div className="mx-auto max-w-[860px] px-5 md:px-8">
+          <div className="fc-reveal mx-auto max-w-[860px] px-5 md:px-8">
             <h2 className="text-xl font-bold text-gray-900">
               Top agents in {label}
             </h2>
-            <ul className="mt-4 space-y-2">
+            <div
+              className="fc-scene fc-scene--grow mt-4"
+              style={{ padding: "clamp(16px,2.5vw,28px)" }}
+            >
+            <ul className="fc-pop-in space-y-2">
               {topAgents.map((a) => (
                 <li
                   key={a.agent_id}
@@ -207,17 +204,22 @@ export default async function SellCondoDistrictPage({ params }: Props) {
                 </li>
               ))}
             </ul>
+            </div>
           </div>
         </section>
       )}
 
       {stats.recent.length > 0 && (
         <section className="border-t border-gray-100 bg-white py-10">
-          <div className="mx-auto max-w-[860px] px-5 md:px-8">
+          <div className="fc-reveal mx-auto max-w-[860px] px-5 md:px-8">
             <h2 className="text-xl font-bold text-gray-900">
               Recent private sales in {label}
             </h2>
-            <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200">
+            <div
+              className="fc-scene fc-scene--planner mt-4"
+              style={{ padding: "clamp(16px,2.5vw,28px)" }}
+            >
+            <div className="fc-pop-in overflow-x-auto rounded-xl border border-gray-200 bg-white">
               <table className="w-full text-sm">
                 <tbody>
                   {stats.recent.map((r, i) => (
@@ -234,12 +236,15 @@ export default async function SellCondoDistrictPage({ params }: Props) {
                 </tbody>
               </table>
             </div>
+            </div>
           </div>
         </section>
       )}
 
+      <SkylinePreFooter />
+
       <section className="border-t border-gray-100 bg-gray-50 py-12">
-        <div className="mx-auto max-w-[680px] px-5 md:px-8">
+        <div className="fc-reveal mx-auto max-w-[680px] px-5 md:px-8">
           <h2 className="text-center text-2xl font-bold text-gray-900">
             Compare the ranked agents for {shortName}
           </h2>

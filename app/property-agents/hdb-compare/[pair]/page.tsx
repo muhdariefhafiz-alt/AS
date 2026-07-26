@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { HDB_TOWNS, townFromSlug, townDisplayName, getHdbTownData } from "../../../lib/hdbData";
 import { formatPrice } from "../../../lib/narrativeHelpers";
 import EmailCapture from "../../../components/EmailCapture";
+import HeroBand from "../../../components/HeroBand";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import type { Metadata } from "next";
 import { seoTitle } from "../../../lib/seoTitle";
 
@@ -151,36 +153,19 @@ export default async function HdbComparePage({ params }: Props) {
       </nav>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue)]">HDB Resale Comparison</p>
-          <h1 className="mt-3 text-3xl font-extrabold text-white md:text-4xl">
-            {nameA} vs {nameB}
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-slate-400">
-            HDB resale market comparison based on actual transaction data. Prices by flat type, storey premiums, and market activity.
-          </p>
-
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{formatPrice(dataA.medianPrice)}</p>
-              <p className="mt-1 text-xs text-slate-500">{nameA} median</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{formatPrice(dataB.medianPrice)}</p>
-              <p className="mt-1 text-xs text-slate-500">{nameB} median</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-[var(--slate-2)]">{pctDiff(dataA.medianPrice, dataB.medianPrice)}</p>
-              <p className="mt-1 text-xs text-slate-500">price difference</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{(dataA.totalTxns + dataB.totalTxns).toLocaleString()}</p>
-              <p className="mt-1 text-xs text-slate-500">combined transactions</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroBand
+        eyebrow="HDB Resale Comparison"
+        title={<>{nameA} vs</>}
+        accent={<>{nameB}</>}
+        sub="HDB resale market comparison based on actual transaction data. Prices by flat type, storey premiums, and market activity."
+        chips={[
+          `${formatPrice(dataA.medianPrice)} ${nameA} median`,
+          `${formatPrice(dataB.medianPrice)} ${nameB} median`,
+          `${pctDiff(dataA.medianPrice, dataB.medianPrice)} price difference`,
+          `${(dataA.totalTxns + dataB.totalTxns).toLocaleString()} combined transactions`,
+        ]}
+        art="hdb"
+      />
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         {/* Definition block */}
@@ -197,9 +182,10 @@ export default async function HdbComparePage({ params }: Props) {
         </p>
 
         {/* Flat type comparison */}
-        <section className="mt-10">
+        <section className="mt-10 fc-reveal">
           <h2 className="text-xl font-bold text-gray-900">Prices by flat type</h2>
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+          <div className="fc-scene__card fc-pop-in overflow-x-auto" style={{ padding: "14px 18px" }}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
@@ -260,15 +246,17 @@ export default async function HdbComparePage({ params }: Props) {
               </tbody>
             </table>
           </div>
+          </div>
         </section>
 
         {/* Storey premium */}
         {dataA.storeyPremium.length >= 2 && dataB.storeyPremium.length >= 2 && (
-          <section className="mt-10">
+          <section className="mt-10 fc-reveal">
             <h2 className="text-xl font-bold text-gray-900">Storey premium comparison</h2>
             <p className="mt-2 text-sm text-gray-500">How HDB resale prices change by floor level.</p>
-            <div className="mt-4 grid gap-8 md:grid-cols-2">
-              <div className="space-y-1.5">
+            <div className="mt-4 fc-scene fc-scene--planner" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+            <div className="grid gap-8 md:grid-cols-2">
+              <div className="fc-scene__card space-y-1.5" style={{ padding: 16 }}>
                 <p className="text-sm font-medium text-gray-700">{nameA}</p>
                 {dataA.storeyPremium.map((s) => (
                   <div key={s.storey_range} className="flex items-center justify-between text-sm">
@@ -277,7 +265,7 @@ export default async function HdbComparePage({ params }: Props) {
                   </div>
                 ))}
               </div>
-              <div className="space-y-1.5">
+              <div className="fc-scene__card space-y-1.5" style={{ padding: 16 }}>
                 <p className="text-sm font-medium text-gray-700">{nameB}</p>
                 {dataB.storeyPremium.map((s) => (
                   <div key={s.storey_range} className="flex items-center justify-between text-sm">
@@ -287,14 +275,15 @@ export default async function HdbComparePage({ params }: Props) {
                 ))}
               </div>
             </div>
+            </div>
           </section>
         )}
 
         {/* Top streets */}
-        <section className="mt-10 grid gap-8 md:grid-cols-2">
+        <section className="mt-10 grid gap-8 md:grid-cols-2 fc-reveal">
           <div>
             <h3 className="text-lg font-bold text-gray-900">Most traded streets in {nameA}</h3>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2 fc-pop-in">
               {dataA.topStreets.slice(0, 5).map((s) => (
                 <div key={s.street_name} className="rounded-lg border border-gray-100 bg-white p-3">
                   <p className="text-sm font-medium text-gray-900">{s.street_name}</p>
@@ -305,7 +294,7 @@ export default async function HdbComparePage({ params }: Props) {
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-900">Most traded streets in {nameB}</h3>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2 fc-pop-in">
               {dataB.topStreets.slice(0, 5).map((s) => (
                 <div key={s.street_name} className="rounded-lg border border-gray-100 bg-white p-3">
                   <p className="text-sm font-medium text-gray-900">{s.street_name}</p>
@@ -322,11 +311,12 @@ export default async function HdbComparePage({ params }: Props) {
           <div className="mt-4 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
             {HDB_TOWNS.filter((t) => t.name !== parsed.t1 && t.name !== parsed.t2)
               .slice(0, 6)
-              .map((t) => (
+              .map((t, i) => (
                 <Link
                   key={t.slug}
                   href={`/property-agents/hdb-compare/${slugA}-vs-${t.slug}`}
-                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
+                  className="fc-reveal rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
+                  style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}
                 >
                   {nameA} vs {townDisplayName(t.name)}
                 </Link>
@@ -335,7 +325,7 @@ export default async function HdbComparePage({ params }: Props) {
         </section>
 
         {/* Email capture */}
-        <div className="mt-10">
+        <div className="mt-10 fc-reveal">
           <EmailCapture
             variant="inline"
             source="hdb-compare"
@@ -350,6 +340,7 @@ export default async function HdbComparePage({ params }: Props) {
           This comparison is for informational purposes only and does not constitute property advice.
         </p>
       </div>
+      <SkylinePreFooter />
     </>
   );
 }

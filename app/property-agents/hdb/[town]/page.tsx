@@ -6,6 +6,8 @@ import PriceTrendChart from "../../../components/PriceTrendChart";
 import FlatTypeBars from "../../../components/FlatTypeBars";
 import StatCard from "../../../components/StatCard";
 import EmailCapture from "../../../components/EmailCapture";
+import ScrollReveal from "../../../components/ScrollReveal";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
@@ -131,6 +133,7 @@ export default async function HdbTownPage({ params }: Props) {
 
   return (
     <>
+      <ScrollReveal />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
@@ -144,13 +147,13 @@ export default async function HdbTownPage({ params }: Props) {
       {/* Hero */}
       <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className={`inline-block rounded-full border px-3 py-1 text-xs font-semibold ${badge.css}`}>{badge.label}</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">{display} HDB Resale Prices</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
+          <span className={`fc-hero-in fc-hero-in--1 inline-block rounded-full border px-3 py-1 text-xs font-semibold ${badge.css}`}>{badge.label}</span>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">{display} HDB Resale Prices</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
             Comprehensive analysis of {data.totalTxns.toLocaleString()} HDB resale transactions in {display}, covering prices by flat type, floor level premiums, lease age impact, and flat model valuations. All data from HDB via data.gov.sg.
           </p>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="fc-hero-in fc-hero-in--4 mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard label="Median Price" value={formatPrice(data.medianPrice)} trend={vsSg.dir} trendValue={`${vsSg.pct}% vs avg`} />
             <StatCard label="12-Month Trend" value={`${yoy.dir === "up" ? "+" : yoy.dir === "down" ? "-" : ""}${yoy.pct}%`} trend={yoy.dir} subtext="year on year" />
             <StatCard label="Transactions" value={data.totalTxns.toLocaleString()} subtext="since 2017" />
@@ -181,6 +184,7 @@ export default async function HdbTownPage({ params }: Props) {
 
       {/* Definition Block - optimized for featured snippets and AI extraction */}
       <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
+        <div className="fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900">How much does an HDB flat cost in {display}?</h2>
           <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
@@ -193,6 +197,7 @@ export default async function HdbTownPage({ params }: Props) {
             {hasMillionDollar && ` ${display} has million-dollar HDB flats, with the highest recorded price at ${formatPrice(data.maxPrice)}.`}
           </p>
         </div>
+        </div>
       </div>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
@@ -200,7 +205,7 @@ export default async function HdbTownPage({ params }: Props) {
           <div className="space-y-10 lg:col-span-3">
 
             {/* 1. Market Overview - Deep Text */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">{display} HDB Market in 2026</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -240,7 +245,7 @@ export default async function HdbTownPage({ params }: Props) {
 
             {/* 2. Price Trend Chart */}
             {chartData.length >= 6 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Monthly Price Trend</h2>
                 <p className="mt-1 text-sm text-gray-500">Median resale price per month in {display}.</p>
                 <div className="mt-4 rounded-xl border border-gray-100 bg-white p-4">
@@ -252,7 +257,7 @@ export default async function HdbTownPage({ params }: Props) {
 
             {/* 3. Floor Level Premium - Deep Text */}
             {storeyPremiumPct && storeyPremiumPct.pct > 5 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">The High-Floor Premium in {display}</h2>
                 <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                   <p>
@@ -294,7 +299,7 @@ export default async function HdbTownPage({ params }: Props) {
 
             {/* 4. Lease Age Analysis - Deep Text */}
             {data.leaseAnalysis.length >= 3 && leaseSpread && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Lease Age and Price in {display}</h2>
                 <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                   <p>
@@ -342,7 +347,7 @@ export default async function HdbTownPage({ params }: Props) {
 
             {/* 5. Flat Model Analysis */}
             {data.flatModels.length >= 4 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Flat Models in {display}</h2>
                 <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                   <p>
@@ -372,7 +377,7 @@ export default async function HdbTownPage({ params }: Props) {
 
             {/* 6. Flat Type Comparison Chart */}
             {barData.length >= 2 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Price by Flat Type</h2>
                 <p className="mt-1 text-sm text-gray-500">
                   Median resale price across {data.flatTypes.length} flat categories.
@@ -386,7 +391,7 @@ export default async function HdbTownPage({ params }: Props) {
 
             {/* 7. Popular Streets */}
             {data.topStreets.length >= 3 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Most Traded Streets in {display}</h2>
                 <div className="mt-4 space-y-3 text-[15px] leading-[1.75] text-gray-600">
                   <p>
@@ -404,7 +409,7 @@ export default async function HdbTownPage({ params }: Props) {
                     )}
                   </p>
                 </div>
-                <div className="mt-4 space-y-2">
+                <div className="fc-pop-in mt-4 space-y-2">
                   {data.topStreets.map((s, i) => {
                     const w = Math.max(20, Math.round((s.txns / data.topStreets[0].txns) * 100));
                     return (
@@ -431,7 +436,7 @@ export default async function HdbTownPage({ params }: Props) {
 
             {/* 8. How {display} Compares */}
             {nearbyTowns.length >= 2 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">How {display} Compares to Other Towns</h2>
                 <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                   <p>
@@ -464,7 +469,8 @@ export default async function HdbTownPage({ params }: Props) {
             )}
 
             {/* 9. Buyer Insight Box */}
-            <section className="rounded-xl border border-[var(--line)] bg-[var(--blue-wash)] p-6">
+            <div className="fc-scene fc-scene--planner fc-reveal" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+            <section className="rounded-xl border border-[var(--line)] bg-white p-6">
               <h2 className="text-lg font-bold text-gray-900">What This Means If You Are Buying in {display}</h2>
               <div className="mt-3 space-y-3 text-[15px] leading-[1.75] text-gray-600">
                 {data.medianPrice > data.sgMedianHdb * 1.1 ? (
@@ -513,9 +519,10 @@ export default async function HdbTownPage({ params }: Props) {
                 )}
               </div>
             </section>
+            </div>
 
             {/* 10. FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
               <div className="mt-4 space-y-5">
                 {faqItems.map((f, i) => (
@@ -529,7 +536,7 @@ export default async function HdbTownPage({ params }: Props) {
             </section>
 
             {/* Best agents CTA */}
-            <div className="mt-8 rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6">
+            <div className="fc-reveal mt-8 rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-6">
               <h3 className="text-lg font-bold text-gray-900">Looking for an HDB agent in {display}?</h3>
               <p className="mt-2 text-[15px] text-gray-600">
                 We ranked the top-performing agents for HDB resale transactions in {display} based on actual transaction records.
@@ -542,7 +549,7 @@ export default async function HdbTownPage({ params }: Props) {
 
           {/* Sidebar */}
           <aside className="space-y-6 lg:col-span-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Quick Answer</h3>
               <p className="mt-3 text-[15px] leading-relaxed text-gray-600">
                 A typical HDB resale flat in {display} costs around <strong>{formatPrice(data.medianPrice)}</strong>.
@@ -552,7 +559,7 @@ export default async function HdbTownPage({ params }: Props) {
               </p>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Prices by Type</h3>
               <div className="mt-4 space-y-3">
                 {data.flatTypes.slice(0, 5).map((t) => {
@@ -574,7 +581,7 @@ export default async function HdbTownPage({ params }: Props) {
               )}
             </div>
 
-            <div className={`rounded-xl border p-5 ${vsSg.dir === "up" ? "border-amber-200 bg-amber-50" : vsSg.dir === "down" ? "border-green-200 bg-green-50" : "border-gray-200 bg-gray-50"}`}>
+            <div className={`fc-reveal rounded-xl border p-5 ${vsSg.dir === "up" ? "border-amber-200 bg-amber-50" : vsSg.dir === "down" ? "border-green-200 bg-green-50" : "border-gray-200 bg-gray-50"}`}>
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">vs National Median</h3>
               <p className="mt-2 text-2xl font-extrabold tracking-tight text-gray-900">{formatPrice(data.medianPrice)}</p>
               <p className="mt-1 text-sm text-gray-600">
@@ -590,7 +597,7 @@ export default async function HdbTownPage({ params }: Props) {
               description={`Get notified when new resale data is available for ${display}.`}
             />
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Compare Other Towns</h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 {HDB_TOWNS.filter((t) => t.slug !== slug).slice(0, 12).map((t) => (
@@ -604,6 +611,8 @@ export default async function HdbTownPage({ params }: Props) {
           </aside>
         </div>
       </div>
+
+      <SkylinePreFooter />
     </>
   );
 }

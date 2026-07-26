@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import HeroBand from "../../components/HeroBand";
+import SkylinePreFooter from "../../components/SkylinePreFooter";
 import SellCtaBand from "../../components/SellCtaBand";
 
 export const revalidate = 86400;
@@ -56,39 +58,33 @@ export default function CheckAgentPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
       {/* HERO */}
-      <section style={{ background: "var(--ink)", color: "#fff" }}>
-        <div className="fc-wrap" style={{ padding: "64px 40px 56px" }}>
-          <div className="eyebrow" style={{ color: "var(--slate-2)", marginBottom: 18 }}>Property agent checker</div>
-          <h1 style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0, maxWidth: "18ch" }}>
-            Check any agent <span className="italic-serif">on the record,</span> before you sign.
-          </h1>
-          <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16, maxWidth: "62ch" }}>
-            A free property agent checker built on the CEA register. Verify an agent&apos;s registration and see their real transaction history and AgentScore. Search by name or CEA registration number.
-          </p>
-
-          <form action="/search" method="GET" className="fc-search" style={{ marginTop: 26 }}>
-            <input name="q" placeholder="Agent name or CEA number (e.g. R012345A)" aria-label="Agent name or CEA registration number" />
-            <button type="submit" className="fc-btn fc-btn--primary">Check agent</button>
-          </form>
-
-          <div className="fc-row" style={{ marginTop: 16, gap: 18 }}>
-            <span className="mono" style={{ color: "rgba(255,255,255,0.82)", fontSize: 13 }}>Built on the CEA register</span>
-            <span className="mono" style={{ color: "rgba(255,255,255,0.82)", fontSize: 13 }}>Free</span>
-          </div>
-        </div>
-      </section>
+      <HeroBand
+        eyebrow="Property agent checker"
+        title={<>Check any agent on the record,</>}
+        accent={<>before you sign.</>}
+        sub={<>A free property agent checker built on the CEA register. Verify an agent&apos;s registration and see their real transaction history and AgentScore. Search by name or CEA registration number.</>}
+        chips={["Built on the CEA register", "Free"]}
+        art="mrt"
+      >
+        <form action="/search" method="GET" className="fc-search">
+          <input name="q" placeholder="Agent name or CEA number (e.g. R012345A)" aria-label="Agent name or CEA registration number" />
+          <button type="submit" className="fc-btn fc-btn--primary fc-btn--hairline">Check agent</button>
+        </form>
+      </HeroBand>
 
       {/* WHAT YOU CAN CHECK */}
-      <section className="fc-wrap" style={{ padding: "56px 40px" }}>
+      <section className="fc-wrap fc-reveal" style={{ padding: "56px 40px" }}>
         <div className="eyebrow">What you can check</div>
         <h2 style={{ marginTop: 12 }}>Judge an agent on evidence, not claims.</h2>
-        <div className="fc-grid-2" style={{ marginTop: 24 }}>
-          {CHECKS.map(([t, d]) => (
-            <div key={t} className="fc-card fc-card--pad">
-              <div className="serif" style={{ fontWeight: 600, fontSize: 19 }}>{t}</div>
-              <p className="muted" style={{ margin: "8px 0 0", fontSize: 14.5, lineHeight: 1.6 }}>{d}</p>
-            </div>
-          ))}
+        <div className="fc-scene fc-scene--grow" style={{ marginTop: 24, padding: "clamp(16px,2.5vw,28px)" }}>
+          <div className="fc-grid-2">
+            {CHECKS.map(([t, d], i) => (
+              <div key={t} className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s`, background: "#fff" }}>
+                <div className="serif" style={{ fontWeight: 600, fontSize: 19 }}>{t}</div>
+                <p className="muted" style={{ margin: "8px 0 0", fontSize: 14.5, lineHeight: 1.6 }}>{d}</p>
+              </div>
+            ))}
+          </div>
         </div>
         <div style={{ marginTop: 22 }}>
           <Link href="/property-agents" className="fc-btn fc-btn--quiet fc-btn--sm">Browse all agents and agencies</Link>
@@ -97,7 +93,7 @@ export default function CheckAgentPage() {
 
       {/* FAQ */}
       <section style={{ background: "var(--cloud)" }}>
-        <div className="fc-wrap" style={{ padding: "56px 40px", maxWidth: 820 }}>
+        <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px", maxWidth: 820 }}>
           <h2 style={{ fontSize: "clamp(24px,3vw,32px)" }}>Frequently asked questions</h2>
           <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 18 }}>
             {FAQ.map(([q, a]) => (
@@ -110,6 +106,7 @@ export default function CheckAgentPage() {
         </div>
       </section>
 
+      <SkylinePreFooter />
       <SellCtaBand source="check_agent" heading="Selling? Skip the guesswork." sub="Get a free shortlist of the agents who actually sell homes like yours, ranked on the same CEA record you just checked." />
     </>
   );

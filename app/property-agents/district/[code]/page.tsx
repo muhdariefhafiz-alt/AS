@@ -6,6 +6,8 @@ import { formatPrice, formatPriceFull, formatPsf } from "../../../lib/narrativeH
 import EmailCapture from "../../../components/EmailCapture";
 import StickyMobileCta from "../../../components/StickyMobileCta";
 import PostcodeBox from "../../../components/PostcodeBox";
+import ScrollReveal from "../../../components/ScrollReveal";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
@@ -115,20 +117,22 @@ export default async function DistrictPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
+      <ScrollReveal />
       {/* header */}
       <header className="fc-wrap" style={{ padding: "26px 40px 32px" }}>
-        <div className="sr-crumb"><Link href="/">Home</Link> / {district.code} {area}</div>
-        <div className="fc-row" style={{ gap: 10, marginTop: 18 }}>
+        <div className="sr-crumb fc-hero-in fc-hero-in--1"><Link href="/">Home</Link> / {district.code} {area}</div>
+        <div className="fc-row fc-hero-in fc-hero-in--2" style={{ gap: 10, marginTop: 18 }}>
           <span className="dpill">{district.code}</span>
           <span className="fc-badge fc-badge--ranked"><span className="dot" /> {aboveAvg ? "Above average market" : vsSg.d === "down" ? "Accessible market" : "Mid-range market"}</span>
         </div>
-        <h1 style={{ margin: "18px 0 0", fontSize: "clamp(36px,5vw,60px)" }}>Property market in {area}</h1>
-        <div className="kicker" style={{ marginTop: 10 }}>{district.code} · {district.name}</div>
-        <p className="lede" style={{ maxWidth: "64ch", marginTop: 16 }}>
+        <h1 className="fc-hero-in fc-hero-in--3" style={{ margin: "18px 0 0", fontSize: "clamp(36px,5vw,60px)" }}>Property market in {area}</h1>
+        <div className="kicker fc-hero-in fc-hero-in--4" style={{ marginTop: 10 }}>{district.code} · {district.name}</div>
+        <p className="lede fc-hero-in fc-hero-in--5" style={{ maxWidth: "64ch", marginTop: 16 }}>
           An analysis of {data.totalTxns.toLocaleString()} private property transactions in {area}, covering condos, apartments and landed property. Prices, tenure splits, floor-level premiums, rental rates and top developments. All data from URA.
         </p>
 
-        <div className="fc-grid-4" style={{ marginTop: 28, gap: 16 }}>
+        <div className="fc-scene fc-scene--grow" style={{ marginTop: 28, padding: "clamp(16px,2.5vw,28px)" }}>
+        <div className="fc-grid-4" style={{ gap: 16 }}>
           <div className="fc-card fc-card--pad">
             <div className="statcap">Median condo price</div>
             <div className="statnum" style={{ marginTop: 6 }}>{formatPrice(data.medianPrice)}</div>
@@ -158,6 +162,7 @@ export default async function DistrictPage({ params }: Props) {
             <div className="small muted">{landedTypes.length > 0 ? "incl. landed" : "categories"}</div>
           </div>
         </div>
+        </div>
 
         {bestSlug && (
           <div className="fc-card fc-card--pad" style={{ marginTop: 18, background: "var(--ink)", color: "#fff", display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
@@ -169,7 +174,7 @@ export default async function DistrictPage({ params }: Props) {
               <div className="small" style={{ color: "rgba(255,255,255,0.72)" }}>Compare the top agents who actually close in {district.code} and contact the ones you choose. Always free for sellers.</div>
             </div>
             <div className="fc-row" style={{ gap: 10 }}>
-              <Link href={`/sell?type=CONDO&district=${district.code}&utm_source=district`} className="fc-btn fc-btn--primary">Compare agents</Link>
+              <Link href={`/sell?type=CONDO&district=${district.code}&utm_source=district`} className="fc-btn fc-btn--primary fc-btn--hairline">Compare agents</Link>
               <Link href={`/property-agents/best/${bestSlug}`} className="fc-btn fc-btn--ghost-light">See all top agents</Link>
             </div>
           </div>
@@ -204,14 +209,16 @@ export default async function DistrictPage({ params }: Props) {
                 <p className="prose" style={{ marginTop: 14, color: "#39425e" }}>
                   Tenure is a defining factor in {area}&apos;s pricing.{tenurePremium ? ` Freehold trades at a ${tenurePremium.v}% premium, roughly ${formatPrice(Math.abs(freehold.median_price - leasehold.median_price))} more in absolute terms.` : ""} Freehold transactions number {freehold.txns.toLocaleString()} to leasehold&apos;s {leasehold.txns.toLocaleString()}.
                 </p>
-                <div className="fc-grid-3" style={{ marginTop: 18, gap: 16 }}>
-                  {data.tenureAnalysis.slice(0, 3).map((t) => (
-                    <div key={t.tenure_type} className="fc-card fc-card--pad">
+                <div className="fc-scene fc-scene--planner" style={{ marginTop: 18, padding: "clamp(16px,2.5vw,28px)" }}>
+                <div className="fc-grid-3" style={{ gap: 16 }}>
+                  {data.tenureAnalysis.slice(0, 3).map((t, i) => (
+                    <div key={t.tenure_type} className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}>
                       <div className="statcap">{t.tenure_type}</div>
                       <div className="statnum" style={{ marginTop: 6 }}>{formatPrice(t.median_price)}</div>
                       <div className="small muted">{t.txns.toLocaleString()} txns{t.price_per_sqm ? ` · ${formatPrice(t.price_per_sqm)}/sqm` : ""}</div>
                     </div>
                   ))}
+                </div>
                 </div>
               </>
             )}
@@ -222,7 +229,7 @@ export default async function DistrictPage({ params }: Props) {
                 <p className="prose" style={{ marginTop: 14, color: "#39425e" }}>
                   For condos and apartments, floor level creates a measurable price gradient. Units on {highFloor.floor_range} sell for a median of {formatPrice(highFloor.median_price)}, while {lowFloor.floor_range} sell for {formatPrice(lowFloor.median_price)}, a {floorPrem.v}% premium worth roughly {formatPrice(Math.abs(highFloor.median_price - lowFloor.median_price))} per unit.
                 </p>
-                <div className="fc-card fc-card--pad" style={{ marginTop: 18 }}>
+                <div className="fc-card fc-card--pad fc-reveal" style={{ marginTop: 18 }}>
                   {floors.map((f) => (
                     <div className="bar" key={f.floor_range}>
                       <span className="bar__lab">{f.floor_range}</span>
@@ -240,7 +247,7 @@ export default async function DistrictPage({ params }: Props) {
                 <p className="prose" style={{ marginTop: 14, color: "#39425e" }}>
                   Rents average {formatPsf(data.avgRentPsf)} psf per month. Across the most-rented developments the range runs from {formatPsf(rentals[rentals.length - 1].avg_rent_psf)} to {formatPsf(rentals[0].avg_rent_psf)} psf.
                 </p>
-                <div className="fc-card fc-card--pad" style={{ marginTop: 18 }}>
+                <div className="fc-card fc-card--pad fc-reveal" style={{ marginTop: 18 }}>
                   {rentals.map((r) => (
                     <div className="bar" key={r.project}>
                       <span className="bar__lab" style={{ width: "auto", minWidth: 130 }}>{r.project}</span>
@@ -258,7 +265,7 @@ export default async function DistrictPage({ params }: Props) {
                 <p className="prose" style={{ marginTop: 14, color: "#39425e" }}>
                   High transaction volume signals an active secondary market with good liquidity. Buyers who may sell within a few years should weight proven resale activity.
                 </p>
-                <div className="fc-card fc-card--pad" style={{ marginTop: 18, padding: "6px 24px 12px" }}>
+                <div className="fc-card fc-card--pad fc-pop-in" style={{ marginTop: 18, padding: "6px 24px 12px" }}>
                   {topProjects.map((p, i) => {
                     const inner = (
                       <>
@@ -286,12 +293,12 @@ export default async function DistrictPage({ params }: Props) {
 
             <h2 style={{ fontSize: "clamp(24px,2.8vw,32px)", marginTop: 48 }}>What this means for buyers</h2>
             <div className="fc-grid-2" style={{ marginTop: 18, gap: 16 }}>
-              <div className="fc-card fc-card--pad">
+              <div className="fc-card fc-card--pad fc-reveal">
                 <div className="kicker" style={{ color: "var(--blue)" }}>Position</div>
                 <p className="small" style={{ margin: "8px 0 0" }}>At {formatPrice(data.medianPrice)}, {area} sits {aboveAvg ? "above" : "around"} the Singapore private-market median. You get {aboveAvg ? "established character and access" : "value and access"} relative to prime districts.</p>
               </div>
               {floorPrem && (
-                <div className="fc-card fc-card--pad">
+                <div className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: "0.05s" }}>
                   <div className="kicker" style={{ color: "var(--blue)" }}>Floor matters</div>
                   <p className="small" style={{ margin: "8px 0 0" }}>High floors cost {floorPrem.v}% more than low floors. Budget-conscious buyers can save around {formatPrice(Math.abs(highFloor.median_price - lowFloor.median_price))} by choosing a lower floor in the same development.</p>
                 </div>
@@ -299,7 +306,7 @@ export default async function DistrictPage({ params }: Props) {
             </div>
 
             <h2 style={{ fontSize: "clamp(24px,2.8vw,32px)", marginTop: 48 }}>Frequently asked questions</h2>
-            <div style={{ marginTop: 16 }}>
+            <div className="fc-reveal" style={{ marginTop: 16 }}>
               <details className="faq"><summary>What is the average condo price in {area} ({district.code})?<PlusIcon /></summary><p>The median condominium and apartment price is {formatPrice(data.medianPrice)}, based on {data.totalTxns.toLocaleString()} URA-recorded transactions. Prices range widely depending on unit size, tenure and development.</p></details>
               <details className="faq"><summary>How many property transactions were recorded in {area}?<PlusIcon /></summary><p>URA records show {data.totalTxns.toLocaleString()} private residential transactions in {district.code}, covering apartments, condominiums and landed properties.</p></details>
               {topProjects.length >= 3 && <details className="faq"><summary>What are the most popular developments in {area}?<PlusIcon /></summary><p>By URA transaction volume: {topProjects.slice(0, 3).map((p) => `${p.project} (${p.txns} transactions, median ${formatPriceFull(p.median_price)})`).join(", ")}.</p></details>}
@@ -307,7 +314,7 @@ export default async function DistrictPage({ params }: Props) {
             </div>
 
             {bestSlug && (
-              <div className="fc-card fc-card--pad" style={{ marginTop: 32, background: "var(--cloud)", display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
+              <div className="fc-card fc-card--pad fc-reveal" style={{ marginTop: 32, background: "var(--cloud)", display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <div className="serif" style={{ fontWeight: 600, fontSize: 20 }}>Looking for a property agent in {area}?</div>
                   <p className="small muted" style={{ margin: "6px 0 0" }}>We ranked the top-performing agents in {district.code} on transaction records, area expertise and verified reviews.</p>
@@ -374,6 +381,7 @@ export default async function DistrictPage({ params }: Props) {
         </div>
       </div>
 
+      <SkylinePreFooter />
       <section className="fc-section fc-section--dark">
         <div className="fc-wrap" style={{ textAlign: "center" }}>
           <h2 style={{ color: "#fff" }}>Selling in {area}?</h2>

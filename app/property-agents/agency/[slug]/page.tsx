@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import EmailCapture from "../../../components/EmailCapture";
+import ScrollReveal from "../../../components/ScrollReveal";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import { titleName, cleanAgency } from "../../../lib/names";
 import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
@@ -148,6 +150,7 @@ export default async function AgencyPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
 
+      <ScrollReveal />
       <header className="fc-wrap" style={{ padding: "24px 40px 0" }}>
         <div className="sr-crumb">
           <Link href="/">Home</Link> / <Link href="/property-agents">Compare agents</Link> / {titleName(agency.name)}
@@ -158,10 +161,11 @@ export default async function AgencyPage({ params }: Props) {
         <div className="ap-layout">
           <main>
             {/* identity */}
-            <div className="fc-card" style={{ padding: 26 }}>
-              <h1 style={{ margin: 0, fontSize: "clamp(28px,3.4vw,40px)" }}>{titleName(agency.name)}</h1>
-              <div className="mono small muted" style={{ marginTop: 6 }}>CEA License {agency.license_number}</div>
-              <div className="fc-row" style={{ gap: 14, marginTop: 18 }}>
+            <div className="fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+            <div className="fc-card" style={{ padding: 26, background: "#fff" }}>
+              <h1 className="fc-hero-in fc-hero-in--1" style={{ margin: 0, fontSize: "clamp(28px,3.4vw,40px)" }}>{titleName(agency.name)}</h1>
+              <div className="mono small muted fc-hero-in fc-hero-in--2" style={{ marginTop: 6 }}>CEA License {agency.license_number}</div>
+              <div className="fc-row fc-hero-in fc-hero-in--3" style={{ gap: 14, marginTop: 18 }}>
                 {agency.google_rating && (
                   <div className="fc-card fc-row" style={{ padding: "14px 18px", gap: 14, background: "var(--cloud)", border: "none" }}>
                     <span className="serif" style={{ fontWeight: 600, fontSize: 34 }}>{Number(agency.google_rating).toFixed(1)}</span>
@@ -177,9 +181,10 @@ export default async function AgencyPage({ params }: Props) {
                 <span className="fc-badge fc-badge--ranked"><span className="dot" /> {agency.agent_count.toLocaleString()} agents ranked</span>
               </div>
             </div>
+            </div>
 
             {/* overview */}
-            <div className="fc-card fc-card--pad" style={{ marginTop: 16 }}>
+            <div className="fc-card fc-card--pad fc-reveal" style={{ marginTop: 16 }}>
               <h2 style={{ fontSize: 22, margin: "0 0 10px" }}>Overview</h2>
               <p style={{ color: "#39425e", fontSize: 16, lineHeight: 1.6, margin: "0 0 10px" }}>
                 {titleName(agency.name)} (CEA {agency.license_number}) is a property agency in Singapore with {agency.agent_count.toLocaleString()} registered {agency.agent_count === 1 ? "agent" : "agents"}.
@@ -194,7 +199,7 @@ export default async function AgencyPage({ params }: Props) {
 
             {/* agents */}
             {agentList.length > 0 && (
-              <div className="fc-card fc-card--pad" style={{ marginTop: 16 }}>
+              <div className="fc-card fc-card--pad fc-pop-in" style={{ marginTop: 16 }}>
                 <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                   <div className="eyebrow eyebrow--muted">Agents \u00b7 showing {agentList.length} of {agency.agent_count.toLocaleString()}</div>
                   <Link href="/property-agents" className="small" style={{ fontWeight: 700 }}>Compare by AgentScore \u203a</Link>
@@ -216,7 +221,7 @@ export default async function AgencyPage({ params }: Props) {
 
           <aside>
             <div className="ap-side">
-              <div className="fc-card fc-card--pad">
+              <div className="fc-card fc-card--pad fc-reveal">
                 <div className="eyebrow eyebrow--muted">Agency details</div>
                 <div style={{ marginTop: 10 }}>
                   <div className="metarow"><span className="k">CEA license</span><span className="v tnum">{agency.license_number}</span></div>
@@ -226,20 +231,20 @@ export default async function AgencyPage({ params }: Props) {
                 </div>
               </div>
 
-              <div className="fc-card fc-card--pad" style={{ background: "var(--ink)", color: "#fff" }}>
+              <div className="fc-card fc-card--pad fc-reveal" style={{ background: "var(--ink)", color: "#fff" }}>
                 <div className="eyebrow" style={{ color: "var(--slate-2)" }}>Selling your home?</div>
                 <p className="small" style={{ margin: "10px 0 14px", color: "rgba(255,255,255,0.82)" }}>
                   Compare every CEA agent on real transaction records and contact the ones you choose. Always free for sellers.
                 </p>
-                <Link href="/sell?utm_source=agency" className="fc-btn fc-btn--primary fc-btn--block">Compare agents</Link>
+                <Link href="/sell?utm_source=agency" className="fc-btn fc-btn--primary fc-btn--block fc-btn--hairline">Compare agents</Link>
                 <Link href="/property-agents" className="small" style={{ display: "block", marginTop: 12, textAlign: "center", color: "rgba(255,255,255,0.82)" }}>Or browse all agencies ›</Link>
               </div>
 
-              <div className="fc-card fc-card--pad">
+              <div className="fc-card fc-card--pad fc-reveal">
                 <EmailCapture variant="sidebar" source="agency" pagePath={`/property-agents/agency/${slug}`} heading="Agency updates" description={`Get notified when ${titleName(agency.name)} data is updated.`} />
               </div>
 
-              <div className="fc-card fc-card--pad">
+              <div className="fc-card fc-card--pad fc-reveal">
                 <div className="eyebrow eyebrow--muted">Guides</div>
                 <div className="fc-col" style={{ gap: 8, marginTop: 10 }}>
                   <Link href="/guides/property-agent-commission" className="small" style={{ fontWeight: 600 }}>Property agent commission rates &rsaquo;</Link>
@@ -248,7 +253,7 @@ export default async function AgencyPage({ params }: Props) {
                 </div>
               </div>
 
-              <div className="fc-card fc-card--pad">
+              <div className="fc-card fc-card--pad fc-reveal">
                 <div className="eyebrow eyebrow--muted">Compare with</div>
                 <div className="fc-col" style={{ gap: 8, marginTop: 10 }}>
                   {[
@@ -267,6 +272,8 @@ export default async function AgencyPage({ params }: Props) {
           </aside>
         </div>
       </div>
+
+      <SkylinePreFooter />
     </>
   );
 }

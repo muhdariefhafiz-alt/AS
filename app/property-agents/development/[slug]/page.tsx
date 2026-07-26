@@ -5,6 +5,8 @@ import { formatPrice, formatPriceFull } from "../../../lib/narrativeHelpers";
 import PriceTrendChart from "../../../components/PriceTrendChart";
 import StatCard from "../../../components/StatCard";
 import EmailCapture from "../../../components/EmailCapture";
+import ScrollReveal from "../../../components/ScrollReveal";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
@@ -158,6 +160,7 @@ export default async function DevelopmentPage({ params }: Props) {
 
   return (
     <>
+      <ScrollReveal />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas).replace(/</g, "\\u003c") }} />
 
       <nav className="border-b border-gray-100">
@@ -172,13 +175,13 @@ export default async function DevelopmentPage({ params }: Props) {
 
       <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600">
+          <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600">
             D{project.district} {distName}
           </span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">{project.name}</h1>
-          <p className="mt-1 text-sm text-gray-500">{project.street} · District {project.district} · {isFreehold ? "Freehold" : primaryTenure}</p>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">{project.name}</h1>
+          <p className="fc-hero-in fc-hero-in--3 mt-1 text-sm text-gray-500">{project.street} · District {project.district} · {isFreehold ? "Freehold" : primaryTenure}</p>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="fc-hero-in fc-hero-in--4 mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard label="Median Price" value={formatPrice(project.median_price)} subtext={`${project.txn_count} transactions`} />
             <StatCard label="Price Range" value={`${formatPrice(project.min_price)} - ${formatPrice(project.max_price)}`} />
             <StatCard label="Tenure" value={isFreehold ? "Freehold" : "Leasehold"} subtext={isFreehold ? "" : primaryTenure} />
@@ -189,6 +192,7 @@ export default async function DevelopmentPage({ params }: Props) {
 
       {/* Definition Block - optimized for featured snippets and AI extraction */}
       <div className="mx-auto max-w-[1120px] px-5 pt-8 md:px-8">
+        <div className="fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900">What is the price of {project.name}?</h2>
           <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
@@ -199,6 +203,7 @@ export default async function DevelopmentPage({ params }: Props) {
             {avgRent && ` Average rent is S$${avgRent.toFixed(2)} per square foot per month.`}
           </p>
         </div>
+        </div>
       </div>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
@@ -206,7 +211,7 @@ export default async function DevelopmentPage({ params }: Props) {
           <div className="space-y-10 lg:col-span-3">
 
             {/* Market Overview */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">{project.name} Price Analysis</h2>
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
@@ -251,7 +256,7 @@ export default async function DevelopmentPage({ params }: Props) {
 
             {/* Price Trend */}
             {chartData.length >= 4 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Price Trend</h2>
                 <p className="mt-1 text-sm text-gray-500">Median transaction price by contract month.</p>
                 <div className="mt-4 rounded-xl border border-gray-100 bg-white p-4">
@@ -263,7 +268,7 @@ export default async function DevelopmentPage({ params }: Props) {
 
             {/* Floor Analysis */}
             {floors.length >= 3 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Price by Floor Level</h2>
                 <div className="mt-4 space-y-1.5">
                   {floors.map((f) => {
@@ -288,7 +293,7 @@ export default async function DevelopmentPage({ params }: Props) {
 
             {/* Unit Size Analysis */}
             {sizes.length >= 2 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Price by Unit Size</h2>
                 <div className="mt-4 overflow-x-auto">
                   <table className="w-full text-sm">
@@ -317,7 +322,7 @@ export default async function DevelopmentPage({ params }: Props) {
 
             {/* Active Listings */}
             {listings.length > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Current Listings</h2>
                 <div className="mt-4 space-y-2">
                   {listings.map((l: { title: string; price: number; agent_name: string; agency_name: string; listing_type: string; bedrooms: number }, idx: number) => (
@@ -338,14 +343,14 @@ export default async function DevelopmentPage({ params }: Props) {
 
             {/* Top agents in the development's district (CEA transaction data) */}
             {topAgents.length > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Top agents in {distName}</h2>
                 <p className="mt-1 text-sm text-gray-500">
                   Highest-scoring agents active in D{project.district} {distName}, the district where {project.name} is
                   located. Rankings come from CEA transaction records for the wider district, not from activity at this
                   specific development.
                 </p>
-                <div className="mt-4 space-y-2">
+                <div className="fc-pop-in mt-4 space-y-2">
                   {topAgents.map((a) => (
                     <Link
                       key={a.agent_slug}
@@ -372,7 +377,7 @@ export default async function DevelopmentPage({ params }: Props) {
             {/* Agent-owned building spotlight: marketing content, clearly
                 attributed, next to the neutral URA data. Never a ranking. */}
             {spotlight && (
-              <section className="rounded-xl border border-[var(--blue-wash)] bg-gradient-to-b from-[var(--blue-wash)]/40 to-white p-6">
+              <section className="fc-reveal rounded-xl border border-[var(--blue-wash)] bg-gradient-to-b from-[var(--blue-wash)]/40 to-white p-6">
                 <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue-deep)]">Agent spotlight</p>
                 <h2 className="mt-2 text-xl font-bold text-gray-900">{spotlight.headline}</h2>
                 <div className="mt-3 space-y-3 text-[15px] leading-[1.75] text-gray-600">
@@ -408,7 +413,7 @@ export default async function DevelopmentPage({ params }: Props) {
 
             {/* Seller CTA: turn development-page traffic into a free, no-cost
                 agent comparison (closes the building-page / dev-page loop). */}
-            <section className="rounded-xl border border-[var(--blue-wash)] bg-gradient-to-b from-[var(--blue-wash)]/50 to-white p-6 text-center">
+            <section className="fc-reveal rounded-xl border border-[var(--blue-wash)] bg-gradient-to-b from-[var(--blue-wash)]/50 to-white p-6 text-center">
               <h2 className="text-xl font-bold text-gray-900">Selling a unit at {project.name}?</h2>
               <p className="mx-auto mt-2 max-w-[54ch] text-[15px] leading-relaxed text-gray-600">
                 Compare every CEA agent active in {distName} on their real transaction record, then invite up to three to send you a fee quote. Always free, and no agent can pay to rank.
@@ -423,7 +428,7 @@ export default async function DevelopmentPage({ params }: Props) {
 
             {/* FAQ */}
             {faqItems.length > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">FAQ</h2>
                 <div className="mt-4 space-y-5">
                   {faqItems.map((f, i) => (
@@ -439,6 +444,7 @@ export default async function DevelopmentPage({ params }: Props) {
           </div>
 
           <aside className="space-y-6 lg:col-span-2">
+            <div className="fc-scene fc-scene--planner fc-reveal" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Quick Answer</h3>
               <p className="mt-3 text-[15px] leading-relaxed text-gray-600">
@@ -447,8 +453,9 @@ export default async function DevelopmentPage({ params }: Props) {
                 {avgRent && ` Rental rate: ~S$${avgRent.toFixed(2)} psf/month.`}
               </p>
             </div>
+            </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Development Details</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-gray-500">Street</dt><dd className="font-medium text-gray-900 text-right">{project.street}</dd></div>
@@ -467,7 +474,7 @@ export default async function DevelopmentPage({ params }: Props) {
             />
 
             {sizes.length >= 2 && (
-              <div className="rounded-xl border border-gray-200 bg-white p-5">
+              <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Unit Sizes</h3>
                 <div className="mt-4 space-y-3">
                   {sizes.map((s) => (
@@ -482,6 +489,8 @@ export default async function DevelopmentPage({ params }: Props) {
           </aside>
         </div>
       </div>
+
+      <SkylinePreFooter />
     </>
   );
 }

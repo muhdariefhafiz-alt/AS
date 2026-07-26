@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { formatPrice } from "../../../lib/narrativeHelpers";
 import EmailCapture from "../../../components/EmailCapture";
+import HeroBand from "../../../components/HeroBand";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import type { Metadata } from "next";
 import { seoTitle } from "../../../lib/seoTitle";
 
@@ -175,42 +177,21 @@ export default async function MarketYearPage({ params }: Props) {
       </nav>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue)]">Market Overview</p>
-          <h1 className="mt-3 text-3xl font-extrabold text-white md:text-4xl">
-            Singapore Property Market {year}
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-slate-400">
-            {totalTxns > 0
-              ? `${totalTxns.toLocaleString()} property transactions recorded. Private sales, HDB resale, and agent activity based on official data.`
-              : `Market overview for ${year} based on available transaction data.`}
-          </p>
-
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{totalTxns.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-slate-500">total transactions</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{privateTxns.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-slate-500">private sales</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{hdbTxns.toLocaleString()}</p>
-              <p className="mt-1 text-xs text-slate-500">HDB resale</p>
-            </div>
-            {hasPrev && totalPrevTxns > 0 && (
-              <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-                <p className={`text-2xl font-extrabold ${totalTxns >= totalPrevTxns ? "text-[var(--slate-2)]" : "text-red-300"}`}>
-                  {pctChange(totalTxns, totalPrevTxns)}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">vs {prevYear}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+      <HeroBand
+        eyebrow="Market Overview"
+        title={<>Singapore Property</>}
+        accent={<>Market {year}</>}
+        sub={totalTxns > 0
+          ? `${totalTxns.toLocaleString()} property transactions recorded. Private sales, HDB resale, and agent activity based on official data.`
+          : `Market overview for ${year} based on available transaction data.`}
+        chips={[
+          `${totalTxns.toLocaleString()} total transactions`,
+          `${privateTxns.toLocaleString()} private sales`,
+          `${hdbTxns.toLocaleString()} HDB resale`,
+          ...(hasPrev && totalPrevTxns > 0 ? [`${pctChange(totalTxns, totalPrevTxns)} vs ${prevYear}`] : []),
+        ]}
+        art="mrt"
+      />
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         {/* Definition block */}
@@ -232,10 +213,10 @@ export default async function MarketYearPage({ params }: Props) {
           <div className="space-y-10 lg:col-span-5">
             {/* Top agents */}
             {topAgents.length > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Most active agents in {year}</h2>
                 <p className="mt-2 text-sm text-gray-500">Ranked by number of recorded transactions.</p>
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 space-y-2 fc-pop-in">
                   {topAgents.slice(0, 15).map((a, i) => (
                     <Link
                       key={a.license}
@@ -261,9 +242,10 @@ export default async function MarketYearPage({ params }: Props) {
 
             {/* Top agencies */}
             {topAgencies.length > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Most active agencies in {year}</h2>
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+                  <div className="space-y-2">
                   {topAgencies.map((a) => {
                     const pct = topAgentsRes.data ? Math.round((a.count / topAgentsRes.data.length) * 100) : 0;
                     return (
@@ -278,15 +260,17 @@ export default async function MarketYearPage({ params }: Props) {
                       </div>
                     );
                   })}
+                  </div>
                 </div>
               </section>
             )}
 
             {/* YoY comparison */}
             {hasPrev && totalPrevTxns > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">{year} vs {prevYear}</h2>
-                <div className="mt-4 overflow-x-auto">
+                <div className="mt-4 fc-scene fc-scene--planner" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+                  <div className="overflow-x-auto" style={{ background: "#fff" }}>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-200">
@@ -323,6 +307,7 @@ export default async function MarketYearPage({ params }: Props) {
                       </tr>
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </section>
             )}
@@ -330,7 +315,7 @@ export default async function MarketYearPage({ params }: Props) {
 
           {/* Sidebar */}
           <aside className="space-y-6 lg:col-span-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 fc-reveal">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other years</h3>
               <div className="mt-3 space-y-1">
                 {VALID_YEARS.filter((y) => y !== year).map((y) => (
@@ -350,7 +335,7 @@ export default async function MarketYearPage({ params }: Props) {
               description="Get notified when new market data and annual reports are published."
             />
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 fc-reveal">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Browse districts</h3>
               <div className="mt-3 space-y-1">
                 {districts.slice(0, 10).map((d) => (
@@ -363,6 +348,8 @@ export default async function MarketYearPage({ params }: Props) {
             </div>
           </aside>
         </div>
+
+        <SkylinePreFooter />
 
         <p className="mt-8 text-xs text-gray-400">
           Transaction data from URA (private property) and HDB (resale flats). Agent activity based on CEA transaction records.

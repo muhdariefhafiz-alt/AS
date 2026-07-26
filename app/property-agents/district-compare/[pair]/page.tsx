@@ -4,6 +4,8 @@ import { supabase } from "../../../lib/supabase";
 import { getDistrictMarketData } from "../../../lib/districtData";
 import { formatPrice, formatPsf } from "../../../lib/narrativeHelpers";
 import EmailCapture from "../../../components/EmailCapture";
+import HeroBand from "../../../components/HeroBand";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import { seoTitle } from "../../../lib/seoTitle";
 import type { Metadata } from "next";
 
@@ -218,37 +220,19 @@ export default async function DistrictComparePage({ params }: Props) {
       </nav>
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--blue)]">District Comparison</p>
-          <h1 className="mt-3 text-3xl font-extrabold text-white md:text-4xl">
-            {nameA} ({distA.code}) vs {nameB} ({distB.code})
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-slate-400">
-            Side-by-side property market comparison based on URA transaction records. Condo prices, transaction volumes, tenure analysis, and top developments.
-          </p>
-
-          {/* Quick stats */}
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{formatPrice(dataA.medianPrice)}</p>
-              <p className="mt-1 text-xs text-slate-500">{distA.code} median</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{formatPrice(dataB.medianPrice)}</p>
-              <p className="mt-1 text-xs text-slate-500">{distB.code} median</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-[var(--slate-2)]">{pctDiff(dataA.medianPrice, dataB.medianPrice)}</p>
-              <p className="mt-1 text-xs text-slate-500">price difference</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-              <p className="text-2xl font-extrabold text-white">{(dataA.totalTxns + dataB.totalTxns).toLocaleString()}</p>
-              <p className="mt-1 text-xs text-slate-500">combined transactions</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroBand
+        eyebrow="District Comparison"
+        title={<>{nameA} ({distA.code}) vs</>}
+        accent={<>{nameB} ({distB.code})</>}
+        sub="Side-by-side property market comparison based on URA transaction records. Condo prices, transaction volumes, tenure analysis, and top developments."
+        chips={[
+          `${formatPrice(dataA.medianPrice)} ${distA.code} median`,
+          `${formatPrice(dataB.medianPrice)} ${distB.code} median`,
+          `${pctDiff(dataA.medianPrice, dataB.medianPrice)} price difference`,
+          `${(dataA.totalTxns + dataB.totalTxns).toLocaleString()} combined transactions`,
+        ]}
+        art="condo"
+      />
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         {/* Definition block for AI SEO */}
@@ -262,9 +246,10 @@ export default async function DistrictComparePage({ params }: Props) {
         </p>
 
         {/* Comparison table */}
-        <section className="mt-10">
+        <section className="mt-10 fc-reveal">
           <h2 className="text-xl font-bold text-gray-900">Price and volume comparison</h2>
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+            <div className="overflow-x-auto" style={{ background: "#fff" }}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
@@ -298,6 +283,7 @@ export default async function DistrictComparePage({ params }: Props) {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         </section>
 
@@ -306,8 +292,8 @@ export default async function DistrictComparePage({ params }: Props) {
           <div>
             <h3 className="text-lg font-bold text-gray-900">{distA.code} {nameA} - property types</h3>
             <div className="mt-3 space-y-2">
-              {dataA.propertyTypes.slice(0, 6).map((t) => (
-                <div key={t.property_type} className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3">
+              {dataA.propertyTypes.slice(0, 6).map((t, i) => (
+                <div key={t.property_type} className="fc-reveal flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}>
                   <span className="text-sm text-gray-700">{t.property_type}</span>
                   <div className="text-right">
                     <span className="text-sm font-medium text-gray-900">{formatPrice(t.median_price)}</span>
@@ -320,8 +306,8 @@ export default async function DistrictComparePage({ params }: Props) {
           <div>
             <h3 className="text-lg font-bold text-gray-900">{distB.code} {nameB} - property types</h3>
             <div className="mt-3 space-y-2">
-              {dataB.propertyTypes.slice(0, 6).map((t) => (
-                <div key={t.property_type} className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3">
+              {dataB.propertyTypes.slice(0, 6).map((t, i) => (
+                <div key={t.property_type} className="fc-reveal flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}>
                   <span className="text-sm text-gray-700">{t.property_type}</span>
                   <div className="text-right">
                     <span className="text-sm font-medium text-gray-900">{formatPrice(t.median_price)}</span>
@@ -338,8 +324,8 @@ export default async function DistrictComparePage({ params }: Props) {
           <div>
             <h3 className="text-lg font-bold text-gray-900">Top developments in {nameA}</h3>
             <div className="mt-3 space-y-2">
-              {topA.map((p) => (
-                <div key={p.project} className="rounded-lg border border-gray-100 bg-white p-3">
+              {topA.map((p, i) => (
+                <div key={p.project} className="fc-reveal rounded-lg border border-gray-100 bg-white p-3" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}>
                   <p className="text-sm font-medium text-gray-900">{p.project}</p>
                   <p className="mt-0.5 text-xs text-gray-400">{p.street} - {formatPrice(p.median_price)} median - {p.txns} sales</p>
                 </div>
@@ -349,8 +335,8 @@ export default async function DistrictComparePage({ params }: Props) {
           <div>
             <h3 className="text-lg font-bold text-gray-900">Top developments in {nameB}</h3>
             <div className="mt-3 space-y-2">
-              {topB.map((p) => (
-                <div key={p.project} className="rounded-lg border border-gray-100 bg-white p-3">
+              {topB.map((p, i) => (
+                <div key={p.project} className="fc-reveal rounded-lg border border-gray-100 bg-white p-3" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}>
                   <p className="text-sm font-medium text-gray-900">{p.project}</p>
                   <p className="mt-0.5 text-xs text-gray-400">{p.street} - {formatPrice(p.median_price)} median - {p.txns} sales</p>
                 </div>
@@ -361,7 +347,7 @@ export default async function DistrictComparePage({ params }: Props) {
 
         {/* Floor premium comparison */}
         {dataA.floorPremium.length >= 3 && dataB.floorPremium.length >= 3 && (
-          <section className="mt-10">
+          <section className="mt-10 fc-reveal">
             <h2 className="text-xl font-bold text-gray-900">Floor-level price premium</h2>
             <p className="mt-2 text-sm text-gray-500">How prices change by storey level in each district.</p>
             <div className="mt-4 grid gap-8 md:grid-cols-2">
@@ -389,10 +375,10 @@ export default async function DistrictComparePage({ params }: Props) {
 
         {/* Active agents */}
         {(dataA.activeAgents.length > 0 || dataB.activeAgents.length > 0) && (
-          <section className="mt-10 grid gap-8 md:grid-cols-2">
+          <section className="mt-10 grid gap-8 md:grid-cols-2 fc-reveal">
             <div>
               <h3 className="text-lg font-bold text-gray-900">Active agents in {nameA}</h3>
-              <div className="mt-3 space-y-2">
+              <div className="mt-3 space-y-2 fc-pop-in">
                 {dataA.activeAgents.slice(0, 5).map((a) => (
                   <Link key={a.agent_license} href={`/property-agents/agent/${a.agent_license.toLowerCase()}`}
                     className="group block rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)]">
@@ -404,7 +390,7 @@ export default async function DistrictComparePage({ params }: Props) {
             </div>
             <div>
               <h3 className="text-lg font-bold text-gray-900">Active agents in {nameB}</h3>
-              <div className="mt-3 space-y-2">
+              <div className="mt-3 space-y-2 fc-pop-in">
                 {dataB.activeAgents.slice(0, 5).map((a) => (
                   <Link key={a.agent_license} href={`/property-agents/agent/${a.agent_license.toLowerCase()}`}
                     className="group block rounded-lg border border-gray-100 bg-white p-3 transition hover:border-[var(--line-2)]">
@@ -423,17 +409,20 @@ export default async function DistrictComparePage({ params }: Props) {
           <div className="mt-4 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
             {DISTRICTS.filter((d) => d.code !== distA.code && d.code !== distB.code)
               .slice(0, 6)
-              .map((d) => (
+              .map((d, i) => (
                 <Link
                   key={d.code}
                   href={`/property-agents/district-compare/${distA.code.toLowerCase()}-vs-${d.code.toLowerCase()}`}
-                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
+                  className="fc-reveal rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 transition hover:border-[var(--line-2)] hover:text-[var(--blue)]"
+                  style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}
                 >
                   {distA.code} vs {d.code} {d.short}
                 </Link>
               ))}
           </div>
         </section>
+
+        <SkylinePreFooter />
 
         {/* Email capture */}
         <div className="mt-10">

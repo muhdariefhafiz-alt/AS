@@ -4,6 +4,8 @@ import { supabase } from "../../../lib/supabase";
 import { formatPrice, formatPriceFull } from "../../../lib/narrativeHelpers";
 import type { Metadata } from "next";
 import { seoTitle } from "../../../lib/seoTitle";
+import HeroBand from "../../../components/HeroBand";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
 export const dynamicParams = false;
@@ -131,23 +133,21 @@ export default async function BudgetPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
 
-      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)]">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <nav className="text-xs text-[var(--slate-2)]">
-            <Link href="/" className="hover:text-[var(--blue-wash)]">Home</Link>
-            <span className="mx-1.5">/</span>
-            <Link href="/property-agents" className="hover:text-[var(--blue-wash)]">Property Agents</Link>
-            <span className="mx-1.5">/</span>
-            <span className="text-[var(--slate-2)]">Budget: {r.label}</span>
-          </nav>
-          <h1 className="mt-6 text-3xl font-extrabold text-white md:text-4xl">
-            What can you buy for {r.label} in Singapore?
-          </h1>
-          <p className="mt-3 max-w-xl text-lg text-white/60">
-            {totalTxns.toLocaleString()} recent transactions in this price range. Here is where your budget goes furthest.
-          </p>
-        </div>
-      </section>
+      <HeroBand
+        eyebrow={`Budget: ${r.label}`}
+        title={<>What can you buy for {r.label}</>}
+        accent={<>in Singapore?</>}
+        sub={`${totalTxns.toLocaleString()} recent transactions in this price range. Here is where your budget goes furthest.`}
+        art="mrt"
+      >
+        <nav className="text-xs text-[var(--slate-2)]">
+          <Link href="/" className="hover:text-[var(--blue-wash)]">Home</Link>
+          <span className="mx-1.5">/</span>
+          <Link href="/property-agents" className="hover:text-[var(--blue-wash)]">Property Agents</Link>
+          <span className="mx-1.5">/</span>
+          <span className="text-[var(--slate-2)]">Budget: {r.label}</span>
+        </nav>
+      </HeroBand>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         {/* Definition block for AI SEO */}
@@ -161,9 +161,10 @@ export default async function BudgetPage({ params }: Props) {
           <div className="lg:col-span-2 space-y-10">
             {/* Property types */}
             {topTypes.length > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Property types in this range</h2>
-                <div className="mt-4 space-y-2">
+                <div className="fc-scene fc-scene--planner mt-4" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+                <div className="space-y-2">
                   {topTypes.map(([type, count]) => (
                     <div key={type} className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-3">
                       <span className="text-sm font-medium text-gray-700">{type}</span>
@@ -171,14 +172,15 @@ export default async function BudgetPage({ params }: Props) {
                     </div>
                   ))}
                 </div>
+                </div>
               </section>
             )}
 
             {/* Top districts */}
             {topDistricts.length > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Top districts for {r.label}</h2>
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 space-y-2 fc-pop-in">
                   {topDistricts.map(([d, v]) => {
                     const slug = `d${d.replace("D", "").toLowerCase()}`;
                     return (
@@ -194,7 +196,7 @@ export default async function BudgetPage({ params }: Props) {
 
             {/* Top HDB towns */}
             {topTowns.length > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">HDB towns in this range</h2>
                 <div className="mt-4 space-y-2">
                   {topTowns.map(([town, v]) => {
@@ -213,7 +215,7 @@ export default async function BudgetPage({ params }: Props) {
 
             {/* Top developments */}
             {topDevs.length > 0 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Popular developments</h2>
                 <div className="mt-4 space-y-2">
                   {topDevs.map(([dev, count]) => (
@@ -229,7 +231,7 @@ export default async function BudgetPage({ params }: Props) {
 
           {/* Sidebar */}
           <aside className="space-y-6">
-            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5 fc-reveal">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Need an agent?</h3>
               <p className="mt-2 text-sm text-gray-600">
                 Find the top-performing agents for your budget and area.
@@ -239,7 +241,7 @@ export default async function BudgetPage({ params }: Props) {
               </Link>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 fc-reveal">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Other budgets</h3>
               <div className="mt-3 space-y-2">
                 {RANGES.filter(x => x.slug !== range).map(x => (
@@ -251,6 +253,7 @@ export default async function BudgetPage({ params }: Props) {
           </aside>
         </div>
       </div>
+      <SkylinePreFooter />
     </>
   );
 }

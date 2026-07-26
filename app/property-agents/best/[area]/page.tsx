@@ -10,6 +10,8 @@ import { bandFor } from "../../../components/Brand";
 import AgentFlags from "../../../components/AgentFlags";
 import { titleName, cleanAgency } from "../../../lib/names";
 import { seoTitle } from "../../../lib/seoTitle";
+import HeroBand from "../../../components/HeroBand";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -231,34 +233,33 @@ export default async function BestAgentsPage({ params }: Props) {
       </div>
 
       {/* header */}
-      <header className="fc-wrap" style={{ padding: "24px 40px 30px" }}>
-        <div className="fc-row" style={{ gap: 10 }}>
-          <span className="dpill">{area.district}</span>
-          <span className="upill">Updated {updated}</span>
-        </div>
-        <h1 style={{ margin: "20px 0 0", fontSize: "clamp(34px,5vw,60px)" }}>
-          Best property agents in {short}
-        </h1>
-        <p className="lede" style={{ maxWidth: "62ch", marginTop: 16 }}>
+      <HeroBand
+        eyebrow={area.district}
+        title={<>Best property agents</>}
+        accent={<>in {short}</>}
+        sub={<>
           {topAgents.length} agents ranked by AgentScore, with a detailed transaction analysis for each.
           {medianPrice > 0 && ` Median condo price ${formatPrice(medianPrice)},`}
           {totalTxns > 0 && ` from ${totalTxns.toLocaleString()} URA transactions recorded in ${area.district}.`}
-        </p>
-        <div className="fc-row" style={{ marginTop: 24, gap: 12 }}>
-          <Link href={`/sell?type=CONDO&district=${area.district}&utm_source=best_area`} className="fc-btn fc-btn--primary">See ranked agents</Link>
+        </>}
+        chips={[`Updated ${updated}`]}
+        art="condo"
+      >
+        <div className="fc-row" style={{ gap: 12 }}>
+          <Link href={`/sell?type=CONDO&district=${area.district}&utm_source=best_area`} className="fc-btn fc-btn--primary fc-btn--hairline">See ranked agents</Link>
           <Link href="/property-agents/compare" className="fc-btn fc-btn--ghost">Compare side by side</Link>
           <div style={{ marginLeft: 4 }}>
             <ShareButtons compact url={`/property-agents/best/${slug}`} title={`Best property agents in ${short} (${area.district})`} />
           </div>
         </div>
-      </header>
+      </HeroBand>
 
       <div className="fc-wrap" style={{ padding: "0 40px" }}><hr className="rule" /></div>
 
       {/* editorial */}
       <section className="fc-wrap" style={{ padding: "48px 40px 8px" }}>
-        <h2 style={{ fontSize: "clamp(26px,3vw,34px)" }}>The agent market in {short}</h2>
-        <div className="prose" style={{ marginTop: 18 }}>
+        <h2 className="fc-reveal" style={{ fontSize: "clamp(26px,3vw,34px)" }}>The agent market in {short}</h2>
+        <div className="prose fc-reveal" style={{ marginTop: 18 }}>
           <p>
             {area.name} ({area.district}) is served by a deep pool of property agents.
             {topAgents.length > 0 && ` Of the agents with recorded CEA transaction data in this area, the top ${topAgents.length} are ranked below on AgentScore.`}
@@ -285,7 +286,7 @@ export default async function BestAgentsPage({ params }: Props) {
 
       {/* ranked agents */}
       <section className="fc-wrap" style={{ padding: "40px 40px 24px" }}>
-        <h2 style={{ fontSize: "clamp(26px,3vw,34px)" }}>Top {topAgents.length} agents in {short}</h2>
+        <h2 className="fc-reveal" style={{ fontSize: "clamp(26px,3vw,34px)" }}>Top {topAgents.length} agents in {short}</h2>
         <p className="muted small" style={{ margin: "8px 0 0", maxWidth: "70ch" }}>
           Agents on the same AgentScore are ordered by local transaction volume. The score sale-weights volume,
           so agents who sell homes for owners rank higher; you can still see each agent&apos;s sale-versus-rental
@@ -295,7 +296,7 @@ export default async function BestAgentsPage({ params }: Props) {
         {topAgents.map((a, i) => {
           const band = bandFor(a.score);
           return (
-            <article key={a.cea_reg} className="fc-card arank">
+            <article key={a.cea_reg} className="fc-card arank fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}>
               <div className="arank__head">
                 <span className={`rank-num ${RANK_TIER(i)}`}>{i + 1}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -326,7 +327,8 @@ export default async function BestAgentsPage({ params }: Props) {
 
       {/* how to choose */}
       <section className="fc-wrap" style={{ padding: "16px 40px 8px" }}>
-        <div className="fc-card fc-card--fill fc-card--pad">
+        <div className="fc-scene fc-scene--grow fc-reveal" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+        <div className="fc-card fc-card--fill fc-card--pad" style={{ background: "#fff" }}>
           <h2 style={{ fontSize: "clamp(22px,2.4vw,28px)" }}>How to choose an agent in {short}</h2>
           <div className="prose" style={{ marginTop: 14 }}>
             <p>A high AgentScore signals a strong overall track record, but the best agent for you depends on your home and your timeline. Three things to weigh as you read the list above:</p>
@@ -335,10 +337,12 @@ export default async function BestAgentsPage({ params }: Props) {
             <p><strong>Representation experience.</strong> Agents who have acted for both buyers and sellers understand both sides of a negotiation, an advantage in pricing and deal structure.</p>
           </div>
         </div>
+        </div>
       </section>
 
       {/* email capture */}
       <section className="fc-wrap" style={{ padding: "24px 40px" }}>
+        <div className="fc-scene fc-scene--planner fc-reveal" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
         <div className="fc-card fc-card--pad">
           <EmailCapture
             variant="inline"
@@ -349,12 +353,13 @@ export default async function BestAgentsPage({ params }: Props) {
             description={`We will let you know when agent rankings change in ${short} or new market data lands.`}
           />
         </div>
+        </div>
       </section>
 
       {/* FAQ */}
       <section className="fc-wrap" style={{ padding: "16px 40px 8px" }}>
-        <h2 style={{ fontSize: "clamp(22px,2.4vw,28px)" }}>Frequently asked questions</h2>
-        <div className="prose" style={{ marginTop: 14 }}>
+        <h2 className="fc-reveal" style={{ fontSize: "clamp(22px,2.4vw,28px)" }}>Frequently asked questions</h2>
+        <div className="prose fc-reveal" style={{ marginTop: 14 }}>
           {topAgents.length > 0 && (
             <>
               <h3 className="serif" style={{ fontSize: 19, margin: "0 0 4px" }}>Who is the best property agent in {short}?</h3>
@@ -371,7 +376,7 @@ export default async function BestAgentsPage({ params }: Props) {
       {/* explore / claim */}
       <section className="fc-wrap" style={{ padding: "24px 40px 72px" }}>
         <div className="fc-grid-2">
-          <div className="fc-card fc-card--pad">
+          <div className="fc-card fc-card--pad fc-reveal">
             <div className="eyebrow eyebrow--muted">Are you ranked here?</div>
             <h3 className="serif" style={{ fontSize: 22, margin: "10px 0 6px" }}>Claim your profile</h3>
             <p className="muted" style={{ fontSize: 14, marginBottom: 16 }}>
@@ -379,7 +384,7 @@ export default async function BestAgentsPage({ params }: Props) {
             </p>
             <Link href="/for-agents" className="fc-btn fc-btn--ink fc-btn--sm">Claim your profile</Link>
           </div>
-          <div className="fc-card fc-card--pad">
+          <div className="fc-card fc-card--pad fc-reveal" style={{ ["--reveal-delay" as string]: "0.05s" }}>
             <div className="eyebrow eyebrow--muted">Other areas</div>
             <div className="fc-row" style={{ gap: 8, marginTop: 12 }}>
               {AREAS.filter(a => a.slug !== slug).slice(0, 12).map(a => (
@@ -391,6 +396,8 @@ export default async function BestAgentsPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      <SkylinePreFooter />
 
       <section className="fc-section fc-section--dark">
         <div className="fc-wrap" style={{ textAlign: "center" }}>

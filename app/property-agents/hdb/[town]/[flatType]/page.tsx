@@ -13,6 +13,8 @@ import { formatPrice, formatPriceFull } from "../../../../lib/narrativeHelpers";
 import { seoTitle } from "../../../../lib/seoTitle";
 import StatCard from "../../../../components/StatCard";
 import SellCtaBand from "../../../../components/SellCtaBand";
+import HeroBand from "../../../../components/HeroBand";
+import SkylinePreFooter from "../../../../components/SkylinePreFooter";
 
 export const revalidate = 43200; // 12h; matches the town pages.
 export const dynamicParams = false; // Only the density-gated segments render; the rest 404.
@@ -156,29 +158,29 @@ export default async function HdbSegmentPage({ params }: Props) {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">HDB resale · {display}</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">{label} HDB Resale Prices in {display}</h1>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-gray-600">
-            The median {label.toLowerCase()} HDB resale price in {display} is {formatPriceFull(summary.median_price)}, based on {summary.txns.toLocaleString()} recent transactions. Actual prices run from {formatPriceFull(summary.min_price)} to {formatPriceFull(summary.max_price)} depending on floor, remaining lease, flat model and the exact block. Here is how each of those moves the price.
-          </p>
-        </div>
-      </section>
+      <HeroBand
+        eyebrow={`HDB resale · ${display}`}
+        title={<>{label} HDB Resale Prices</>}
+        accent={<>in {display}</>}
+        sub={<>The median {label.toLowerCase()} HDB resale price in {display} is {formatPriceFull(summary.median_price)}, based on {summary.txns.toLocaleString()} recent transactions. Actual prices run from {formatPriceFull(summary.min_price)} to {formatPriceFull(summary.max_price)} depending on floor, remaining lease, flat model and the exact block. Here is how each of those moves the price.</>}
+        art="hdb"
+      />
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
+        <div className="fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Median price" value={formatPrice(summary.median_price)} subtext={`${summary.txns.toLocaleString()} recent sales`} />
           <StatCard label="Price range" value={`${formatPrice(summary.min_price)}–${formatPrice(summary.max_price)}`} subtext="Low to high" />
           <StatCard label="Median per sqm" value={psm(summary.median_psm)} subtext={`~${summary.avg_sqm} sqm average size`} />
           <StatCard label="Recent transactions" value={summary.txns.toLocaleString()} subtext="Resales in this segment" />
         </div>
+        </div>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_300px]">
           <article className="space-y-10">
 
             {storey.length >= 2 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">How floor level changes the price</h2>
                 {floorPremium !== null && highBand && lowBand && (
                   <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
@@ -209,7 +211,7 @@ export default async function HdbSegmentPage({ params }: Props) {
             )}
 
             {lease.length >= 2 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">How flat age changes the price</h2>
                 {leaseSpread !== null && newestEra && oldestEra && (
                   <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
@@ -240,7 +242,7 @@ export default async function HdbSegmentPage({ params }: Props) {
             )}
 
             {models.length >= 2 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Prices by flat model</h2>
                 <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                   Most {label.toLowerCase()} resales in {display} are {dominantModel.flat_model} flats ({dominantModel.txns.toLocaleString()} sales, median {formatPriceFull(dominantModel.median_price)}).
@@ -272,12 +274,12 @@ export default async function HdbSegmentPage({ params }: Props) {
             )}
 
             {blocks.length >= 3 && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Most-traded blocks</h2>
                 <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                   The blocks with the most {label.toLowerCase()} resale activity give the clearest read on what buyers are actually paying, because each has enough sales to form a reliable median.
                 </p>
-                <div className="mt-4 overflow-x-auto">
+                <div className="fc-pop-in mt-4 overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-gray-400">
@@ -301,7 +303,7 @@ export default async function HdbSegmentPage({ params }: Props) {
               </section>
             )}
 
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently asked questions</h2>
               <div className="mt-4 divide-y divide-gray-100 border-t border-gray-100">
                 {faqItems.map((f) => (
@@ -315,7 +317,7 @@ export default async function HdbSegmentPage({ params }: Props) {
           </article>
 
           <aside className="space-y-6">
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
               <p className="text-sm font-bold text-gray-900">Selling a {label.toLowerCase()} in {display}?</p>
               <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
                 See the agents with the strongest recent track record selling {label.toLowerCase()} flats in {display}, ranked on CEA transaction data.
@@ -326,7 +328,7 @@ export default async function HdbSegmentPage({ params }: Props) {
             </div>
 
             {siblings.length > 0 && (
-              <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+              <div className="fc-reveal rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
                 <p className="text-sm font-bold text-gray-900">Other flat types in {display}</p>
                 <ul className="mt-3 space-y-2">
                   {siblings.map((s) => (
@@ -344,6 +346,8 @@ export default async function HdbSegmentPage({ params }: Props) {
           </aside>
         </div>
       </div>
+
+      <SkylinePreFooter />
 
       <SellCtaBand
         source="hdb-segment"

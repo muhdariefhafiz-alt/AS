@@ -1,4 +1,7 @@
 import Link from "next/link";
+import ScrollReveal from "../../../components/ScrollReveal";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
+import { Shophouse } from "../../../components/LineArt";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { formatPrice } from "../../../lib/narrativeHelpers";
@@ -279,6 +282,7 @@ export default async function AgentPage({ params }: Props) {
   let claimAreaTotal: number | null = null;
   let claimViews7d = 0;
   if (!agent.claimed) {
+    // eslint-disable-next-line react-hooks/purity -- ISR server render: the 7-day window is relative to the render/revalidate time by design
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const [rankRes, viewsRes] = await Promise.all([
       supabase.from("sg_area_top_agents").select("area_name, area_type, rank").eq("agent_slug", slug).order("rank", { ascending: true }).limit(1),
@@ -346,6 +350,7 @@ export default async function AgentPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
 
       {/* header */}
+      <ScrollReveal />
       <header className="fc-wrap" style={{ padding: "22px 40px 0" }}>
         <div className="sr-crumb">
           <Link href="/">Home</Link> / <Link href="/property-agents">Compare agents</Link>
@@ -353,7 +358,9 @@ export default async function AgentPage({ params }: Props) {
         </div>
 
         {/* identity card */}
-        <div className="fc-card" style={{ padding: 26, marginTop: 18 }}>
+        <div className="fc-scene fc-scene--inbox" style={{ marginTop: 18, padding: "clamp(14px,2vw,22px)" }}>
+        <Shophouse className="fc-lineart fc-float" width={96} style={{ position: "absolute", right: 18, bottom: 10 }} />
+        <div className="fc-scene__card" style={{ padding: 26, position: "relative" }}>
           <div style={{ display: "flex", gap: 22, alignItems: "flex-start", flexWrap: "wrap" }}>
             {showPhoto && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -444,13 +451,14 @@ export default async function AgentPage({ params }: Props) {
               )}
             </div>
             <div className="fc-col" style={{ gap: 8, minWidth: 210 }}>
-              <Link href={`/sell?agent=${slug}&utm_source=agent_profile`} className="fc-btn fc-btn--primary">Request a quote from {given}</Link>
+              <Link href={`/sell?agent=${slug}&utm_source=agent_profile`} className="fc-btn fc-btn--primary fc-btn--hairline">Request a quote from {given}</Link>
               <p className="muted" style={{ margin: 0, fontSize: 12, lineHeight: 1.45, maxWidth: "26ch" }}>
                 Free, no obligation. We line {given} up with other strong{primaryShort ? ` ${primaryShort}` : ""} agents so you compare quotes side by side.
               </p>
               <Link href={compareHref} className="fc-btn fc-btn--ghost fc-btn--sm">Compare with others{primaryShort ? ` in ${primaryShort}` : ""}</Link>
             </div>
           </div>
+        </div>
         </div>
 
         {/* agent-written bio (moderated) */}
@@ -677,6 +685,7 @@ export default async function AgentPage({ params }: Props) {
           </aside>
         </div>
       </div>
+      <SkylinePreFooter />
       <StickyMobileCta href={`/sell?agent=${slug}&utm_source=agent_sticky`} label={`Request a quote from ${given}`} />
     </>
   );

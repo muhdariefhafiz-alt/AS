@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { supabase } from "../../lib/supabase";
 import { cleanAgency } from "../../lib/names";
 import SellCtaBand from "../../components/SellCtaBand";
+import HeroBand from "../../components/HeroBand";
+import SkylinePreFooter from "../../components/SkylinePreFooter";
 
 export const revalidate = 86400; // 24h
 
@@ -137,21 +139,20 @@ export default async function AgenciesHubPage() {
         </div>
       </nav>
 
-      <section className="border-b border-gray-100 bg-gradient-to-b from-[var(--blue-wash)] to-white">
-        <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8">
-          <span className="inline-block rounded-full border border-[var(--line-2)] bg-[var(--blue-wash)] px-3 py-1 text-xs font-semibold text-[var(--blue-deep)]">Agencies</span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Singapore Property Agencies</h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
-            Compare the major property agencies in Singapore by size and reputation: PropNex, ERA, Huttons, OrangeTee and more. Then go a level deeper and compare the individual agents who actually sell homes like yours.
-          </p>
-        </div>
-      </section>
+      <HeroBand
+        eyebrow="Agencies"
+        title={<>Singapore</>}
+        accent={<>Property Agencies</>}
+        sub="Compare the major property agencies in Singapore by size and reputation: PropNex, ERA, Huttons, OrangeTee and more. Then go a level deeper and compare the individual agents who actually sell homes like yours."
+        art="shophouse"
+      />
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         <div className="grid gap-10 lg:grid-cols-5">
           <div className="space-y-10 lg:col-span-3">
 
             {/* Lede / thesis */}
+            <div className="fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-gray-900">The biggest agency is not the same as the best agent</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
@@ -161,14 +162,15 @@ export default async function AgenciesHubPage() {
                 found the median agent who sells closes about one home a year, so the agency logo matters far less than the individual agent&apos;s recent, area-specific sales record.
               </p>
             </div>
+            </div>
 
             {/* Agencies table */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Largest Property Agencies in Singapore</h2>
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 Ranked by number of registered salespersons on the public CEA register. Google ratings are shown with their review count, because a high rating from a handful of reviews is not comparable to one from hundreds.
               </p>
-              <div className="mt-4 overflow-x-auto">
+              <div className="mt-4 overflow-x-auto fc-pop-in">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-gray-400">
@@ -200,7 +202,7 @@ export default async function AgenciesHubPage() {
             </section>
 
             {salesLeague.length > 0 && league && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">Which agencies actually sell the most homes?</h2>
                 <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                   Headcount is not sales. This ranks agencies by transactions their agents actually closed over the 12 months to {league.window_end}, from CEA records. The seller-side column counts only deals where the agency represented the seller, the side that matters if you are the one selling.
@@ -236,7 +238,7 @@ export default async function AgenciesHubPage() {
             )}
 
             {efficiencyLeague.length > 0 && league && (
-              <section>
+              <section className="fc-reveal">
                 <h2 className="text-xl font-bold text-gray-900">The most productive agencies, per agent</h2>
                 <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                   The same records, read a different way. Dividing sales by roster size shows how much of an agency&apos;s volume comes from a genuinely active bench rather than a large name. A smaller, specialist agency often works each deal harder than a household name. Shown for agencies with at least 10 registered agents and 50 sales, so the ratio is not a fluke of one or two deals.
@@ -278,9 +280,10 @@ export default async function AgenciesHubPage() {
                 Head-to-head on agent count, AgentScore, transaction volume and reviews.
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {COMPARISONS.map((c) => (
+                {COMPARISONS.map((c, i) => (
                   <Link key={`${c.aSlug}-${c.bSlug}`} href={`/property-agents/agency-compare/${c.aSlug}-vs-${c.bSlug}`}
-                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm">
+                    className="fc-reveal flex items-center justify-between rounded-lg border border-gray-100 bg-white px-4 py-3 transition hover:border-[var(--line-2)] hover:shadow-sm"
+                    style={{ ["--reveal-delay" as string]: `${Math.min(i * 0.05, 0.4)}s` }}>
                     <span className="text-sm font-medium text-gray-900">{c.a} vs {c.b}</span>
                     <span className="text-sm font-semibold text-[var(--blue)]">Compare &rarr;</span>
                   </Link>
@@ -289,7 +292,7 @@ export default async function AgenciesHubPage() {
             </section>
 
             {/* FAQ */}
-            <section>
+            <section className="fc-reveal">
               <h2 className="text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
               <div className="mt-4 space-y-5">
                 {faqItems.map((f, i) => (
@@ -303,7 +306,7 @@ export default async function AgenciesHubPage() {
           </div>
 
           <aside className="space-y-6 lg:col-span-2">
-            <div className="rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
+            <div className="fc-reveal rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
               <h3 className="text-sm font-bold text-gray-900">Compare agents, not just agencies</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-gray-600">
                 The agency is the brand; the agent does the work. Rank the individual agents who actually sell in your area.
@@ -311,7 +314,7 @@ export default async function AgenciesHubPage() {
               <Link href="/property-agents" className="mt-3 inline-block text-sm font-semibold text-[var(--blue)]">Browse agent rankings &rarr;</Link>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Related</h3>
               <div className="mt-3 space-y-2">
                 <Link href="/insights/property-agent-statistics-singapore" className="block text-sm text-gray-600 hover:text-[var(--blue)]">Singapore agent statistics study</Link>
@@ -323,6 +326,7 @@ export default async function AgenciesHubPage() {
         </div>
       </div>
 
+      <SkylinePreFooter />
       <SellCtaBand source="agencies-hub" heading="Skip the agency guesswork. Compare the agents who sell." sub="Get a free shortlist of the agents who actually sell properties like yours, ranked on real CEA transaction data, whichever agency they belong to." />
     </>
   );

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import EmailCapture from "../../../components/EmailCapture";
 import { seoTitle } from "../../../lib/seoTitle";
+import HeroBand from "../../../components/HeroBand";
+import SkylinePreFooter from "../../../components/SkylinePreFooter";
 import type { Metadata } from "next";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
@@ -100,31 +102,32 @@ export default async function BestByTypePage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
 
-      <section className="bg-gradient-to-br from-[var(--ink)] via-[var(--ink-2)] to-[var(--ink)]">
-        <div className="mx-auto max-w-[1120px] px-5 py-14 md:px-8 md:py-20">
-          <nav className="text-xs text-[var(--slate-2)]">
-            <Link href="/" className="hover:text-[var(--blue-wash)]">Home</Link>
-            <span className="mx-1.5">/</span>
-            <Link href="/property-agents" className="hover:text-[var(--blue-wash)]">Property Agents</Link>
-            <span className="mx-1.5">/</span>
-            <span className="text-[var(--slate-2)]">Best {t.label} Agents</span>
-          </nav>
-          <h1 className="mt-6 text-3xl font-extrabold text-white md:text-4xl">
-            Best {t.label} property agents in Singapore
-          </h1>
-          <p className="mt-3 max-w-xl text-lg text-white/60">
-            Ranked by AgentScore based on actual {t.desc}. Not advertising, not self-reported.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue-deep)]">
-              Compare agents side by side
-            </Link>
-            <Link href="/search" className="inline-flex items-center rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10">
-              Search by name
-            </Link>
-          </div>
+      <div className="mx-auto max-w-[1120px] px-5 pt-5 md:px-8">
+        <nav className="text-xs text-[var(--slate-2)]">
+          <Link href="/" className="hover:text-[var(--blue-wash)]">Home</Link>
+          <span className="mx-1.5">/</span>
+          <Link href="/property-agents" className="hover:text-[var(--blue-wash)]">Property Agents</Link>
+          <span className="mx-1.5">/</span>
+          <span className="text-[var(--slate-2)]">Best {t.label} Agents</span>
+        </nav>
+      </div>
+
+      <HeroBand
+        eyebrow="Property Agents"
+        title={<>Best {t.label} property agents</>}
+        accent={<>in Singapore</>}
+        sub={<>Ranked by AgentScore based on actual {t.desc}. Not advertising, not self-reported.</>}
+        art={t.slug === "hdb" ? "hdb" : t.slug === "landed" ? "terrace" : "condo"}
+      >
+        <div className="flex flex-wrap gap-3">
+          <Link href="/property-agents/compare" className="inline-flex items-center rounded-lg bg-[var(--blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue-deep)]">
+            Compare agents side by side
+          </Link>
+          <Link href="/search" className="inline-flex items-center rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10">
+            Search by name
+          </Link>
         </div>
-      </section>
+      </HeroBand>
 
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8">
         <p className="text-[15px] leading-[1.75] text-gray-600">
@@ -132,7 +135,7 @@ export default async function BestByTypePage({ params }: Props) {
           transaction volume, recency, market diversity, and years of experience. This ranking is based on {t.desc} recorded by CEA.
         </p>
 
-        <div className="mt-8 space-y-3">
+        <div className="mt-8 space-y-3 fc-pop-in">
           {topAgents.map((a, i) => (
             <Link
               key={a.ceaReg || i}
@@ -157,18 +160,20 @@ export default async function BestByTypePage({ params }: Props) {
         </div>
 
         {/* Email capture */}
-        <div className="mt-10">
-          <EmailCapture
-            variant="inline"
-            source="best-by-type"
-            pagePath={`/property-agents/best-by-type/${type}`}
-            heading={`Get ${t.label} market updates`}
-            description={`We'll notify you when ${t.label.toLowerCase()} agent rankings change or new transaction data is published.`}
-          />
+        <div className="mt-10 fc-scene fc-scene--grow fc-reveal" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+          <div className="fc-scene__card" style={{ padding: 26 }}>
+            <EmailCapture
+              variant="inline"
+              source="best-by-type"
+              pagePath={`/property-agents/best-by-type/${type}`}
+              heading={`Get ${t.label} market updates`}
+              description={`We'll notify you when ${t.label.toLowerCase()} agent rankings change or new transaction data is published.`}
+            />
+          </div>
         </div>
 
         {/* Other types sidebar */}
-        <div className="mt-10 rounded-xl border border-gray-200 bg-gray-50 p-5">
+        <div className="mt-10 rounded-xl border border-gray-200 bg-gray-50 p-5 fc-reveal">
           <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Browse by property type</h3>
           <div className="mt-3 flex flex-wrap gap-2">
             {TYPES.filter(x => x.slug !== type).map(x => (
@@ -180,6 +185,8 @@ export default async function BestByTypePage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      <SkylinePreFooter />
     </>
   );
 }
