@@ -113,6 +113,23 @@ of indexed URLs; D before E because money moments outrank reading moments.
 
 # Execution plan (agreed 2026-07-26)
 
+## THE STANDARD (set at Gate 3b round 2, 2026-07-26, binding for all waves)
+
+The owner-approved reference is /for-agents/grow as shipped in 5797dd2:
+1. **Multiple choreographed elements per page** - not one demo and done. Radar
+   pings + cards arrive + bars grow + cursor clicks + counters tick, each
+   section alive.
+2. **Multiple colour worlds per page** - scenes ROTATE (mint > blue > amber >
+   ink), never one gradient repeated. Colour is structure.
+3. **Bespoke visuals per feature** - a feature named on a page gets its own
+   performing mockup, never a text card. Text cards are the failure mode.
+4. Alternating two-column rhythm (copy | demo, flipped each row).
+
+Programmatic templates (Wave 3c, ~39k URLs) apply the same COLOUR language and
+CSS/mount animations (scenes, fc-pop-in, reveals, marquee, line-art, hairline);
+choreographed JS demos there come only from SHARED components (one cached
+chunk, LCP-safe), never per-page code.
+
 ## The quality mechanism (how aesthetics survive scale)
 
 1. **Lab-first rule.** Every NEW primitive or section composition debuts in
