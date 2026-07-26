@@ -4,10 +4,13 @@ import { supabase } from "../lib/supabase";
 import PricingCards from "../components/PricingCards";
 import ScrollReveal from "../components/ScrollReveal";
 import DashboardPreview from "../components/DashboardPreview";
-import PlannerPreview from "../components/PlannerPreview";
 import AgentFeatureShowcase from "../components/AgentFeatureShowcase";
 import AgentIntegrationHub from "../components/AgentIntegrationHub";
 import AgentTrustSection from "../components/AgentTrustSection";
+import DataMarquee from "../components/DataMarquee";
+import InboxDemo from "../components/demos/InboxDemo";
+import PlannerDemo from "../components/demos/PlannerDemo";
+import { CondoTower, Shophouse, SkylineStrip } from "../components/LineArt";
 
 export const revalidate = false;
 
@@ -45,12 +48,23 @@ export default async function ForAgentsPage() {
       {/* Scroll-reveal engine (animates .fc-reveal sections as they enter view). */}
       <ScrollReveal />
 
-      {/* hero — staggered load-in, benefit-led */}
-      <header className="lp-hero">
-        <div className="fc-wrap" style={{ textAlign: "center" }}>
+      {/* hero — staggered load-in, benefit-led. Line-art floats in the ink
+          whitespace (decorative, aria-hidden, clipped by overflow). */}
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <CondoTower
+          className="fc-lineart fc-float"
+          width={96}
+          style={{ position: "absolute", left: "4%", top: 84, color: "var(--line-dk)" }}
+        />
+        <Shophouse
+          className="fc-lineart fc-float"
+          width={120}
+          style={{ position: "absolute", right: "4%", top: 120, color: "var(--line-dk)", ["--float-delay" as string]: "1.4s" }}
+        />
+        <div className="fc-wrap" style={{ textAlign: "center", position: "relative" }}>
           <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">For property agents</div>
           <h1 className="fc-hero-in fc-hero-in--2" style={{ maxWidth: "18ch", margin: "16px auto 0" }}>
-            You&apos;re judged on your <span className="accent">record,</span> not your wallet.
+            Your track record, <span className="accent">working for you.</span>
           </h1>
           <div className="fc-hero-in fc-hero-in--3" style={{ margin: "18px auto 0", maxWidth: "46ch", display: "flex", flexDirection: "column", gap: 7, fontSize: 16.5, lineHeight: 1.5, color: "var(--slate)" }}>
             <span>Know who&apos;s about to sell, before your competitors.</span>
@@ -66,7 +80,7 @@ export default async function ForAgentsPage() {
             <div className="hstat"><div className="n">0%</div><div className="l">Upfront cost</div></div>
           </div>
           <div className="fc-hero-in fc-hero-in--5">
-            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Claim your free profile</Link>
+            <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Claim your free profile</Link>
             {/* Agents who already claimed had no route back to their dashboard
                 from the page written for them. Secondary, so claiming stays the
                 primary action for the (much larger) unclaimed audience. */}
@@ -88,6 +102,18 @@ export default async function ForAgentsPage() {
         </div>
       </header>
 
+      {/* Data marquee: the honest substitute for a customer-logo wall. Every
+          item is a live count or an already-published platform fact. */}
+      <DataMarquee
+        items={[
+          `${stats.scored.toLocaleString()} agents ranked`,
+          `${stats.agencies.toLocaleString()} agencies`,
+          "28 districts",
+          "CEA, URA and HDB data only",
+          "Rankings cannot be bought",
+        ]}
+      />
+
       {/* Reposition: the neutral layer that outlives any agency super-app */}
       <section className="lp-section">
         <div className="fc-wrap fc-reveal" style={{ padding: "56px 40px", textAlign: "center" }}>
@@ -98,6 +124,23 @@ export default async function ForAgentsPage() {
           <p className="muted" style={{ maxWidth: "62ch", margin: "16px auto 0", fontSize: 15.5, lineHeight: 1.7 }}>
             Most agents move between agencies over a career, and every move resets the agency&apos;s CRM, email and portal login. The two things that stay yours are your <strong>public track record</strong> and your <strong>personal contact</strong>. FairComparisons ranks you on that record from official CEA, URA and HDB data and connects sellers to you directly, so your reputation compounds with you, independent of any agency super-app.
           </p>
+        </div>
+      </section>
+
+      {/* Inbox scene: the product demos itself (enquiry arrives, AI drafts,
+          actions appear). The AI-drafted replies are a live dashboard feature. */}
+      <section className="lp-section">
+        <div className="fc-wrap" style={{ padding: "8px 40px 64px" }}>
+          <h2 className="fc-reveal" style={{ textAlign: "center", fontSize: "clamp(26px,3vw,34px)", maxWidth: "24ch", margin: "0 auto" }}>
+            Every enquiry answered <span className="accent">while it&apos;s hot.</span>
+          </h2>
+          <p className="muted fc-reveal" style={{ textAlign: "center", maxWidth: "56ch", margin: "12px auto 26px" }}>
+            Seller and buyer enquiries land in your dashboard with an AI-drafted reply grounded in your own record. Read, adjust, send.
+          </p>
+          <div className="fc-scene fc-scene--inbox fc-reveal">
+            <Shophouse className="fc-lineart fc-float" width={110} style={{ position: "absolute", right: 22, bottom: 14 }} />
+            <InboxDemo />
+          </div>
         </div>
       </section>
 
@@ -168,7 +211,9 @@ export default async function ForAgentsPage() {
               </div>
             </div>
             <div style={{ padding: "0 4px" }}>
-              <PlannerPreview />
+              <div className="fc-scene fc-scene--planner">
+                <PlannerDemo />
+              </div>
             </div>
           </div>
         </div>
@@ -280,12 +325,18 @@ export default async function ForAgentsPage() {
       {/* Data + integrity trust block */}
       <AgentTrustSection />
 
-      {/* final CTA */}
-      <section className="lp-hero">
-        <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px" }}>
+      {/* final CTA, with the skyline watermark along the base (the signature
+          shot from the design lab's ink band) */}
+      <section className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <SkylineStrip
+          className="fc-lineart"
+          width={720}
+          style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: -8, color: "var(--line-dk)", maxWidth: "96%" }}
+        />
+        <div className="fc-wrap" style={{ textAlign: "center", padding: "56px 40px 96px", position: "relative" }}>
           <h2 style={{ color: "#fff", fontSize: "clamp(26px,3vw,34px)" }}>Your profile is already being viewed by buyers.</h2>
           <p className="lp-hero__sub" style={{ margin: "12px auto 22px" }}>Claim it to control what they see.</p>
-          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg">Find and claim your profile</Link>
+          <Link href="/search" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">Find and claim your profile</Link>
           <p className="small" style={{ color: "var(--slate-2)", marginTop: 16 }}>
             Questions? <a href="mailto:hello@fair-comparisons.com" style={{ color: "#fff" }}>hello@fair-comparisons.com</a>
           </p>

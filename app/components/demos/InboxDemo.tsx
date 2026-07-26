@@ -87,7 +87,7 @@ export default function InboxDemo() {
         <div className="fc-cue" data-on={buttonsOn ? "1" : undefined} style={{ display: "flex", gap: 10, marginTop: 12 }}>
           <span className="fc-btn fc-btn--primary fc-btn--sm">Send</span>
           <span className="fc-btn fc-btn--ghost fc-btn--sm">Edit</span>
-          <span className="muted small" style={{ alignSelf: "center" }}>Drafted in 4 seconds</span>
+          <span className="muted small" style={{ alignSelf: "center" }}>AI draft, ready to send</span>
         </div>
       </div>
     </div>
