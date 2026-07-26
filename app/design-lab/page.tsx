@@ -3,7 +3,11 @@ import DataMarquee from "../components/DataMarquee";
 import CountUp from "../components/CountUp";
 import InboxDemo from "../components/demos/InboxDemo";
 import PlannerDemo from "../components/demos/PlannerDemo";
-import { HdbBlock, Shophouse, KeyLine, CalendarLine } from "../components/LineArt";
+import {
+  HdbBlock, Shophouse, KeyLine, CalendarLine,
+  CondoTower, TerraceRow, MrtTrain, SkylineStrip,
+} from "../components/LineArt";
+import { Icon } from "../components/Icons";
 
 // Internal proving ground for the Wave-1 motion design system. Every primitive
 // that Waves 2-3 will use renders here once, so design review happens on ONE
@@ -108,11 +112,15 @@ export default function DesignLabPage() {
         </div>
       </section>
 
-      {/* 6. Ink trust band */}
+      {/* 6. Ink trust band, now with the skyline watermark along the base */}
       <section style={{ marginBottom: 72 }}>
-        <p style={label}>6 · ink trust band</p>
-        <div className="fc-scene fc-scene--ink" style={{ textAlign: "center" }}>
-          <HdbBlock className="fc-lineart fc-float" width={150} style={{ position: "absolute", left: 26, bottom: 16 }} />
+        <p style={label}>6 · ink trust band + skyline watermark</p>
+        <div className="fc-scene fc-scene--ink" style={{ textAlign: "center", paddingBottom: 84 }}>
+          <SkylineStrip
+            className="fc-lineart"
+            width={640}
+            style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: -6, opacity: 0.5, maxWidth: "94%" }}
+          />
           <h2 style={{ color: "#fff", fontSize: "clamp(24px,3vw,34px)", margin: "10px 0 6px" }}>
             Ranked on government data. <span style={{ fontStyle: "italic", fontWeight: 400 }}>Never advertising.</span>
           </h2>
@@ -130,14 +138,118 @@ export default function DesignLabPage() {
         </div>
       </section>
 
-      {/* 7. Line-art specimen row */}
-      <section>
+      {/* 7. Line-art specimen row (full set) */}
+      <section style={{ marginBottom: 72 }}>
         <p style={label}>7 · sg line-art set (specimens, floating)</p>
-        <div style={{ display: "flex", gap: 40, alignItems: "flex-end", flexWrap: "wrap", color: "var(--line-2)" }}>
-          <HdbBlock className="fc-float" width={150} />
-          <Shophouse className="fc-float" width={130} style={{ ["--float-delay" as string]: ".8s" }} />
-          <KeyLine className="fc-float" width={70} style={{ ["--float-delay" as string]: "1.6s" }} />
-          <CalendarLine className="fc-float" width={64} style={{ ["--float-delay" as string]: "2.4s" }} />
+        <div style={{ display: "flex", gap: 36, alignItems: "flex-end", flexWrap: "wrap", color: "var(--line-2)" }}>
+          <HdbBlock className="fc-float" width={140} />
+          <CondoTower className="fc-float" width={82} style={{ ["--float-delay" as string]: ".4s" }} />
+          <Shophouse className="fc-float" width={120} style={{ ["--float-delay" as string]: ".8s" }} />
+          <TerraceRow className="fc-float" width={150} style={{ ["--float-delay" as string]: "1.2s" }} />
+          <MrtTrain className="fc-float" width={125} style={{ ["--float-delay" as string]: "1.6s" }} />
+          <KeyLine className="fc-float" width={66} style={{ ["--float-delay" as string]: "2s" }} />
+          <CalendarLine className="fc-float" width={60} style={{ ["--float-delay" as string]: "2.4s" }} />
+        </div>
+        <div style={{ marginTop: 28, color: "var(--line-2)", overflowX: "auto" }}>
+          <SkylineStrip width={640} />
+        </div>
+      </section>
+
+      {/* 8. UI icon family */}
+      <section style={{ marginBottom: 72 }}>
+        <p style={label}>8 · ui icon family (same pen as the line-art)</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(96px,1fr))", gap: 10 }}>
+          {(Object.keys(Icon) as Array<keyof typeof Icon>).map((name) => {
+            const C = Icon[name];
+            return (
+              <div
+                key={name}
+                className="fc-card"
+                style={{ padding: "14px 8px", textAlign: "center", color: "var(--ink)" }}
+              >
+                <C size={22} />
+                <div className="muted" style={{ fontSize: 11, marginTop: 6, fontFamily: "var(--font-mono)" }}>{name}</div>
+              </div>
+            );
+          })}
+        </div>
+        {/* icon chips: the roundel treatment feature lists will use */}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
+          {([
+            ["Mail", "AI inbox"],
+            ["Calendar", "Viewing planner"],
+            ["Radar", "Deal Radar"],
+            ["Shield", "CEA data only"],
+            ["TrendUp", "Your standing"],
+          ] as const).map(([name, labelTxt]) => {
+            const C = Icon[name];
+            return (
+              <span
+                key={name}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid var(--line)",
+                  borderRadius: 999, padding: "7px 14px 7px 8px", fontSize: 13.5, fontWeight: 600,
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26,
+                    borderRadius: "50%", background: "var(--blue-wash)", color: "var(--blue-deep)",
+                  }}
+                >
+                  <C size={15} />
+                </span>
+                {labelTxt}
+              </span>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 9. Placement patterns */}
+      <section>
+        <p style={label}>9 · placements: divider · feature bullets · empty state</p>
+
+        {/* skyline divider between sections */}
+        <div style={{ color: "var(--line-2)", textAlign: "center", margin: "6px 0 34px", overflow: "hidden" }}>
+          <SkylineStrip width={520} style={{ maxWidth: "100%" }} />
+        </div>
+
+        {/* feature bullets with icon roundels (housapp-style benefit rows) */}
+        <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", marginBottom: 34 }}>
+          {([
+            ["Spark", "Reply 90% faster", "AI drafts grounded in your own record"],
+            ["Calendar", "2 hours back per week", "Viewings book and confirm themselves"],
+            ["TrendUp", "Sellers see you climb", "Your standing updates every month"],
+          ] as const).map(([name, t, s], i) => {
+            const C = Icon[name];
+            return (
+              <div key={t} className="fc-card fc-reveal" style={{ ["--reveal-delay" as string]: `${0.12 * i}s`, padding: "16px 18px", display: "flex", gap: 12 }}>
+                <span
+                  style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", width: 38, height: 38,
+                    borderRadius: 12, background: "var(--blue-wash)", color: "var(--blue-deep)", flex: "0 0 auto",
+                  }}
+                >
+                  <C size={19} />
+                </span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14.5 }}>{t}</div>
+                  <p className="muted small" style={{ margin: "3px 0 0" }}>{s}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* empty state vignette */}
+        <div className="fc-card" style={{ maxWidth: 420, padding: "28px 24px", textAlign: "center", color: "var(--ink)" }}>
+          <CalendarLine className="fc-float" width={56} style={{ color: "var(--line-2)" }} />
+          <div style={{ fontWeight: 700, marginTop: 10 }}>No viewings yet</div>
+          <p className="muted small" style={{ margin: "6px 0 14px" }}>
+            Share your booking link and requests will land here.
+          </p>
+          <span className="fc-btn fc-btn--primary fc-btn--sm">Copy booking link</span>
         </div>
       </section>
     </div>
