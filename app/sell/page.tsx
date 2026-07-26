@@ -6,6 +6,8 @@ import SellForm from "./SellForm";
 import SellerProof from "../components/SellerProof";
 import ProductBox from "../components/ProductBox";
 import { ValuationMock } from "../components/mocks";
+import ScrollReveal from "../components/ScrollReveal";
+import { TerraceRow } from "../components/LineArt";
 
 export const revalidate = 86400;
 
@@ -168,15 +170,21 @@ export default async function SellPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }}
       />
+      <ScrollReveal />
 
-      <header className="lp-hero">
-        <div className="fc-wrap">
-          <div className="lp-hero__eyebrow">Sell your property</div>
-          <h1>Compare the agents who <span className="accent">actually sell</span> in your area.</h1>
-          <p className="lp-hero__sub">
+      <header className="lp-hero" style={{ position: "relative", overflow: "hidden" }}>
+        <TerraceRow
+          className="fc-lineart fc-float"
+          width={170}
+          style={{ position: "absolute", right: "3%", bottom: 20, color: "var(--line-dk)" }}
+        />
+        <div className="fc-wrap" style={{ position: "relative" }}>
+          <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">Sell your property</div>
+          <h1 className="fc-hero-in fc-hero-in--2">Compare the agents who <span className="accent">actually sell</span> in your area.</h1>
+          <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
             Tell us about your home and compare every CEA-licensed agent for your area on real transaction records. Invite up to 3 to send you a fee quote. Always free for sellers.
           </p>
-          <div className="lp-hero__tags">
+          <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">Based on 730,000+ CEA transactions</span>
             <span className="lp-hero__tag">Always free for sellers</span>
             <span className="lp-hero__tag">PDPA-compliant</span>
@@ -207,8 +215,8 @@ export default async function SellPage({
               { n: "02", t: "See the ranked agents", d: "Top agents for your area based on actual CEA records, instantly." },
               { n: "03", t: "Invite up to 3 to quote", d: "We send your property brief to the agents you pick, and only those agents. Never your contact details at this stage." },
               { n: "04", t: "Compare quotes, choose one", d: "Fee, timeline and marketing plan come back side by side. Only the agent you finally choose gets your contact details." },
-            ].map((s) => (
-              <div key={s.n} className="fc-card howcard">
+            ].map((s, i) => (
+              <div key={s.n} className="fc-card howcard fc-reveal" style={{ ["--reveal-delay" as string]: `${0.1 * i}s` }}>
                 <div className="mono" style={{ color: "var(--blue)", fontSize: 13 }}>{s.n}</div>
                 <div className="serif" style={{ fontWeight: 600, fontSize: 19, margin: "8px 0 6px" }}>{s.t}</div>
                 <p className="small muted" style={{ margin: 0 }}>{s.d}</p>

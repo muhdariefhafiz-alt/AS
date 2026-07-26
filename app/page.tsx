@@ -4,6 +4,10 @@ import { Seal, Gauge, RankRow, RankedBadge, SourceBadge } from "./components/Bra
 import { titleName, cleanAgency } from "./lib/names";
 import ProductBox from "./components/ProductBox";
 import { SellerCompareMock } from "./components/mocks";
+import ScrollReveal from "./components/ScrollReveal";
+import DataMarquee from "./components/DataMarquee";
+import JourneyDemo from "./components/demos/JourneyDemo";
+import { HdbBlock, SkylineStrip } from "./components/LineArt";
 
 export const revalidate = 43200; // 12h fallback; daily cron also force-revalidates
 
@@ -96,18 +100,26 @@ export default async function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd).replace(/</g, "\\u003c") }} />
 
+      {/* Scroll-reveal engine for the section entrances below the fold. */}
+      <ScrollReveal />
+
       {/* ---------- HERO ---------- */}
-      <section style={{ background: "var(--ink)", color: "#fff" }}>
-        <div className="fc-wrap" style={{ padding: "64px 40px 56px" }}>
+      <section style={{ background: "var(--ink)", color: "#fff", position: "relative", overflow: "hidden" }}>
+        <HdbBlock
+          className="fc-lineart fc-float"
+          width={130}
+          style={{ position: "absolute", right: "3%", bottom: 18, color: "var(--line-dk)" }}
+        />
+        <div className="fc-wrap" style={{ padding: "64px 40px 56px", position: "relative" }}>
           <div style={{ display: "flex", gap: 48, alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 320 }}>
-              <div className="eyebrow" style={{ color: "var(--slate-2)", marginBottom: 18 }}>
+              <div className="eyebrow fc-hero-in fc-hero-in--1" style={{ color: "var(--slate-2)", marginBottom: 18 }}>
                 Singapore property agents
               </div>
-              <h1 style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0 }}>
+              <h1 className="fc-hero-in fc-hero-in--2" style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0 }}>
                 Choose your agent <span className="italic-serif">on evidence,</span> not on advertising.
               </h1>
-              <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16 }}>
+              <p className="lede fc-hero-in fc-hero-in--3" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16 }}>
                 Compare every CEA-registered agent on which homes they actually sell in your area, ranked on{" "}
                 {stats.transactions.toLocaleString()}+ real government transaction records. Then invite up to 3 to send you a fee quote.
               </p>
@@ -115,7 +127,7 @@ export default async function HomePage() {
               <form
                 action="/search"
                 method="GET"
-                className="fc-search"
+                className="fc-search fc-hero-in fc-hero-in--4"
                 style={{ marginTop: 26 }}
               >
                 <input name="q" placeholder="Enter your postal code" aria-label="Postal code" />
@@ -163,24 +175,42 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ---------- HOW IT WORKS ---------- */}
+      {/* ---------- DATA MARQUEE (live counts only) ---------- */}
+      <DataMarquee
+        items={[
+          `${stats.transactions.toLocaleString()}+ transactions on record`,
+          `${stats.scoredAgents.toLocaleString()} agents ranked`,
+          `${stats.agencies.toLocaleString()} agencies`,
+          "CEA, URA and HDB data only",
+          "Rankings cannot be bought",
+        ]}
+      />
+
+      {/* ---------- HOW IT WORKS: the journey performs itself ---------- */}
       <section className="fc-wrap" style={{ padding: "64px 40px" }}>
-        <div className="eyebrow">How it works</div>
-        <h2 style={{ marginTop: 12 }}>Four steps, no obligation.</h2>
-        <div className="fc-grid-4" style={{ marginTop: 28 }}>
-          {STEPS.map(([t, d], i) => (
-            <div key={t} className="fc-card fc-card--pad">
-              <div className="mono" style={{ color: "var(--blue)", fontSize: 13 }}>
-                {String(i + 1).padStart(2, "0")}
-              </div>
-              <div className="serif" style={{ fontWeight: 600, fontSize: 19, margin: "8px 0 6px" }}>
-                {t}
-              </div>
-              <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-                {d}
-              </p>
-            </div>
-          ))}
+        <div className="fc-grid-2" style={{ gap: 44, alignItems: "center" }}>
+          <div>
+            <div className="eyebrow fc-reveal">How it works</div>
+            <h2 className="fc-reveal" style={{ marginTop: 12 }}>
+              Four steps, <span className="italic-serif">no obligation.</span>
+            </h2>
+            <ol style={{ listStyle: "none", margin: "22px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 16 }}>
+              {STEPS.map(([t, d], i) => (
+                <li key={t} className="fc-reveal" style={{ ["--reveal-delay" as string]: `${0.1 * i}s`, display: "flex", gap: 13 }}>
+                  <span className="mono" style={{ color: "var(--blue)", fontSize: 13, fontWeight: 700, paddingTop: 2 }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span>
+                    <span className="serif" style={{ display: "block", fontWeight: 600, fontSize: 18 }}>{t}</span>
+                    <span className="muted" style={{ fontSize: 14 }}>{d}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="fc-scene fc-scene--inbox fc-reveal">
+            <JourneyDemo />
+          </div>
         </div>
       </section>
 
@@ -320,15 +350,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ---------- CLOSING CTA ---------- */}
-      <section className="fc-section fc-section--dark">
-        <div className="fc-wrap" style={{ textAlign: "center" }}>
-          <h2 style={{ color: "#fff" }}>Ready to choose on evidence?</h2>
+      {/* ---------- CLOSING CTA (skyline signature) ---------- */}
+      <section className="fc-section fc-section--dark" style={{ position: "relative", overflow: "hidden" }}>
+        <SkylineStrip
+          className="fc-lineart"
+          width={720}
+          style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: -8, color: "var(--line-dk)", maxWidth: "96%" }}
+        />
+        <div className="fc-wrap" style={{ textAlign: "center", position: "relative", paddingBottom: 96 }}>
+          <h2 style={{ color: "#fff" }}>Ready to choose <span className="italic-serif">on evidence?</span></h2>
           <p className="lede" style={{ margin: "14px auto 28px", textAlign: "center" }}>
             Compare the agents who actually sell properties like yours nearby, then invite up to 3 to send you a fee quote.
           </p>
           <div className="fc-row" style={{ justifyContent: "center", gap: 12 }}>
-            <Link href="/sell" className="fc-btn fc-btn--primary fc-btn--lg">
+            <Link href="/sell" className="fc-btn fc-btn--primary fc-btn--lg fc-btn--hairline">
               Compare agents
             </Link>
             <Link href="/tools/valuation" className="fc-btn fc-btn--ghost-light fc-btn--lg">

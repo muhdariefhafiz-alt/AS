@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { supabase } from "../lib/supabase";
-import { titleName, cleanAgency } from "../lib/names";
+import { cleanAgency } from "../lib/names";
 import SellCtaBand from "../components/SellCtaBand";
 import type { Metadata } from "next";
 import ProductBox from "../components/ProductBox";
 import { SellerCompareMock } from "../components/mocks";
+import ScrollReveal from "../components/ScrollReveal";
+import DataMarquee from "../components/DataMarquee";
+import { CondoTower } from "../components/LineArt";
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
@@ -33,25 +36,32 @@ export default async function PropertyAgentsHub() {
 
   return (
     <>
+      <ScrollReveal />
+
       {/* ---------- HERO ---------- */}
-      <section style={{ background: "var(--ink)", color: "#fff" }}>
-        <div className="fc-wrap" style={{ padding: "64px 40px 56px" }}>
-          <div className="eyebrow" style={{ color: "var(--slate-2)", marginBottom: 18 }}>
+      <section style={{ background: "var(--ink)", color: "#fff", position: "relative", overflow: "hidden" }}>
+        <CondoTower
+          className="fc-lineart fc-float"
+          width={104}
+          style={{ position: "absolute", right: "4%", bottom: 14, color: "var(--line-dk)" }}
+        />
+        <div className="fc-wrap" style={{ padding: "64px 40px 56px", position: "relative" }}>
+          <div className="eyebrow fc-hero-in fc-hero-in--1" style={{ color: "var(--slate-2)", marginBottom: 18 }}>
             Property agents
           </div>
-          <h1 style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0, maxWidth: "16ch" }}>
+          <h1 className="fc-hero-in fc-hero-in--2" style={{ color: "#fff", fontSize: "var(--t-h1)", margin: 0, maxWidth: "16ch" }}>
             {agentCount.toLocaleString()} agents. <span className="italic-serif">One independent score.</span>
           </h1>
-          <p className="lede" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16, maxWidth: "60ch" }}>
+          <p className="lede fc-hero-in fc-hero-in--3" style={{ color: "rgba(255,255,255,0.74)", marginTop: 16, maxWidth: "60ch" }}>
             Every CEA-registered agent in Singapore, ranked on actual transaction records. Not advertising, not self-reported. Government data only.
           </p>
 
-          <form action="/search" method="GET" className="fc-search" style={{ marginTop: 26 }}>
+          <form action="/search" method="GET" className="fc-search fc-hero-in fc-hero-in--4" style={{ marginTop: 26 }}>
             <input name="q" placeholder="Agent name, district, or HDB town" aria-label="Search agents, districts or towns" />
             <button type="submit" className="fc-btn fc-btn--primary">Find agent</button>
           </form>
 
-          <div className="fc-row" style={{ marginTop: 16, gap: 18 }}>
+          <div className="fc-row fc-hero-in fc-hero-in--5" style={{ marginTop: 16, gap: 18 }}>
             <span className="mono" style={{ color: "rgba(255,255,255,0.82)", fontSize: 13 }}>
               Ranked on CEA, URA and HDB data
             </span>
@@ -61,6 +71,17 @@ export default async function PropertyAgentsHub() {
           </div>
         </div>
       </section>
+
+      {/* ---------- DATA MARQUEE ---------- */}
+      <DataMarquee
+        items={[
+          `${agentCount.toLocaleString()} agents ranked`,
+          "28 districts",
+          "CEA, URA and HDB data only",
+          "Rankings cannot be bought",
+          "Free for sellers",
+        ]}
+      />
 
       {/* ---------- SELLER PRODUCT BOX ---------- */}
       <section className="fc-wrap" style={{ padding: "56px 40px 0" }}>

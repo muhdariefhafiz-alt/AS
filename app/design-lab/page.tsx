@@ -3,6 +3,7 @@ import DataMarquee from "../components/DataMarquee";
 import CountUp from "../components/CountUp";
 import InboxDemo from "../components/demos/InboxDemo";
 import PlannerDemo from "../components/demos/PlannerDemo";
+import JourneyDemo from "../components/demos/JourneyDemo";
 import {
   HdbBlock, Shophouse, KeyLine, CalendarLine,
   CondoTower, TerraceRow, MrtTrain, SkylineStrip,
@@ -240,6 +241,14 @@ export default function DesignLabPage() {
               </div>
             );
           })}
+        </div>
+
+        {/* 10. JourneyDemo (Wave 3a: the homepage thesis moment) */}
+        <div style={{ margin: "0 0 34px" }}>
+          <p style={label}>10 · journeydemo: ranked rows cascade &gt; three invites pop &gt; quotes arrive</p>
+          <div className="fc-scene fc-scene--inbox">
+            <JourneyDemo />
+          </div>
         </div>
 
         {/* empty state vignette */}

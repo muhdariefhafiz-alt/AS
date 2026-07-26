@@ -8,6 +8,7 @@ import { trackEvent } from "../lib/analytics";
 import { postalToDistrictCode, looksLikePostal } from "../lib/postal";
 import { titleName, cleanAgency } from "../lib/names";
 import AgentFlags from "../components/AgentFlags";
+import { Shophouse } from "../components/LineArt";
 
 type District = { code: string; name: string; slug: string };
 
@@ -182,16 +183,23 @@ export default function SearchPage() {
   return (
     <>
       {/* search header */}
-      <div className="fc-wrap" style={{ padding: "26px 40px 0" }}>
-        <div className="sr-crumb">
+      <div className="fc-wrap" style={{ padding: "26px 40px 0", position: "relative" }}>
+        <Shophouse
+          className="fc-lineart fc-float"
+          width={110}
+          style={{ position: "absolute", right: 44, top: 30, color: "var(--line-2)" }}
+        />
+        <div className="sr-crumb fc-hero-in fc-hero-in--1">
           <Link href="/">Home</Link> / Search
         </div>
-        <h1 style={{ margin: "22px 0 8px" }}>Search</h1>
-        <p className="lede" style={{ maxWidth: "none" }}>
+        <h1 className="fc-hero-in fc-hero-in--2" style={{ margin: "22px 0 8px" }}>
+          Search <span className="italic-serif" style={{ color: "var(--blue)" }}>the record.</span>
+        </h1>
+        <p className="lede fc-hero-in fc-hero-in--3" style={{ maxWidth: "none" }}>
           Find districts, HDB towns, agencies, or agents.
         </p>
 
-        <div className="sr-search" style={{ marginTop: 24 }}>
+        <div className="sr-search fc-hero-in fc-hero-in--4" style={{ marginTop: 24 }}>
           <svg className="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
