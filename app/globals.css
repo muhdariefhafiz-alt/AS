@@ -525,6 +525,14 @@ a.dev--link:hover .dev__name{color:var(--blue-deep);}
 }
 @keyframes fcMarquee{ from{ transform:translateX(0); } to{ transform:translateX(-100%); } }
 
+/* Mount entrance for DYNAMIC content (search results, live-loaded cards):
+   plays automatically when the element enters the DOM, no observer needed, so
+   it works for content rendered after ScrollReveal has already bound. Natural
+   state is visible (no fill-mode trap); stagger via inline animation-delay. */
+@media(prefers-reduced-motion: no-preference){
+  .fc-pop-in{ animation:fcHeroIn .5s cubic-bezier(.22,1.1,.32,1) backwards; }
+}
+
 /* Choreography: elements INSIDE product mockups that appear on cue (a message
    arriving, buttons appearing after the AI finishes typing). The demo component
    flips data-on; until then the element waits invisible. Springy entrance so

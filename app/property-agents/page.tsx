@@ -8,6 +8,21 @@ import { SellerCompareMock } from "../components/mocks";
 import ScrollReveal from "../components/ScrollReveal";
 import DataMarquee from "../components/DataMarquee";
 import { CondoTower } from "../components/LineArt";
+import { Icon } from "../components/Icons";
+
+// Icon roundel for section eyebrows (same language as /search groups).
+function Roundel({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22,
+        borderRadius: 7, background: "var(--blue-wash)", color: "var(--blue-deep)", flex: "0 0 auto",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
 
 export const revalidate = 43200; // 12h; daily cron also force-revalidates
 
@@ -58,7 +73,7 @@ export default async function PropertyAgentsHub() {
 
           <form action="/search" method="GET" className="fc-search fc-hero-in fc-hero-in--4" style={{ marginTop: 26 }}>
             <input name="q" placeholder="Agent name, district, or HDB town" aria-label="Search agents, districts or towns" />
-            <button type="submit" className="fc-btn fc-btn--primary">Find agent</button>
+            <button type="submit" className="fc-btn fc-btn--primary fc-btn--hairline">Find agent</button>
           </form>
 
           <div className="fc-row fc-hero-in fc-hero-in--5" style={{ marginTop: 16, gap: 18 }}>
@@ -96,22 +111,31 @@ export default async function PropertyAgentsHub() {
         />
       </section>
 
-      {/* ---------- BROWSE BY DISTRICT ---------- */}
+      {/* ---------- BROWSE BY DISTRICT (scene-framed area index) ---------- */}
       <section className="fc-wrap" style={{ padding: "56px 40px" }}>
-        <div className="eyebrow">Browse by district</div>
-        <h2 style={{ marginTop: 12 }}>All 28 Singapore districts.</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, marginTop: 24 }}>
-          {districts.map((d) => (
-            <Link
-              key={d.code}
-              href={`/property-agents/district/${d.slug}`}
-              className="fc-card fc-card--hover"
-              style={{ padding: "12px 14px", display: "block", textDecoration: "none", color: "inherit" }}
-            >
-              <span className="mono" style={{ color: "var(--blue)", fontSize: 12, fontWeight: 600 }}>{d.code}</span>
-              <div style={{ marginTop: 2, fontSize: 14, fontWeight: 600 }}>{d.name?.split(",")[0]}</div>
-            </Link>
-          ))}
+        <div className="eyebrow fc-reveal" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Roundel><Icon.Pin size={13} /></Roundel> Browse by district
+        </div>
+        <h2 className="fc-reveal" style={{ marginTop: 12 }}>
+          All 28 Singapore districts, <span className="italic-serif">one score.</span>
+        </h2>
+        <div className="fc-scene fc-scene--inbox fc-reveal" style={{ marginTop: 24, padding: "clamp(16px,2.5vw,28px)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+            {districts.map((d, di) => (
+              <Link
+                key={d.code}
+                href={`/property-agents/district/${d.slug}`}
+                className="fc-card fc-card--hover fc-reveal"
+                style={{
+                  ["--reveal-delay" as string]: `${Math.min(di * 0.03, 0.5)}s`,
+                  padding: "12px 14px", display: "block", textDecoration: "none", color: "inherit", background: "#fff",
+                }}
+              >
+                <span className="mono" style={{ color: "var(--blue)", fontSize: 12, fontWeight: 600 }}>{d.code}</span>
+                <div style={{ marginTop: 2, fontSize: 14, fontWeight: 600 }}>{d.name?.split(",")[0]}</div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -120,14 +144,16 @@ export default async function PropertyAgentsHub() {
         <div className="fc-wrap" style={{ padding: "56px 40px" }}>
           <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
             <div>
-              <div className="eyebrow">Market insights</div>
-              <h2 style={{ marginTop: 12 }}>Data, not opinion.</h2>
+              <div className="eyebrow fc-reveal" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Roundel><Icon.TrendUp size={13} /></Roundel> Market insights
+              </div>
+              <h2 className="fc-reveal" style={{ marginTop: 12 }}>Data, <span className="italic-serif">not opinion.</span></h2>
             </div>
             <Link href="/insights" className="fc-btn fc-btn--quiet fc-btn--sm">View all</Link>
           </div>
           <div className="fc-grid-3" style={{ marginTop: 24 }}>
-            {INSIGHTS.map(([href, title, sub]) => (
-              <Link key={href} href={href} className="fc-card fc-card--pad fc-card--hover" style={{ background: "#fff", textDecoration: "none", color: "inherit" }}>
+            {INSIGHTS.map(([href, title, sub], ii) => (
+              <Link key={href} href={href} className="fc-card fc-card--pad fc-card--hover fc-reveal" style={{ ["--reveal-delay" as string]: `${0.12 * ii}s`, background: "#fff", textDecoration: "none", color: "inherit" }}>
                 <div className="serif" style={{ fontWeight: 600, fontSize: 19 }}>{title}</div>
                 <p className="muted" style={{ margin: "8px 0 0", fontSize: 14 }}>{sub}</p>
                 <div className="mono" style={{ color: "var(--blue)", fontSize: 12.5, marginTop: 14 }}>Read &rarr;</div>
@@ -139,15 +165,17 @@ export default async function PropertyAgentsHub() {
 
       {/* ---------- LARGEST AGENCIES ---------- */}
       <section className="fc-wrap" style={{ padding: "56px 40px" }}>
-        <div className="eyebrow">Largest agencies</div>
-        <h2 style={{ marginTop: 12 }}>Browse by agency.</h2>
+        <div className="eyebrow fc-reveal" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Roundel><Icon.Home size={13} /></Roundel> Largest agencies
+        </div>
+        <h2 className="fc-reveal" style={{ marginTop: 12 }}>Browse by agency.</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12, marginTop: 24 }}>
-          {agencies.map((a) => (
+          {agencies.map((a, ai) => (
             <Link
               key={a.slug}
               href={`/property-agents/agency/${a.slug}`}
-              className="fc-card fc-card--pad fc-card--hover"
-              style={{ textDecoration: "none", color: "inherit" }}
+              className="fc-card fc-card--pad fc-card--hover fc-reveal"
+              style={{ ["--reveal-delay" as string]: `${Math.min(ai * 0.06, 0.42)}s`, textDecoration: "none", color: "inherit" }}
             >
               <div style={{ fontWeight: 700, fontSize: 15 }}>{cleanAgency(a.name)}</div>
               <div className="fc-row muted" style={{ marginTop: 8, gap: 12, fontSize: 12.5 }}>

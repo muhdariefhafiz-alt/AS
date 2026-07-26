@@ -8,7 +8,23 @@ import { trackEvent } from "../lib/analytics";
 import { postalToDistrictCode, looksLikePostal } from "../lib/postal";
 import { titleName, cleanAgency } from "../lib/names";
 import AgentFlags from "../components/AgentFlags";
-import { Shophouse } from "../components/LineArt";
+import { Shophouse, SkylineStrip } from "../components/LineArt";
+import { Icon } from "../components/Icons";
+
+// Small icon roundel used in group eyebrows so every result section carries
+// the house icon language.
+function Roundel({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22,
+        borderRadius: 7, background: "var(--blue-wash)", color: "var(--blue-deep)", flex: "0 0 auto",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
 
 type District = { code: string; name: string; slug: string };
 
@@ -225,10 +241,12 @@ export default function SearchPage() {
         {preview && (
           <>
             <div className="sr-group">
-              <div className="eyebrow">Postal code match</div>
+              <div className="eyebrow" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Roundel><Icon.Pin size={13} /></Roundel> Postal code match
+              </div>
               <Link
                 href={preview.district.slug ? `/property-agents/district/${preview.district.slug}` : `/property-agents/best/${preview.bestSlug}`}
-                className="fc-card fc-card--hover sr-result"
+                className="fc-card fc-card--hover sr-result fc-pop-in"
                 style={{ marginTop: 14 }}
               >
                 <span className="sr-tile" style={{ background: "var(--ink)", color: "#fff" }}>
@@ -254,7 +272,9 @@ export default function SearchPage() {
               <div className="sr-group">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
                   <div>
-                    <div className="eyebrow">Agents in {preview.district.code}</div>
+                    <div className="eyebrow" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <Roundel><Icon.TrendUp size={13} /></Roundel> Agents in {preview.district.code}
+                    </div>
                     <p className="muted small" style={{ margin: "8px 0 0" }}>
                       Ranked on AgentScore, computed from real transaction performance. No paid placement.
                     </p>
@@ -263,13 +283,13 @@ export default function SearchPage() {
                     See all {preview.agentCount} ranked agents ›
                   </Link>
                 </div>
-                <div className="fc-card" style={{ padding: "4px 24px 10px", marginTop: 14 }}>
-                  {preview.topAgents.map((a) => (
+                <div className="fc-card fc-pop-in" style={{ padding: "4px 24px 10px", marginTop: 14 }}>
+                  {preview.topAgents.map((a, ri) => (
                     <Link
                       key={a.slug ?? a.rank}
                       href={a.slug ? `/property-agents/agent/${a.slug}` : `/property-agents/best/${preview.bestSlug}`}
-                      className="fc-rank"
-                      style={{ color: "inherit" }}
+                      className="fc-rank fc-pop-in"
+                      style={{ color: "inherit", animationDelay: `${120 + ri * 70}ms` }}
                     >
                       <span className="fc-rank__pos">{String(a.rank).padStart(2, "0")}</span>
                       <span className="fc-avatar" style={{ width: 40, height: 40, borderRadius: 10, fontSize: 15 }}>
@@ -296,7 +316,7 @@ export default function SearchPage() {
                 </div>
                 <Link
                   href={`/sell?type=CONDO&district=${preview.district.code}&utm_source=search`}
-                  className="fc-btn fc-btn--primary fc-btn--block"
+                  className="fc-btn fc-btn--primary fc-btn--block fc-btn--hairline"
                   style={{ marginTop: 14 }}
                 >
                   Compare these agents, free for sellers
@@ -307,26 +327,28 @@ export default function SearchPage() {
             {/* market data */}
             {preview.market && (
               <div className="sr-group">
-                <div className="eyebrow">Market data · {preview.district.code}</div>
+                <div className="eyebrow" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Roundel><Icon.Doc size={13} /></Roundel> Market data · {preview.district.code}
+                </div>
                 <p className="muted small" style={{ margin: "8px 0 0" }}>
                   Price analysis based on real transaction data.
                 </p>
                 <div className="fc-grid-3" style={{ marginTop: 16 }}>
-                  <div className="fc-card fc-card--pad">
+                  <div className="fc-card fc-card--pad fc-pop-in">
                     <div className="mono small muted">MEDIAN PRIVATE PRICE</div>
                     <div className="serif tnum" style={{ fontSize: 32, fontWeight: 600, marginTop: 4 }}>
                       {fmtPrice(preview.market.medianPrice)}
                     </div>
                     <div className="small muted">condos and apartments</div>
                   </div>
-                  <div className="fc-card fc-card--pad">
+                  <div className="fc-card fc-card--pad fc-pop-in" style={{ animationDelay: "90ms" }}>
                     <div className="mono small muted">TRANSACTIONS ANALYSED</div>
                     <div className="serif tnum" style={{ fontSize: 32, fontWeight: 600, marginTop: 4 }}>
                       {preview.market.totalTxns.toLocaleString()}
                     </div>
                     <div className="small muted">private, from URA caveats</div>
                   </div>
-                  <div className="fc-card fc-card--pad">
+                  <div className="fc-card fc-card--pad fc-pop-in" style={{ animationDelay: "180ms" }}>
                     <div className="mono small muted">AGENTS RANKED</div>
                     <div className="serif tnum" style={{ fontSize: 32, fontWeight: 600, marginTop: 4 }}>
                       {preview.agentCount}
@@ -345,12 +367,14 @@ export default function SearchPage() {
 
         {results.length > 0 && (
           <div className="sr-group">
-            <div className="eyebrow">{preview ? "Other matches" : "Results"}</div>
+            <div className="eyebrow" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Roundel><Icon.Search size={13} /></Roundel> {preview ? "Other matches" : "Results"}
+            </div>
             <div className="fc-grid-2" style={{ marginTop: 14, gap: 16 }}>
-              {results.map((r) => {
+              {results.map((r, ri) => {
                 const isLoc = r.type === "district" || r.type === "hdb_town";
                 return (
-                  <Link key={r.href} href={r.href} className="fc-card fc-card--hover sr-result">
+                  <Link key={r.href} href={r.href} className="fc-card fc-card--hover sr-result fc-pop-in" style={{ animationDelay: `${Math.min(ri * 55, 440)}ms` }}>
                     <span
                       className="sr-tile"
                       style={
@@ -383,26 +407,87 @@ export default function SearchPage() {
           </div>
         )}
 
-        {/* empty state */}
+        {/* empty (idle) state: the page should feel like the product before a
+            single key is typed - tappable example searches, the report cards
+            with the icon language, and the skyline signature. */}
         {showEmpty && (
-          <div className="sr-group">
-            <div className="eyebrow">Popular market reports</div>
-            <div className="fc-grid-3" style={{ marginTop: 14 }}>
-              {[
-                { title: "Tampines HDB", desc: "13,000+ transactions analysed", href: "/property-agents/hdb/tampines" },
-                { title: "D09 Orchard", desc: "Prime condo market, freehold analysis", href: "/property-agents/district/d09-orchard" },
-                { title: "Bishan HDB", desc: "Premium HDB town, million-dollar flats", href: "/property-agents/hdb/bishan" },
-                { title: "D15 Katong", desc: "East Coast property prices and trends", href: "/property-agents/district/d15-katong" },
-                { title: "Sengkang HDB", desc: "Most-traded HDB town in Singapore", href: "/property-agents/hdb/sengkang" },
-                { title: "D10 Bukit Timah", desc: "Landed and condo market analysis", href: "/property-agents/district/d10-ardmore" },
-              ].map((p) => (
-                <Link key={p.href} href={p.href} className="fc-card fc-card--hover fc-card--pad">
-                  <div style={{ fontWeight: 700 }}>{p.title}</div>
-                  <div className="muted small" style={{ marginTop: 4 }}>{p.desc}</div>
-                </Link>
-              ))}
+          <>
+            <div className="sr-group" style={{ marginTop: 22 }}>
+              <div className="eyebrow" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Roundel><Icon.Spark size={13} /></Roundel> Try one of these
+              </div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+                {([
+                  ["Home", "Tampines"],
+                  ["Pin", "D15 Katong"],
+                  ["Home", "Punggol"],
+                  ["Search", "PropNex"],
+                  ["Pin", "Queenstown"],
+                ] as const).map(([icon, label], ci) => {
+                  const C = Icon[icon];
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setQuery(label)}
+                      className="fc-pop-in"
+                      style={{
+                        animationDelay: `${ci * 60}ms`, display: "inline-flex", alignItems: "center", gap: 8,
+                        border: "1px solid var(--line)", background: "#fff", borderRadius: 999,
+                        padding: "8px 16px 8px 9px", fontSize: 14, fontWeight: 600, color: "var(--ink)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Roundel><C size={13} /></Roundel>
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+
+            <div className="sr-group">
+              <div className="eyebrow" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Roundel><Icon.TrendUp size={13} /></Roundel> Popular market reports
+              </div>
+              <div className="fc-grid-3" style={{ marginTop: 14 }}>
+                {[
+                  { icon: "Home" as const, title: "Tampines HDB", desc: "13,000+ transactions analysed", href: "/property-agents/hdb/tampines" },
+                  { icon: "Pin" as const, title: "D09 Orchard", desc: "Prime condo market, freehold analysis", href: "/property-agents/district/d09-orchard" },
+                  { icon: "Home" as const, title: "Bishan HDB", desc: "Premium HDB town, million-dollar flats", href: "/property-agents/hdb/bishan" },
+                  { icon: "Pin" as const, title: "D15 Katong", desc: "East Coast property prices and trends", href: "/property-agents/district/d15-katong" },
+                  { icon: "Home" as const, title: "Sengkang HDB", desc: "Most-traded HDB town in Singapore", href: "/property-agents/hdb/sengkang" },
+                  { icon: "Pin" as const, title: "D10 Bukit Timah", desc: "Landed and condo market analysis", href: "/property-agents/district/d10-ardmore" },
+                ].map((p, pi) => {
+                  const C = Icon[p.icon];
+                  return (
+                    <Link
+                      key={p.href}
+                      href={p.href}
+                      className="fc-card fc-card--hover fc-card--pad fc-pop-in"
+                      style={{ animationDelay: `${120 + pi * 70}ms`, display: "flex", gap: 12, alignItems: "flex-start" }}
+                    >
+                      <span
+                        style={{
+                          display: "inline-flex", alignItems: "center", justifyContent: "center", width: 34, height: 34,
+                          borderRadius: 10, background: "var(--blue-wash)", color: "var(--blue-deep)", flex: "0 0 auto",
+                        }}
+                      >
+                        <C size={17} />
+                      </span>
+                      <span>
+                        <span style={{ display: "block", fontWeight: 700 }}>{p.title}</span>
+                        <span className="muted small" style={{ display: "block", marginTop: 4 }}>{p.desc}</span>
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+              <div style={{ textAlign: "center", marginTop: 40, color: "var(--line-2)", overflow: "hidden" }}>
+                <SkylineStrip width={560} style={{ maxWidth: "100%" }} />
+              </div>
+            </div>
+          </>
         )}
       </div>
     </>
