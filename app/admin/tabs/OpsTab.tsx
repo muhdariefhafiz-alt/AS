@@ -24,6 +24,7 @@ const CRONS: [string, string, string][] = [
   ["verify-completions", "04:00 UTC daily", "Completion verification"],
   ["expire-leads", "05:00 UTC daily", "Lapse stale leads"],
   ["gsc-sync", "05:30 UTC daily", "Search Console pull"],
+  ["index-coverage", "05:45 UTC daily", "Sitemap resubmit + indexation scoreboard"],
   ["ai-tracker-scan", "07:00-07:30 UTC Mon", "AI citation SOV (4 surfaces)"],
   ["hdb-sync", "06:00 UTC Mon", "HDB resale re-mirror"],
   ["standing-digest", "08:00 UTC monthly (2nd)", "Agent standing email"],

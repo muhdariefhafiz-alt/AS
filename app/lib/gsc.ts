@@ -25,12 +25,17 @@ function b64url(input: string | Buffer): string {
   return Buffer.from(input).toString("base64url");
 }
 
-async function getAccessToken(): Promise<string> {
+// Full (read-write) scope: needed for sitemap submission. The token exchange
+// succeeds regardless of the service account's permission level on the
+// property; a Restricted user only finds out at the API call (403 on PUT).
+const SCOPE_FULL = "https://www.googleapis.com/auth/webmasters";
+
+async function getAccessToken(scope: string = SCOPE): Promise<string> {
   const email = process.env.GSC_SA_EMAIL!;
   const key = (process.env.GSC_SA_PRIVATE_KEY || "").replace(/\\n/g, "\n");
   const now = Math.floor(Date.now() / 1000);
   const header = b64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const claim = b64url(JSON.stringify({ iss: email, scope: SCOPE, aud: TOKEN_URL, exp: now + 3600, iat: now }));
+  const claim = b64url(JSON.stringify({ iss: email, scope, aud: TOKEN_URL, exp: now + 3600, iat: now }));
   const signature = b64url(createSign("RSA-SHA256").update(`${header}.${claim}`).sign(key));
   const jwt = `${header}.${claim}.${signature}`;
 
@@ -78,4 +83,58 @@ export async function querySearchAnalytics(
 
 export async function gscAccessToken(): Promise<string> {
   return getAccessToken();
+}
+
+export async function gscAccessTokenFull(): Promise<string> {
+  return getAccessToken(SCOPE_FULL);
+}
+
+// Submit (or resubmit) a sitemap to Search Console. Idempotent: PUT on an
+// already-known feedpath just refreshes it. Replaces the deprecated
+// google.com/ping endpoint (dead since early 2024). Needs a full-scope token
+// and a Full-permission service account; throws with the API's message so the
+// caller can surface a 403 as "owner must upgrade SA permission".
+export async function submitSitemap(token: string, feedpath: string): Promise<void> {
+  const url = `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(GSC_SITE_URL)}/sitemaps/${encodeURIComponent(feedpath)}`;
+  const res = await fetch(url, { method: "PUT", headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error(`GSC sitemap submit failed (${feedpath}): ${res.status} ${await res.text()}`);
+}
+
+export type GscSitemapEntry = {
+  path?: string;
+  lastSubmitted?: string;
+  lastDownloaded?: string;
+  isPending?: boolean;
+  errors?: string;
+  warnings?: string;
+};
+
+export async function listSitemaps(token: string): Promise<GscSitemapEntry[]> {
+  const url = `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(GSC_SITE_URL)}/sitemaps`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error(`GSC sitemaps list failed: ${res.status} ${await res.text()}`);
+  const json = (await res.json()) as { sitemap?: GscSitemapEntry[] };
+  return json.sitemap ?? [];
+}
+
+// URL Inspection API: precise per-URL index state ("Submitted and indexed",
+// "Crawled - currently not indexed", "URL is unknown to Google", ...).
+// Property quota is 2,000 inspections/day; callers must sample, never sweep.
+export async function inspectUrl(
+  token: string,
+  inspectionUrl: string
+): Promise<{ coverageState: string; verdict: string }> {
+  const res = await fetch("https://searchconsole.googleapis.com/v1/urlInspection/index:inspect", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ inspectionUrl, siteUrl: GSC_SITE_URL }),
+  });
+  if (!res.ok) throw new Error(`GSC url inspection failed: ${res.status} ${await res.text()}`);
+  const json = (await res.json()) as {
+    inspectionResult?: { indexStatusResult?: { coverageState?: string; verdict?: string } };
+  };
+  return {
+    coverageState: json.inspectionResult?.indexStatusResult?.coverageState ?? "unknown",
+    verdict: json.inspectionResult?.indexStatusResult?.verdict ?? "unknown",
+  };
 }

@@ -53,6 +53,10 @@
       "schedule": "30 5 * * *"
     },
     {
+      "path": "/api/cron/index-coverage",
+      "schedule": "45 5 * * *"
+    },
+    {
       "path": "/api/cron/ai-tracker-scan?surface=google_aio",
       "schedule": "0 7 * * 1"
     },

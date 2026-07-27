@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { SectionHeading, StatCard, EmptyState } from "../shared";
+import { countIndexableAgents } from "../../lib/indexable";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,6 +53,10 @@ export async function SeoTab() {
     supabase.from("fc_gsc_daily_stats").select("dimension_value, clicks, impressions, ctr, position").eq("dimension", "query").order("impressions", { ascending: false }).limit(10),
     supabase.from("fc_gsc_daily_stats").select("dimension_value, clicks, impressions, ctr, position").eq("dimension", "page").order("impressions", { ascending: false }).limit(10),
   ]);
+  const [coverageRes, universeCount] = await Promise.all([
+    supabase.from("sg_index_coverage").select("date, agent_pages_with_impressions, agent_clicks, agent_impressions, sample_size, sample_indexed, sitemaps_submitted, notes").order("date", { ascending: true }).limit(60),
+    countIndexableAgents(),
+  ]);
 
   // ---- Google Search Console (organic SERP) ----
   const gscDays = (gscDailyRes.data ?? []) as GscDay[];
@@ -100,6 +105,20 @@ export async function SeoTab() {
 
   const noData = pv30 === 0 && pvPrior === 0;
 
+  // ---- Indexation coverage (daily scoreboard vs the 29.7k universe) ----
+  type CoverageRow = {
+    date: string; agent_pages_with_impressions: number | null; agent_clicks: number | null;
+    agent_impressions: number | null; sample_size: number | null; sample_indexed: number | null;
+    sitemaps_submitted: number | null; notes: Record<string, unknown> | null;
+  };
+  const coverage = (coverageRes.data ?? []) as CoverageRow[];
+  const latestCov = coverage[coverage.length - 1];
+  const covSampleSize = coverage.reduce((s, r) => s + (r.sample_size ?? 0), 0);
+  const covSampleIndexed = coverage.reduce((s, r) => s + (r.sample_indexed ?? 0), 0);
+  const covRate = covSampleSize > 0 ? Math.round((covSampleIndexed / covSampleSize) * 100) : null;
+  const latestSample = (latestCov?.notes as { sample?: { dense?: { size: number; indexed: number }; tail?: { size: number; indexed: number } } } | null)?.sample;
+  const submitError = (latestCov?.notes as { submit_error?: string } | null)?.submit_error;
+
   return (
     <div className="space-y-8">
       <p className="text-sm text-gray-500">
@@ -137,6 +156,53 @@ export async function SeoTab() {
             <code>sc-domain:fair-comparisons.com</code> property, then set <code>GSC_SA_EMAIL</code> + <code>GSC_SA_PRIVATE_KEY</code>.
             The daily <code>gsc-sync</code> cron fills this automatically.
           </div>
+        )}
+      </div>
+
+      {/* Indexation coverage */}
+      <div>
+        <SectionHeading
+          title="Indexation coverage (agent pages)"
+          hint={`Daily scoreboard from the index-coverage cron vs the ${universeCount.toLocaleString()}-page scored universe. Sitemaps are resubmitted to GSC on every run.`}
+        />
+        {coverage.length > 0 ? (
+          <>
+            <div className="mt-3 grid gap-4 sm:grid-cols-4">
+              <StatCard
+                title="Pages with impressions 28d"
+                value={(latestCov?.agent_pages_with_impressions ?? 0).toLocaleString()}
+                sub={`of ${universeCount.toLocaleString()} in sitemap`}
+                sparkline={coverage.map((r) => Number(r.agent_pages_with_impressions ?? 0))}
+                color="#2980b9"
+              />
+              <StatCard
+                title="Sample indexed rate"
+                value={covRate == null ? "n/a" : `${covRate}%`}
+                sub={`${covSampleIndexed}/${covSampleSize} URLs inspected (rolling)`}
+                color="#059669"
+              />
+              <StatCard
+                title="Latest sample: dense / tail"
+                value={latestSample ? `${latestSample.dense?.indexed ?? 0}/${latestSample.dense?.size ?? 0} · ${latestSample.tail?.indexed ?? 0}/${latestSample.tail?.size ?? 0}` : "n/a"}
+                sub="indexed / inspected per tier"
+                color="#8e44ad"
+              />
+              <StatCard
+                title="Sitemaps submitted"
+                value={String(latestCov?.sitemaps_submitted ?? 0)}
+                sub={submitError ? "submit error, see cron JSON" : "root + agent shards, daily"}
+                color={submitError ? "#e74c3c" : "#e67e22"}
+              />
+            </div>
+            {submitError && (
+              <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+                Sitemap submission failed: <code>{String(submitError).slice(0, 200)}</code>. If this is a 403, the GSC
+                service account is Restricted; upgrade it to Full in Search Console users to enable API submission.
+              </div>
+            )}
+          </>
+        ) : (
+          <EmptyState title="No coverage rows yet" hint="Runs daily at 05:45 UTC (13:45 SGT), or trigger index-coverage from the Ops tab." />
         )}
       </div>
 

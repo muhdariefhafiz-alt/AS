@@ -43,6 +43,7 @@ const ALLOWED_CRON_PATHS = new Set<string>([
   "/api/cron/expire-leads",
   "/api/cron/avm-updates",
   "/api/cron/gsc-sync",
+  "/api/cron/index-coverage",
   "/api/cron/ai-tracker-scan",
   "/api/cron/standing-digest",
   "/api/cron/hdb-sync",
