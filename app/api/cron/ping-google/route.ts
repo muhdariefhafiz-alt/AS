@@ -7,18 +7,21 @@ const supabase = createClient(
 );
 
 const BASE = "https://fair-comparisons.com";
+const INDEXNOW_KEY = "ce213220a492a098fc85da7eb9657a6b";
+// IndexNow protocol maximum per POST
+const INDEXNOW_BATCH = 10000;
 
 /**
- * Daily Google ping cron.
- * Submits updated URLs to Google via the Indexing API and pings the sitemap.
+ * Daily indexing cron.
  * Runs daily at 4am SGT (8pm UTC previous day), after revalidation cron.
  *
  * Two mechanisms:
- * 1. Sitemap ping via Google's ping endpoint (no auth needed)
- * 2. Google Indexing API for high-priority URLs (needs service account)
- *
- * The sitemap ping alone is enough to tell Google "something changed."
- * The Indexing API is for pages we want crawled within hours, not days.
+ * 1. IndexNow (api.indexnow.org): submits agent profile URLs changed in the
+ *    last 24h. Key file is served from public/. A one-time bulk submit of the
+ *    full 29,806-URL universe was done manually on 2026-07-27, so this cron
+ *    only needs the daily delta.
+ * 2. Google Indexing API for high-priority URLs (needs service account,
+ *    env-gated on GOOGLE_INDEXING_KEY).
  */
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization");
@@ -28,22 +31,33 @@ export async function GET(req: Request) {
 
   const results: Record<string, unknown> = {};
 
-  // --- 1. Ping sitemap ---
-  try {
-    const pingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(`${BASE}/sitemap.xml`)}`;
-    const pingRes = await fetch(pingUrl);
-    results.sitemap_ping = { status: pingRes.status, ok: pingRes.ok };
-  } catch (err) {
-    results.sitemap_ping = { error: err instanceof Error ? err.message : String(err) };
-  }
+  // --- 1. IndexNow: submit agent profiles changed in the last 24h ---
+  const changedUrls = await getChangedAgentUrls();
+  results.recently_changed_profiles = changedUrls.length;
 
-  // Also ping Bing
-  try {
-    const bingUrl = `https://www.bing.com/ping?sitemap=${encodeURIComponent(`${BASE}/sitemap.xml`)}`;
-    const bingRes = await fetch(bingUrl);
-    results.bing_ping = { status: bingRes.status, ok: bingRes.ok };
-  } catch (err) {
-    results.bing_ping = { error: err instanceof Error ? err.message : String(err) };
+  if (changedUrls.length > 0) {
+    const batches: Record<string, unknown>[] = [];
+    for (let i = 0; i < changedUrls.length; i += INDEXNOW_BATCH) {
+      const urlList = changedUrls.slice(i, i + INDEXNOW_BATCH);
+      try {
+        const res = await fetch("https://api.indexnow.org/indexnow", {
+          method: "POST",
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+          body: JSON.stringify({
+            host: "fair-comparisons.com",
+            key: INDEXNOW_KEY,
+            keyLocation: `${BASE}/${INDEXNOW_KEY}.txt`,
+            urlList,
+          }),
+        });
+        batches.push({ status: res.status, ok: res.ok, count: urlList.length });
+      } catch (err) {
+        batches.push({ count: urlList.length, error: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    results.indexnow = { submitted: changedUrls.length, batches };
+  } else {
+    results.indexnow = { skipped: true, reason: "no changed agent URLs in last 24h" };
   }
 
   // --- 2. Google Indexing API (if credentials available) ---
@@ -92,18 +106,6 @@ export async function GET(req: Request) {
     results.indexing_api = { skipped: true, reason: "GOOGLE_INDEXING_KEY not set" };
   }
 
-  // --- 3. Find recently changed agent profiles (score changed, newly claimed) ---
-  // Log which agents had activity for the revalidation cron to pick up
-  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data: recentlyChanged } = await supabase
-    .from("sg_agents")
-    .select("slug")
-    .gte("updated_at", oneDayAgo)
-    .limit(50);
-
-  const changedUrls = (recentlyChanged ?? []).map(a => `${BASE}/property-agents/agent/${a.slug}`);
-  results.recently_changed_profiles = changedUrls.length;
-
   // Log the cron run
   await supabase.from("sg_funnel_events").insert({
     event: "cron_ping_google",
@@ -111,6 +113,29 @@ export async function GET(req: Request) {
   });
 
   return NextResponse.json({ ok: true, ...results });
+}
+
+/**
+ * All agent profile URLs whose sg_agents row changed in the last 24h.
+ * Paginates past Supabase's 1000-row response cap so a bulk update
+ * (e.g. a full score recalc) still yields the complete delta.
+ */
+async function getChangedAgentUrls(): Promise<string[]> {
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const urls: string[] = [];
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from("sg_agents")
+      .select("slug")
+      .gte("updated_at", oneDayAgo)
+      .order("slug")
+      .range(from, from + PAGE - 1);
+    if (error || !data || data.length === 0) break;
+    for (const a of data) urls.push(`${BASE}/property-agents/agent/${a.slug}`);
+    if (data.length < PAGE) break;
+  }
+  return urls;
 }
 
 /**

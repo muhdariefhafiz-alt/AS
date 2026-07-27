@@ -13,7 +13,7 @@ const supabase = createClient(
 const CRONS: [string, string, string][] = [
   ["refresh-scores", "18:00 UTC daily", "AgentScore recalculation"],
   ["revalidate", "19:00 UTC daily", "ISR purge"],
-  ["ping-google", "20:00 UTC daily", "IndexNow + Bing ping"],
+  ["ping-google", "20:00 UTC daily", "IndexNow changed-URL submit + Google Indexing API"],
   ["outreach", "02:00 UTC daily", "Agent outreach emails"],
   ["agent-activation", "01:30 UTC daily", "Activation drip"],
   ["weekly-digest", "01:00 UTC Mon", "Top agents email"],
