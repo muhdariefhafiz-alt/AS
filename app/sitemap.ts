@@ -1,5 +1,6 @@
 import { supabase } from "./lib/supabase";
 import { HDB_TOWNS, getQualifyingHdbSegments } from "./lib/hdbData";
+import { agentDirectoryPageCount, countIndexableAgents } from "./lib/indexable";
 import type { MetadataRoute } from "next";
 
 const BEST_AGENT_AREAS = [
@@ -24,11 +25,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // the frontend focuses only on property agents. Backend data collection continues.
   // Agents are served from the sharded app/property-agents/sitemap.ts (the full
   // data-dense set, uncapped) rather than the old 10k slice here.
-  const [districtsRes, agenciesRes, projectsRes, hdbSegments] = await Promise.all([
+  const [districtsRes, agenciesRes, projectsRes, hdbSegments, indexableCount] = await Promise.all([
     supabase.from("sg_districts").select("slug").not("slug", "is", null),
     supabase.from("sg_agencies").select("slug, agent_count, google_review_count, score").order("agent_count", { ascending: false }).limit(5000),
     supabase.from("sg_projects").select("slug, txn_count").order("txn_count", { ascending: false }).limit(5000),
     getQualifyingHdbSegments(),
+    countIndexableAgents(),
   ]);
 
   const districts = districtsRes.data ?? [];
@@ -127,6 +129,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...agencies.map(a => ({ url: `${BASE}/property-agents/agency/${a.slug}`, changeFrequency: "weekly" as const, priority: a.agent_count >= 1000 ? 0.8 : 0.7 })),
 
     // === Agents === (served from the sharded app/property-agents/sitemap.ts)
+
+    // === Agent A-Z directory (crawl path to the full scored universe) ===
+    ...Array.from({ length: agentDirectoryPageCount(indexableCount) }, (_, i) => ({
+      url: `${BASE}/property-agents/directory/${i + 1}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.3,
+    })),
 
     // === Developments ===
     ...(projectsRes.data ?? []).filter(p => (p.txn_count ?? 0) >= 20).map(p => ({ url: `${BASE}/property-agents/development/${p.slug}`, changeFrequency: "weekly" as const, priority: (p.txn_count ?? 0) >= 200 ? 0.8 : 0.7 })),

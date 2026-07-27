@@ -184,6 +184,7 @@ function Footer() {
               <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8, fontSize: 14 }}>
                 {[
                   ["/property-agents", "Compare agents"],
+                  ["/property-agents/directory/1", "All agents A to Z"],
                   ["/sell", "Sell your property"],
                   ["/tools/valuation", "Online valuation"],
                   ["/tools", "Free tools"],

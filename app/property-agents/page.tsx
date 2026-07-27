@@ -143,6 +143,9 @@ export default async function PropertyAgentsHub() {
             ))}
           </div>
         </div>
+        <Link href="/property-agents/directory/1" className="small" style={{ display: "inline-block", marginTop: 16, fontWeight: 700, color: "var(--blue)" }}>
+          Or browse every ranked agent A to Z &rsaquo;
+        </Link>
       </section>
 
       {/* ---------- THE RECORD, IN NUMBERS (histogram + windowed boards) ---------- */}
