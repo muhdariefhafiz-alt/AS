@@ -30,13 +30,13 @@ const FEATURES: { kicker: string; title: string; body: string; points: string[] 
     kicker: "Deal Radar",
     title: "A daily prospecting list for your farm area",
     body: "Pick the HDB towns and districts you work. Deal Radar surfaces owners reaching their 5-year MOP and every recent sale near them, built entirely from official CEA, URA and HDB records. No scraping, no guessing, a fresh call list every day.",
-    points: ["Owners reaching their MOP window", "Recent comparable sales in your patch", "100% real transaction data, updated daily"],
+    points: ["Owners reaching their MOP window", "Recent comparable sales in your patch", "Farm intelligence: agents, deals and concentration per area", "100% real transaction data, updated daily"],
   },
   {
     kicker: "Pitch Kit",
     title: "Walk into the listing appointment with your record",
     body: "One tap builds a shareable, co-branded pitch from your verified CEA record: your deals in the seller's area, your standing, and the live market context. Send it before the appointment or open it at the table. It recomputes every time it is opened, so it is never stale.",
-    points: ["Your own closed deals in the seller's area", "Live market context from official records", "Verification no self-made deck can carry"],
+    points: ["Your own closed deals in the seller's area", "Instant CMA beside it: price range and comps for the area", "Verification no self-made deck can carry"],
   },
   {
     kicker: "Co-branded seller reports",

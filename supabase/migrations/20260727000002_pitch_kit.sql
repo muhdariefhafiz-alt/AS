@@ -30,7 +30,7 @@ with tx as (
     (transaction_type not ilike '%RENTAL%') as is_sale
   from sg_agent_transactions
   where salesperson_reg_num = p_reg
-    and transaction_date ~ '^[A-Z]{3}-[0-9]{4}$'
+    and transaction_date ~ '^(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)-[0-9]{4}$'
 ),
 in_area as (
   select * from tx
