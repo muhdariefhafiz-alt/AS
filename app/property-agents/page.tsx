@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { supabase } from "../lib/supabase";
+import { supabase, supabaseAdmin } from "../lib/supabase";
 import { cleanAgency } from "../lib/names";
+import LeagueBoards, { type LeagueData } from "../components/LeagueBoards";
 import SellCtaBand from "../components/SellCtaBand";
 import type { Metadata } from "next";
 import ProductBox from "../components/ProductBox";
@@ -39,15 +40,20 @@ const INSIGHTS: [string, string, string][] = [
 ];
 
 export default async function PropertyAgentsHub() {
-  const [statsRes, agenciesRes, districtsRes] = await Promise.all([
+  const [statsRes, agenciesRes, districtsRes, leagueRes] = await Promise.all([
     supabase.from("sg_agents").select("id", { count: "exact", head: true }),
     supabase.from("sg_agencies").select("name, slug, agent_count, google_rating").order("agent_count", { ascending: false }).limit(8),
     supabase.from("sg_districts").select("code, name, slug").order("code"),
+    // League numbers come from a daily pg_cron snapshot (the underlying
+    // aggregate scans 1.34M rows and takes ~18s; it must never run on the
+    // request path). Millisecond read; fail-soft hides the section.
+    supabaseAdmin().from("sg_league_snapshot").select("payload").eq("id", 1).maybeSingle(),
   ]);
 
   const agentCount = statsRes.count ?? 30740;
   const agencies = agenciesRes.data ?? [];
   const districts = districtsRes.data ?? [];
+  const league = (leagueRes.data?.payload ?? null) as LeagueData | null;
 
   return (
     <>
@@ -138,6 +144,20 @@ export default async function PropertyAgentsHub() {
           </div>
         </div>
       </section>
+
+      {/* ---------- THE RECORD, IN NUMBERS (histogram + windowed boards) ---------- */}
+      {league && (
+        <section className="fc-wrap" style={{ padding: "0 40px 56px" }}>
+          <div className="eyebrow fc-reveal" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Roundel><Icon.TrendUp size={13} /></Roundel> The record, in numbers
+          </div>
+          <h2 className="fc-reveal" style={{ marginTop: 12 }}>
+            {league.agents_with_deals.toLocaleString()} agents have a deal on record.{" "}
+            <span className="italic-serif">Here is how it spreads.</span>
+          </h2>
+          <LeagueBoards data={league} />
+        </section>
+      )}
 
       {/* ---------- MARKET INSIGHTS ---------- */}
       <section style={{ background: "var(--cloud)" }}>
