@@ -9,6 +9,7 @@ import PitchKitPanel from "./PitchKitPanel";
 import AreaIntelPanel from "./AreaIntelPanel";
 import PlannerPanel from "./PlannerPanel";
 import DemandPanel from "./DemandPanel";
+import DocumentsPanel from "./DocumentsPanel";
 import BuildingPagesPanel from "./BuildingPagesPanel";
 import PerformancePanel from "./PerformancePanel";
 import ShareCard from "./ShareCard";
@@ -24,7 +25,7 @@ const TIER_LABELS = TIER_LABEL;
 // Profile-completeness engine. Weights reflect conversion impact, not equal
 // thirds: a photo and a message do the most to convert the sellers who already
 // view the profile. Drives the adaptive "Today" hero and its single next action.
-type TabId = "home" | "leads" | "grow" | "profile";
+type TabId = "home" | "leads" | "grow" | "paperwork" | "profile";
 type SetupStep = { key: string; label: string; cta: string; weight: number; done: boolean; anchor: string; tab: TabId };
 function computeCompleteness(p: {
   photo: boolean; message: boolean; whatsapp: boolean; bio: boolean; areas: number | null;
@@ -88,7 +89,7 @@ export default function DashboardPage() {
     const t = new URLSearchParams(window.location.search).get("tab");
     // Mount-time URL -> state sync (deep-linkable tab). Deferred a tick so it is
     // not a synchronous setState in the effect body.
-    if (t === "leads" || t === "grow" || t === "profile") queueMicrotask(() => setActiveTabState(t));
+    if (t === "leads" || t === "grow" || t === "paperwork" || t === "profile") queueMicrotask(() => setActiveTabState(t));
   }, []);
   function setTab(t: TabId) {
     setActiveTabState(t);
@@ -501,7 +502,7 @@ export default function DashboardPage() {
               job-based tabs so a new agent is not buried in a 12-section wall,
               while the Home launcher keeps every tool discoverable. */}
           <div className="fc-hero-in fc-hero-in--2" style={{ display: "flex", gap: 4, overflowX: "auto", borderBottom: "1px solid var(--line)" }}>
-            {(([["home", "Home"], ["leads", "Leads"], ["grow", "Grow"], ["profile", "Profile"]]) as [TabId, string][]).map(([id, label]) => (
+            {(([["home", "Home"], ["leads", "Leads"], ["grow", "Grow"], ["paperwork", "Paperwork"], ["profile", "Profile"]]) as [TabId, string][]).map(([id, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
@@ -646,6 +647,7 @@ export default function DashboardPage() {
                     ["grow", "Deal Radar", "Owners reaching MOP near you"],
                     ["grow", "Building pages", "Own a development's page"],
                     ["grow", "Share your record", "Rank card + website badge"],
+                    ["paperwork", "Paperwork", "Draw up a tenancy agreement"],
                     ["profile", "Edit profile", "Photo, message, WhatsApp"],
                   ]) as [TabId, string, string][]).map(([tab, title, sub]) => (
                     <button key={title} onClick={() => setTab(tab)} className="fc-card" style={{ padding: 14, textAlign: "left", cursor: "pointer", border: "1px solid var(--line)" }}>
@@ -694,6 +696,11 @@ export default function DashboardPage() {
 
           {/* Consolidated share surface (Grow tab). */}
           {activeTab === "grow" && <ShareCard slug={agent.slug} score={agent.score} />}
+
+          {/* ---------- PAPERWORK: document system-of-record ---------- */}
+          {activeTab === "paperwork" && agent.cea_registration && (
+            <DocumentsPanel onUpgrade={() => handleUpgrade("verified")} />
+          )}
 
           {/* ---------- PROFILE: identity model + verified + edit form ---------- */}
           {activeTab === "profile" && (
