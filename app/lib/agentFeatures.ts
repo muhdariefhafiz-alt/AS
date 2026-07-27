@@ -215,7 +215,7 @@ export const AGENT_FEATURES: Record<string, AgentFeatureData> = {
       },
       {
         q: "What do the embeds cost?",
-        a: "Both are free with your claimed profile. Copy the embed code from your dashboard and paste it into your site, signature or bio.",
+        a: "Both are free with your claimed profile. Copy the embed code from your dashboard and paste it into your site, signature or bio. One extra: agents on the Professional or Elite plan who rank in the top 10% of their area also get that standing printed on the badge, once the record supports it.",
       },
     ],
   },

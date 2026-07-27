@@ -464,6 +464,11 @@ export default async function AgentPage({ params }: Props) {
                     Professional
                   </span>
                 )}
+                {agent.subscription_tier === "verified" && (
+                  <span className="fc-badge" title="Verified member subscriber" style={{ background: "var(--blue-wash)", color: "var(--blue-deep)" }}>
+                    Verified member
+                  </span>
+                )}
                 {rentalFocused && (
                   <FlagBadge label={`Mostly rentals · ${salePct}% sales`} tone="warn">
                     Most of {given}&apos;s recorded deals are rentals, not home sales. A busy rental practice does not mean
@@ -664,8 +669,10 @@ export default async function AgentPage({ params }: Props) {
             {/* T1: real CEA transaction record — provenance + seller-side split */}
             {hasTxns && <AgentTransactionRecord cea={agent.cea_registration} given={given} />}
 
-            {/* reviews (component renders its own "Client reviews" heading + form) */}
-            <div style={{ marginTop: 44 }}>
+            {/* reviews (component renders its own "Client reviews" heading + form).
+                id="reviews" is the deep-link target of the dashboard's
+                "Ask for a review" share tool. */}
+            <div id="reviews" style={{ marginTop: 44, scrollMarginTop: 80 }}>
               <VerifiedReviews agentId={agent.id} />
               <AgentReviews agentId={agent.id} agentName={display} />
             </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getAgentSession } from "../../../lib/agent-auth";
+import { isPaid } from "../../../lib/tiers";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,7 +23,7 @@ export async function POST() {
 
     const { data: agent } = await supabase
       .from("sg_agents")
-      .select("id, name, slug, bio, photo_url, whatsapp, message, marketing_name, score, agency_name, claimed, claimed_email, cea_registration, subscription_tier, claimed_at, primary_area")
+      .select("id, name, slug, bio, photo_url, whatsapp, message, marketing_name, score, agency_name, claimed, claimed_email, cea_registration, subscription_tier, subscription_ends_at, claimed_at, primary_area")
       .eq("id", session.agentId)
       .single();
 
@@ -125,11 +126,14 @@ export async function POST() {
         agency_name: agent.agency_name,
         cea_registration: agent.cea_registration,
         subscription_tier: agent.subscription_tier || "free",
+        subscription_ends_at: agent.subscription_ends_at || null,
         claimed_at: agent.claimed_at || null,
         email: agent.claimed_email || null,
         primary_area: agent.primary_area || null,
         views_this_week: viewsResult.count ?? 0,
-        whatsapp_clicks_this_week: clicksResult.count ?? 0,
+        // Contact-click detail is a Verified+ promise; the free tier gets null
+        // SERVER-SIDE (a client-only hide leaked the number in the payload).
+        whatsapp_clicks_this_week: isPaid(agent.subscription_tier) ? clicksResult.count ?? 0 : null,
       },
       standing,
     });

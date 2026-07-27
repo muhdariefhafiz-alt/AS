@@ -10,20 +10,15 @@ import AreaIntelPanel from "./AreaIntelPanel";
 import PlannerPanel from "./PlannerPanel";
 import DemandPanel from "./DemandPanel";
 import BuildingPagesPanel from "./BuildingPagesPanel";
+import PerformancePanel from "./PerformancePanel";
 import ShareCard from "./ShareCard";
 import PerfUploadCard from "./PerfUploadCard";
 import DashboardBanner from "./DashboardBanner";
+import UnlockMoment from "./UnlockMoment";
 import { titleName, cleanAgency } from "../lib/names";
-import { isPaid } from "../lib/tiers";
+import { isPaid, TIER_LABEL, type Tier } from "../lib/tiers";
 
-type Tier = "free" | "verified" | "professional" | "elite";
-
-const TIER_LABELS: Record<Tier, string> = {
-  free: "Free",
-  verified: "Verified",
-  professional: "Professional",
-  elite: "Elite",
-};
+const TIER_LABELS = TIER_LABEL;
 
 // Profile-completeness engine. Weights reflect conversion impact, not equal
 // thirds: a photo and a message do the most to convert the sellers who already
@@ -75,10 +70,11 @@ export default function DashboardPage() {
     agency_name: string | null;
     cea_registration: string | null;
     subscription_tier: Tier;
+    subscription_ends_at: string | null;
     claimed_at: string | null;
     primary_area: string | null;
     views_this_week: number;
-    whatsapp_clicks_this_week: number;
+    whatsapp_clicks_this_week: number | null;
   } | null>(null);
   const [standing, setStanding] = useState<Standing>(null);
   const [farmAreaCount, setFarmAreaCount] = useState<number | null>(null);
@@ -121,10 +117,9 @@ export default function DashboardPage() {
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
   const [uploadMsg, setUploadMsg] = useState("");
 
-  // Check for upgrade success param
-  const upgraded = typeof window !== "undefined"
-    ? new URLSearchParams(window.location.search).get("upgraded")
-    : null;
+  // Post-checkout unlock: confirmed against the DATABASE, never the URL.
+  const [unlock, setUnlock] = useState<"verified" | "professional" | "elite" | null>(null);
+  const [billingLoading, setBillingLoading] = useState(false);
   // Sign in with Google outcomes (set by /api/agent/auth/google/callback).
   const loginParam = typeof window !== "undefined"
     ? new URLSearchParams(window.location.search).get("login")
@@ -170,6 +165,81 @@ export default function DashboardPage() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // Checkout return + dunning deep link. Strips the params immediately (they
+  // must not survive reloads or tab switches), then, for a checkout return,
+  // confirms the Stripe session server-side and re-reads the tier from the DB.
+  // The unlock moment renders only when the DATABASE says the paid tier is
+  // active; the query string alone never shows it.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const up = params.get("upgraded");
+    const sid = params.get("session_id");
+    const billing = params.get("billing");
+    if (!up && !billing) return;
+    const url = new URL(window.location.href);
+    ["upgraded", "session_id", "billing"].forEach((k) => url.searchParams.delete(k));
+    window.history.replaceState(null, "", url.toString());
+
+    if (billing) {
+      setActiveTabState("profile");
+      setTimeout(() => focusField("billing-card"), 300);
+    }
+    if (!up) return;
+
+    (async () => {
+      if (sid) {
+        await fetch("/api/checkout/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sid }),
+        }).catch(() => {});
+      }
+      const readTier = async (): Promise<string | null> => {
+        try {
+          const res = await fetch("/api/dashboard/lookup", { method: "POST" });
+          if (!res.ok) return null;
+          const d = await res.json();
+          if (d.agent) {
+            setAgent(d.agent);
+            return d.agent.subscription_tier as string;
+          }
+        } catch {}
+        return null;
+      };
+      let tier = await readTier();
+      if (!tier || !isPaid(tier)) {
+        // Webhook may still be in flight; one delayed retry.
+        await new Promise((r) => setTimeout(r, 2500));
+        tier = await readTier();
+      }
+      if (tier === "verified" || tier === "professional" || tier === "elite") {
+        setUnlock(tier);
+      }
+    })();
+  }, []);
+
+  // Stripe customer portal: card update, invoices, cancel at period end, or
+  // (flow=update_plan) Stripe's own plan-change screen with proration shown.
+  async function openBillingPortal(flow?: "update_plan") {
+    setBillingLoading(true);
+    try {
+      const res = await fetch("/api/billing/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(flow ? { flow } : {}),
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      alert(data.error || "Could not open billing.");
+    } catch {
+      alert("Connection error. Please try again.");
+    }
+    setBillingLoading(false);
+  }
 
   // Sign in via magic link: we email a one-time link to the claimed address.
   async function handleSignIn(e: React.FormEvent) {
@@ -292,11 +362,13 @@ export default function DashboardPage() {
         </>
       )}
 
-      {/* Upgrade success banner */}
-      {upgraded && (
-        <div className="fc-alert fc-alert--ok" style={{ marginTop: 20 }}>
-          Welcome to {TIER_LABELS[upgraded as Tier] || upgraded}. Your tools are now active.
-        </div>
+      {/* Post-checkout unlock moment (DB-verified, never query-string-driven) */}
+      {unlock && (
+        <UnlockMoment
+          tier={unlock}
+          onClose={() => setUnlock(null)}
+          onOpenTools={() => { setUnlock(null); setTab("grow"); }}
+        />
       )}
 
       {/* Initial cookie check */}
@@ -536,7 +608,7 @@ export default function DashboardPage() {
               className="fc-card fc-card--fill"
               style={{ padding: "10px 14px", textAlign: "left", cursor: "pointer", border: "1px dashed var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}
             >
-              <span className="muted small">Weekly trends and contact-click detail unlock with <strong style={{ color: "var(--ink)" }}>Verified</strong>.</span>
+              <span className="muted small">Contact-click detail unlocks with <strong style={{ color: "var(--ink)" }}>Verified</strong>.</span>
               <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>{checkoutLoading === "verified" ? "…" : "Unlock →"}</span>
             </button>
           )}
@@ -544,7 +616,7 @@ export default function DashboardPage() {
               {/* Contact-click detail for paid tiers (views live in Demand above). */}
               {isPaid(agent.subscription_tier) && (
                 <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
-                  <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week}</p>
+                  <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week ?? 0}</p>
                   <p className="kicker" style={{ marginTop: 4 }}>Contact-button clicks this week</p>
                 </div>
               )}
@@ -599,6 +671,9 @@ export default function DashboardPage() {
             </div>
           )}
           {activeTab === "grow" && agent.cea_registration && <PitchKitPanel />}
+          {activeTab === "grow" && agent.cea_registration && (
+            <PerformancePanel onUpgrade={() => handleUpgrade("professional")} />
+          )}
           {activeTab === "grow" && agent.cea_registration && <AreaIntelPanel />}
           {activeTab === "grow" && agent.cea_registration && <BuildingPagesPanel />}
           {activeTab === "grow" && agent.cea_registration && <PerfUploadCard />}
@@ -638,9 +713,9 @@ export default function DashboardPage() {
                   <span className="serif" style={{ fontSize: 22, fontWeight: 600 }}>S$29<span className="muted" style={{ fontSize: 13, fontWeight: 400 }}>/mo</span></span>
                 </div>
                 <ul style={{ marginTop: 12, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5 }} className="muted">
-                  <li>FairComparisons Verified badge on your profile</li>
-                  <li>Profile analytics: views and clicks</li>
-                  <li>Reply publicly to your client reviews</li>
+                  <li>Verified member mark on your public profile</li>
+                  <li>Unlimited AI-drafted replies to seller enquiries</li>
+                  <li>Contact-click detail in your demand analytics</li>
                 </ul>
                 <p className="small muted" style={{ marginTop: 8 }}>Tools only. Does not affect your ranking.</p>
                 <button
@@ -658,12 +733,46 @@ export default function DashboardPage() {
             );
           })()}
 
-          {/* Existing paid tier holders — manage/cancel */}
+          {/* Existing paid tier holders — self-serve billing via Stripe portal */}
           {activeTab === "profile" && agent.subscription_tier !== "free" && (
-            <div className="fc-card fc-card--fill" style={{ padding: "14px 16px" }}>
-              <p className="muted small">
-                You have {TIER_LABELS[agent.subscription_tier]} tools. To manage or cancel, email{" "}
-                <a href="mailto:hello@fair-comparisons.com" style={{ color: "var(--blue)" }}>hello@fair-comparisons.com</a>.
+            <div id="billing-card" className="fc-card" style={{ padding: "18px 20px" }}>
+              <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
+                <p className="kicker" style={{ margin: 0 }}>Billing</p>
+                <span className="fc-badge" style={{ background: "var(--blue-wash)", color: "var(--blue-deep)" }}>
+                  {TIER_LABELS[agent.subscription_tier]} plan
+                </span>
+              </div>
+              {agent.subscription_ends_at ? (
+                <p className="small" style={{ marginTop: 10, color: "var(--danger)" }}>
+                  Your plan is set to end on{" "}
+                  {new Date(agent.subscription_ends_at).toLocaleDateString("en-SG", { day: "numeric", month: "long", year: "numeric" })}.
+                  Your tools stay active until then; reactivate any time from billing.
+                </p>
+              ) : (
+                <p className="muted small" style={{ marginTop: 10 }}>
+                  Change plan, update your card, download invoices or cancel. Plan changes show
+                  the prorated amount before you confirm, and cancelling keeps your tools until
+                  the period you paid for ends.
+                </p>
+              )}
+              <div className="fc-row" style={{ gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+                <button
+                  onClick={() => openBillingPortal("update_plan")}
+                  disabled={billingLoading}
+                  className="fc-btn fc-btn--ghost fc-btn--sm"
+                >
+                  {billingLoading ? "Opening…" : "Change plan"}
+                </button>
+                <button
+                  onClick={() => openBillingPortal()}
+                  disabled={billingLoading}
+                  className="fc-btn fc-btn--quiet fc-btn--sm"
+                >
+                  {billingLoading ? "Opening…" : "Manage billing"}
+                </button>
+              </div>
+              <p className="muted small" style={{ marginTop: 10 }}>
+                Questions? <a href="mailto:hello@fair-comparisons.com" style={{ color: "var(--blue)" }}>hello@fair-comparisons.com</a>
               </p>
             </div>
           )}

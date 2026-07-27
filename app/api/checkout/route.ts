@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe, PRICE_IDS } from "../../lib/stripe";
+import { createPortalSession } from "../../lib/billing";
 import { getAgentSession } from "../../lib/agent-auth";
 
 const supabase = createClient(
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
     // Verify agent is claimed
     const { data: agent } = await supabase
       .from("sg_agents")
-      .select("id, name, slug, claimed, claimed_email, subscription_tier, stripe_customer_id")
+      .select("id, name, slug, claimed, claimed_email, subscription_tier, stripe_customer_id, stripe_subscription_id")
       .eq("claimed", true)
       .eq("claimed_email", email.toLowerCase().trim())
       .single();
@@ -65,6 +66,29 @@ export async function POST(req: Request) {
         { error: `You are already on the ${tier} plan.` },
         { status: 409 }
       );
+    }
+
+    // Existing subscriber changing plans: a second Checkout would create a
+    // SECOND concurrent subscription (double billing, no proration). Route the
+    // change through the Stripe customer portal's subscription-update flow
+    // instead, where Stripe shows the prorated amount and asks to confirm.
+    // A portal session grants full billing control, so this path requires a
+    // signed-in agent session matching the email (checkout's email-only path
+    // is safe only because the payer must still enter their own card).
+    if (agent.stripe_subscription_id && agent.stripe_customer_id) {
+      const sub = await getStripe()
+        .subscriptions.retrieve(agent.stripe_subscription_id)
+        .catch(() => null);
+      if (sub && (sub.status === "active" || sub.status === "trialing" || sub.status === "past_due")) {
+        if (!sess || sess.email.toLowerCase().trim() !== String(email).toLowerCase().trim()) {
+          return NextResponse.json(
+            { error: "You already have an active plan. Sign in to your dashboard to change it." },
+            { status: 409 }
+          );
+        }
+        const url = await createPortalSession(agent.stripe_customer_id, agent.stripe_subscription_id);
+        return NextResponse.json({ url, planChange: true });
+      }
     }
 
     const priceId = PRICE_IDS[tier as keyof typeof PRICE_IDS];
@@ -108,7 +132,9 @@ export async function POST(req: Request) {
       customer: customerId,
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${baseUrl}/dashboard?upgraded=${tier}`,
+      // session_id lets the dashboard confirm the payment server-side the
+      // moment the agent lands, instead of racing the webhook (ST2).
+      success_url: `${baseUrl}/dashboard?upgraded=${tier}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/for-agents`,
       metadata: {
         agent_id: String(agent.id),

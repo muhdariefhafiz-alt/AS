@@ -70,7 +70,7 @@ export async function POST(req: Request) {
 
   const sb = supabaseAdmin();
   if (action === "add") {
-    // Cap farm areas (free tier). Keeps the feed focused and cheap.
+    // Cap farm areas at 5 for EVERY tier. Keeps the feed focused and cheap.
     const { count } = await sb
       .from("sg_agent_farm_areas")
       .select("id", { count: "exact", head: true })

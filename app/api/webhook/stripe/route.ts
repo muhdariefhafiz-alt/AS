@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "../../../lib/stripe";
+import { tierFromPriceId } from "../../../lib/billing";
 import { sendEmail } from "../../../lib/email";
 import { emailShell, p } from "../../../lib/email-layout";
 import { greetName } from "../../../lib/names";
@@ -68,17 +69,47 @@ export async function POST(req: Request) {
 
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
-        const agentId = sub.metadata?.agent_id;
 
-        if (agentId && sub.status === "active") {
-          const tier = sub.metadata?.tier || "verified";
+        // Resolve the agent: metadata first, then by subscription id (covers
+        // subscriptions whose metadata was lost or never set).
+        let agentId: number | null = sub.metadata?.agent_id ? Number(sub.metadata.agent_id) : null;
+        if (!agentId) {
+          const { data: bySub } = await supabase
+            .from("sg_agents")
+            .select("id")
+            .eq("stripe_subscription_id", sub.id)
+            .single();
+          agentId = bySub?.id ?? null;
+        }
+
+        if (agentId && (sub.status === "active" || sub.status === "trialing")) {
+          // The PRICE on the subscription is authoritative for the tier.
+          // Portal plan changes keep the original checkout metadata, so the
+          // old metadata-based sync would silently mis-tier (e.g. an elite
+          // upgrade staying "verified"). Metadata is only a fallback; if
+          // neither resolves, leave the stored tier untouched.
+          const item = sub.items?.data?.[0];
+          const tier = tierFromPriceId(item?.price?.id) || (sub.metadata?.tier ?? null);
+
+          // Cancel-at-period-end: the agent keeps the tier until the period
+          // ends (Stripe fires customer.subscription.deleted then); store the
+          // end date so the dashboard can say "your plan ends on X".
+          const periodEnd =
+            (item as unknown as { current_period_end?: number })?.current_period_end ??
+            (sub as unknown as { current_period_end?: number }).current_period_end;
+          const endsAt =
+            sub.cancel_at_period_end && typeof periodEnd === "number"
+              ? new Date(periodEnd * 1000).toISOString()
+              : null;
+
           await supabase
             .from("sg_agents")
             .update({
-              subscription_tier: tier,
-              subscription_ends_at: null,
+              ...(tier ? { subscription_tier: tier } : {}),
+              stripe_subscription_id: sub.id,
+              subscription_ends_at: endsAt,
             })
-            .eq("id", Number(agentId));
+            .eq("id", agentId);
         }
         break;
       }
@@ -166,8 +197,10 @@ export async function POST(req: Request) {
                     })
                   : null;
 
+              // ?billing=1 opens the dashboard's billing section, whose
+              // "Update payment" button opens the Stripe customer portal.
               const billingUrl =
-                "https://fair-comparisons.com/dashboard?utm_source=dunning&utm_medium=email";
+                "https://fair-comparisons.com/dashboard?billing=1&utm_source=dunning&utm_medium=email";
 
               const subject = `Your card could not be charged, ${firstRaw}`;
               const html = emailShell({

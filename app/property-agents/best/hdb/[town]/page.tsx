@@ -20,7 +20,6 @@ type TopAgent = {
   score: number;
   txn_count: number;
   primary_type: string;
-  subscription_tier: string;
   flags: { t: string; pct?: number }[];
 };
 
@@ -54,15 +53,14 @@ export default async function BestHdbAgentsPage({ params }: Props) {
     .order("rank", { ascending: true })
     .limit(20);
 
-  // Fetch subscription tiers for these agents
+  // Honesty flags for these agents (tier deliberately NOT fetched: paid tiers
+  // never appear or reorder on ranking pages).
   const agentSlugs = (agents ?? []).map(a => a.agent_slug);
-  const { data: tierData } = agentSlugs.length > 0
-    ? await supabase.from("sg_agents").select("slug, subscription_tier, agent_flags").in("slug", agentSlugs)
+  const { data: flagData } = agentSlugs.length > 0
+    ? await supabase.from("sg_agents").select("slug, agent_flags").in("slug", agentSlugs)
     : { data: [] };
-  const tierMap: Record<string, string> = {};
   const flagMap: Record<string, { t: string; pct?: number }[]> = {};
-  (tierData ?? []).forEach((t: { slug: string; subscription_tier: string | null; agent_flags?: { t: string; pct?: number }[] }) => {
-    tierMap[t.slug] = t.subscription_tier ?? "free";
+  (flagData ?? []).forEach((t: { slug: string; agent_flags?: { t: string; pct?: number }[] }) => {
     flagMap[t.slug] = t.agent_flags ?? [];
   });
 
@@ -72,7 +70,6 @@ export default async function BestHdbAgentsPage({ params }: Props) {
     agent_name: a.agent_name, agent_slug: a.agent_slug, cea_reg: a.cea_reg,
     agency_name: a.agency_name, score: Number(a.score), txn_count: a.area_txns,
     primary_type: a.area_property_types || "",
-    subscription_tier: tierMap[a.agent_slug] ?? "free",
     flags: flagMap[a.agent_slug] ?? [],
   }));
 

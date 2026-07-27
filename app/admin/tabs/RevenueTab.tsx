@@ -156,7 +156,7 @@ export async function RevenueTab() {
                       </td>
                       <td className="px-3 py-2 text-gray-500">{p.primary_area || "-"}</td>
                       <td className="px-3 py-2 capitalize">
-                        <Pill color={p.subscription_tier === "premium" ? "amber" : "emerald"}>
+                        <Pill color={p.subscription_tier === "elite" ? "amber" : "emerald"}>
                           {p.subscription_tier}
                         </Pill>
                       </td>

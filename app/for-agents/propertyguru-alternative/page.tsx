@@ -230,21 +230,21 @@ export default async function PropertyGuruAlternativePage() {
                 <td className="px-4 py-3 font-medium text-gray-900">Verified</td>
                 <td className="px-4 py-3 font-bold text-[var(--blue)]">S$29</td>
                 <td className="px-4 py-3 text-gray-700">
-                  Verified badge, view + enquiry analytics (no placement)
+                  Verified member mark, unlimited AI-drafted replies, contact-click detail (no placement)
                 </td>
               </tr>
               <tr className="bg-[var(--blue-wash)]">
                 <td className="px-4 py-3 font-medium text-gray-900">Professional</td>
                 <td className="px-4 py-3 font-bold text-[var(--blue)]">S$69</td>
                 <td className="px-4 py-3 text-gray-700">
-                  Comparable-transaction data, deeper analytics (no placement)
+                  Monthly performance report vs your district, Top 10% badge line (no placement)
                 </td>
               </tr>
               <tr className="bg-[var(--blue-wash)]">
                 <td className="px-4 py-3 font-medium text-gray-900">Elite</td>
                 <td className="px-4 py-3 font-bold text-[var(--blue)]">S$149</td>
                 <td className="px-4 py-3 text-gray-700">
-                  District analytics, dedicated support, market insights (no placement)
+                  Elite badge, benchmarking in your report, priority support (no placement)
                 </td>
               </tr>
             </tbody>
@@ -325,7 +325,7 @@ export default async function PropertyGuruAlternativePage() {
                 <span className="text-[var(--blue)]">+</span> Practice area description in your own words
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Notifications when buyers view your profile
+                <span className="text-[var(--blue)]">+</span> Demand analytics: profile views, shortlists and enquiries
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[var(--blue)]">+</span> Embeddable AgentScore widget for your website
@@ -339,22 +339,22 @@ export default async function PropertyGuruAlternativePage() {
             </p>
             <ul className="mt-4 space-y-3 text-sm text-gray-600">
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Verified badge on your profile (Verified)
+                <span className="text-[var(--blue)]">+</span> Verified member mark on your profile (Verified)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Weekly profile view + enquiry analytics (Verified)
+                <span className="text-[var(--blue)]">+</span> Unlimited AI-drafted replies to enquiries (Verified)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Comparable-transaction data for pricing (Professional)
+                <span className="text-[var(--blue)]">+</span> Contact-click detail in your analytics (Verified)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Full district analytics dashboard (Elite)
+                <span className="text-[var(--blue)]">+</span> Monthly performance report vs your district (Professional)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Dedicated account support (Elite)
+                <span className="text-[var(--blue)]">+</span> Competitive benchmarking in your report (Elite)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[var(--blue)]">+</span> Monthly market insights for your area (Elite)
+                <span className="text-[var(--blue)]">+</span> Elite badge and priority support (Elite)
               </li>
             </ul>
           </div>

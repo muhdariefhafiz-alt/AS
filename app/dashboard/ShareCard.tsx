@@ -11,11 +11,12 @@ import { useState } from "react";
 //   Website badge — the email/site embed
 //   Lead widget   — the co-branded valuation card for the agent's own site
 
-type Mode = "rank" | "badge" | "widget";
+type Mode = "rank" | "badge" | "widget" | "review";
 const TABS: { id: Mode; label: string }[] = [
   { id: "rank", label: "Rank card" },
   { id: "badge", label: "Website badge" },
   { id: "widget", label: "Lead widget" },
+  { id: "review", label: "Ask for a review" },
 ];
 
 export default function ShareCard({ slug, score }: { slug: string; score: number | null }) {
@@ -29,6 +30,12 @@ export default function ShareCard({ slug, score }: { slug: string; score: number
 
   const waText = encodeURIComponent(
     `My AgentScore is ${score ?? ""}${score ? "/100" : ""} on FairComparisons, ranked on real CEA transaction records. See my full track record: ${profileUrl}`.replace("  ", " "),
+  );
+
+  // Review collection: deep link to the review form on the public profile.
+  const reviewUrl = `${base}/property-agents/agent/${slug}?ref=review-ask#reviews`;
+  const reviewAskText = encodeURIComponent(
+    `Thank you again for trusting me with your property. If you have two minutes, a short review on my FairComparisons profile would mean a lot: ${reviewUrl}`,
   );
 
   async function copy(text: string, key: string) {
@@ -124,6 +131,34 @@ export default function ShareCard({ slug, score }: { slug: string; score: number
           <button onClick={() => copy(widgetEmbed, "widget")} className="fc-btn fc-btn--ink fc-btn--sm" style={{ marginTop: 10 }}>
             {copied === "widget" ? "Copied" : "Copy embed code"}
           </button>
+        </div>
+      )}
+
+      {/* ASK FOR A REVIEW — review collection via the public review form */}
+      {mode === "review" && (
+        <div style={{ marginTop: 14 }}>
+          <p className="muted small" style={{ marginBottom: 12 }}>
+            Send past clients to the review form on your public profile. Reviews are screened
+            before they publish, and verified reviews strengthen how sellers see your record.
+          </p>
+          <div className="fc-row" style={{ gap: 10, flexWrap: "wrap" }}>
+            <a
+              href={`https://wa.me/?text=${reviewAskText}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="fc-btn fc-btn--primary fc-btn--sm"
+              style={{ textDecoration: "none" }}
+            >
+              Ask via WhatsApp
+            </a>
+            <button onClick={() => copy(reviewUrl, "review")} className="fc-btn fc-btn--ghost fc-btn--sm">
+              {copied === "review" ? "Copied" : "Copy review link"}
+            </button>
+          </div>
+          <p className="muted small" style={{ marginTop: 10 }}>
+            Only ask clients you actually served; reviews claiming a transaction are checked
+            against the record.
+          </p>
         </div>
       )}
     </div>

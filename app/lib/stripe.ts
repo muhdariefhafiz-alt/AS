@@ -17,9 +17,6 @@ export function getStripe(): Stripe {
   return _stripe;
 }
 
-/** @deprecated Use getStripe() for lazy init. Kept for backwards compat. */
-export const stripe = undefined as unknown as Stripe;
-
 /**
  * Price IDs - set in Vercel env vars.
  * Create these recurring prices in Stripe Dashboard > Products:
@@ -34,10 +31,4 @@ export const PRICE_IDS = {
   elite: process.env.STRIPE_PRICE_ELITE!,
 } as const;
 
-export type Tier = "free" | "verified" | "professional" | "elite";
-
-export const TIER_PRICE: Record<Exclude<Tier, "free">, number> = {
-  verified: 29,
-  professional: 69,
-  elite: 149,
-};
+// Tier type + prices live in app/lib/tiers.ts (single source of truth).
