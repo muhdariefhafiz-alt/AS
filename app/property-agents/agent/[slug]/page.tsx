@@ -415,23 +415,37 @@ export default async function AgentPage({ params }: Props) {
         <div className="fc-scene fc-scene--inbox" style={{ marginTop: 18, padding: "clamp(14px,2vw,22px)" }}>
         <Shophouse className="fc-lineart fc-float" width={96} style={{ position: "absolute", right: 18, bottom: 10 }} />
         <div className="fc-scene__card" style={{ padding: 26, position: "relative" }}>
-          <div style={{ display: "flex", gap: 22, alignItems: "flex-start", flexWrap: "wrap" }}>
-            {showPhoto && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={agent.photo_url!}
-                alt={display}
-                width={92}
-                height={92}
-                style={{ width: 92, height: 92, borderRadius: "var(--r-md)", objectFit: "cover", border: "1px solid var(--line)", flex: "0 0 auto" }}
-              />
-            )}
-            {score != null && band && (
-              <div className="score-box" style={{ width: 104, padding: "14px 10px", borderTopColor: band.color }}>
-                <div className="score-num" style={{ fontSize: 42 }}>{score}</div>
-                <div className="score-cap">AGENTSCORE</div>
-                <div className="score-word" style={{ color: band.color }}>{band.word}</div>
+          <div style={{ display: "flex", gap: 22, alignItems: showPhoto ? "stretch" : "flex-start", flexWrap: "wrap" }}>
+            {showPhoto ? (
+              // Photo present: hero it. A large portrait leads the card and the
+              // AgentScore sits beneath it, so an agent who completed their
+              // profile is visibly rewarded with real estate (and the left
+              // column no longer leaves a big empty gap under a tiny thumbnail).
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: "0 0 auto", width: "clamp(150px, 22vw, 188px)" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={agent.photo_url!}
+                  alt={display}
+                  style={{ width: "100%", aspectRatio: "4 / 5", height: "auto", borderRadius: "var(--r-md)", objectFit: "cover", objectPosition: "center top", border: "1px solid var(--line)", boxShadow: "0 8px 24px rgba(15,23,42,0.10)", display: "block" }}
+                />
+                {score != null && band && (
+                  // order:0 overrides the global mobile rule `.score-box{order:-1}`
+                  // (built for the old row layout); here the photo must stay on top.
+                  <div className="score-box" style={{ order: 0, width: "100%", padding: "14px 10px", borderTopColor: band.color }}>
+                    <div className="score-num" style={{ fontSize: 42 }}>{score}</div>
+                    <div className="score-cap">AGENTSCORE</div>
+                    <div className="score-word" style={{ color: band.color }}>{band.word}</div>
+                  </div>
+                )}
               </div>
+            ) : (
+              score != null && band && (
+                <div className="score-box" style={{ width: 104, padding: "14px 10px", borderTopColor: band.color }}>
+                  <div className="score-num" style={{ fontSize: 42 }}>{score}</div>
+                  <div className="score-cap">AGENTSCORE</div>
+                  <div className="score-word" style={{ color: band.color }}>{band.word}</div>
+                </div>
+              )
             )}
             <div style={{ flex: 1, minWidth: 260 }}>
               <h1 style={{ margin: 0, fontSize: "clamp(28px,3.4vw,40px)" }}>{h1Name}</h1>

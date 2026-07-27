@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getStripe } from "../../../lib/stripe";
+import { getStripe, getStripeTest, stripeTestConfigured } from "../../../lib/stripe";
 import { tierFromPriceId } from "../../../lib/billing";
 import { sendEmail } from "../../../lib/email";
 import { emailShell, p } from "../../../lib/email-layout";
@@ -26,11 +26,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing signature or webhook secret" }, { status: 400 });
   }
 
-  let event: Stripe.Event;
+  // Verify against the LIVE secret first. If that fails and a TEST webhook
+  // secret is configured, try it too, so sandbox test-mode lifecycle events
+  // (cancel, period-end) also sync. Event processing below is client-agnostic
+  // (DB writes + tierFromPriceId with a metadata fallback that test carries).
+  let event: Stripe.Event | null = null;
   try {
     event = getStripe().webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error("[stripe-webhook] Signature verification failed:", err);
+  } catch {
+    if (stripeTestConfigured() && process.env.STRIPE_TEST_WEBHOOK_SECRET) {
+      try {
+        event = getStripeTest().webhooks.constructEvent(body, sig, process.env.STRIPE_TEST_WEBHOOK_SECRET);
+      } catch {
+        event = null;
+      }
+    }
+  }
+  if (!event) {
+    console.error("[stripe-webhook] Signature verification failed (live+test)");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -45,24 +58,42 @@ export async function POST(req: Request) {
             ? session.subscription
             : session.subscription?.id;
 
+        const isTest = session.metadata?.test === "1";
         if (agentId && tier && subscriptionId) {
-          await supabase
+          // Idempotency: Stripe delivers at-least-once (retries, dashboard
+          // replay, the sandbox rehearsal loop). Only write + log a conversion
+          // when it is actually changing, so redeliveries do not double-count
+          // subscription_started or churn subscription_started_at.
+          const { data: cur } = await supabase
             .from("sg_agents")
-            .update({
-              subscription_tier: tier,
-              stripe_subscription_id: subscriptionId,
-              subscription_started_at: new Date().toISOString(),
-              subscription_ends_at: null,
-            })
-            .eq("id", Number(agentId));
+            .select("subscription_tier, stripe_subscription_id")
+            .eq("id", Number(agentId))
+            .single();
+          const changed =
+            !cur || cur.subscription_tier !== tier || cur.stripe_subscription_id !== subscriptionId;
 
-          await supabase.from("sg_funnel_events").insert({
-            event: "subscription_started",
-            agent_id: Number(agentId),
-            metadata: { tier, subscription_id: subscriptionId },
-          });
+          if (changed) {
+            await supabase
+              .from("sg_agents")
+              .update({
+                subscription_tier: tier,
+                stripe_subscription_id: subscriptionId,
+                subscription_started_at: new Date().toISOString(),
+                subscription_ends_at: null,
+              })
+              .eq("id", Number(agentId));
 
-          console.log(`[stripe-webhook] Agent ${agentId} upgraded to ${tier}`);
+            // Real conversions only: a sandbox test rehearsal must not write
+            // funnel rows that operator dashboards count.
+            if (!isTest) {
+              await supabase.from("sg_funnel_events").insert({
+                event: "subscription_started",
+                agent_id: Number(agentId),
+                metadata: { tier, subscription_id: subscriptionId },
+              });
+            }
+            console.log(`[stripe-webhook] Agent ${agentId} upgraded to ${tier}${isTest ? " (test)" : ""}`);
+          }
         }
         break;
       }
@@ -128,11 +159,14 @@ export async function POST(req: Request) {
             })
             .eq("id", Number(agentId));
 
-          await supabase.from("sg_funnel_events").insert({
-            event: "subscription_cancelled",
-            agent_id: Number(agentId),
-            metadata: { subscription_id: sub.id },
-          });
+          // Real conversions only (skip sandbox test cancellations).
+          if (sub.metadata?.test !== "1") {
+            await supabase.from("sg_funnel_events").insert({
+              event: "subscription_cancelled",
+              agent_id: Number(agentId),
+              metadata: { subscription_id: sub.id },
+            });
+          }
 
           console.log(`[stripe-webhook] Agent ${agentId} downgraded to free`);
         }

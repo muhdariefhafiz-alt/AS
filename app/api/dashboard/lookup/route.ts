@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getAgentSession } from "../../../lib/agent-auth";
 import { isPaid } from "../../../lib/tiers";
+import { stripeTestConfigured } from "../../../lib/stripe";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,7 +24,7 @@ export async function POST() {
 
     const { data: agent } = await supabase
       .from("sg_agents")
-      .select("id, name, slug, bio, photo_url, whatsapp, message, marketing_name, score, agency_name, claimed, claimed_email, cea_registration, subscription_tier, subscription_ends_at, claimed_at, primary_area")
+      .select("id, name, slug, bio, photo_url, whatsapp, message, marketing_name, score, agency_name, claimed, claimed_email, cea_registration, subscription_tier, subscription_ends_at, claimed_at, primary_area, is_sandbox")
       .eq("id", session.agentId)
       .single();
 
@@ -127,6 +128,9 @@ export async function POST() {
         cea_registration: agent.cea_registration,
         subscription_tier: agent.subscription_tier || "free",
         subscription_ends_at: agent.subscription_ends_at || null,
+        is_sandbox: agent.is_sandbox === true,
+        // Only meaningful for the sandbox account: is Stripe test mode ready?
+        sandbox_test_ready: agent.is_sandbox === true ? stripeTestConfigured() : false,
         claimed_at: agent.claimed_at || null,
         email: agent.claimed_email || null,
         primary_area: agent.primary_area || null,

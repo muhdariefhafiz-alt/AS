@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createPortalSession } from "../../../lib/billing";
+import { stripeTestConfigured } from "../../../lib/stripe";
 import { getAgentSession } from "../../../lib/agent-auth";
 
 const supabase = createClient(
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
 
     const { data: agent } = await supabase
       .from("sg_agents")
-      .select("id, stripe_customer_id, stripe_subscription_id")
+      .select("id, stripe_customer_id, stripe_subscription_id, is_sandbox")
       .eq("claimed", true)
       .eq("claimed_email", sess.email.toLowerCase().trim())
       .single();
@@ -48,10 +49,17 @@ export async function POST(req: Request) {
         { status: 404 }
       );
     }
+    if (agent.is_sandbox && !stripeTestConfigured()) {
+      return NextResponse.json(
+        { error: "Sandbox test mode is not configured. Add STRIPE_TEST_SECRET_KEY in Vercel." },
+        { status: 503 }
+      );
+    }
 
     const url = await createPortalSession(
       agent.stripe_customer_id,
-      flow === "update_plan" ? agent.stripe_subscription_id : null
+      flow === "update_plan" ? agent.stripe_subscription_id : null,
+      Boolean(agent.is_sandbox)
     );
     return NextResponse.json({ url });
   } catch (err) {

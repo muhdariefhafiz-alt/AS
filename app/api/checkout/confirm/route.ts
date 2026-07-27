@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getStripe } from "../../../lib/stripe";
+import { getStripe, getStripeTest, stripeTestConfigured } from "../../../lib/stripe";
 import { getAgentSession } from "../../../lib/agent-auth";
 
 const supabase = createClient(
@@ -32,7 +32,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid session id" }, { status: 400 });
     }
 
-    const checkout = await getStripe().checkout.sessions.retrieve(session_id);
+    // A cs_test_ session was created in Stripe test mode (sandbox rehearsal) and
+    // can only be read back with the test client. Pick the client by prefix.
+    const isTestSession = session_id.startsWith("cs_test_");
+    if (isTestSession && !stripeTestConfigured()) {
+      return NextResponse.json({ error: "Test mode not configured" }, { status: 400 });
+    }
+    const stripe = isTestSession ? getStripeTest() : getStripe();
+
+    const checkout = await stripe.checkout.sessions.retrieve(session_id);
     const agentId = checkout.metadata?.agent_id ? Number(checkout.metadata.agent_id) : null;
     const tier = checkout.metadata?.tier;
     const subscriptionId =
@@ -68,11 +76,14 @@ export async function POST(req: Request) {
         })
         .eq("id", agentId);
 
-      await supabase.from("sg_funnel_events").insert({
-        event: "subscription_confirmed_on_return",
-        agent_id: agentId,
-        metadata: { tier, subscription_id: subscriptionId },
-      });
+      // Skip funnel rows for a sandbox rehearsal (keep the shared table clean).
+      if (!isTestSession) {
+        await supabase.from("sg_funnel_events").insert({
+          event: "subscription_confirmed_on_return",
+          agent_id: agentId,
+          metadata: { tier, subscription_id: subscriptionId },
+        });
+      }
     }
 
     return NextResponse.json({ ok: true, tier });

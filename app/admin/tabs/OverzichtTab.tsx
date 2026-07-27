@@ -18,6 +18,7 @@ export async function OverzichtTab() {
       .from("sg_agents")
       .select("id, subscription_tier, subscription_started_at")
       .in("subscription_tier", ["verified", "professional", "elite"])
+      .eq("is_sandbox", false)
       .not("subscription_started_at", "is", null),
     supabase
       .from("sg_funnel_events")

@@ -15,6 +15,7 @@ import ShareCard from "./ShareCard";
 import PerfUploadCard from "./PerfUploadCard";
 import DashboardBanner from "./DashboardBanner";
 import UnlockMoment from "./UnlockMoment";
+import PlanBillingPanel from "./PlanBillingPanel";
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid, TIER_LABEL, type Tier } from "../lib/tiers";
 
@@ -71,7 +72,8 @@ export default function DashboardPage() {
     cea_registration: string | null;
     subscription_tier: Tier;
     subscription_ends_at: string | null;
-    claimed_at: string | null;
+    is_sandbox: boolean;
+    sandbox_test_ready: boolean;
     primary_area: string | null;
     views_this_week: number;
     whatsapp_clicks_this_week: number | null;
@@ -84,7 +86,9 @@ export default function DashboardPage() {
   // Tab synced to the URL (?tab=) so it is linkable and back-button friendly.
   useEffect(() => {
     const t = new URLSearchParams(window.location.search).get("tab");
-    if (t === "leads" || t === "grow" || t === "profile") setActiveTabState(t);
+    // Mount-time URL -> state sync (deep-linkable tab). Deferred a tick so it is
+    // not a synchronous setState in the effect body.
+    if (t === "leads" || t === "grow" || t === "profile") queueMicrotask(() => setActiveTabState(t));
   }, []);
   function setTab(t: TabId) {
     setActiveTabState(t);
@@ -182,8 +186,8 @@ export default function DashboardPage() {
     window.history.replaceState(null, "", url.toString());
 
     if (billing) {
-      setActiveTabState("profile");
-      setTimeout(() => focusField("billing-card"), 300);
+      // Deferred so it is not a synchronous setState in the effect body.
+      setTimeout(() => { setActiveTabState("profile"); focusField("billing-card"); }, 300);
     }
     if (!up) return;
 
@@ -239,6 +243,16 @@ export default function DashboardPage() {
       alert("Connection error. Please try again.");
     }
     setBillingLoading(false);
+  }
+
+  // Sandbox-only: the simulate endpoint already flipped the tier server-side;
+  // reflect it locally and, for an upgrade, play the same unlock moment a real
+  // payment would. (The endpoint 403s for any non-sandbox account.)
+  function handleSandboxChanged(t: Tier) {
+    setAgent((prev) =>
+      prev ? { ...prev, subscription_tier: t, subscription_ends_at: null } : prev
+    );
+    if (t === "verified" || t === "professional" || t === "elite") setUnlock(t);
   }
 
   // Sign in via magic link: we email a one-time link to the claimed address.
@@ -696,85 +710,19 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Optional tools tier — NON-ranking only (analytics + market data).
-              Gated behind the 7-day "aha moment". */}
-          {activeTab === "profile" && agent.subscription_tier === "free" && (() => {
-            const claimedDaysAgo = agent.claimed_at
-              // eslint-disable-next-line react-hooks/purity -- client-only gate: days-since-claim is relative to the actual current time by design
-              ? (Date.now() - new Date(agent.claimed_at).getTime()) / (1000 * 60 * 60 * 24)
-              : null;
-            const hasReachedAha = claimedDaysAgo !== null && claimedDaysAgo >= 7;
-            if (!hasReachedAha) return null;
-
-            return (
-              <div className="fc-card" style={{ padding: 22 }}>
-                <div className="fc-row" style={{ justifyContent: "space-between" }}>
-                  <p className="kicker">Get Verified (optional)</p>
-                  <span className="serif" style={{ fontSize: 22, fontWeight: 600 }}>S$29<span className="muted" style={{ fontSize: 13, fontWeight: 400 }}>/mo</span></span>
-                </div>
-                <ul style={{ marginTop: 12, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5 }} className="muted">
-                  <li>Verified member mark on your public profile</li>
-                  <li>Unlimited AI-drafted replies to seller enquiries</li>
-                  <li>Contact-click detail in your demand analytics</li>
-                </ul>
-                <p className="small muted" style={{ marginTop: 8 }}>Tools only. Does not affect your ranking.</p>
-                <button
-                  onClick={() => handleUpgrade("verified")}
-                  disabled={checkoutLoading !== null}
-                  className="fc-btn fc-btn--ghost fc-btn--block"
-                  style={{ marginTop: 16 }}
-                >
-                  {checkoutLoading === "verified" ? "Redirecting to checkout…" : "Get Verified"}
-                </button>
-                <p className="small muted" style={{ textAlign: "center", marginTop: 10 }}>
-                  <Link href="/for-agents" style={{ color: "var(--blue)" }}>See all plans</Link>
-                </p>
-              </div>
-            );
-          })()}
-
-          {/* Existing paid tier holders — self-serve billing via Stripe portal */}
-          {activeTab === "profile" && agent.subscription_tier !== "free" && (
-            <div id="billing-card" className="fc-card" style={{ padding: "18px 20px" }}>
-              <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
-                <p className="kicker" style={{ margin: 0 }}>Billing</p>
-                <span className="fc-badge" style={{ background: "var(--blue-wash)", color: "var(--blue-deep)" }}>
-                  {TIER_LABELS[agent.subscription_tier]} plan
-                </span>
-              </div>
-              {agent.subscription_ends_at ? (
-                <p className="small" style={{ marginTop: 10, color: "var(--danger)" }}>
-                  Your plan is set to end on{" "}
-                  {new Date(agent.subscription_ends_at).toLocaleDateString("en-SG", { day: "numeric", month: "long", year: "numeric" })}.
-                  Your tools stay active until then; reactivate any time from billing.
-                </p>
-              ) : (
-                <p className="muted small" style={{ marginTop: 10 }}>
-                  Change plan, update your card, download invoices or cancel. Plan changes show
-                  the prorated amount before you confirm, and cancelling keeps your tools until
-                  the period you paid for ends.
-                </p>
-              )}
-              <div className="fc-row" style={{ gap: 10, marginTop: 14, flexWrap: "wrap" }}>
-                <button
-                  onClick={() => openBillingPortal("update_plan")}
-                  disabled={billingLoading}
-                  className="fc-btn fc-btn--ghost fc-btn--sm"
-                >
-                  {billingLoading ? "Opening…" : "Change plan"}
-                </button>
-                <button
-                  onClick={() => openBillingPortal()}
-                  disabled={billingLoading}
-                  className="fc-btn fc-btn--quiet fc-btn--sm"
-                >
-                  {billingLoading ? "Opening…" : "Manage billing"}
-                </button>
-              </div>
-              <p className="muted small" style={{ marginTop: 10 }}>
-                Questions? <a href="mailto:hello@fair-comparisons.com" style={{ color: "var(--blue)" }}>hello@fair-comparisons.com</a>
-              </p>
-            </div>
+          {/* Plan & billing — account settings for every tier (ST: sandbox-aware) */}
+          {activeTab === "profile" && (
+            <PlanBillingPanel
+              tier={agent.subscription_tier}
+              subscriptionEndsAt={agent.subscription_ends_at}
+              isSandbox={agent.is_sandbox}
+              sandboxTestReady={agent.sandbox_test_ready}
+              checkoutLoading={checkoutLoading}
+              billingLoading={billingLoading}
+              onUpgrade={handleUpgrade}
+              onManageBilling={openBillingPortal}
+              onSandboxChanged={handleSandboxChanged}
+            />
           )}
 
           {/* Profile edit form */}

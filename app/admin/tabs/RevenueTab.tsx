@@ -19,6 +19,7 @@ export async function RevenueTab() {
         "id, name, slug, primary_area, subscription_tier, subscription_started_at, subscription_ends_at, claimed_at"
       )
       .in("subscription_tier", ["verified", "professional", "elite"])
+      .eq("is_sandbox", false)
       .not("subscription_started_at", "is", null)
       .order("subscription_started_at", { ascending: false }),
     supabase
