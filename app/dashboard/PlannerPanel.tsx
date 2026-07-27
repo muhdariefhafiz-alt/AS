@@ -33,6 +33,7 @@ function fmt(iso: string): string {
 export default function PlannerPanel() {
   const [viewings, setViewings] = useState<Viewing[]>([]);
   const [bookUrl, setBookUrl] = useState<string | null>(null);
+  const [agentId, setAgentId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -50,6 +51,7 @@ export default function PlannerPanel() {
       const j = await res.json();
       setViewings(j.viewings ?? []);
       setBookUrl(j.bookUrl ?? null);
+      setAgentId(typeof j.agentId === "number" ? j.agentId : null);
     } finally {
       setLoading(false);
     }
@@ -81,6 +83,13 @@ export default function PlannerPanel() {
       await navigator.clipboard.writeText(bookUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      // Planner tracker: copying the link is the clearest active-adoption
+      // signal (the agent is putting their scheduler to work). Best-effort.
+      fetch("/api/funnel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "planner_link_copied", agentId: agentId ?? undefined, source: "planner" }),
+      }).catch(() => {});
     } catch { /* clipboard unavailable */ }
   }
 

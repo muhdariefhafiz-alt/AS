@@ -18,13 +18,18 @@ async function loadAgent(agentId: number) {
   return data;
 }
 
-async function feed(cea: string, slug: string | null) {
+async function feed(cea: string, slug: string | null, agentId?: number) {
   const { data } = await supabaseAdmin()
     .from("sg_viewings")
     .select("id, property_label, viewing_at, attendee_name, attendee_contact, message, status, created_at")
     .eq("agent_cea_no", cea)
     .order("viewing_at", { ascending: true });
-  return { viewings: data ?? [], bookUrl: slug ? `https://fair-comparisons.com/book/${slug}` : null };
+  return {
+    viewings: data ?? [],
+    bookUrl: slug ? `https://fair-comparisons.com/book/${slug}` : null,
+    // For client-side tracker events (planner_link_copied); not sensitive.
+    agentId: agentId ?? null,
+  };
 }
 
 export async function GET() {
@@ -32,7 +37,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   const agent = await loadAgent(session.agentId);
   if (!agent?.cea_registration) return NextResponse.json({ error: "No CEA registration on file" }, { status: 404 });
-  return NextResponse.json(await feed(agent.cea_registration, agent.slug ?? null));
+  return NextResponse.json(await feed(agent.cea_registration, agent.slug ?? null, session.agentId));
 }
 
 export async function POST(req: Request) {
@@ -63,6 +68,22 @@ export async function POST(req: Request) {
     .eq("id", id)
     .eq("agent_cea_no", agent.cea_registration);
   if (error) return NextResponse.json({ error: "Could not update." }, { status: 500 });
+
+  // Planner tracker: record the agent's response as a funnel event. The
+  // event timestamp minus the viewing's created_at is the time-to-respond
+  // satisfaction proxy in sg_planner_tracker(). Best-effort, never blocks.
+  if (status === "confirmed" || status === "cancelled" || status === "completed") {
+    await supabaseAdmin().from("sg_funnel_events").insert({
+      event: `viewing_${status}`,
+      agent_id: session.agentId,
+      agent_slug: agent.slug ?? null,
+      source: "planner",
+      metadata: { viewing_id: id },
+    }).then(
+      () => undefined,
+      (e: unknown) => console.error("[dashboard/viewings] funnel event failed", e)
+    );
+  }
 
   // On confirm, best-effort drop the viewing into the agent's connected
   // calendar (Google or Outlook; no-op unless connected). Never blocks the confirm.

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { supabaseAdmin } from "../../../../../lib/supabase";
 import {
   verifyCalendarState, exchangeCodeForTokens, getGoogleEmail,
   storeCalendarTokens, isGoogleCalendarConfigured,
@@ -26,5 +27,14 @@ export async function GET(req: Request) {
   }
   const email = await getGoogleEmail(tokens.access_token);
   await storeCalendarTokens(agentId, tokens, email);
+  // Planner tracker: calendar connection is an active-adoption signal.
+  await supabaseAdmin().from("sg_funnel_events").insert({
+    event: "calendar_connect",
+    agent_id: agentId,
+    source: "google",
+  }).then(
+    () => undefined,
+    (e: unknown) => console.error("[calendar/google] funnel event failed", e)
+  );
   return NextResponse.redirect(`${dash}&calendar=connected`);
 }

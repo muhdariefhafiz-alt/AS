@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { supabaseAdmin } from "../../../../../lib/supabase";
 import { verifyCalendarState } from "../../../../../lib/google-calendar";
 import {
   isMicrosoftCalendarConfigured, msExchangeCodeForTokens,
@@ -27,5 +28,14 @@ export async function GET(req: Request) {
   }
   const email = await msGetAccountEmail(tokens.access_token);
   await msStoreCalendarTokens(agentId, tokens, email);
+  // Planner tracker: calendar connection is an active-adoption signal.
+  await supabaseAdmin().from("sg_funnel_events").insert({
+    event: "calendar_connect",
+    agent_id: agentId,
+    source: "microsoft",
+  }).then(
+    () => undefined,
+    (e: unknown) => console.error("[calendar/microsoft] funnel event failed", e)
+  );
   return NextResponse.redirect(`${dash}&calendar=connected`);
 }

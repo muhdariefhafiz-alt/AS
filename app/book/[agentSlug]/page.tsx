@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { titleName, cleanAgency } from "../../lib/names";
 import { CalendarLine } from "../../components/LineArt";
+import FunnelTracker from "../../components/FunnelTracker";
 import BookingForm from "./BookingForm";
 
 export const revalidate = 3600;
@@ -16,7 +17,7 @@ export default async function BookPage({ params }: { params: Promise<{ agentSlug
   const { agentSlug } = await params;
   const { data: agent } = await supabase
     .from("sg_agents")
-    .select("name, agency_name, slug, cea_registration, score, photo_url, photo_status")
+    .select("id, name, agency_name, slug, cea_registration, score, photo_url, photo_status")
     .eq("slug", agentSlug)
     .maybeSingle();
   if (!agent) notFound();
@@ -28,6 +29,7 @@ export default async function BookPage({ params }: { params: Promise<{ agentSlug
 
   return (
     <div style={{ background: "var(--paper, #f7f8fb)", minHeight: "100vh" }}>
+      <FunnelTracker event="booking_view" agentId={Number(agent.id)} agentSlug={agent.slug as string} pagePath={`/book/${agent.slug}`} />
       <div className="fc-wrap" style={{ maxWidth: 640, padding: "36px 24px 64px" }}>
         {/* The agent's shared link: their identity card gets the scene-world
             framing so the page feels prepared for them, not generic. */}

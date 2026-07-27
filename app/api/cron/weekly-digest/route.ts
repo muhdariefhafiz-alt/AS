@@ -14,11 +14,22 @@ const supabase = createClient(
  * Called by Vercel Cron every Monday at 9am SGT (1am UTC).
  * Protected by CRON_SECRET.
  */
+// PAUSED by owner decision 2026-07-27 (the "This week's top agents" digest).
+// Hard gate, not just an unscheduled cron: dormant senders must fail closed so
+// a provider swap or a vercel.json merge can never silently resurrect them
+// (see lessons_email_provider_resurrection). Flip to false to resume, and
+// also restore the cron entry in vercel.json.
+const DIGEST_PAUSED = true;
+
 export async function GET(req: Request) {
   // Verify cron secret
   const authHeader = req.headers.get("authorization");
   if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (DIGEST_PAUSED) {
+    return NextResponse.json({ sent: 0, message: "Weekly digest is paused by owner decision (DIGEST_PAUSED)." });
   }
 
   // Get active subscribers

@@ -37,14 +37,14 @@ export async function POST(req: Request) {
   const sb = supabaseAdmin();
   const { data: agent } = await sb
     .from("sg_agents")
-    .select("cea_registration, name")
+    .select("id, cea_registration, name")
     .eq("slug", agentSlug)
     .maybeSingle();
   if (!agent?.cea_registration) {
     return NextResponse.json({ error: "Agent not found." }, { status: 404 });
   }
 
-  const { error } = await sb.from("sg_viewings").insert({
+  const { data: created, error } = await sb.from("sg_viewings").insert({
     agent_cea_no: agent.cea_registration,
     property_label: propertyLabel,
     viewing_at: when.toISOString(),
@@ -53,10 +53,23 @@ export async function POST(req: Request) {
     message: message || null,
     status: "requested",
     source: "book_page",
-  });
+  }).select("id").maybeSingle();
   if (error) {
     return NextResponse.json({ error: "Could not save your request. Please try again." }, { status: 500 });
   }
+
+  // Planner tracker: server-written request event (source of truth for the
+  // request stays sg_viewings; this feeds the funnel view). Best-effort.
+  await sb.from("sg_funnel_events").insert({
+    event: "booking_request",
+    agent_id: agent.id,
+    agent_slug: agentSlug,
+    source: "book_page",
+    metadata: created?.id ? { viewing_id: created.id } : {},
+  }).then(
+    () => undefined,
+    (e: unknown) => console.error("[api/book] funnel event failed", e)
+  );
 
   return NextResponse.json({ ok: true });
 }
