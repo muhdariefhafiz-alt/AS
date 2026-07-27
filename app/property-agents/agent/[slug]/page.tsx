@@ -114,7 +114,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const areaPart = agent.primary_area ? ` Active in ${titleName(agent.primary_area)}.` : "";
   const description = s
-    ? `${display} (${cleanAgency(agent.agency_name)}, CEA ${agent.cea_registration}) has an AgentScore of ${s}/100 based on ${agent.transaction_count ?? 0} CEA-recorded transactions.${areaPart} View full track record, property types, and areas of expertise.`
+    ? `${display} (${cleanAgency(agent.agency_name)}, CEA ${agent.cea_registration}) has an AgentScore of ${s}/100 based on ${agent.transaction_count ?? 0} CEA-recorded transactions.${areaPart} View the full track record, verified reviews, property types and areas of expertise.`
     : `${display} (CEA ${agent.cea_registration}) at ${cleanAgency(agent.agency_name)}.${hasTxns ? ` ${agent.transaction_count} recorded transactions.` : ""}${areaPart} View transaction history and profile.`;
 
   const url = `https://fair-comparisons.com/property-agents/agent/${slug}`;
@@ -318,6 +318,49 @@ export default async function AgentPage({ params }: Props) {
   const showMessage = !!agent.message && agent.message_status === "approved";
   const showBio = !!agent.bio && agent.bio_status === "approved";
 
+  // First-party review aggregate, written by moderation on approval. The only
+  // rating source allowed into structured data (rendered on-page below).
+  const reviewAgg = (() => {
+    const ra = agent.review_aggregate as { avg?: number; count?: number } | null;
+    if (!ra || typeof ra.avg !== "number" || typeof ra.count !== "number" || ra.count < 1) return null;
+    return { avg: Math.round(ra.avg * 10) / 10, count: ra.count };
+  })();
+
+  // Name-variant capture: the questions people append to an agent's name
+  // ("CEA", "record", "review", "score"), answered strictly from the data this
+  // page already shows. Rendered visibly below AND as FAQPage JSON-LD.
+  const faqItems: { q: string; a: string }[] = [
+    {
+      q: `Is ${display} a CEA-registered property agent?`,
+      a: `Yes. ${display} is registered with the Council for Estate Agencies under registration number ${agent.cea_registration}, currently with ${cleanAgency(agent.agency_name)}. You can verify this on the CEA Public Register.`,
+    },
+    ...((agent.transaction_count ?? 0) > 0 ? [{
+      q: `How many property transactions does ${display} have on record?`,
+      a: `${Number(agent.transaction_count).toLocaleString()} transactions are attributed to ${display} in CEA's public transaction records. The full breakdown by property type, transaction type and side is shown on this page.`,
+    }] : []),
+    ...(agent.score != null ? [{
+      q: `What is ${display}'s AgentScore?`,
+      a: `${Math.round(Number(agent.score))}/100. AgentScore is computed by FairComparisons from public CEA, URA and HDB records, weighing transaction volume, recent activity, market diversity and experience. Rankings cannot be bought or edited by any agent.`,
+    }] : []),
+    ...(agent.primary_area ? [{
+      q: `Which area is ${display} most active in?`,
+      a: `${titleName(agent.primary_area)}, based on the location of ${display}'s recorded transactions.`,
+    }] : []),
+    ...(reviewAgg ? [{
+      q: `Does ${display} have verified client reviews?`,
+      a: `Yes. ${display} has ${reviewAgg.count} verified client review${reviewAgg.count === 1 ? "" : "s"} from completed transactions on FairComparisons, averaging ${reviewAgg.avg} out of 5. Reviews are only accepted after a verified completion.`,
+    }] : []),
+  ];
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
@@ -328,9 +371,19 @@ export default async function AgentPage({ params }: Props) {
     // An agency is an Organization, not a RealEstateAgent.
     ...(agency && { worksFor: { "@type": "Organization", name: agency.name } }),
     address: { "@type": "PostalAddress", addressLocality: "Singapore", addressCountry: "SG" },
-    // No aggregateRating: google_rating is not rendered anywhere on this page, so
-    // emitting it in structured data is a schema-vs-visible-content mismatch that
-    // Google penalizes. Re-add only when tied to first-party reviews shown on-page.
+    // aggregateRating is emitted ONLY from first-party verified reviews that
+    // VerifiedReviews renders on this page (status published, moderated),
+    // satisfying the schema-matches-visible-content rule. google_rating stays
+    // excluded: it is not rendered here.
+    ...(reviewAgg && reviewAgg.count > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: reviewAgg.avg,
+        reviewCount: reviewAgg.count,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
   };
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -348,6 +401,7 @@ export default async function AgentPage({ params }: Props) {
       <FunnelTracker event="profile_view" agentId={agent.id} agentSlug={slug} pagePath={`/property-agents/agent/${slug}`} metadata={{ primary_area: agent.primary_area || null, specialization: agent.specialization || null, agency_name: agent.agency_name || null, claimed: !!agent.claimed, subscription_tier: agent.subscription_tier || "free" }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd).replace(/</g, "\\u003c") }} />
 
       {/* header */}
       <ScrollReveal />
@@ -685,6 +739,23 @@ export default async function AgentPage({ params }: Props) {
           </aside>
         </div>
       </div>
+      {/* Quick answers: the name-variant questions, answered from the record.
+          Mirrors the FAQPage JSON-LD above (schema must match visible content). */}
+      <section className="fc-wrap" style={{ padding: "0 40px 48px" }}>
+        <div className="eyebrow fc-reveal">Quick answers</div>
+        <h2 className="fc-reveal" style={{ marginTop: 10, fontSize: "clamp(20px,2.4vw,26px)" }}>
+          About {display}, <span className="italic-serif">from the record.</span>
+        </h2>
+        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+          {faqItems.map((f, fi) => (
+            <details key={f.q} className="fc-card fc-reveal" style={{ ["--reveal-delay" as string]: `${Math.min(fi * 0.06, 0.3)}s`, padding: "14px 18px", background: "#fff" }}>
+              <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 14.5, color: "var(--ink)" }}>{f.q}</summary>
+              <p className="muted" style={{ margin: "10px 0 0", fontSize: 14, lineHeight: 1.65 }}>{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       <SkylinePreFooter />
       <StickyMobileCta href={`/sell?agent=${slug}&utm_source=agent_sticky`} label={`Request a quote from ${given}`} />
     </>
