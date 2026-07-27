@@ -217,3 +217,63 @@ export function WorkflowChain({
     </div>
   );
 }
+
+// Pitch Kit: the agent's one-page listing pitch assembling itself, section by
+// section. Deliberately identity-generic ("Your record"): the sell is that it
+// fills with the AGENT's own verified data, and no real agent is mocked.
+export function PitchKitDemo() {
+  const { step, ref } = useChoreo(4, [300, 1000, 1800, 2600]);
+  const on = (n: number) => (step >= n ? " is-on" : "");
+  const STATS = [
+    { v: "14", l: "deals in this area" },
+    { v: "#3", l: "area standing" },
+    { v: "82%", l: "seller-side sales" },
+  ];
+  const DEALS = [
+    { t: "HDB · Resale", s: "Seller side · Feb" },
+    { t: "Condo · Resale", s: "Seller side · May" },
+  ];
+  return (
+    <div ref={ref} className="fc-scene__card" style={{ maxWidth: 340, margin: "0 auto", padding: "18px 18px 16px" }}>
+      <div className={`fc-cue${on(1)}`} data-on={step >= 1} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ink)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 15 }}>You</span>
+        <span style={{ minWidth: 0, flex: 1 }}>
+          <span style={{ display: "block", fontWeight: 700, fontSize: 14.5, color: "var(--ink)" }}>Your record, presented</span>
+          <span className="muted" style={{ fontSize: 12 }}>Listing pitch · your farm area</span>
+        </span>
+        <span style={{ textAlign: "center" }}>
+          <span className="serif" style={{ display: "block", fontSize: 24, fontWeight: 700, color: "var(--blue-deep)", fontVariantNumeric: "tabular-nums" }}>
+            {step >= 1 ? <CountUp value={84} duration={900} /> : 84}
+          </span>
+          <span className="mono" style={{ fontSize: 8.5, color: "var(--slate)", letterSpacing: "0.08em" }}>AGENTSCORE</span>
+        </span>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 14 }}>
+        {STATS.map((s, i) => (
+          <div key={s.l} className={`fc-cue fc-cue--pop${on(2)}`} data-on={step >= 2} style={{ transitionDelay: `${i * 120}ms`, background: "var(--cloud)", borderRadius: 10, padding: "9px 8px", textAlign: "center" }}>
+            <div style={{ fontWeight: 700, fontSize: 16.5, color: "var(--ink)", fontVariantNumeric: "tabular-nums" }}>{s.v}</div>
+            <div className="muted" style={{ fontSize: 10, lineHeight: 1.3 }}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+        {DEALS.map((d, i) => (
+          <div key={d.t} className={`fc-cue${on(3)}`} data-on={step >= 3} style={{ transitionDelay: `${i * 140}ms`, display: "flex", justifyContent: "space-between", border: "1px solid var(--line)", borderRadius: 9, padding: "8px 12px", fontSize: 12 }}>
+            <span style={{ fontWeight: 600, color: "var(--ink)" }}>{d.t}</span>
+            <span className="muted">{d.s}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className={`fc-cue fc-cue--pop${on(4)}`} data-on={step >= 4} style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700, color: "var(--ok)" }}>
+          <span style={{ width: 18, height: 18, borderRadius: "50%", background: "var(--ok-wash)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>&#10003;</span>
+          Ready to present
+        </span>
+        <span style={{ background: "var(--blue)", color: "#fff", borderRadius: 999, padding: "6px 13px", fontSize: 11.5, fontWeight: 700 }}>Share link</span>
+      </div>
+    </div>
+  );
+}

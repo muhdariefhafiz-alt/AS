@@ -5,7 +5,7 @@ import ProductBox from "../../components/ProductBox";
 import { WidgetMock } from "../../components/mocks";
 import ScrollReveal from "../../components/ScrollReveal";
 import GrowDemo from "../../components/demos/GrowDemo";
-import { DealRadarDemo, ReportDemo, WidgetDemo } from "../../components/demos/FeatureDemos";
+import { DealRadarDemo, ReportDemo, WidgetDemo, PitchKitDemo } from "../../components/demos/FeatureDemos";
 import CountUp from "../../components/CountUp";
 import { KeyLine, SkylineStrip } from "../../components/LineArt";
 
@@ -31,6 +31,12 @@ const FEATURES: { kicker: string; title: string; body: string; points: string[] 
     title: "A daily prospecting list for your farm area",
     body: "Pick the HDB towns and districts you work. Deal Radar surfaces owners reaching their 5-year MOP and every recent sale near them, built entirely from official CEA, URA and HDB records. No scraping, no guessing, a fresh call list every day.",
     points: ["Owners reaching their MOP window", "Recent comparable sales in your patch", "100% real transaction data, updated daily"],
+  },
+  {
+    kicker: "Pitch Kit",
+    title: "Walk into the listing appointment with your record",
+    body: "One tap builds a shareable, co-branded pitch from your verified CEA record: your deals in the seller's area, your standing, and the live market context. Send it before the appointment or open it at the table. It recomputes every time it is opened, so it is never stale.",
+    points: ["Your own closed deals in the seller's area", "Live market context from official records", "Verification no self-made deck can carry"],
   },
   {
     kicker: "Co-branded seller reports",
@@ -68,7 +74,7 @@ export default async function GrowPage() {
           <div className="lp-hero__eyebrow fc-hero-in fc-hero-in--1">For agents · Grow</div>
           <h1 className="fc-hero-in fc-hero-in--2">Turn your track record<br /><span className="accent">into your next listing.</span></h1>
           <p className="lp-hero__sub fc-hero-in fc-hero-in--3">
-            FairComparisons ranks every CEA agent on real transaction data, for free. Grow is the toolkit on top: a daily prospecting feed, co-branded seller reports, a lead widget for your own site, and calculators you can embed anywhere.
+            FairComparisons ranks every CEA agent on real transaction data, for free. Grow is the toolkit on top: a one-tap listing pitch built from your verified record, a daily prospecting feed, co-branded seller reports, a lead widget for your own site, and calculators you can embed anywhere.
           </p>
           <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
             <span className="lp-hero__tag">Free to be listed and ranked</span>
@@ -102,10 +108,11 @@ export default async function GrowPage() {
           {FEATURES.map((f, fi) => {
             const DEMOS: Record<string, React.ReactNode> = {
               "Deal Radar": <div className="fc-scene fc-scene--grow"><DealRadarDemo /></div>,
+              "Pitch Kit": <div className="fc-scene fc-scene--ink"><PitchKitDemo /></div>,
               "Co-branded seller reports": <div className="fc-scene fc-scene--inbox"><ReportDemo /></div>,
               "Lead widget": <div className="fc-scene fc-scene--planner" style={{ paddingBottom: 40 }}><WidgetDemo /></div>,
               "Embeddable tools": (
-                <div className="fc-scene fc-scene--ink" style={{ textAlign: "center" }}>
+                <div className="fc-scene fc-scene--grow" style={{ textAlign: "center" }}>
                   <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
                     {["Stamp duty", "Affordability", "Net proceeds", "Commission"].map((t) => (
                       <span key={t} style={{ background: "rgba(255,255,255,0.12)", color: "#fff", borderRadius: 999, padding: "6px 14px", fontSize: 12.5, fontWeight: 700 }}>{t}</span>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import LeadsInbox from "./LeadsInbox";
 import StandingPanel, { type Standing } from "./StandingPanel";
 import DealRadar from "./DealRadar";
+import PitchKitPanel from "./PitchKitPanel";
 import PlannerPanel from "./PlannerPanel";
 import DemandPanel from "./DemandPanel";
 import BuildingPagesPanel from "./BuildingPagesPanel";
@@ -596,6 +597,7 @@ export default function DashboardPage() {
               <DealRadar />
             </div>
           )}
+          {activeTab === "grow" && agent.cea_registration && <PitchKitPanel />}
           {activeTab === "grow" && agent.cea_registration && <BuildingPagesPanel />}
           {activeTab === "grow" && agent.cea_registration && <PerfUploadCard />}
 
