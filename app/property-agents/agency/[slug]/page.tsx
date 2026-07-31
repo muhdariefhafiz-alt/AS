@@ -201,8 +201,8 @@ export default async function AgencyPage({ params }: Props) {
             {agentList.length > 0 && (
               <div className="fc-card fc-card--pad fc-pop-in" style={{ marginTop: 16 }}>
                 <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                  <div className="eyebrow eyebrow--muted">Agents \u00b7 showing {agentList.length} of {agency.agent_count.toLocaleString()}</div>
-                  <Link href="/property-agents" className="small" style={{ fontWeight: 700 }}>Compare by AgentScore \u203a</Link>
+                  <div className="eyebrow eyebrow--muted">Agents &middot; showing {agentList.length} of {agency.agent_count.toLocaleString()}</div>
+                  <Link href="/property-agents" className="small" style={{ fontWeight: 700 }}>Compare by AgentScore &rsaquo;</Link>
                 </div>
                 <div className="agent-grid" style={{ marginTop: 14 }}>
                   {agentList.map((agent) => (
@@ -264,7 +264,7 @@ export default async function AgencyPage({ params }: Props) {
                     { slug: "sri-pte-ltd", short: "SRI" },
                   ].filter((a) => a.slug !== agency.slug).slice(0, 4).map((other) => {
                     const pair = agency.slug < other.slug ? `${agency.slug}-vs-${other.slug}` : `${other.slug}-vs-${agency.slug}`;
-                    return <Link key={other.slug} href={`/property-agents/agency-compare/${pair}`} className="small" style={{ fontWeight: 600 }}>vs {other.short} \u203a</Link>;
+                    return <Link key={other.slug} href={`/property-agents/agency-compare/${pair}`} className="small" style={{ fontWeight: 600 }}>vs {other.short} &rsaquo;</Link>;
                   })}
                 </div>
               </div>
