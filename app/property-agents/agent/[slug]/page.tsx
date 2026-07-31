@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ScrollReveal from "../../../components/ScrollReveal";
 import SkylinePreFooter from "../../../components/SkylinePreFooter";
+import ShareCheckButton from "../../../components/ShareCheckButton";
 import { Shophouse } from "../../../components/LineArt";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
@@ -9,7 +10,7 @@ import AgentReviews from "../../../components/AgentReviews";
 import VerifiedReviews from "../../../components/VerifiedReviews";
 import FunnelTracker from "../../../components/FunnelTracker";
 import { bandFor } from "../../../components/Brand";
-import { titleName, greetName, cleanAgency, agencyForRole, saleShare } from "../../../lib/names";
+import { titleName, greetName, cleanAgency, agencyForRole, saleShare, displayName } from "../../../lib/names";
 import { seoTitle } from "../../../lib/seoTitle";
 import ClaimBanner from "../../../components/ClaimBanner";
 import EgoBaitPanel from "../../../components/EgoBaitPanel";
@@ -103,7 +104,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Agent-supplied marketing name (approved), so the page matches the name
   // clients actually search for, e.g. "Chew Phek Hong (Cindy Chew)".
   const marketing = agent.marketing_name_status === "approved" && agent.marketing_name ? agent.marketing_name.trim() : null;
-  const display = marketing ? `${titleName(agent.name)} (${marketing})` : titleName(agent.name);
+  const display = displayName(agent.name, marketing);
 
   // Title front-loads the searches that should land here: name (+ marketing
   // name), agency, "property agent", and area. seoTitle clamps to <=60 chars
@@ -156,11 +157,14 @@ export default async function AgentPage({ params }: Props) {
   const { data: agent } = await supabase
     .from("sg_agents")
     .select(
-      "id, name, slug, cea_registration, agency_id, agency_name, google_rating, google_review_count, specializations, created_at, score, score_breakdown, transaction_count, specialization, primary_area, years_active, score_updated_at, claimed, claimed_at, percentile, bio, photo_url, whatsapp, subscription_tier, propertyguru_url, message, message_status, message_updated_at, photo_status, photo_updated_at, bio_status, bio_updated_at, review_aggregate, marketing_name, marketing_name_status"
+      "id, name, slug, cea_registration, agency_id, agency_name, google_rating, google_review_count, specializations, created_at, score, score_breakdown, transaction_count, specialization, primary_area, years_active, score_updated_at, claimed, claimed_at, percentile, bio, photo_url, whatsapp, subscription_tier, propertyguru_url, message, message_status, message_updated_at, photo_status, photo_updated_at, bio_status, bio_updated_at, review_aggregate, marketing_name, marketing_name_status, is_hidden"
     )
     .eq("slug", slug)
     .single();
   if (!agent) notFound();
+  // Agent takedown-on-dispute: a suppressed profile 404s (removes the page and
+  // lets Google de-index it). Reversible via sg_agents.is_hidden.
+  if (agent.is_hidden) notFound();
 
   const [agencyRes, trackRes, listingsRes, activityRes] = await Promise.all([
     agent.agency_id
@@ -196,7 +200,7 @@ export default async function AgentPage({ params }: Props) {
   // page ranks for the name clients actually search. Body sentences keep the
   // formal name (display).
   const marketing = agent.marketing_name_status === "approved" && agent.marketing_name ? agent.marketing_name.trim() : null;
-  const h1Name = marketing ? `${display} (${marketing})` : display;
+  const h1Name = displayName(agent.name, marketing);
 
   const total = hasTxns ? track!.total_txns : 0;
   const propEntries = hasTxns ? Object.entries(track!.property_types).sort((a, b) => b[1] - a[1]) : [];
@@ -529,6 +533,13 @@ export default async function AgentPage({ params }: Props) {
                 Free, no obligation. We line {given} up with other strong{primaryShort ? ` ${primaryShort}` : ""} agents so you compare quotes side by side.
               </p>
               <Link href={compareHref} className="fc-btn fc-btn--ghost fc-btn--sm">Compare with others{primaryShort ? ` in ${primaryShort}` : ""}</Link>
+              <ShareCheckButton
+                url={`https://fair-comparisons.com/property-agents/agent/${slug}`}
+                text={`Check ${display}'s CEA registration and real transaction record:`}
+                path={`/property-agents/agent/${slug}`}
+                label="Share this check"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-1.5 text-xs font-semibold text-white transition hover:brightness-95"
+              />
             </div>
           </div>
         </div>
@@ -775,6 +786,15 @@ export default async function AgentPage({ params }: Props) {
             </details>
           ))}
         </div>
+        {/* Plain links, deliberately NOT in the FAQPage schema (they are not
+            about this agent). Useful next steps + sitewide internal links to
+            the commission guide and the checker from every profile. */}
+        <p className="muted small fc-reveal" style={{ marginTop: 14 }}>
+          Wondering about fees? See{" "}
+          <Link href="/guides/property-agent-commission" style={{ color: "var(--blue)", fontWeight: 600 }}>typical agent commission rates</Link>
+          {" "}&middot;{" "}
+          <Link href="/property-agents/check" style={{ color: "var(--blue)", fontWeight: 600 }}>check another agent&apos;s record</Link>
+        </p>
       </section>
 
       <SkylinePreFooter />

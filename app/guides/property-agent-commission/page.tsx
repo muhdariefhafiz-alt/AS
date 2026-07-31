@@ -3,11 +3,14 @@ import type { Metadata } from "next";
 import SellCtaBand from "../../components/SellCtaBand";
 import ScrollReveal from "../../components/ScrollReveal";
 import { KeyLine } from "../../components/LineArt";
+import CommissionCalculator from "../../tools/commission-calculator/CommissionCalculator";
 
 export const metadata: Metadata = {
-  title: { absolute: "Property Agent Commission Singapore (2026) | FairComparisons" },
+  // Head terms per GSC: "property agent commission (singapore)". Title answers
+  // the how-much intent and names the calculator (a real on-page feature).
+  title: { absolute: "Property Agent Commission Singapore 2026: Rates + Calculator" },
   description:
-    "How much is property agent commission in Singapore? HDB about 1%, private 1 to 2%, rentals 0.5 to 1 month. Rates by property type, worked examples and GST.",
+    "How much is property agent commission in Singapore? HDB about 1%, private 1 to 2%, rentals 0.5 to 1 month. 2026 rates by property type, worked examples, GST, and a free calculator.",
   alternates: { canonical: "https://fair-comparisons.com/guides/property-agent-commission" },
 };
 
@@ -126,9 +129,12 @@ export default function PropertyAgentCommissionPage() {
         <KeyLine className="fc-lineart fc-float" width={88} style={{ position: "absolute", right: "6%", top: 24, color: "var(--line-2)" }} />
         <div className="mx-auto max-w-[1120px] px-5 pb-10 pt-8 md:px-8" style={{ position: "relative" }}>
           <span className="fc-hero-in fc-hero-in--1 inline-block rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">Costs</span>
-          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">Property Agent Commission Rates in Singapore</h1>
+          <h1 className="fc-hero-in fc-hero-in--2 mt-3 text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl">How Much Is Property Agent Commission in Singapore?</h1>
           <p className="fc-hero-in fc-hero-in--3 mt-2 max-w-2xl text-[15px] leading-relaxed text-gray-500">
-            How much do property agents charge? A clear breakdown of commission rates for HDB, condo, landed, new launches, and rental transactions. All rates reflect current market norms, not fixed regulations.
+            The 2026 rates: HDB about 1%, private 1 to 2%, rentals 0.5 to 1 month. A clear breakdown for HDB, condo, landed, new launches and rentals, with worked examples and a free calculator. All rates are market norms, not fixed regulations.
+          </p>
+          <p className="fc-hero-in fc-hero-in--4 mono mt-3 text-xs" style={{ color: "var(--slate)" }}>
+            Updated July 2026 · rates cross-checked against CEA guidance and current market practice
           </p>
         </div>
       </section>
@@ -205,10 +211,19 @@ export default function PropertyAgentCommissionPage() {
                 <strong>Rental agent fee:</strong> for a residential lease, the landlord typically pays 1 month&apos;s rent on a 2-year lease (0.5 month on a 1-year lease), and the tenant may pay 0.5 to 1 month. On a S$3,500 per month flat, that is about S$3,500 for the landlord on a 2-year lease. If the agency is GST-registered, add 9% GST on top of any commission.
               </p>
               <p className="mt-3 text-[15px] leading-[1.75] text-gray-600">
-                You can run your own numbers with our free{" "}
-                <Link href="/tools/commission-calculator" className="font-medium text-[var(--blue)] underline">commission calculator</Link>, or{" "}
-                <Link href="/sell" className="font-medium text-[var(--blue)] underline">get a free shortlist</Link>{" "}
-                of agents who each quote their own commission so you compare real figures side by side.
+                Or run your exact numbers right here:
+              </p>
+              {/* The calculator itself, inline (same component as /tools/commission-calculator):
+                  the page that ranks for the commission query should also answer it interactively. */}
+              <div className="fc-reveal mt-4">
+                <CommissionCalculator />
+              </div>
+              <p className="mt-4 text-[15px] leading-[1.75] text-gray-600">
+                Prefer real quotes over estimates?{" "}
+                <Link href="/sell" className="font-medium text-[var(--blue)] underline">Get a free shortlist</Link>{" "}
+                of agents who each quote their own commission so you compare actual figures side by side. You can also{" "}
+                <Link href="/tools/commission-calculator" className="font-medium text-[var(--blue)] underline">open the calculator as its own tool</Link>{" "}
+                or embed it on your site.
               </p>
             </section>
 

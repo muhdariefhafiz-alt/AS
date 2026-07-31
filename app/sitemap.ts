@@ -1,5 +1,6 @@
 import { supabase } from "./lib/supabase";
 import { HDB_TOWNS, getQualifyingHdbSegments } from "./lib/hdbData";
+import { getQualifyingHirePages } from "./lib/hireData";
 import { agentDirectoryPageCount, countIndexableAgents } from "./lib/indexable";
 import type { MetadataRoute } from "next";
 
@@ -15,6 +16,10 @@ const BEST_AGENT_AREAS = [
 
 const BASE = "https://fair-comparisons.com";
 
+// Data-driven sitemap (districts, agencies, hire pages, developments): refresh
+// daily so newly-qualifying pages get discovered without a redeploy.
+export const revalidate = 86400;
+
 // Today's date for lastModified - data pages are revalidated daily by cron
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -25,11 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // the frontend focuses only on property agents. Backend data collection continues.
   // Agents are served from the sharded app/property-agents/sitemap.ts (the full
   // data-dense set, uncapped) rather than the old 10k slice here.
-  const [districtsRes, agenciesRes, projectsRes, hdbSegments, indexableCount] = await Promise.all([
+  const [districtsRes, agenciesRes, projectsRes, hdbSegments, hirePages, indexableCount] = await Promise.all([
     supabase.from("sg_districts").select("slug").not("slug", "is", null),
     supabase.from("sg_agencies").select("slug, agent_count, google_review_count, score").order("agent_count", { ascending: false }).limit(5000),
     supabase.from("sg_projects").select("slug, txn_count").order("txn_count", { ascending: false }).limit(5000),
     getQualifyingHdbSegments(),
+    getQualifyingHirePages(),
     countIndexableAgents(),
   ]);
 
@@ -105,6 +111,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...HDB_TOWNS.map(t => ({ url: `${BASE}/sell/hdb/${t.slug}`, lastModified: today(), changeFrequency: "weekly" as const, priority: 0.85 })),
     ...districts.map(d => ({ url: `${BASE}/sell/condo/${d.slug}`, lastModified: today(), changeFrequency: "weekly" as const, priority: 0.85 })),
 
+    // === Hire-by-intent pages (F2: "best agents to sell/rent a <type> in <area>", density-gated) ===
+    ...hirePages.map(p => ({ url: `${BASE}/property-agents/hire/${p.intent}/${p.area}`, lastModified: today(), changeFrequency: "weekly" as const, priority: 0.85 })),
+
     // === Best agent pages (revalidated daily - key SEO pages) ===
     ...BEST_AGENT_AREAS.map(slug => ({ url: `${BASE}/property-agents/best/${slug}`, lastModified: today(), changeFrequency: "daily" as const, priority: 0.85 })),
     ...HDB_TOWNS.map(t => ({ url: `${BASE}/property-agents/best/hdb/${t.slug}`, lastModified: today(), changeFrequency: "daily" as const, priority: 0.85 })),
@@ -115,7 +124,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // === Comparisons (agency only; district/hdb compare are noindexed) ===
     // Agency comparisons (high-intent: "PropNex vs ERA", "Huttons vs OrangeTee")
     ...(() => {
-      const agencySlugs = ["propnex-realty-pte-ltd", "era-realty-network-pte-ltd", "huttons-asia-pte-ltd", "orangetee-tie-pte-ltd", "sri-pte-ltd", "c-h-properties-pte-ltd", "sn-real-estate-pte-ltd", "century-21-pte-ltd", "knight-frank-pte-ltd", "plb-realty-pte-ltd", "cbre-pte-ltd", "realstar-premier-group-private-limited", "mindlink-groups-pte-ltd", "jones-lang-lasalle-property-consultants-pte-ltd"];
+      const seedSlugs = ["propnex-realty-pte-ltd", "era-realty-network-pte-ltd", "huttons-asia-pte-ltd", "orangetee-tie-pte-ltd", "sri-pte-ltd", "c-h-properties-pte-ltd", "sn-real-estate-pte-ltd", "century-21-pte-ltd", "knight-frank-pte-ltd", "plb-realty-pte-ltd", "cbre-pte-ltd", "realstar-premier-group-private-limited", "mindlink-groups-pte-ltd", "jones-lang-lasalle-property-consultants-pte-ltd"];
+      // Widen beyond the seeds with the largest quality-filtered agencies
+      // (already fetched above), density-gated to >=30 agents (26 agencies in
+      // the register today) so every submitted comparison has a meaningful
+      // record on both sides. Capped at 24 slugs (= 276 pairs) to stay
+      // high-signal; the list is ordered by agent_count so the cap keeps the
+      // biggest brands people actually search for.
+      const bigAgencies = agencies
+        .filter((a) => (a.agent_count ?? 0) >= 30 && a.slug)
+        .map((a) => a.slug as string);
+      const agencySlugs = [...new Set([...seedSlugs, ...bigAgencies])].slice(0, 24);
       const pairs: string[] = [];
       for (let i = 0; i < agencySlugs.length; i++) {
         for (let j = i + 1; j < agencySlugs.length; j++) {
