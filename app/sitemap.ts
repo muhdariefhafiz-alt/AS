@@ -1,6 +1,5 @@
 import { supabase } from "./lib/supabase";
 import { HDB_TOWNS, getQualifyingHdbSegments } from "./lib/hdbData";
-import { getQualifyingHirePages } from "./lib/hireData";
 import { agentDirectoryPageCount, countIndexableAgents } from "./lib/indexable";
 import type { MetadataRoute } from "next";
 
@@ -30,12 +29,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // the frontend focuses only on property agents. Backend data collection continues.
   // Agents are served from the sharded app/property-agents/sitemap.ts (the full
   // data-dense set, uncapped) rather than the old 10k slice here.
-  const [districtsRes, agenciesRes, projectsRes, hdbSegments, hirePages, indexableCount] = await Promise.all([
+  const [districtsRes, agenciesRes, projectsRes, hdbSegments, indexableCount] = await Promise.all([
     supabase.from("sg_districts").select("slug").not("slug", "is", null),
     supabase.from("sg_agencies").select("slug, agent_count, google_review_count, score").order("agent_count", { ascending: false }).limit(5000),
     supabase.from("sg_projects").select("slug, txn_count").order("txn_count", { ascending: false }).limit(5000),
     getQualifyingHdbSegments(),
-    getQualifyingHirePages(),
     countIndexableAgents(),
   ]);
 
@@ -111,8 +109,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...HDB_TOWNS.map(t => ({ url: `${BASE}/sell/hdb/${t.slug}`, lastModified: today(), changeFrequency: "weekly" as const, priority: 0.85 })),
     ...districts.map(d => ({ url: `${BASE}/sell/condo/${d.slug}`, lastModified: today(), changeFrequency: "weekly" as const, priority: 0.85 })),
 
-    // === Hire-by-intent pages (F2: "best agents to sell/rent a <type> in <area>", density-gated) ===
-    ...hirePages.map(p => ({ url: `${BASE}/property-agents/hire/${p.intent}/${p.area}`, lastModified: today(), changeFrequency: "weekly" as const, priority: 0.85 })),
 
     // === Best agent pages (revalidated daily - key SEO pages) ===
     ...BEST_AGENT_AREAS.map(slug => ({ url: `${BASE}/property-agents/best/${slug}`, lastModified: today(), changeFrequency: "daily" as const, priority: 0.85 })),

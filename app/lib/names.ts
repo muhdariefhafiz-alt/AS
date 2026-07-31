@@ -64,6 +64,34 @@ export function greetName(full: string): string {
   return givenName(raw);
 }
 
+/**
+ * Display name combining the CEA name with an approved marketing name, e.g.
+ * "Ng Huang Ring" + "Evon Ng" -> "Ng Huang Ring (Evon Ng)", so the page matches
+ * the name clients search. Suppresses the appended nickname when it would be
+ * redundant, to avoid a double nickname like "Wee Chye Heng (Alan) (Alan Wee)":
+ *   - the CEA name already carries a parenthesised nickname ("... (ALAN)"), or
+ *   - every significant word of the marketing name already appears in the CEA
+ *     name (case-insensitive), so it adds nothing new.
+ * Otherwise appends "(marketing)". Passing no marketing name returns titleName(full).
+ */
+export function displayName(full: string, marketing?: string | null): string {
+  const base = titleName(full);
+  const mk = (marketing || "").trim();
+  if (!mk) return base;
+
+  // Already has a parenthesised preferred name: don't stack a second one.
+  if (/\([^)]*\)/.test(base)) return base;
+
+  // Redundant if every word (length > 1) of the marketing name is already in the
+  // CEA name. Compare on the bare name, ignoring any parenthetical (none here,
+  // since that path returned above, but kept defensive).
+  const baseTokens = new Set((base.replace(/\([^)]*\)/g, " ").toLowerCase().match(/[a-z0-9]+/g)) || []);
+  const mkTokens = (mk.toLowerCase().match(/[a-z0-9]+/g) || []).filter((t) => t.length > 1);
+  if (mkTokens.length > 0 && mkTokens.every((t) => baseTokens.has(t))) return base;
+
+  return `${base} (${mk})`;
+}
+
 /** Clean an agency name: drop "Pte Ltd"/"LLP", title-case, keep ERA upper. */
 export function cleanAgency(name: string): string {
   const n = (name || "").replace(/\s*PTE\.?\s*LTD\.?\.?$/i, "").replace(/\s*LLP$/i, "").trim();
