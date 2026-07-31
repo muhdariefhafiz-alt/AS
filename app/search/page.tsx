@@ -156,6 +156,7 @@ export default function SearchPage() {
       supabase
         .from("sg_agents")
         .select("name, slug, agency_name, cea_registration")
+        .eq("is_hidden", false)
         .ilike("name", `%${q}%`)
         .limit(8),
     ]).then(([agencyRes, agentRes]) => {

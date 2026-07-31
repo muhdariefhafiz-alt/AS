@@ -49,7 +49,8 @@ export async function countIndexableAgents(): Promise<number> {
   const { count } = await supabase
     .from("sg_agents")
     .select("id", { count: "exact", head: true })
-    .not("score", "is", null);
+    .not("score", "is", null)
+    .eq("is_hidden", false); // suppressed agents are never submitted to Google
   return count ?? 0;
 }
 

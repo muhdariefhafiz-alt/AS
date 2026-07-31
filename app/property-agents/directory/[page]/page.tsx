@@ -65,6 +65,7 @@ export default async function AgentDirectoryPage({ params }: Props) {
     .select("slug, name, agency_name, transaction_count")
     .not("score", "is", null)
     .not("slug", "is", null)
+    .eq("is_hidden", false)
     .order("name", { ascending: true })
     .order("id", { ascending: true })
     .range(from, from + AGENT_DIRECTORY_PAGE_SIZE - 1);

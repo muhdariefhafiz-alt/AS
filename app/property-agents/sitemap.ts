@@ -39,6 +39,7 @@ export default async function sitemap({
     .from("sg_agents")
     .select("slug, score, transaction_count, claimed")
     .not("score", "is", null)
+    .eq("is_hidden", false)
     .not("slug", "is", null)
     .order("score", { ascending: false, nullsFirst: false })
     .order("id", { ascending: true })

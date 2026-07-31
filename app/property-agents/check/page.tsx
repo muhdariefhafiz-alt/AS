@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import HeroBand from "../../components/HeroBand";
 import SkylinePreFooter from "../../components/SkylinePreFooter";
 import SellCtaBand from "../../components/SellCtaBand";
+import ShareCheckButton from "../../components/ShareCheckButton";
 
 export const revalidate = 86400;
 
@@ -88,6 +89,28 @@ export default function CheckAgentPage() {
         </div>
         <div style={{ marginTop: 22 }}>
           <Link href="/property-agents" className="fc-btn fc-btn--quiet fc-btn--sm">Browse all agents and agencies</Link>
+        </div>
+      </section>
+
+      {/* SECOND OPINION / FORWARDABLE UTILITY */}
+      <section className="fc-wrap fc-reveal" style={{ padding: "0 40px 56px" }}>
+        <div className="fc-scene fc-scene--grow" style={{ padding: "clamp(16px,2.5vw,28px)" }}>
+          <div className="fc-scene__card" style={{ padding: 26 }}>
+            <div className="eyebrow">Being approached by an agent?</div>
+            <h2 className="serif" style={{ marginTop: 10, fontSize: 22, fontWeight: 600 }}>Get a second opinion before you commit.</h2>
+            <p className="muted" style={{ marginTop: 8, fontSize: 15, lineHeight: 1.6 }}>
+              Check the agent who approached you, then see the agents who have actually closed the most deals for your property type in your area, ranked on the same CEA record. No sign-up needed.
+            </p>
+            <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 12 }}>
+              <Link href="/property-agents/shortlist" className="fc-btn fc-btn--primary fc-btn--sm">See the top agents for my area</Link>
+              <ShareCheckButton
+                url="https://fair-comparisons.com/property-agents/check"
+                text="Check any Singapore property agent's CEA status and real track record (free):"
+                path="/property-agents/check"
+                label="Send to a friend"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
