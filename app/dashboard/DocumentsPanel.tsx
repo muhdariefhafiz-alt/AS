@@ -309,6 +309,19 @@ export default function DocumentsPanel({ onUpgrade, autoStart, onAutoStartConsum
               Back to draft
             </button>
           )}
+          {/* A signed document cannot be edited or deleted, so void is the only
+              way to correct a mistake. Without this control the record would be
+              a trap: wrong, permanent, and unfixable. */}
+          {current.status === "signed" && (
+            <button
+              onClick={() => { if (confirm("Void this document? It stays on your record marked void, and frees the slot.")) save("void"); }}
+              disabled={busy === "save"}
+              className="fc-btn fc-btn--quiet fc-btn--sm"
+              style={{ color: "var(--danger)" }}
+            >
+              Void it
+            </button>
+          )}
           {notice && <span className="small" style={{ color: "var(--slate)" }}>{notice}</span>}
         </div>
         {current.status === "draft" && (

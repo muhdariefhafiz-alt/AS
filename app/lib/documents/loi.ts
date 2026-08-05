@@ -182,6 +182,23 @@ export function loiContent(f: DocFields): ContentBlock[] {
   const blocks: ContentBlock[] = [];
   const agency = (f.agency_name || "").trim();
 
+  // The letterhead. Every real agency LOI we studied is issued on one, with the
+  // agency and the salesperson's CEA registration at the top, because that is
+  // what tells the landlord who is writing to them. Without this block the
+  // document is a template; with it, it is the agent's letter.
+  const letterhead = [f.agent_name, f.agent_designation].filter(Boolean).join(", ");
+  if (agency || letterhead) {
+    if (agency) blocks.push({ kind: "para", text: agency.toUpperCase(), gap: 2 });
+    if (letterhead) {
+      blocks.push({
+        kind: "para",
+        text: `${letterhead}${f.agent_cea ? ` · CEA Reg. No. ${f.agent_cea}` : ""}${f.agent_contact ? ` · ${f.agent_contact}` : ""}`,
+        gap: 4,
+      });
+    }
+    blocks.push({ kind: "rule" });
+  }
+
   blocks.push({ kind: "title", text: "LETTER OF INTENT" });
   blocks.push({ kind: "subtitle", text: "Residential lease. A standard template prepared for your review. This is not legal advice." });
 

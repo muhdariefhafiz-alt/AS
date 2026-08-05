@@ -82,19 +82,21 @@ export const ROADMAP: RoadmapEntry[] = [
       { step: "Fill in the deal", detail: "Property, landlord, tenant and occupiers, term, rent, deposits, and the standard terms. Conventions such as the security deposit months, the minor repair cap and the diplomatic clause come with the market range as a hint, and every one of them is editable." },
       { step: "Preview the PDF", detail: "While it is a draft the PDF carries a DRAFT watermark, so an unsigned letter can never be mistaken for an executed one." },
       { step: "Mark it ready to sign", detail: "The watermark drops. We check the required fields first: a letter with no rent or no parties cannot leave draft." },
-      { step: "Track what happened", detail: "Mark it sent out, then signed, as the deal moves. A signed document is locked and can only be voided, never edited or deleted." },
+      { step: "Track what happened", detail: "Mark it sent out, then signed, as the deal moves. A signed document locks: it cannot be edited or deleted, and voiding it is the only way to correct a mistake, which keeps the record of the deal intact." },
       { step: "Start the tenancy agreement", detail: "From the signed letter, one tap starts the tenancy agreement with the deal already in it. Check the details, add the inventory, and you are done." },
     ],
     limits: [
       "It is a standard template for your review, not legal advice, and it says so on every page.",
       "It does not e-sign. You download the PDF and sign it the way you do today. Signing inside the tool is what we are building next.",
       "The inventory of furniture and fittings, and the two parties' contact details, do not carry across from the letter of intent, because a letter of intent does not carry them.",
-      "It does not compute stamp duty. Lease duty is calculated at current IRAS rates in our stamp duty calculator, never by a formula copied off an old agency form.",
+      "It does not compute stamp duty. Lease duty is a joint liability of both parties and is stamped with IRAS; the document records who bears it. Our stamp duty calculator covers buying and selling duty, not lease duty.",
       "It will never produce an HDB resale Option to Purchase. That is a serialised form issued only through the HDB Resale Portal, and generating a lookalike would be a real problem for you.",
       "The good-faith deposit is paid to the landlord. We never hold money, and CEA does not permit a salesperson to hold transaction money either.",
+      "Ten documents per rolling thirty days on the free plan, thirty on Verified, unlimited on Professional and Elite. Voiding or deleting one frees the slot.",
+      "On the free plan the PDF footer carries one line saying it was prepared with FairComparisons. Paid plans render without it.",
     ],
     tryIt: { href: "/tools/loi", label: "See it on your letterhead", cta: "Free on the free plan." },
-    tiers: "Every plan, including free.",
+    tiers: "10 documents a month on free, 30 on Verified, unlimited from Professional.",
   },
 
   {
@@ -189,7 +191,7 @@ export const ROADMAP: RoadmapEntry[] = [
     summary:
       "A public page for every registered property agent in Singapore, built from government transaction records rather than from what the agent says about themselves.",
     whatItIs: [
-      "Every agent registered with the Council for Estate Agencies has a page here, whether they have claimed it or not. It carries an AgentScore from 0 to 100, how many sales against how many rentals they have on record, whether they usually act for the seller or the buyer, the areas and property types they work, a year-by-year activity chart and their recent recorded deals.",
+      "Every agent registered with the Council for Estate Agencies has a page here, claimed or not, unless they have asked us to take theirs down. It carries an AgentScore from 0 to 100, how many sales against how many rentals they have on record, whether they usually act for the seller or the buyer, the areas and property types they work, a year-by-year activity chart and their recent recorded deals.",
       "Where the record could mislead, the page says so in plain language. If most of an agent's deals are rentals, the page says so. If they mostly represent buyers, the page says so. The full scoring method is published.",
     ],
     whyWeBuiltIt: [
@@ -218,6 +220,7 @@ export const ROADMAP: RoadmapEntry[] = [
       "A score is not a personality. It cannot tell you whether someone will answer your calls or negotiate well for you.",
       "Agents with no recorded transactions get a page that says exactly that, rather than a score implying otherwise.",
       "The profile does not publish an agent's phone number. Contact runs through a quote request, so agents are not cold-called off the back of their own record.",
+      "An agent can ask us to take their profile down, and we do it.",
     ],
     tryIt: { href: "/property-agents", label: "Compare agents", cta: "Free, no account." },
   },
@@ -424,10 +427,10 @@ export const ROADMAP: RoadmapEntry[] = [
     audience: "everyone",
     shipped: "2026-06",
     summary:
-      "Stamp duty, affordability, net sale proceeds, commission, an online valuation, an MOP tracker, a CEA advertising checker and the letter of intent, free and without an account.",
+      "Stamp duty, affordability, net sale proceeds, commission, an online valuation and an MOP tracker, free and without an account. Two more for agents: a CEA advertising checker, and a letter of intent generator that needs a claimed profile.",
     whatItIs: [
       "A set of tools for the arithmetic that decides whether a move is possible: buyer's and seller's stamp duty including ABSD, what you can borrow under the current lending rules, what you actually walk away with after commission, duty, the loan and your CPF refund, and what your home is worth from recent transactions.",
-      "For agents there are two more: a checker that tests an advertisement against CEA's advertising requirements before it goes out, and the letter of intent generator.",
+      "For agents there are two more: a checker that tests an advertisement against CEA's advertising requirements before it goes out, and the letter of intent generator, which needs a claimed profile because the letter goes out over your name and CEA registration.",
     ],
     whyWeBuiltIt: [
       "The question that actually stops people is not which agent to use, it is whether the move works at all. Sellers kept asking us the same thing in different words: after the loan, the CPF refund and the commission, what do I actually walk away with, and is it enough for the next place.",
@@ -454,7 +457,7 @@ export const ROADMAP: RoadmapEntry[] = [
       "They are estimates for planning. Confirm duty with IRAS and your loan with your bank before you commit.",
       "The valuation is an estimate from recent transactions in your area, not a formal valuation, and it cannot see your renovation or your view.",
       "Rules change. We keep these current and stamp what we used, but check anything close to the line.",
-      "The calculators store nothing. A valuation you choose to save is the exception, and it lives behind a private link.",
+      "The calculators store nothing to give you an answer. If you ask the valuation or the MOP tracker to tell you when your number moves, we keep the address you gave us for that, and only for that.",
     ],
     tryIt: { href: "/tools", label: "Open the tools", cta: "Free, no account, nothing stored." },
   },
@@ -493,6 +496,7 @@ export const ROADMAP: RoadmapEntry[] = [
     limits: [
       "It ranks you in one area, the one your record centres on. Multi-area standing is not built yet.",
       "Movement is month to month and needs a snapshot from the previous month in the same area, so a newly claimed profile will not show it at first.",
+      "We hold back the raw position and the movement line for agents in the bottom quarter and show a forward-looking line instead, because a raw number there discourages more than it informs.",
       "A shortlist appearance means our matching put you in front of a seller, not that a seller personally saved you.",
       "Profile views are raw counts and are not deduplicated by person.",
       "Nothing here changes your rank or who receives leads. It is a mirror, not a lever.",
@@ -509,8 +513,8 @@ export const ROADMAP: RoadmapEntry[] = [
       "Pick up to five towns or districts you work, and see which blocks have flats coming up on their five-year MOP, and what has sold there recently, from official records.",
     whatItIs: [
       "A prospecting list built from the same government transaction records the rest of the site runs on. You name up to five HDB towns or private districts you farm, and Deal Radar returns two lists.",
-      "First, blocks where flats changed hands about five years ago, so those owners are approaching the end of their Minimum Occupation Period. Second, every sale recorded in those areas in the last 180 days.",
-      "Each row is one real recorded transaction: block and street, flat type, storey range, size, month and price. Any row can be turned into a co-branded seller report you can send.",
+      "First, blocks where flats changed hands about five years ago, so those owners are approaching the end of their Minimum Occupation Period. Second, the most recent sales recorded in those areas in the last 180 days.",
+      "Each row is one real recorded transaction. An HDB row is a block and street with the flat type, storey range, month and price; a private row is the development, property type, floor range, size, month and price. Any row can be turned into a co-branded seller report you can send.",
     ],
     whyWeBuiltIt: [
       "Agents build MOP door-knock lists by hand, from memory or from a spreadsheet someone shared two years ago. The data to do it properly is public, it is just tedious to assemble.",
@@ -529,7 +533,7 @@ export const ROADMAP: RoadmapEntry[] = [
       { step: "Open the Grow tab", detail: "Deal Radar sits at the top of the Grow tab in your dashboard." },
       { step: "Add your farm areas", detail: "Choose HDB town or District, pick the area, press Add. Up to five, the same on every plan." },
       { step: "Read the MOP list", detail: "Block and street, flat type, storey range, and the note telling you which month the flat was bought and that it is approaching the five-year MOP." },
-      { step: "Read recent sales", detail: "Everything recorded in those areas in the last 180 days, HDB and private, with price and month." },
+      { step: "Read recent sales", detail: "The most recent sales in those areas over the last 180 days, HDB and private, with price and month." },
       { step: "Turn a row into a conversation", detail: "Press Seller report on any row to open a co-branded report of recent comparable sales, with your photo, name and record on it, ready to send." },
     ],
     limits: [
@@ -539,6 +543,7 @@ export const ROADMAP: RoadmapEntry[] = [
       "It covers HDB resale and private transactions. No landed-only view, no rentals, no listings.",
       "HDB records refresh weekly. Private district records depend on a manual load, so their recency is not guaranteed the same way.",
       "Five areas is the cap on every plan, including the paid ones.",
+      "The feed shows the most recent rows in each list, not the full 180 days. In a busy town more has sold than we show.",
     ],
     tryIt: { href: "/for-agents/deal-radar", label: "See how Deal Radar works" },
     tiers: "Free on every plan.",
