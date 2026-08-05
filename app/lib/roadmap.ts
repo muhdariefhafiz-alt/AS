@@ -19,7 +19,11 @@ export type RoadmapEntry = {
   title: string;
   status: RoadmapStatus;
   audience: RoadmapAudience;
-  /** ISO month for live entries, from the commit that shipped it. */
+  /**
+   * ISO month a live entry FIRST became usable, verified against the first
+   * commit that shipped it, not the last one that touched it. Several of these
+   * have been rebuilt since; where that matters the entry says so in its text.
+   */
   shipped?: string;
   summary: string;
   whatItIs: string[];
@@ -56,7 +60,7 @@ export const ROADMAP: RoadmapEntry[] = [
     whoItHelps: [
       {
         who: "Rental-heavy salespersons",
-        how: "The document you produce most often, in about two minutes, from your phone in the lift after a viewing rather than in a Word file back at the office.",
+        how: "The document you produce most often, from your phone in the lift after a viewing rather than in a Word file back at the office.",
       },
       {
         who: "Anyone running a deal end to end",
@@ -94,11 +98,94 @@ export const ROADMAP: RoadmapEntry[] = [
   },
 
   {
+    slug: "claim-your-profile",
+    title: "Claim your profile: the record is already yours, take control of it",
+    status: "live",
+    audience: "agents",
+    shipped: "2026-04",
+    summary:
+      "Every CEA-registered agent already has a page here. Claiming it is free, takes about a minute, never changes your rank, and opens the whole agent toolkit.",
+    whatItIs: [
+      "Your profile exists whether you claim it or not, because it is built from public transaction records rather than from a signup. Claiming proves it is you and hands you the controls.",
+      "You verify by email against your CEA registration, which is what stops anyone else claiming your record. Then you can add a photo, a message and your WhatsApp, and the whole agent toolkit opens: seller enquiries, the Planner, Deal Radar, Area Intelligence, the Pitch Kit, Paperwork and your standing.",
+      "It is free and stays free. There is no card, and nothing to cancel.",
+    ],
+    whyWeBuiltIt: [
+      "Ranking agents who never asked to be ranked puts an obligation on us. The least we owe someone is the ability to see what we publish about them, correct what is theirs to correct, and receive the enquiries their record earns.",
+      "It also had to be provably safe. An agent's page carries their livelihood, so claiming is verified against the email and the registration rather than being a form anyone can fill in.",
+      "The hard line is that claiming changes nothing about ranking. Not the score, not the order, not who receives leads. If claiming moved you up, the rankings would be an advertising product, and everything else we say would be worth less.",
+    ],
+    whoItHelps: [
+      { who: "Any CEA-registered salesperson", how: "Control of the page sellers actually read, and the enquiries that come off it." },
+      { who: "Agents with a strong record and a small marketing budget", how: "The work shows without paying anyone for placement." },
+      { who: "Sellers", how: "A claimed profile carries a photo, a message and a contactable agent, so the shortlist leads somewhere." },
+    ],
+    useCase: {
+      title: "Finding out you have been ranked",
+      body: "A client mentions they looked you up and found a page with your deal history on it. You search your own name, find your profile, and see your score, your areas and your recorded transactions. You claim it with your CEA number, confirm by email, add a photo and your WhatsApp, and the enquiries from sellers comparing your area start arriving in a dashboard that was already filled in before you got there.",
+    },
+    walkthrough: [
+      { step: "Find yourself", detail: "Search your name or CEA registration number on the claim page." },
+      { step: "Claim it", detail: "Confirm the profile is yours, with your CEA registration." },
+      { step: "Verify by email", detail: "We send a link. Clicking it proves the profile is yours and signs you in. There is no password to remember." },
+      { step: "Fill in what only you know", detail: "Photo, a short message to sellers, your WhatsApp number and the areas you farm." },
+      { step: "The toolkit is open", detail: "Enquiries, Planner, Deal Radar, Area Intelligence, Pitch Kit, Paperwork and your standing, all free." },
+    ],
+    limits: [
+      "Claiming never changes your rank, your score or who receives leads. It is control of the page, not a lever on the ranking.",
+      "Your photo and your message are moderated before they go public, because they appear next to independent data.",
+      "One claim per profile, verified against the email. If someone else has claimed a profile that is yours, tell us and we will sort it out.",
+      "Your score does not change when you claim it. It is computed from transaction records either way.",
+    ],
+    tryIt: { href: "/claim", label: "Find and claim your profile", cta: "Free, and it stays free." },
+    tiers: "Free. No card.",
+  },
+  {
+    slug: "plans-and-billing",
+    title: "Plans you can start and stop yourself, that never touch your ranking",
+    status: "live",
+    audience: "agents",
+    shipped: "2026-07",
+    summary:
+      "Three paid tiers that add tools and depth, self-serve from the dashboard, with a billing portal you control. None of them move you up the rankings.",
+    whatItIs: [
+      "The agent product is free, and three optional tiers add more: Verified at S$29 a month, Professional at S$69, and Elite at S$149. They raise the limits on things like documents and building pages, and unlock deeper analysis of your own performance.",
+      "Upgrading happens in the dashboard and takes effect immediately. Changing or cancelling runs through a billing portal in your own account, not through an email to us.",
+    ],
+    whyWeBuiltIt: [
+      "We had to be paid by someone, and the choice of who determines whether the rankings can be trusted. Portals are paid by agents for placement, which is why their results look the way they do. We are paid by agents for tools, and the ranking is computed from government records that no payment touches.",
+      "That distinction is only credible if the paid tiers visibly do not buy prominence. So they buy capacity and insight into your own record, never position, never leads, never a badge that outranks someone with a better record.",
+      "Self-serve cancellation matters for the same reason. A subscription you have to email someone to escape is a subscription that is counting on friction.",
+    ],
+    whoItHelps: [
+      { who: "Agents doing enough volume to hit the free limits", how: "More documents, more building pages, and deeper reporting on your own record." },
+      { who: "Every agent, paying or not", how: "A ranking that cannot be bought, which is only worth something if it is true of the person above you as well." },
+      { who: "Sellers", how: "The list you see is ordered by record, not by who paid us this month." },
+    ],
+    useCase: {
+      title: "Deciding whether to pay for something you are already using free",
+      body: "You have been using the free tools for a month and you are running into the document limit in a busy rental season. You upgrade in the dashboard, it takes effect immediately, and the limit lifts. Your position on the board does not move, which is exactly what you would want to be true of the agent ranked above you.",
+    },
+    walkthrough: [
+      { step: "Open Plan and billing", detail: "In your dashboard settings, with your current plan and what it includes." },
+      { step: "Pick a tier", detail: "The differences are stated as limits and features, not as visibility." },
+      { step: "It unlocks immediately", detail: "No waiting for a webhook to catch up." },
+      { step: "Change or stop it yourself", detail: "Manage billing opens the payment portal in your own account: change plan, update the card, or cancel." },
+    ],
+    limits: [
+      "No tier changes your AgentScore, your search position, or how leads are allocated. That is enforced in the code, and it is the point of the whole model.",
+      "Paid tiers do not add a badge or styling that makes you look better ranked than your record supports.",
+      "Prices are in Singapore dollars per month and are shown before you commit.",
+      "Cancelling stops the renewal and you keep the tier until the period you paid for ends.",
+    ],
+    tryIt: { href: "/for-agents#pricing", label: "See what each plan includes" },
+  },
+  {
     slug: "agent-comparison",
     title: "Every CEA-registered agent, ranked on their actual transaction record",
     status: "live",
     audience: "everyone",
-    shipped: "2026-07",
+    shipped: "2026-04",
     summary:
       "A public page for every registered property agent in Singapore, built from government transaction records rather than from what the agent says about themselves.",
     whatItIs: [
@@ -139,7 +226,7 @@ export const ROADMAP: RoadmapEntry[] = [
     title: "For sellers: a shortlist on the record, then quotes you can compare",
     status: "live",
     audience: "sellers",
-    shipped: "2026-07",
+    shipped: "2026-06",
     summary:
       "Describe your property, get a ranked shortlist of agents who actually have deals in your area, invite up to three to quote, and compare their fees side by side.",
     whatItIs: [
@@ -150,7 +237,7 @@ export const ROADMAP: RoadmapEntry[] = [
     whyWeBuiltIt: [
       "The normal way to find an agent is to fill in a form and then be called by ten of them, because your details were sold. We built the opposite: the agents get your brief, you keep your number until you choose.",
       "Comparing fees was equally broken. Everyone quotes in conversation, and by the time you have three numbers you have had three sales pitches. Getting them in writing on one page changes the conversation.",
-      "We show dormancy honestly. If an agent has not recorded a sale in two years, that sits on their row while you are choosing, not after.",
+      "If an agent has not recorded a sale in two years, that sits on their row while you are choosing, not after.",
     ],
     whoItHelps: [
       { who: "Homeowners about to sell", how: "Three comparable quotes, from agents whose record you can check, without giving your number to anyone until you decide." },
@@ -173,7 +260,6 @@ export const ROADMAP: RoadmapEntry[] = [
       "We only cover areas where we hold ranked agents. If yours is not covered we tell you before you give us any contact details.",
       "Matching is by area and property type. It does not consider your postal code or block.",
       "There is no messaging between you and the agents here. You see their structured quote and their marketing plan, then you talk to the one you choose.",
-      "It is free for sellers and we take no cut of your sale.",
     ],
     tryIt: { href: "/sell", label: "Get your shortlist", cta: "Always free for sellers." },
   },
@@ -182,7 +268,7 @@ export const ROADMAP: RoadmapEntry[] = [
     title: "Reviews that are tied to a real deal",
     status: "live",
     audience: "everyone",
-    shipped: "2026-07",
+    shipped: "2026-06",
     summary:
       "Sellers who complete a sale through us are invited to review the agent, and those reviews sit next to the transaction record without ever touching the score.",
     whatItIs: [
@@ -201,7 +287,7 @@ export const ROADMAP: RoadmapEntry[] = [
     ],
     useCase: {
       title: "Two agents with almost the same record",
-      body: "You have narrowed it to two agents with similar deal counts in your town. One has three reviews from sellers who completed sales through the platform, describing how the agent handled a slow first month. That is the tiebreaker the transaction record cannot give you.",
+      body: "You have narrowed it to two agents with similar deal counts in your town. The record cannot separate them, because on the numbers they are the same. A review from a seller who completed a sale through us, in a block clearly marked as verified, is the thing that can: it says what working with them was actually like. Where one exists, it is the tiebreaker.",
     },
     walkthrough: [
       { step: "Sell through the platform", detail: "The agent logs the milestones as the deal moves, including the signed option." },
@@ -218,11 +304,125 @@ export const ROADMAP: RoadmapEntry[] = [
     ],
   },
   {
+    slug: "share-your-record",
+    title: "Put your record where you already have attention",
+    status: "live",
+    audience: "agents",
+    shipped: "2026-06",
+    summary:
+      "A rank card, a live score badge for your email signature or website, and a valuation widget on your own site that sends the enquiry to you.",
+    whatItIs: [
+      "Four things you can copy out of the dashboard: a rank card to share, a badge showing your AgentScore that stays current wherever you paste it, a valuation widget for your own website, and a link for asking a past client to review you.",
+      "The badge and the widget are embed snippets that come pre-filled with your own profile, so it is copy once, paste once.",
+      "The widget is the one that earns: a visitor to your site asks for a valuation, and because it is your widget, the enquiry is yours.",
+    ],
+    whyWeBuiltIt: [
+      "An agent's own website and email signature are where they already have someone's attention, and a self-written claim to be the area expert is worth very little there. A score computed by someone else, from records the agent cannot edit, is worth considerably more.",
+      "It also solves the awkward part of proof. Nobody wants to write 'I am the top agent in Tampines' under their own name. A badge that says it for you, and that a reader can click through and check, does the same job without the cringe.",
+    ],
+    whoItHelps: [
+      { who: "Agents with their own site or a personal brand", how: "Independent proof on your own turf, and a valuation form that feeds you rather than a portal." },
+      { who: "Agents who hate self-promotion", how: "The claim is made by the data, and the reader can verify it in one click." },
+    ],
+    useCase: {
+      title: "An email signature that does some work",
+      body: "You paste the badge into your signature. Every quote, every follow-up and every cold introduction now carries a live score that updates itself as you close deals, and anyone who is curious can click it and see the record behind it rather than taking your word for it.",
+    },
+    walkthrough: [
+      { step: "Open the Grow tab", detail: "Find the Share your record card." },
+      { step: "Pick what you need", detail: "Rank card, website badge, lead widget, or the ask-for-a-review link." },
+      { step: "Copy the snippet", detail: "The embed code already has your profile in it." },
+      { step: "Paste it", detail: "Into your site, your signature or a message. The badge redraws from your record, so it never goes stale." },
+    ],
+    limits: [
+      "The badge shows what your record supports. You cannot edit the number, which is the reason it is worth showing.",
+      "The widget collects a valuation enquiry on your site. It is not a full listing portal or a CRM.",
+      "Pasting the badge does not change your rank or your position anywhere on our site.",
+    ],
+    tiers: "Free on every plan.",
+  },
+  {
+    slug: "my-home",
+    title: "My Home: save your home once, and watch what it is worth",
+    status: "live",
+    audience: "sellers",
+    shipped: "2026-07",
+    summary:
+      "Keep your valuation behind a private link, see how the estimate has moved since you saved it, and get told when it changes materially.",
+    whatItIs: [
+      "Run a valuation and you can keep it. You get a private link to your home, and every time you open it the estimate is recomputed from the latest transactions with the change since you saved it shown next to it.",
+      "It carries the comparable sales the estimate rests on, and for an HDB flat your MOP countdown.",
+      "We email you when the estimate moves enough to matter, and once a month otherwise.",
+    ],
+    whyWeBuiltIt: [
+      "Deciding to sell is not a moment, it is a slow year of wondering. Most people check a valuation once, lose the tab, and hear nothing until an agent's flyer arrives.",
+      "A saved home turns that into something you can watch, on the same transaction data the agent rankings use, without anyone calling you.",
+      "It also means the first thing you see when you are finally ready is the evidence, not an advertisement.",
+    ],
+    whoItHelps: [
+      { who: "Owners who might sell in the next year or two", how: "A number you can check whenever you wonder, and a nudge when it actually moves." },
+      { who: "HDB owners approaching MOP", how: "Your countdown next to your estimate, so the two questions are answered in one place." },
+    ],
+    useCase: {
+      title: "Thinking about selling, but not this month",
+      body: "You value your flat out of curiosity and save it. Over the next eight months you open the link now and then and see the estimate move with the market, and the comparable sales that moved it. When one of your neighbours sells well, the estimate reflects it, and you decide to start looking at agents. Nobody called you once in those eight months.",
+    },
+    walkthrough: [
+      { step: "Value your home", detail: "In the valuation tool, with the details you know." },
+      { step: "Save it", detail: "You get a private link. That link is the only way in, so keep it." },
+      { step: "Come back whenever", detail: "The estimate is recomputed on every visit, with the change since you saved it and the comparable sales behind it." },
+      { step: "Get told when it moves", detail: "An email when the estimate changes materially, and a monthly update otherwise." },
+    ],
+    limits: [
+      "An estimate from recent transactions is not a formal valuation. It cannot see your renovation, your view or your floor's quirks.",
+      "The link is private but not password protected. Anyone you send it to can see the home you saved.",
+      "It covers homes we hold transaction data for. Unusual properties will have thin comparables, and the page says so rather than guessing.",
+      "You can stop the emails at any time, and we do not pass your home to agents.",
+    ],
+    tryIt: { href: "/tools/valuation", label: "Value your home and keep it" },
+  },
+  {
+    slug: "agent-emails",
+    title: "Two emails a month, and only when there is something in them",
+    status: "live",
+    audience: "agents",
+    shipped: "2026-07",
+    summary:
+      "A weekly note with your profile views and fresh prospects in your farm areas, and a monthly note with your standing and how it moved. Nothing when there is nothing to say.",
+    whatItIs: [
+      "The weekly email carries how many sellers viewed your profile in the last seven days, and up to a handful of fresh transactions from the areas you farm.",
+      "The monthly email carries your standing band and whether you moved since last month.",
+      "If a week has no views and no prospects, you get nothing. Silence is a feature.",
+    ],
+    whyWeBuiltIt: [
+      "Agents do not live in our dashboard, and they should not have to. If something happened that is worth their attention, it should come to them.",
+      "The discipline is skipping the empty ones. A weekly email that arrives with nothing in it teaches people to ignore the one that matters, which is a slow way to destroy the only channel you have.",
+    ],
+    whoItHelps: [
+      { who: "Claimed agents", how: "The two things worth knowing without opening anything: is anyone looking, and is anything moving in my patch." },
+    ],
+    useCase: {
+      title: "A Monday morning that starts with a prospect",
+      body: "You open your email on Monday and see that eleven sellers viewed your profile last week, and that three flats in one of your towns changed hands recently. You have not opened the dashboard in a fortnight, but you know where to knock this week.",
+    },
+    walkthrough: [
+      { step: "Claim your profile", detail: "Both emails go to your claimed address." },
+      { step: "Add your farm areas", detail: "That is what fills the prospect half of the weekly email." },
+      { step: "Read it, or do not", detail: "Every email links straight back to the thing it is about. Unsubscribe is one click and we honour it." },
+    ],
+    limits: [
+      "A quiet week means no email. That is deliberate.",
+      "The weekly prospects only exist if you saved farm areas.",
+      "These are notifications, not a newsletter, and we do not sell your address to anyone.",
+    ],
+    tiers: "Free on every plan.",
+  },
+  {
     slug: "free-tools",
-    title: "Free calculators that use the current rules, not the rules from 2019",
+    title: "The arithmetic that decides whether a move is possible",
     status: "live",
     audience: "everyone",
-    shipped: "2026-07",
+    shipped: "2026-06",
     summary:
       "Stamp duty, affordability, net sale proceeds, commission, an online valuation, an MOP tracker, a CEA advertising checker and the letter of intent, free and without an account.",
     whatItIs: [
@@ -230,9 +430,9 @@ export const ROADMAP: RoadmapEntry[] = [
       "For agents there are two more: a checker that tests an advertisement against CEA's advertising requirements before it goes out, and the letter of intent generator.",
     ],
     whyWeBuiltIt: [
-      "Most Singapore property calculators online are stale. The rules move, sometimes twice a year, and a calculator quoting an old rate is not a rounding error, it is a wrong answer about the largest transaction of someone's life.",
-      "We keep them current and we show the rates we used, so you can check us rather than trust us.",
-      "They are free and they do not ask for your details. A calculator that requires your phone number is a lead form wearing a costume.",
+      "The question that actually stops people is not which agent to use, it is whether the move works at all. Sellers kept asking us the same thing in different words: after the loan, the CPF refund and the commission, what do I actually walk away with, and is it enough for the next place.",
+      "Duty rates and lending limits in Singapore move, sometimes more than once a year. We show the rates each answer used so you can check the working rather than trust the number, which matters most when the answer is close to the line.",
+      "They are free and they do not ask for your details. A calculator that requires your phone number is a lead form wearing a costume. The one thing that is saved is a valuation you choose to keep, which becomes a private link only you have.",
     ],
     whoItHelps: [
       { who: "Buyers working out what they can afford", how: "The real ceiling under the current lending limits, including the stress rate, not a rough multiple of income." },
@@ -244,15 +444,17 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You are in a four-room flat and wondering about a condo. Before speaking to anyone, you check what your flat is likely worth, what you would clear after the loan and the CPF refund, what stamp duty the next place attracts, and what you could borrow. Twenty minutes later you know whether the conversation is worth having, and no one has called you.",
     },
     walkthrough: [
-      { step: "Open the tools page", detail: "Every tool is listed with who it is for." },
-      { step: "Pick the question", detail: "Affordability, stamp duty, net proceeds, commission, valuation, MOP, advertising compliance or the letter of intent." },
-      { step: "Enter your numbers", detail: "No account, no email, nothing stored." },
-      { step: "Check the workings", detail: "Each result shows the rates and rules applied, so you can verify the answer rather than take it on faith." },
+      { step: "Take the net proceeds calculator as the example", detail: "It answers the question most sellers actually have: what is left." },
+      { step: "Tell it what you are selling for", detail: "The expected sale price, and the property type." },
+      { step: "Tell it what comes off", detail: "Outstanding loan, the CPF you used plus the accrued interest you have to refund, the agent commission you agreed, and legal fees." },
+      { step: "Read the cash in hand", detail: "Each deduction is itemised, with the CPF refund separated out, because that is the number people forget and the one that decides whether the next purchase is possible." },
+      { step: "Check the working", detail: "Every rate and rule used is shown. Nothing is stored, and no calculator asks who you are." },
     ],
     limits: [
       "They are estimates for planning. Confirm duty with IRAS and your loan with your bank before you commit.",
       "The valuation is an estimate from recent transactions in your area, not a formal valuation, and it cannot see your renovation or your view.",
       "Rules change. We keep these current and stamp what we used, but check anything close to the line.",
+      "The calculators store nothing. A valuation you choose to save is the exception, and it lives behind a private link.",
     ],
     tryIt: { href: "/tools", label: "Open the tools", cta: "Free, no account, nothing stored." },
   },
@@ -263,7 +465,7 @@ export const ROADMAP: RoadmapEntry[] = [
     audience: "agents",
     shipped: "2026-07",
     summary:
-      "Your position against other agents active in your area, month-over-month movement, and four honest counts of what sellers did with your profile.",
+      "Your position against other agents active in your area, month-over-month movement, and four counts of what sellers did with your profile.",
     whatItIs: [
       "Two cards at the top of your dashboard. Your standing tells you where you rank against other agents active in your area, computed from official transaction records, led by a band such as top ten percent rather than a bare number, with movement since last month.",
       "Your demand shows what sellers on the site actually did: profile views in the last week, shortlist appearances and invitations to quote in the last month, and sellers won.",
@@ -299,15 +501,15 @@ export const ROADMAP: RoadmapEntry[] = [
   },
   {
     slug: "deal-radar",
-    title: "Deal Radar: the households in your farm areas approaching their MOP",
+    title: "Deal Radar: the blocks in your farm areas coming up on MOP",
     status: "live",
     audience: "agents",
     shipped: "2026-07",
     summary:
-      "Pick up to five towns or districts you work, and see which HDB households are approaching their five-year MOP and what has sold there recently, from official records.",
+      "Pick up to five towns or districts you work, and see which blocks have flats coming up on their five-year MOP, and what has sold there recently, from official records.",
     whatItIs: [
       "A prospecting list built from the same government transaction records the rest of the site runs on. You name up to five HDB towns or private districts you farm, and Deal Radar returns two lists.",
-      "First, HDB flats that changed hands about five years ago, whose owners are now approaching the end of their Minimum Occupation Period. Second, every sale recorded in those areas in the last 180 days.",
+      "First, blocks where flats changed hands about five years ago, so those owners are approaching the end of their Minimum Occupation Period. Second, every sale recorded in those areas in the last 180 days.",
       "Each row is one real recorded transaction: block and street, flat type, storey range, size, month and price. Any row can be turned into a co-branded seller report you can send.",
     ],
     whyWeBuiltIt: [
@@ -333,7 +535,7 @@ export const ROADMAP: RoadmapEntry[] = [
     limits: [
       "These are households approaching their MOP, not owners past it, and not a complete list. We can only see flats that appear as a resale transaction about five years ago, so a household that bought their flat new from HDB never shows up.",
       "There are no names, no unit numbers and no contact details. A row is a block, a street and a recorded transaction. Everything on it is already public.",
-      "It does not predict who will sell. There is no score and no likelihood model, only two honest signals.",
+      "It does not predict who will sell. There is no score and no likelihood model, only two signals.",
       "It covers HDB resale and private transactions. No landed-only view, no rentals, no listings.",
       "HDB records refresh weekly. Private district records depend on a manual load, so their recency is not guaranteed the same way.",
       "Five areas is the cap on every plan, including the paid ones.",
@@ -348,7 +550,7 @@ export const ROADMAP: RoadmapEntry[] = [
     audience: "agents",
     shipped: "2026-07",
     summary:
-      "For any area you already transact in, the pricing evidence from official past sales and an honest read on the competition, including where you rank.",
+      "For any area you already transact in, the pricing evidence from official past sales and what the record shows about the competition, including where you rank.",
     whatItIs: [
       "Pick one of the areas from your own transaction record and Area Intelligence shows two things side by side.",
       "Pricing evidence: for an HDB town and flat type, an estimate range from the last twelve months of resales with the number of comparables behind it. For a private district, the median, the middle half of the market and the median price per square foot from the last six months.",
@@ -379,7 +581,7 @@ export const ROADMAP: RoadmapEntry[] = [
       "It is not a valuation. It never asks for an address, a unit, a floor or a renovation standard, so it cannot price a specific home.",
       "You can only look at areas already in your own transaction record. There is no search box for the whole island.",
       "A town gives you HDB pricing. A district gives you private pricing. The two are never mixed for one area.",
-      "Deals closed counts sales and rentals together, with the sales figure shown separately underneath, because pretending a rental is a sale is how agent statistics get misleading.",
+      "Deals closed here is a combined count, with the sales figure shown beneath it. On the public profile the two are never added together. Inside this panel you are sizing up total activity in an area, so the combined number is the useful one as long as the split is visible, which it is.",
       "There is no export, no PDF and no client-facing version. The Pitch Kit is the artifact you share.",
     ],
     tiers: "Free on every plan.",
@@ -399,7 +601,7 @@ export const ROADMAP: RoadmapEntry[] = [
     ],
     whyWeBuiltIt: [
       "Every agent arrives at a listing appointment claiming to be the area expert, and the seller has no way to tell who is right. A link to an independently compiled record settles it in a way a personal brochure cannot.",
-      "Showing the unflattering flags too is the whole point. A page that only ever flatters is marketing, and sellers discount marketing. Honest data cuts both ways, which is exactly why the good parts are believable.",
+      "The alternative an agent reaches for is a personal brochure of past listings, which the seller has already seen three of that week and discounts accordingly. A page the agent cannot edit does the job the brochure was failing at.",
     ],
     whoItHelps: [
       { who: "Agents with a real record in an area", how: "Independent proof, sent before you arrive, instead of claims made once you are in the room." },
@@ -422,7 +624,6 @@ export const ROADMAP: RoadmapEntry[] = [
       "You cannot edit it, brand it or add your own marketing plan. Every figure is computed, which is what makes it worth sending.",
       "It is a web page, not a PDF or a deck.",
       "It does not tell you when the seller opened it.",
-      "It shows your context flags whether they flatter you or not.",
     ],
     tiers: "Free on every plan.",
   },
@@ -437,7 +638,8 @@ export const ROADMAP: RoadmapEntry[] = [
     whatItIs: [
       "Sellers who compare agents here and shortlist you arrive in a Leads tab, ordered so the enquiries that could cost you a listing sit at the top, each with a chip showing how long it has been waiting.",
       "On an enquiry you have been invited to quote, one button drafts a first reply. The draft uses only things on record: what the seller told us about their property, area, timeline and price expectation, your own name, agency and AgentScore, and recent transactions in their town or district.",
-      "Nothing is sent for you. The text appears in an editable box with a copy button, you send it through your own WhatsApp or email, and then mark it replied.",
+      "Nothing is sent for you. Before a seller picks you, you do not have their number: the draft goes into the quote you send them through us. Once you win the lead, their contact details unlock and the same button drafts the follow-up you send directly.",
+      "The inbox has been there since June 2026. Drafting from the record arrived in July.",
     ],
     whyWeBuiltIt: [
       "A seller who shortlists three agents is comparing three replies. The first substantive one usually wins the conversation, and agents were losing listings to the delay between the enquiry landing and finding the words.",
@@ -450,14 +652,14 @@ export const ROADMAP: RoadmapEntry[] = [
     ],
     useCase: {
       title: "Three enquiries you have not answered since Tuesday",
-      body: "You open the Leads tab and the banner tells you two need a reply, one of them overdue. You open the oldest, press to draft a reply, and get a message that names the seller's flat type, their area and two recent sales nearby, in your voice and under your name. You edit a line, copy it, send it on WhatsApp and mark it replied.",
+      body: "You open the Leads tab and the banner tells you two need a reply, one of them overdue. You open the oldest and press to draft a reply. Back comes a message that names the seller's flat type, their area and two recent sales nearby, under your name. You edit a line, put it into your quote and send it, then mark it replied.",
     },
     walkthrough: [
       { step: "Open the Leads tab", detail: "Enquiries are ordered so the ones needing you come first, with New, Aging or Overdue chips." },
       { step: "Expand an enquiry", detail: "Press Submit quote on an enquiry that is awaiting your quote." },
       { step: "Draft a reply", detail: "Press Draft a reply with AI. The result is labelled as grounded in the record." },
       { step: "Edit and copy", detail: "It is a plain editable box. Change what you want, press Copy, or redraft." },
-      { step: "Send it yourself", detail: "Through your own WhatsApp or email, then press Mark as replied to stamp the time." },
+      { step: "Send it with your quote", detail: "Paste it into the quote and submit. Then press Mark as replied to stamp the time." },
       { step: "Quote", detail: "Fill in commission, timeline, estimated range and your marketing approach and submit. If the seller picks you, their contact details unlock." },
     ],
     limits: [
@@ -466,6 +668,7 @@ export const ROADMAP: RoadmapEntry[] = [
       "Free plans get two drafts a month. Verified and above are unlimited. The inbox itself, the ordering and the quoting are free.",
       "The comparable sales are area-level, not matched to the seller's exact unit or size, and the draft says so rather than implying a valuation.",
       "It does not learn or imitate your writing style. It sticks to facts on record, which is why it can be trusted to name a price.",
+      "There is no WhatsApp alert yet. The code is built and switched off, waiting on business messaging approval from Meta, and we will not guess at a date. Today a new enquiry reaches you by email.",
     ],
     tiers: "Inbox free on every plan. AI drafting: 2 a month on free, unlimited from Verified.",
   },
@@ -476,7 +679,7 @@ export const ROADMAP: RoadmapEntry[] = [
     audience: "agents",
     shipped: "2026-07",
     summary:
-      "A public booking link you can share anywhere, turning viewing requests into a list you confirm, complete or cancel, with optional calendar sync.",
+      "A public booking link you can share anywhere, turning viewing requests into a list you confirm, complete or cancel. Calendar sync is built but no agent has switched it on yet.",
     whatItIs: [
       "Every claimed agent gets a booking page at a link they can share in listings, bios and messages. A buyer opens it, picks a property, a date and a time, leaves a name and one contact, and sends the request without creating an account.",
       "The request is emailed to you and appears in your dashboard, where you confirm it, mark it done or cancel it.",
@@ -488,11 +691,11 @@ export const ROADMAP: RoadmapEntry[] = [
     ],
     whoItHelps: [
       { who: "Agents juggling several viewings a week", how: "One link to share and one list to work from, instead of scrolling chats to remember who asked for Saturday." },
-      { who: "Buyers and tenants", how: "Pick a time in a few taps, no account, no back-and-forth." },
+      { who: "Buyers and tenants", how: "Ask for a time in a few taps, with no account and no phone call, and it reaches the agent in one place." },
     ],
     useCase: {
       title: "A listing that draws ten enquiries in a day",
-      body: "You put your booking link in the listing and in your bio. Ten people ask to view. Instead of ten separate threads, ten requests land in your Planner with the property, the time and the contact. You confirm the ones that work, cancel the ones that clash, and when one of the viewings turns into a deal you issue the letter of intent straight from that row.",
+      body: "You put your booking link in the listing and in your bio. Ten people ask to view. Instead of ten separate threads, ten requests land in your Planner with the property, the time and the contact. You confirm the ones that work and cancel the ones that clash, then message those ten people yourself, because we do not write to them for you. When one of the viewings turns into a deal you issue the letter of intent straight from that row.",
     },
     walkthrough: [
       { step: "Copy your link", detail: "In the Leads tab, the Planner panel shows your booking link with a copy button." },
@@ -549,6 +752,7 @@ export const ROADMAP: RoadmapEntry[] = [
       "There is no edit flow yet. To change your text you delete the page and write it again, which also releases the development.",
       "A newly published spotlight can take until the next site build to appear on a development page that is already cached.",
       "There is no performance data on the page yet: no views, no clicks.",
+      "A paid plan buys you more developments to write on. It never buys a better position, a higher score or more leads, and an Elite agent's commentary is presented exactly the same way a free agent's is.",
       "It never affects your ranking, your AgentScore or your leads. That is enforced in the code, not just promised here.",
     ],
     tiers: "1 page on free, 3 on Verified, 10 on Professional, 25 on Elite.",
@@ -563,8 +767,8 @@ export const ROADMAP: RoadmapEntry[] = [
     summary:
       "The CEA prescribed agreement forms, filled from your profile, with the practice rules enforced by the tool rather than remembered by you.",
     whatItIs: [
-      "The eight prescribed estate agency agreement forms, for sale, purchase and leasing work, exclusive and non-exclusive, drawn up inside the dashboard the same way the letter of intent is.",
-      "The difference from a downloaded PDF is that the rules travel with the form. The prescribed clauses are locked, only the blanks and choices are editable, and the tool will not let you finalise an agreement with an essential field still empty.",
+      "The eight prescribed estate agency agreement forms, for sale, purchase and leasing work, exclusive and non-exclusive, will be drawn up inside the dashboard the same way the letter of intent is.",
+      "The difference from a downloaded PDF will be that the rules travel with the form: the prescribed clauses locked, only the blanks and choices editable, and no way to finalise an agreement with an essential field still empty.",
       "You will not need to know form numbers. You answer who you are acting for and whether the appointment is exclusive, and we bring up the right form.",
     ],
     whyWeBuiltIt: [
@@ -601,13 +805,13 @@ export const ROADMAP: RoadmapEntry[] = [
     summary:
       "Send a letter of intent or tenancy agreement for signature, watch it complete, and keep the executed copy with a full record of who signed and when.",
     whatItIs: [
-      "Send for signature from the document you just drew up. Each party gets their own link, reviews the document, consents and signs, and you see the status move without chasing anyone.",
-      "When everyone has signed, the document seals: the draft watermark drops, a completion certificate listing every step is added to the PDF, and the executed file can no longer be edited.",
-      "The audit trail is the point. Who opened it, when they consented, when they signed, and a fingerprint of the exact document they agreed to.",
+      "You will send for signature from the document you just drew up. Each party will get their own link, review the document, consent and sign, and you will see the status move without chasing anyone.",
+      "When everyone has signed, the document will seal: the draft watermark drops, a completion certificate listing every step is added to the PDF, and the executed file can no longer be edited.",
+      "The audit trail is the point of building it: who opened it, when they consented, when they signed, and a fingerprint of the exact document they agreed to.",
     ],
     whyWeBuiltIt: [
       "Of the three real executed letters of intent we studied, two had been signed through a paid external e-signature service. Agents are already paying for this and already doing it. The work is simply happening outside the tool that holds the document.",
-      "It is also the piece no independent agent tool in Singapore offers today. The paperwork itself is becoming a commodity; the record of what was agreed is not.",
+      "We looked at the independent agent tools we could find in Singapore and none of them signs the document it generates. The paperwork itself is becoming a commodity; the record of what was agreed is not.",
       "Once signing happens here, the document store stops being a folder and becomes the record of your deals.",
     ],
     whoItHelps: [
@@ -630,40 +834,6 @@ export const ROADMAP: RoadmapEntry[] = [
       "We will describe it accurately: electronically signed tenancy documents are enforceable in Singapore under ordinary contract law, and Singapore courts have upheld them since 2005, but they do not carry the statutory presumptions the Electronic Transactions Act reserves for other documents. Anyone claiming otherwise is overselling.",
       "It will not cover documents that need a deed or a conveyance, such as a sale option or a transfer. Those belong in the government conveyancing system, not here.",
       "Signing with Singpass is the upgrade we want after this, not part of the first version.",
-    ],
-  },
-  {
-    slug: "whatsapp-alerts",
-    title: "Seller enquiries on WhatsApp",
-    status: "building",
-    audience: "agents",
-    summary:
-      "An opt-in WhatsApp alert the moment a seller shortlists you or invites you to quote, so a lead does not sit in an inbox you check twice a day.",
-    whatItIs: [
-      "A notification, not a conversation. When a seller invites you to quote, we message the number you opted in with, and the message takes you to the enquiry in your dashboard where you reply properly.",
-      "It is opt-in per agent, and you can turn it off in your dashboard at any time.",
-    ],
-    whyWeBuiltIt: [
-      "Seller enquiries are time-sensitive: the seller is comparing several agents at once, and the first substantive reply usually wins the conversation. Email alone loses that race.",
-      "Singapore agents live in WhatsApp. Asking them to live in another inbox to catch a lead is asking for the lead to go cold.",
-    ],
-    whoItHelps: [
-      { who: "Agents receiving seller enquiries", how: "You hear about it where you already are, within minutes rather than at the end of the day." },
-      { who: "Sellers waiting for a reply", how: "Faster answers from the agents they picked, which is the whole point of the shortlist." },
-    ],
-    useCase: {
-      title: "A seller invites three agents on a Sunday evening",
-      body: "A homeowner in your area finishes their shortlist at nine on a Sunday night and invites three agents to quote. You get a WhatsApp alert, open the enquiry, and reply that evening with your record for their block. The other two reply on Monday afternoon.",
-    },
-    walkthrough: [
-      { step: "Opt in", detail: "In your dashboard, add the number you want alerts on and switch it on. Nothing is sent to a number that has not opted in." },
-      { step: "A seller invites you", detail: "You get one message telling you there is an enquiry, with a link." },
-      { step: "You reply in the dashboard", detail: "The conversation with the seller stays on the platform, where the record and the quote live." },
-    ],
-    limits: [
-      "The code is built and switched off. It is waiting on business messaging approval from Meta, which is outside our control, and we will not guess at a date.",
-      "It is a notification channel only. We are not building a WhatsApp inbox, and we do not read your WhatsApp messages.",
-      "Alerts only go to a number that opted in, and only for enquiries that concern you.",
     ],
   },
 ];

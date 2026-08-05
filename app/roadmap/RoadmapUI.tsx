@@ -5,7 +5,7 @@ import type { RoadmapEntry, RoadmapStatus } from "../lib/roadmap";
 
 export const STATUS_META: Record<RoadmapStatus, { label: string; bg: string; fg: string }> = {
   live: { label: "Live", bg: "var(--ok-wash)", fg: "var(--ok)" },
-  building: { label: "Building now", bg: "var(--blue-wash)", fg: "var(--blue-deep)" },
+  building: { label: "Next up", bg: "var(--blue-wash)", fg: "var(--blue-deep)" },
   exploring: { label: "Exploring", bg: "var(--cloud)", fg: "var(--slate)" },
 };
 

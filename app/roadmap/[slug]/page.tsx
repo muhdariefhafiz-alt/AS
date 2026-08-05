@@ -77,13 +77,13 @@ export default async function RoadmapPost({ params }: { params: Promise<{ slug: 
 
         <ScrollReveal />
 
-        <Section title="What it is">
+        <Section title={isLive ? "What it is" : "What it will be"}>
           {entry.whatItIs.map((p) => (
             <p key={p} style={PARA}>{p}</p>
           ))}
         </Section>
 
-        <Section title="Why we built it">
+        <Section title={isLive ? "Why we built it" : "Why we are building it"}>
           {entry.whyWeBuiltIt.map((p) => (
             <p key={p} style={PARA}>{p}</p>
           ))}

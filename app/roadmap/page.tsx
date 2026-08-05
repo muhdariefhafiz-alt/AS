@@ -37,14 +37,14 @@ export default function RoadmapPage() {
           What we are <span className="italic-serif">building.</span>
         </h1>
         <p className="muted fc-hero-in fc-hero-in--3" style={{ marginTop: 12, fontSize: 17, maxWidth: "64ch", lineHeight: 1.6 }}>
-          We build in the open. Below is what is live for agents, sellers and landlords today, what we are working on
-          right now, and what we are still weighing up. Every entry links to a short write-up: what it is, why we built
-          it, who it helps and how to use it.
+          We build in the open. Below is everything live for agents, sellers and landlords today, and what is coming
+          next. Every entry links to a short write-up: what it is, why we built it, who it helps, and how to use it,
+          ending with what that version still does not do.
         </p>
 
         <div className="fc-row fc-hero-in fc-hero-in--4" style={{ gap: 28, marginTop: 22, flexWrap: "wrap" }}>
           <Stat n={live.length} label="Live" />
-          <Stat n={building.length} label="Building now" />
+          <Stat n={building.length} label="Next up" />
           {exploring.length > 0 && <Stat n={exploring.length} label="Exploring" />}
         </div>
 
@@ -52,14 +52,14 @@ export default function RoadmapPage() {
 
         <Group
           title="Live"
-          blurb="Built, tested and in the product today. Dates are when each one went live."
+          blurb="In the product today. The date is when it first shipped, and several have been rebuilt since. Each entry ends with what its version does not do yet."
           entries={live}
         />
 
         {building.length > 0 && (
           <Group
-            title="Building now"
-            blurb="In active development. These are intentions, not promises: we ship when they are right, and we say so here when they land."
+            title="Next up"
+            blurb="Being written, or written and waiting. Each one says what has to happen before it goes live, and some of that is not ours to control. These are intentions, not dates."
             entries={building}
           />
         )}
@@ -78,8 +78,8 @@ export default function RoadmapPage() {
               Something missing? <span className="italic-serif">Tell us.</span>
             </h2>
             <p className="muted" style={{ marginTop: 8, fontSize: 15.5, maxWidth: "56ch", lineHeight: 1.6 }}>
-              Most of what is on this page came from an agent or a seller telling us what was slow, unclear or
-              missing. If you are working around something today, we would rather hear it than guess.
+              We would rather hear what is slow, unclear or missing than guess at it. If you are working around
+              something today, tell us, and it may end up on this page.
             </p>
             <div className="fc-row" style={{ gap: 10, marginTop: 16, flexWrap: "wrap" }}>
               <Link href="/contact" className="fc-btn fc-btn--primary fc-btn--hairline" style={{ textDecoration: "none" }}>
