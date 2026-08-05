@@ -54,7 +54,7 @@ export async function SeoTab() {
     supabase.from("fc_gsc_daily_stats").select("dimension_value, clicks, impressions, ctr, position").eq("dimension", "page").order("impressions", { ascending: false }).limit(10),
   ]);
   const [coverageRes, universeCount] = await Promise.all([
-    supabase.from("sg_index_coverage").select("date, agent_pages_with_impressions, agent_clicks, agent_impressions, sample_size, sample_indexed, sitemaps_submitted, notes").order("date", { ascending: true }).limit(60),
+    supabase.from("sg_index_coverage").select("date, agent_pages_with_impressions, agent_clicks, agent_impressions, sample_size, sample_indexed, sitemaps_submitted, families, notes").order("date", { ascending: true }).limit(60),
     countIndexableAgents(),
   ]);
 
@@ -106,10 +106,12 @@ export async function SeoTab() {
   const noData = pv30 === 0 && pvPrior === 0;
 
   // ---- Indexation coverage (daily scoreboard vs the 29.7k universe) ----
+  type FamilyCov = { url_count: number | null; pages_with_impressions: number | null; clicks: number | null; impressions: number | null };
   type CoverageRow = {
     date: string; agent_pages_with_impressions: number | null; agent_clicks: number | null;
     agent_impressions: number | null; sample_size: number | null; sample_indexed: number | null;
-    sitemaps_submitted: number | null; notes: Record<string, unknown> | null;
+    sitemaps_submitted: number | null; families: { hire?: FamilyCov; directory?: FamilyCov } | null;
+    notes: Record<string, unknown> | null;
   };
   const coverage = (coverageRes.data ?? []) as CoverageRow[];
   const latestCov = coverage[coverage.length - 1];
@@ -118,6 +120,35 @@ export async function SeoTab() {
   const covRate = covSampleSize > 0 ? Math.round((covSampleIndexed / covSampleSize) * 100) : null;
   const latestSample = (latestCov?.notes as { sample?: { dense?: { size: number; indexed: number }; tail?: { size: number; indexed: number } } } | null)?.sample;
   const submitError = (latestCov?.notes as { submit_error?: string } | null)?.submit_error;
+
+  // Per-family segments from the latest cron row. Agent pages reuse the
+  // existing dedicated columns; hire/directory come from the families jsonb.
+  const fam = (key: "hire" | "directory"): FamilyCov | null => latestCov?.families?.[key] ?? null;
+  const familyRows = [
+    {
+      name: "Agent pages",
+      urls: universeCount as number | null,
+      pages: latestCov?.agent_pages_with_impressions ?? null,
+      impressions: latestCov?.agent_impressions ?? null,
+      clicks: latestCov?.agent_clicks ?? null,
+    },
+    {
+      name: "Hire pages",
+      urls: fam("hire")?.url_count ?? null,
+      pages: fam("hire")?.pages_with_impressions ?? null,
+      impressions: fam("hire")?.impressions ?? null,
+      clicks: fam("hire")?.clicks ?? null,
+    },
+    {
+      name: "Directory pages",
+      urls: fam("directory")?.url_count ?? null,
+      pages: fam("directory")?.pages_with_impressions ?? null,
+      impressions: fam("directory")?.impressions ?? null,
+      clicks: fam("directory")?.clicks ?? null,
+    },
+  ];
+  const hasFamilies = !!latestCov?.families;
+  const num = (v: number | null) => (v == null ? "n/a" : v.toLocaleString());
 
   return (
     <div className="space-y-8">
@@ -200,6 +231,46 @@ export async function SeoTab() {
                 service account is Restricted; upgrade it to Full in Search Console users to enable API submission.
               </div>
             )}
+
+            <div className="mt-6">
+              <SectionHeading
+                title="Per-family breakdown"
+                hint={`Latest cron row (${latestCov?.date ?? "n/a"}); GSC figures cover the trailing 28d window, lagging ~2 days. URL counts come from each family's own build source.`}
+              />
+              {hasFamilies ? (
+                <div className="mt-3 overflow-x-auto rounded-xl border border-gray-200 bg-white p-4">
+                  <table className="w-full text-[13px]">
+                    <thead>
+                      <tr className="border-b text-left text-[11px] font-medium uppercase tracking-wider text-gray-400">
+                        <th className="pb-2 pr-4">Family</th>
+                        <th className="pb-2 pr-4 text-right">URLs</th>
+                        <th className="pb-2 pr-4 text-right">Pages w/ impressions 28d</th>
+                        <th className="pb-2 pr-4 text-right">Impressions 28d</th>
+                        <th className="pb-2 text-right">Clicks 28d</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {familyRows.map((r) => (
+                        <tr key={r.name}>
+                          <td className="py-2 pr-4 font-medium text-gray-900">{r.name}</td>
+                          <td className="py-2 pr-4 text-right tabular-nums">{num(r.urls)}</td>
+                          <td className="py-2 pr-4 text-right tabular-nums">
+                            {num(r.pages)}
+                            {r.urls != null && r.urls > 0 && r.pages != null && (
+                              <span className="ml-1 text-[11px] text-gray-400">{Math.round((r.pages / r.urls) * 100)}%</span>
+                            )}
+                          </td>
+                          <td className="py-2 pr-4 text-right tabular-nums">{num(r.impressions)}</td>
+                          <td className="py-2 text-right tabular-nums">{num(r.clicks)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <EmptyState title="No per-family rows yet" hint="Fills on the next index-coverage cron run (the families column is new)." />
+              )}
+            </div>
           </>
         ) : (
           <EmptyState title="No coverage rows yet" hint="Runs daily at 05:45 UTC (13:45 SGT), or trigger index-coverage from the Ops tab." />

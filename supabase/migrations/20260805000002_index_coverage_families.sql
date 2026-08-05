@@ -1,0 +1,13 @@
+-- Per-family indexation breakdown, written daily by /api/cron/index-coverage
+-- alongside the agent-page columns. Shape (all figures for the same trailing
+-- 28-day GSC window as agent_pages_with_impressions):
+--   families = {
+--     "hire":      { "url_count": int|null, "pages_with_impressions": int|null,
+--                    "clicks": int|null, "impressions": int|null },
+--     "directory": { same shape }
+--   }
+-- url_count comes from each family's own build source (the density-gated
+-- sg_hire_page_combos snapshot; the crawl-directory pagination math), never
+-- from GSC. Additive: existing columns and readers are unchanged.
+-- Applied to prod 2026-08-05 via apply_migration (index_coverage_families_column).
+alter table public.sg_index_coverage add column if not exists families jsonb;

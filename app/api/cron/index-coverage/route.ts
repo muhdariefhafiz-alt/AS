@@ -10,9 +10,11 @@ import {
 } from "../../../lib/gsc";
 import {
   AGENT_INDEX_MIN_TXNS,
+  agentDirectoryPageCount,
   agentSitemapShardCount,
   countIndexableAgents,
 } from "../../../lib/indexable";
+import { getQualifyingHirePages } from "../../../lib/hireData";
 
 // Daily indexation scoreboard for the agent-page universe (~29.7k scored
 // agents). Three jobs in one run:
@@ -24,6 +26,9 @@ import {
 //      "indexed and serving" measure.
 //   3. URL-inspect a rotating stratified sample (dense tier + middle tail) for
 //      a precise indexation-rate estimate that accumulates day over day.
+//   4. Pull the same trailing-28d GSC page pull per page FAMILY (hire pages,
+//      crawl-directory pages) plus each family's URL count, so every family is
+//      measured as its own segment (families jsonb column).
 // Writes one row per day into sg_index_coverage; the admin SEO tab renders
 // the trend against the 29.7k target.
 
@@ -117,11 +122,24 @@ export async function GET(req: Request) {
     notes.submit_error = err instanceof Error ? err.message.slice(0, 300) : String(err);
   }
 
-  // ---- 2 + 3 need only the read scope ----
+  // ---- 2 + 3 + 4 need only the read scope ----
   let pagesWithImpressions: number | null = null;
   let agentClicks: number | null = null;
   let agentImpressions: number | null = null;
   let sample: { dense: TierSample; tail: TierSample } | null = null;
+
+  // Per-family segments (same trailing-28d GSC window as the agent pull).
+  // "contains" filters are prefix-disjoint from /property-agents/agent/, so the
+  // segments never double-count each other.
+  const FAMILY_FILTERS: Record<"hire" | "directory", string> = {
+    hire: "/property-agents/hire/",
+    directory: "/property-agents/directory",
+  };
+  type FamilyGsc = { pages_with_impressions: number | null; clicks: number | null; impressions: number | null };
+  const familyGsc: Record<keyof typeof FAMILY_FILTERS, FamilyGsc> = {
+    hire: { pages_with_impressions: null, clicks: null, impressions: null },
+    directory: { pages_with_impressions: null, clicks: null, impressions: null },
+  };
   try {
     const roToken = await gscAccessToken();
 
@@ -140,12 +158,42 @@ export async function GET(req: Request) {
     agentClicks = Math.round(pageRows.reduce((s, r) => s + (r.clicks ?? 0), 0));
     agentImpressions = Math.round(pageRows.reduce((s, r) => s + (r.impressions ?? 0), 0));
 
+    for (const fam of Object.keys(FAMILY_FILTERS) as Array<keyof typeof FAMILY_FILTERS>) {
+      const rows = await querySearchAnalytics(roToken, {
+        startDate: ymd(start),
+        endDate: ymd(end),
+        dimensions: ["page"],
+        rowLimit: 5000,
+        dimensionFilterGroups: [
+          { filters: [{ dimension: "page", operator: "contains", expression: FAMILY_FILTERS[fam] }] },
+        ],
+      });
+      familyGsc[fam] = {
+        pages_with_impressions: rows.length,
+        clicks: Math.round(rows.reduce((s, r) => s + (r.clicks ?? 0), 0)),
+        impressions: Math.round(rows.reduce((s, r) => s + (r.impressions ?? 0), 0)),
+      };
+    }
+
     const dense = await sampleTier(roToken, "dense", dayOfYear);
     const tail = await sampleTier(roToken, "tail", dayOfYear);
     sample = { dense, tail };
     notes.sample = sample;
   } catch (err) {
     notes.read_error = err instanceof Error ? err.message.slice(0, 300) : String(err);
+  }
+
+  // Family URL universes, from the same sources that build the pages: the
+  // density-gated hire combo snapshot and the crawl-directory pagination math
+  // (numbered pages + the /property-agents/directory hub itself). Never
+  // guessed; recorded even when the GSC read above fails.
+  let hireUrlCount: number | null = null;
+  let directoryUrlCount: number | null = null;
+  try {
+    hireUrlCount = (await getQualifyingHirePages()).length;
+    directoryUrlCount = agentDirectoryPageCount(await countIndexableAgents()) + 1;
+  } catch (err) {
+    notes.family_count_error = err instanceof Error ? err.message.slice(0, 300) : String(err);
   }
 
   const row = {
@@ -156,6 +204,10 @@ export async function GET(req: Request) {
     sample_size: sample ? sample.dense.size + sample.tail.size : null,
     sample_indexed: sample ? sample.dense.indexed + sample.tail.indexed : null,
     sitemaps_submitted: sitemapsSubmitted,
+    families: {
+      hire: { url_count: hireUrlCount, ...familyGsc.hire },
+      directory: { url_count: directoryUrlCount, ...familyGsc.directory },
+    },
     notes,
     fetched_at: now.toISOString(),
   };
