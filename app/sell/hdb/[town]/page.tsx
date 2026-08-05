@@ -253,7 +253,7 @@ export default async function SellHdbTownPage({ params }: Props) {
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-gray-400">
               Sale counts are HDB transactions where the agent represented the
-              seller, closed in {titleTown} in the last 36 months, matched to the
+              seller, closed in {titleTown}{" "}in the last 36 months, matched to the
               agent&apos;s CEA registration number. Source: CEA transaction records.
             </p>
             {hireQualifies && (
@@ -262,7 +262,7 @@ export default async function SellHdbTownPage({ params }: Props) {
                   href={`/property-agents/hire/sell-hdb/${slug}`}
                   className="font-medium text-[var(--blue)] hover:underline"
                 >
-                  See the full ranking of agents to sell an HDB flat in {titleTown} &rsaquo;
+                  See the full ranking of agents to sell an HDB flat in {titleTown}{" "}&rsaquo;
                 </Link>
               </p>
             )}
