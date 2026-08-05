@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { getAgentSession } from "../../../lib/agent-auth";
 import { DOCUMENT_QUOTA, docTypeByKey, availableDocTypes } from "../../../lib/documents";
-import { buildPrefill } from "../../../lib/documents/prefill";
+import { buildPrefill, pinnedLetterhead, LETTERHEAD_KEYS } from "../../../lib/documents/prefill";
 import { LOI_TO_TENANCY } from "../../../lib/documents/loi";
 import { logPaperwork, logPaperworkChained, logPaperworkSetup } from "../../../lib/documents/activation";
 import type { DocFields } from "../../../lib/documents/schema";
@@ -48,13 +48,14 @@ export async function GET(req: Request) {
     sb.from("sg_agents").select("name, cea_registration").eq("id", session.agentId).single(),
   ]);
 
-  // Opening the tool with a renderable letterhead is the Setup moment; the view
-  // event carries the entry point so we can see which surface actually works.
-  if (!m.isSandbox && !session.impersonatedBy) {
+  // Opening the TOOL is the Setup moment and the view. Home's first-run card
+  // reads this same endpoint to decide whether to render, and a list refresh
+  // after a save or delete is not a new session, so both are excluded: an
+  // inflated view count makes per-agent frequency (the habit signal) useless.
+  const counts = source === "tab" && new URL(req.url).searchParams.get("first") === "1";
+  if (!m.isSandbox && !session.impersonatedBy && counts) {
     await Promise.all([
-      source === "home"
-        ? Promise.resolve()
-        : logPaperwork(sb, session.agentId, "paperwork_view", { documents: documents?.length ?? 0, source }),
+      logPaperwork(sb, session.agentId, "paperwork_view", { documents: documents?.length ?? 0, source }),
       logPaperworkSetup(sb, session.agentId, {
         hasName: Boolean((agent?.name ?? "").trim()),
         hasCea: Boolean((agent?.cea_registration ?? "").trim()),
@@ -86,7 +87,12 @@ export async function POST(req: Request) {
     docType?: string;
     fromDocumentId?: string;
     seed?: Record<string, string>;
+    // Which surface started this document. Phase 2a exists to find out which
+    // entry point starts the habit, so the answer has to be in the event.
+    source?: string;
   };
+  const ENTRY = ["picker", "empty_state", "first_run_card", "viewing_row", "deep_link", "chain"];
+  const entry = ENTRY.includes(String(body.source)) ? String(body.source) : "unknown";
   const dt = body.docType ? docTypeByKey(body.docType) : undefined;
   if (!dt || !dt.available) {
     return NextResponse.json({ error: "Unknown document type." }, { status: 400 });
@@ -113,9 +119,10 @@ export async function POST(req: Request) {
   const fields = buildPrefill(agent, dt.key);
 
   // Context from the surface that started the document (e.g. the property on a
-  // viewing the agent just held). Whitelisted against this type's schema.
+  // viewing the agent just held). Whitelisted against this type's schema, minus
+  // the letterhead, which is pinned below.
   if (body.seed && typeof body.seed === "object") {
-    const allowedSeed = new Set(dt.fieldKeys);
+    const allowedSeed = new Set(dt.fieldKeys.filter((k) => !(LETTERHEAD_KEYS as readonly string[]).includes(k)));
     for (const [k, v] of Object.entries(body.seed)) {
       if (!allowedSeed.has(k)) continue;
       const clean = String(v ?? "").slice(0, 4000).trim();
@@ -153,6 +160,10 @@ export async function POST(req: Request) {
     linkedId = src.id;
   }
 
+  // Pin the letterhead LAST so neither a seed nor a chained document can put
+  // another salesperson's name and CEA registration on this one.
+  Object.assign(fields, pinnedLetterhead(agent));
+
   const title = dt.title(fields);
 
   const { data: doc, error } = await sb
@@ -184,6 +195,7 @@ export async function POST(req: Request) {
       doc_type: dt.key,
       template_key: dt.templateKey,
       chained: Boolean(chainedFrom),
+      entry: chainedFrom ? "chain" : entry,
     });
     if (chainedFrom) {
       await logPaperworkChained(sb, {

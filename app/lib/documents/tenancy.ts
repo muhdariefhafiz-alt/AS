@@ -5,6 +5,7 @@ import {
   fmtDate,
   leaseEndDate,
   money,
+  normInt,
   normTermMonths,
   truthy,
   type DocFields,
@@ -61,9 +62,12 @@ export const TENANCY_SECTIONS: Section[] = [
   {
     title: "Standard clauses",
     fields: [
+      { key: "stamp_duty_by", label: "Stamp duty borne by", type: "select", options: ["Tenant", "Landlord"], default: "Tenant" },
+      { key: "utilities_by", label: "Utilities borne by", type: "select", options: ["Tenant", "Landlord"], default: "Tenant" },
       { key: "minor_repair_cap", label: "Minor repairs borne by tenant, up to (per item)", type: "money", default: "150" },
       { key: "diplomatic_clause", label: "Include a diplomatic clause", type: "checkbox" },
       { key: "diplomatic_after_months", label: "Earliest the tenant may invoke it (months)", type: "number", default: "12", showIf: { key: "diplomatic_clause", equals: "true" } },
+      { key: "diplomatic_notice_months", label: "Notice required (months)", type: "number", default: "2", showIf: { key: "diplomatic_clause", equals: "true" } },
       { key: "option_to_renew", label: "Include an option to renew", type: "checkbox" },
       { key: "renew_notice_days", label: "Renewal notice (days)", type: "number", default: "60", showIf: { key: "option_to_renew", equals: "true" } },
       { key: "inventory", label: "Inventory of furniture and fittings", type: "textarea", colSpan: 2, placeholder: "List the Landlord's items, or write 'See attached inventory'." },
@@ -177,7 +181,9 @@ export function tenancyContent(f: DocFields): ContentBlock[] {
           "not to make structural alterations without the Landlord's prior written consent;",
           "not to assign or sublet the Premises without the Landlord's prior written consent;",
           "to permit the Landlord or the Landlord's agent to inspect the Premises at reasonable times on prior notice;",
-          "to pay for utilities, internet and services consumed at the Premises; and",
+          ...(String(f.utilities_by || "Tenant") === "Tenant"
+            ? ["to pay for utilities, internet and services consumed at the Premises; and"]
+            : ["to pay for internet and personal services at the Premises, the Landlord bearing the cost of water, electricity and gas; and"]),
           "to deliver up the Premises in a like condition at the end of the Term.",
         ],
       },
@@ -204,7 +210,7 @@ export function tenancyContent(f: DocFields): ContentBlock[] {
       n: ++n,
       heading: "Diplomatic clause",
       body: [
-        `If, after the first ${f.diplomatic_after_months || "12"} months of the Term, the Tenant is required to leave Singapore permanently for reasons beyond the Tenant's control, the Tenant may terminate this Agreement by giving not less than two (2) months' written notice together with reasonable supporting evidence.`,
+        `If, after the first ${normInt(f.diplomatic_after_months, 12, 1, 120)} months of the Term, the Tenant is transferred out of Singapore or otherwise ceases to be employed in Singapore, and is required to leave Singapore, the Tenant may terminate this Agreement by giving not less than ${normInt(f.diplomatic_notice_months, 2, 1, 12)} months' written notice together with reasonable supporting evidence.`,
       ],
     });
   }
@@ -232,7 +238,9 @@ export function tenancyContent(f: DocFields): ContentBlock[] {
     kind: "clause",
     n: ++n,
     heading: "Stamp duty",
-    body: ["The Tenant shall be responsible for the stamp duty payable on this Agreement and shall pay it within the time prescribed by law."],
+    body: [
+      `The ${(f.stamp_duty_by || "Tenant").toLowerCase()} shall be responsible for the stamp duty payable on this Agreement and shall pay it within the time prescribed by law. Stamp duty on a lease is a joint liability of the parties under the Stamp Duties Act; this clause records who bears it between them.`,
+    ],
   });
   blocks.push({
     kind: "clause",

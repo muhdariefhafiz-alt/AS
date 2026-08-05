@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { getAgentSession } from "../../../../lib/agent-auth";
 import { DOCUMENT_QUOTA, docTypeByKey, isEditable } from "../../../../lib/documents";
-import { logPaperworkFinalised, logPaperworkStatus } from "../../../../lib/documents/activation";
-import type { DocFields } from "../../../../lib/documents/schema";
+import { logPaperwork, logPaperworkFinalised, logPaperworkStatus } from "../../../../lib/documents/activation";
+import { LETTERHEAD_KEYS } from "../../../../lib/documents/prefill";
+import { missingRequired, type DocFields } from "../../../../lib/documents/schema";
 import type { Tier } from "../../../../lib/tiers";
 
 // Single-document read / update / delete. Every call re-checks row ownership
@@ -79,7 +80,10 @@ export async function PATCH(req: Request, { params }: Props) {
     // Whitelist against THIS document type's schema; coerce everything to
     // trimmed strings so stored `fields` can never carry unexpected shapes
     // into the renderer.
-    const allowed = new Set(dt.fieldKeys);
+    // The letterhead is pinned from the profile at create time and is not
+    // editable here: a document must always be issued under the identity of the
+    // agent who owns it.
+    const allowed = new Set(dt.fieldKeys.filter((k) => !(LETTERHEAD_KEYS as readonly string[]).includes(k)));
     const merged: DocFields = { ...(doc.fields as DocFields) };
     for (const [k, v] of Object.entries(body.fields)) {
       if (!allowed.has(k)) continue;
@@ -93,6 +97,19 @@ export async function PATCH(req: Request, { params }: Props) {
     const allowedNext = TRANSITIONS[doc.status] ?? [];
     if (!allowedNext.includes(body.status)) {
       return NextResponse.json({ error: `Cannot move a ${doc.status} document to ${body.status}.` }, { status: 400 });
+    }
+    // Leaving draft drops the DRAFT watermark, so the document has to be
+    // complete first: an empty letter stating a rent of nothing must never
+    // render as a clean, signable page.
+    if (body.status === "finalised") {
+      const nextFields = { ...(doc.fields as DocFields), ...((update.fields as DocFields) ?? {}) };
+      const missing = missingRequired(dt.sections, nextFields);
+      if (missing.length) {
+        return NextResponse.json(
+          { error: `Fill these in before marking it ready to sign: ${missing.join(", ")}.`, missing },
+          { status: 400 }
+        );
+      }
     }
     // Un-voiding a document re-enters the live count, so it must respect the
     // same monthly cap the create path enforces (else void/create/un-void
@@ -148,7 +165,10 @@ export async function PATCH(req: Request, { params }: Props) {
         from: doc.status,
         to: nextStatus,
       });
-      if (nextStatus === "finalised" && doc.status !== "finalised") {
+      // Only the FIRST finalisation counts. sent -> finalised and void ->
+      // finalised are allowed moves, and counting those would inflate both the
+      // headline number and the counter-metric's denominator.
+      if (nextStatus === "finalised" && doc.status === "draft") {
         await logPaperworkFinalised(sb, {
           agentId: session.agentId,
           documentId: id,
@@ -189,5 +209,17 @@ export async function DELETE(_req: Request, { params }: Props) {
   if (doc.pdf_path) await sb.storage.from("agent-documents").remove([doc.pdf_path]).catch(() => {});
   const { error } = await sb.from("sg_documents").delete().eq("id", id).eq("agent_id", session.agentId);
   if (error) return NextResponse.json({ error: "Could not delete." }, { status: 500 });
+
+  // The row and its event trail cascade away, so without this a started
+  // document simply disappears from the funnel and abandonment cannot be told
+  // apart from deliberate deletion.
+  const { data: owner } = await sb.from("sg_agents").select("is_sandbox").eq("id", session.agentId).single();
+  if (owner?.is_sandbox !== true) {
+    await logPaperwork(sb, session.agentId, "paperwork_deleted", {
+      doc_type: doc.doc_type,
+      document_id: id,
+      status_at_delete: doc.status,
+    });
+  }
   return NextResponse.json({ ok: true });
 }

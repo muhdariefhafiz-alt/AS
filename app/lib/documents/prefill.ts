@@ -44,6 +44,12 @@ function schemaDefaults(docType: string): DocFields {
   return out;
 }
 
+// The identity a document is ISSUED UNDER. These are pinned from the agent's
+// own profile on every write and can never be supplied by the caller: a
+// document carrying someone else's name and CEA registration is a forgery, and
+// the only thing standing between the tool and one is this list.
+export const LETTERHEAD_KEYS = ["agent_name", "agent_cea", "agency_name"] as const;
+
 export function agentBlock(agent: AgentRow): DocFields {
   const agentName =
     agent.marketing_name_status === "approved" && agent.marketing_name
@@ -57,6 +63,12 @@ export function agentBlock(agent: AgentRow): DocFields {
     agent_contact: agent.whatsapp || agent.claimed_email || "",
     agent_represents: "Landlord",
   };
+}
+
+// Just the pinned identity, for re-applying after any merge.
+export function pinnedLetterhead(agent: AgentRow): DocFields {
+  const block = agentBlock(agent);
+  return Object.fromEntries(LETTERHEAD_KEYS.map((k) => [k, block[k] ?? ""]));
 }
 
 export function buildPrefill(agent: AgentRow, docType: string): DocFields {

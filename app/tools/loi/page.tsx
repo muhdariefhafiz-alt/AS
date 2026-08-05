@@ -80,7 +80,7 @@ export default function LoiToolPage() {
         <p className="muted fc-hero-in fc-hero-in--3" style={{ marginTop: 12, fontSize: 17, maxWidth: "62ch" }}>
           The offer letter that opens a rental deal, drawn up in about two minutes: term, rent, deposits, the
           diplomatic clause and the deadline to sign the tenancy agreement. Your name and CEA registration are already
-          on it, because we hold the register.
+          on it, from the public CEA register.
         </p>
 
         <div className="fc-hero-in fc-hero-in--4" style={{ marginTop: 24, maxWidth: 620 }}>
@@ -94,13 +94,14 @@ export default function LoiToolPage() {
               Type the deal once. <span className="italic-serif">Sign it twice.</span>
             </h2>
             <ul style={{ margin: "12px 0 0", paddingLeft: 18, display: "flex", flexDirection: "column", gap: 8, fontSize: 15, color: "var(--ink-2)" }}>
-              <li>Your letterhead, registration number and agency are filled in from the CEA register.</li>
+              <li>Your letterhead, registration number and agency come from the public CEA register.</li>
               <li>The tenancy agreement starts from the letter of intent, so the property, parties and terms carry across.</li>
               <li>Every convention is an editable field with the market range shown, never fixed boilerplate.</li>
               <li>Documents are stored privately to your account, with a status you control.</li>
             </ul>
             <p className="muted small" style={{ marginTop: 12 }}>
-              Free while you are on the free plan. Standard templates for your review, not legal advice.
+              Free on the free plan, where documents carry a single line saying they were prepared with
+              FairComparisons. Paid plans render without it. Standard templates for your review, not legal advice.
             </p>
           </div>
         </div>

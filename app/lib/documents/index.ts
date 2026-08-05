@@ -90,7 +90,7 @@ export const DOC_TYPES: DocTypeMeta[] = [
     guidance: {
       strong: "Standard template for your review.",
       body:
-        "This generates a standard letter, not legal advice. It goes out over your name and CEA registration, so read it before you send it. The good-faith deposit is held by the landlord, never by us.",
+        "This generates a standard letter, not legal advice. It goes out over your name and CEA registration, so read it before you send it. The good-faith deposit is paid to the landlord, never to us and never to you: CEA does not permit a salesperson to handle transaction money.",
     },
     empty: {
       headline: "Send a letter of intent",
@@ -120,7 +120,7 @@ export const DOC_TYPES: DocTypeMeta[] = [
     guidance: {
       strong: "Standard template for your review.",
       body:
-        "This generates a standard document, not legal advice. Have the parties seek independent advice for non-standard terms. After signing, the tenant stamps the agreement within 14 days via IRAS e-Stamping.",
+        "This generates a standard document, not legal advice. Have the parties seek independent advice for non-standard terms. A lease signed in Singapore is stamped within 14 days of signing (30 days if signed overseas) via IRAS e-Stamping. Stamp duty is a joint liability of both parties; the agreement records who bears it, and by convention that is the tenant.",
       link: { href: "https://mytax.iras.gov.sg", label: "IRAS e-Stamping" },
     },
     empty: {

@@ -53,9 +53,13 @@ export async function GET(_req: Request, { params }: Props) {
   const path = `${doc.agent_id}/${doc.id}.pdf`;
   const buf = Buffer.from(bytes);
   // Store the record (best effort) and stamp pdf_path; the stream below is the
-  // download regardless of whether storage succeeds.
-  await sb.storage.from("agent-documents").upload(path, buf, { upsert: true, contentType: "application/pdf" }).catch(() => {});
-  await sb.from("sg_documents").update({ pdf_path: path }).eq("id", id);
+  // download regardless of whether storage succeeds. An admin viewing a
+  // document while impersonating reads it but writes NOTHING, same as every
+  // other route here.
+  if (!session.impersonatedBy) {
+    await sb.storage.from("agent-documents").upload(path, buf, { upsert: true, contentType: "application/pdf" }).catch(() => {});
+    await sb.from("sg_documents").update({ pdf_path: path }).eq("id", id);
+  }
 
   if (agent?.is_sandbox !== true && !session.impersonatedBy) {
     await sb.from("sg_funnel_events").insert({

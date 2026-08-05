@@ -45,9 +45,9 @@ const NEXT_ACTION: Record<string, { status: DocRow["status"]; label: string } | 
   void: null,
 };
 
-export type AutoStart = { type: string; seed?: Record<string, string> };
+export type AutoStart = { type: string; seed?: Record<string, string>; entry?: string };
 
-export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: () => void; autoStart?: AutoStart }) {
+export default function DocumentsPanel({ onUpgrade, autoStart, onAutoStartConsumed }: { onUpgrade?: () => void; autoStart?: AutoStart; onAutoStartConsumed?: () => void }) {
   const [state, setState] = useState<"loading" | "list" | "picker" | "edit" | "error">("loading");
   const [docs, setDocs] = useState<DocRow[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
@@ -64,9 +64,12 @@ export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: (
   const currentType: DocTypeMeta | undefined = current ? docTypeByKey(current.doc_type) : undefined;
   const editable = current ? isEditable(current.status) : false;
 
+  const firstLoad = useRef(true);
   const load = useCallback(async () => {
     try {
-      const res = await fetch("/api/dashboard/documents");
+      const first = firstLoad.current;
+      firstLoad.current = false;
+      const res = await fetch(`/api/dashboard/documents?source=tab${first ? "&first=1" : ""}`);
       if (!res.ok) { setState("error"); return; }
       const d = await res.json();
       setDocs(d.documents ?? []);
@@ -79,6 +82,28 @@ export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: (
   // synchronous setState in the effect body.
   useEffect(() => { queueMicrotask(() => { load(); }); }, [load]);
 
+  // The dashboard unmounts this panel on a tab switch, so unsaved edits would
+  // vanish silently. Track the latest editable state after each render and
+  // flush it on the way out.
+  const pending = useRef<{ id: string; fields: Record<string, string>; title: string } | null>(null);
+  useEffect(() => {
+    pending.current = current && editable && dirty ? { id: current.id, fields, title: current.title } : null;
+  });
+  useEffect(() => {
+    return () => {
+      const p = pending.current;
+      if (!p) return;
+      const body = JSON.stringify({ fields: p.fields, title: p.title });
+      // keepalive so the write survives the unmount / navigation.
+      fetch(`/api/dashboard/documents/${p.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body,
+        keepalive: true,
+      }).catch(() => {});
+    };
+  }, []);
+
   const openDoc = useCallback((doc: DocRow) => {
     setCurrent(doc);
     setFields(doc.fields ?? {});
@@ -89,12 +114,12 @@ export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: (
     setTitleDirty(false);
   }, []);
 
-  const createDoc = useCallback(async (docType: string, fromDocumentId?: string, seed?: Record<string, string>) => {
+  const createDoc = useCallback(async (docType: string, fromDocumentId?: string, seed?: Record<string, string>, entry?: string) => {
     setBusy("new"); setNotice("");
     try {
       const res = await fetch("/api/dashboard/documents", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ docType, ...(fromDocumentId ? { fromDocumentId } : {}), ...(seed ? { seed } : {}) }),
+        body: JSON.stringify({ docType, ...(fromDocumentId ? { fromDocumentId } : {}), ...(seed ? { seed } : {}), source: entry ?? "picker" }),
       });
       const d = await res.json();
       if (!res.ok) {
@@ -115,8 +140,12 @@ export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: (
     if (!autoStart || autoStarted.current || state === "loading") return;
     if (!docTypeByKey(autoStart.type)?.available) return;
     autoStarted.current = true;
-    queueMicrotask(() => { createDoc(autoStart.type, undefined, autoStart.seed); });
-  }, [autoStart, state, createDoc]);
+    // Tell the parent immediately: this panel unmounts on every tab switch, so
+    // a trigger left set would create a fresh blank document (and burn a quota
+    // slot) each time the agent comes back to the tab.
+    onAutoStartConsumed?.();
+    queueMicrotask(() => { createDoc(autoStart.type, undefined, autoStart.seed, autoStart.entry ?? "deep_link"); });
+  }, [autoStart, state, createDoc, onAutoStartConsumed]);
 
   // Editing a field marks the doc dirty; while the agent has not manually
   // renamed it, the title follows the property address.
@@ -296,7 +325,7 @@ export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: (
               </h3>
               <p className="muted small" style={{ marginTop: 6, maxWidth: "52ch" }}>{chain.hint}</p>
               <button
-                onClick={() => createDoc(chain.to, current.id)}
+                onClick={() => createDoc(chain.to, current.id, undefined, "chain")}
                 disabled={busy === "new" || meta?.canCreate === false}
                 className="fc-btn fc-btn--primary fc-btn--sm fc-btn--hairline"
                 style={{ marginTop: 12 }}
@@ -351,7 +380,7 @@ export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: (
         <p className="kicker" style={{ margin: 0 }}>Paperwork</p>
         {meta && (
           <span className="mono" style={{ fontSize: 11.5, color: "var(--slate)" }}>
-            {quota === null ? `${used} this month · ${quotaLabel(meta.tier)}` : `${used} of ${quota} this month`}
+            {quota === null ? `${used} in the last 30 days · ${quotaLabel(meta.tier)}` : `${used} of ${quota} in the last 30 days`}
           </span>
         )}
       </div>
@@ -366,7 +395,7 @@ export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: (
               {lead.empty.body}
             </p>
             <div className="fc-row" style={{ gap: 10, marginTop: 16, justifyContent: "center", flexWrap: "wrap" }}>
-              <button onClick={() => createDoc(lead.key)} disabled={busy === "new" || meta?.canCreate === false} className="fc-btn fc-btn--primary fc-btn--hairline">
+              <button onClick={() => createDoc(lead.key, undefined, undefined, "empty_state")} disabled={busy === "new" || meta?.canCreate === false} className="fc-btn fc-btn--primary fc-btn--hairline">
                 {busy === "new" ? "Starting…" : lead.empty.cta}
               </button>
               {types.length > 1 && (
@@ -378,7 +407,7 @@ export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: (
             </p>
             {meta?.canCreate === false && (
               <p className="small" style={{ marginTop: 12, color: "var(--slate)" }}>
-                You have used your {quota} this month.{" "}
+                You have used your {quota} for the last 30 days.{" "}
                 {onUpgrade && <button onClick={onUpgrade} className="linklike" style={{ color: "var(--blue)", fontWeight: 600, border: "none", background: "none", cursor: "pointer" }}>Upgrade for more</button>}
               </p>
             )}
@@ -395,7 +424,7 @@ export default function DocumentsPanel({ onUpgrade, autoStart }: { onUpgrade?: (
           </div>
           {meta?.canCreate === false && (
             <p className="small" style={{ margin: "0 0 10px", color: "var(--slate)" }}>
-              You have used all {quota} this month.{" "}
+              You have used all {quota} for the last 30 days.{" "}
               {onUpgrade && <button onClick={onUpgrade} className="linklike" style={{ color: "var(--blue)", fontWeight: 600, border: "none", background: "none", cursor: "pointer" }}>Upgrade for more</button>}
             </p>
           )}
@@ -454,7 +483,7 @@ function SectionBlock({ section, index, fields, setFields, readOnly }: { section
       {open && (
         <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
           {section.fields.map((f) => {
-            if (f.showIf && (fields[f.showIf.key] ?? f.default ?? "") !== f.showIf.equals) return null;
+            if (f.showIf && (fields[f.showIf.key] ?? "") !== f.showIf.equals) return null;
             return <Field key={f.key} def={f} value={fields[f.key] ?? f.default ?? ""} onChange={(v) => set(f.key, v)} readOnly={readOnly} />;
           })}
         </div>

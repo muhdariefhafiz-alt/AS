@@ -84,7 +84,7 @@ export default function DashboardPage() {
   const [farmAreaCount, setFarmAreaCount] = useState<number | null>(null);
   const [today, setToday] = useState<{ openLeads: number; viewingRequests: number } | null>(null);
   const [activeTab, setActiveTabState] = useState<TabId>("home");
-  const [newDoc, setNewDoc] = useState<{ type: string; seed?: Record<string, string> } | undefined>(undefined);
+  const [newDoc, setNewDoc] = useState<{ type: string; seed?: Record<string, string>; entry?: string } | undefined>(undefined);
 
   // Tab synced to the URL (?tab=) so it is linkable and back-button friendly.
   useEffect(() => {
@@ -97,13 +97,20 @@ export default function DashboardPage() {
     // empty list: the entry points that matter (the first-run card, a viewing
     // that just happened) are moments, and a moment should not end on a form.
     const nd = params.get("newDoc");
-    if (nd) queueMicrotask(() => setNewDoc({ type: nd }));
+    if (nd) {
+      queueMicrotask(() => setNewDoc({ type: nd }));
+      // Strip it immediately: a link that survives a reload would create a new
+      // blank document on every visit to the URL.
+      const clean = new URL(window.location.href);
+      clean.searchParams.delete("newDoc");
+      window.history.replaceState(null, "", clean.toString());
+    }
   }, []);
 
   // Start a document from anywhere in the dashboard, optionally carrying the
   // context of the surface it was started from.
-  function startDocument(docType: string, seed?: Record<string, string>) {
-    setNewDoc({ type: docType, seed });
+  function startDocument(docType: string, seed?: Record<string, string>, entry?: string) {
+    setNewDoc({ type: docType, seed, entry });
     setTab("paperwork");
   }
   function setTab(t: TabId) {
@@ -633,7 +640,7 @@ export default function DashboardPage() {
               name={agent.name}
               agencyName={agent.agency_name}
               ceaRegistration={agent.cea_registration}
-              onStart={() => startDocument("loi")}
+              onStart={() => startDocument("loi", undefined, "first_run_card")}
             />
           )}
 
@@ -705,7 +712,7 @@ export default function DashboardPage() {
             </div>
           )}
           {activeTab === "leads" && agent.cea_registration && (
-            <PlannerPanel onIssueLoi={(propertyLabel) => startDocument("loi", { premises_address: propertyLabel })} />
+            <PlannerPanel onIssueLoi={(propertyLabel) => startDocument("loi", { premises_address: propertyLabel }, "viewing_row")} />
           )}
 
           {/* ---------- GROW: prospecting + marketing toolkit ---------- */}
@@ -727,7 +734,7 @@ export default function DashboardPage() {
 
           {/* ---------- PAPERWORK: document system-of-record ---------- */}
           {activeTab === "paperwork" && agent.cea_registration && (
-            <DocumentsPanel onUpgrade={() => handleUpgrade("verified")} autoStart={newDoc} />
+            <DocumentsPanel onUpgrade={() => handleUpgrade("verified")} autoStart={newDoc} onAutoStartConsumed={() => setNewDoc(undefined)} />
           )}
           {activeTab === "paperwork" && !agent.cea_registration && (
             <div className="fc-card" style={{ padding: 22 }}>

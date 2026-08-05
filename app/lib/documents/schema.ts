@@ -32,17 +32,38 @@ export function fieldKeysOf(sections: Section[]): string[] {
   return sections.flatMap((s) => s.fields.map((f) => f.key));
 }
 
+// The fields a document cannot go to signing without. Used server-side: an
+// empty document that renders "S$0 per month" must never leave draft and lose
+// its watermark.
+export function missingRequired(sections: Section[], fields: DocFields): string[] {
+  const out: string[] = [];
+  for (const section of sections) {
+    for (const f of section.fields) {
+      if (!f.required) continue;
+      if (f.showIf && (fields[f.showIf.key] ?? "") !== f.showIf.equals) continue;
+      if (!String(fields[f.key] ?? "").trim()) out.push(f.label);
+    }
+  }
+  return out;
+}
+
 // --- formatting helpers (deterministic; no Date.now / argless new Date) ---
 
 export const BLANK = "____________________";
 
+// An amount that was never filled in renders as a blank to be completed, not as
+// "S$0": a letter stating a rent of zero looks like a term, a blank looks like
+// the omission it is.
 export function money(v: string | undefined): string {
-  const raw = String(v ?? "");
-  // A leading minus is invalid on a rent/deposit; do not silently flip its sign.
-  if (/-/.test(raw)) return "S$0";
-  const n = Number(raw.replace(/[^0-9.]/g, ""));
-  if (!isFinite(n) || n <= 0) return "S$0";
-  return `S$${n.toLocaleString("en-SG", { maximumFractionDigits: n % 1 === 0 ? 0 : 2 })}`;
+  const n = moneyNumber(v);
+  if (!n) return String(v ?? "").trim() ? "S$0" : BLANK;
+  // Round once, and format cents to two places so the figure never disagrees
+  // with the words beside it.
+  const r = Math.round(n * 100) / 100;
+  return `S$${r.toLocaleString("en-SG", {
+    minimumFractionDigits: r % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: r % 1 === 0 ? 0 : 2,
+  })}`;
 }
 
 export function moneyNumber(v: string | undefined): number {
@@ -75,9 +96,12 @@ function under1000(n: number): string {
 // Dollars Four Thousand Only"). Returns "" for a missing or invalid amount so
 // callers can fall back to the figure alone rather than print a wrong word.
 export function moneyWords(v: string | undefined): string {
-  const n = moneyNumber(v);
-  if (!n) return "";
-  const whole = Math.floor(n);
+  const raw = moneyNumber(v);
+  if (!raw) return "";
+  // Round to cents FIRST, then split, so 4200.999 reads as Four Thousand Two
+  // Hundred and One Dollars, never as "and One Hundred Cents".
+  const n = Math.round(raw * 100) / 100;
+  const whole = Math.floor(n + 1e-9);
   const cents = Math.round((n - whole) * 100);
   if (whole > 999_999_999) return "";
   const groups: Array<[number, string]> = [
@@ -96,7 +120,8 @@ export function moneyWords(v: string | undefined): string {
   if (rest) parts.push(under1000(rest));
   if (!parts.length) parts.push("Zero");
   const words = parts.join(" ").replace(/\s+/g, " ").trim();
-  return cents ? `${words} and ${under1000(cents)} Cents` : `${words} Only`;
+  if (!cents) return `${words} Only`;
+  return `${words} Dollars and ${under1000(cents)} Cent${cents === 1 ? "" : "s"} Only`;
 }
 
 // Parse a YYYY-MM-DD into a real UTC date, rejecting out-of-range values like
@@ -116,7 +141,11 @@ export function normTermMonths(months: string | undefined): number {
 // Optional whole-number field with a floor/ceiling; returns the fallback when
 // the value is absent or unusable.
 export function normInt(v: string | undefined, fallback: number, min = 0, max = 999): number {
-  const n = Math.round(Number(v));
+  // A cleared field is ABSENT, not zero. Number("") is 0, which would silently
+  // clamp to the minimum and print "within 1 day" where the form showed 7.
+  const t = String(v ?? "").trim();
+  if (!t) return fallback;
+  const n = Math.round(Number(t));
   if (!isFinite(n)) return fallback;
   return Math.max(min, Math.min(max, n));
 }

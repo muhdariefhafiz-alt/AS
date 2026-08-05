@@ -29,13 +29,16 @@ export async function logPaperwork(
   metadata: Record<string, unknown> = {}
 ): Promise<void> {
   try {
-    await sb.from("sg_funnel_events").insert({
+    // supabase-js RESOLVES with an error object rather than throwing, so a
+    // try/catch alone would make a dead funnel look like an unadopted feature.
+    const { error } = await sb.from("sg_funnel_events").insert({
       event,
       agent_id: agentId,
       source: "dashboard",
       page_path: "/dashboard",
       metadata,
     });
+    if (error) console.error("[paperwork-activation] insert rejected", event, error);
   } catch (e) {
     console.error("[paperwork-activation] log failed", event, e);
   }

@@ -99,7 +99,12 @@ export async function GET(req: Request) {
   const q = (url.searchParams.get("q") ?? "").trim();
   const slug = (url.searchParams.get("slug") ?? "").trim();
 
-  const { limited } = await checkRateLimit(`loi-demo:${clientIp(req)}`, 30, 60_000);
+  // Rendering a PDF is far more expensive than a search and is the only branch
+  // that writes, so it gets its own, tighter bucket.
+  const ip = clientIp(req);
+  const { limited } = slug
+    ? await checkRateLimit(`loi-demo-pdf:${ip}`, 8, 60_000)
+    : await checkRateLimit(`loi-demo:${ip}`, 30, 60_000);
   if (limited) return NextResponse.json({ error: "Too many requests. Try again in a minute." }, { status: 429 });
 
   const sb = supabaseAdmin();
@@ -160,17 +165,20 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Could not render the sample." }, { status: 500 });
   }
 
-  await sb
+  const { error: logErr } = await sb
     .from("sg_funnel_events")
-    .insert({ event: "loi_demo_generated", agent_slug: slug, source: "public", page_path: "/tools/loi" })
-    .then(undefined, () => {});
+    .insert({ event: "loi_demo_generated", agent_slug: slug, source: "public", page_path: "/tools/loi" });
+  if (logErr) console.error("[loi-demo] funnel insert rejected", logErr);
 
   return new NextResponse(Buffer.from(bytes), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": 'inline; filename="letter-of-intent-sample.pdf"',
-      "Cache-Control": "public, max-age=600",
+      // Not edge-cached: this is the last step of the claim funnel and a cached
+      // response would never reach the function, so the one event we log would
+      // undercount exactly the number the phase is judged on.
+      "Cache-Control": "private, no-store",
     },
   });
 }

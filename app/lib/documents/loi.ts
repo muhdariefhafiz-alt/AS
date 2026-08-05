@@ -90,7 +90,7 @@ export const LOI_SECTIONS: Section[] = [
     fields: [
       { key: "deposit_amount", label: "Good-faith deposit", type: "money", required: true, hint: "Convention: one month's rent for a one-year lease, two for two years." },
       { key: "deposit_method", label: "Paid by", type: "select", options: ["Bank transfer", "PayNow", "Cheque", "Cash"], default: "Bank transfer" },
-      { key: "deposit_payee", label: "Payable to", type: "text", placeholder: "Landlord's name as on the account" },
+      { key: "deposit_payee", label: "Payable to", type: "text", placeholder: "Landlord's name as on the account", hint: "The landlord or the landlord's account. CEA does not permit a salesperson to hold transaction money." },
       { key: "deposit_account", label: "Account details", type: "text", colSpan: 2, placeholder: "Bank and account number, if the landlord gave them", hint: "Optional." },
       { key: "deposit_converts_to", label: "On signing the tenancy agreement it becomes", type: "select", default: "Part of the security deposit", options: ["Part of the security deposit", "Part of the first month's advance rental"], colSpan: 2, hint: "Agency forms differ on this. Pick what you agreed." },
       { key: "ta_deadline_days", label: "Tenancy agreement to be signed within (days)", type: "number", default: "7" },
@@ -119,13 +119,13 @@ export const LOI_SECTIONS: Section[] = [
     title: "Agency terms",
     note: "Standard protections on an agency LOI. Leave them off if they are not part of your arrangement.",
     fields: [
-      { key: "no_parallel_negotiation", label: "Landlord agrees not to negotiate with other tenants meanwhile", type: "checkbox", default: "true", group: "advanced" },
-      { key: "landlord_fail_pays_commission", label: "If the landlord walks away, the landlord still pays the agency commission", type: "checkbox", default: "true", group: "advanced" },
-      { key: "forfeit_split_agency", label: "If the tenant walks away, a share of the forfeited deposit goes to the agency", type: "checkbox", default: "true", group: "advanced" },
-      { key: "forfeit_split_pct", label: "Agency share of the forfeited deposit (%)", type: "number", default: "50", showIf: { key: "forfeit_split_agency", equals: "true" }, group: "advanced", hint: "Capped at the total service fee." },
-      { key: "commission_clause", label: "State the commission the landlord pays", type: "checkbox", group: "advanced" },
-      { key: "commission_amount", label: "Commission", type: "money", showIf: { key: "commission_clause", equals: "true" }, group: "advanced" },
-      { key: "commission_gst", label: "Commission stated is GST inclusive", type: "checkbox", default: "true", showIf: { key: "commission_clause", equals: "true" }, group: "advanced" },
+      { key: "no_parallel_negotiation", label: "Landlord agrees not to negotiate with other tenants meanwhile", type: "checkbox" },
+      { key: "landlord_fail_pays_commission", label: "If the landlord walks away, the landlord still pays the agency commission", type: "checkbox" },
+      { key: "forfeit_split_agency", label: "If the tenant walks away, a share of the forfeited deposit goes to the agency", type: "checkbox" },
+      { key: "forfeit_split_pct", label: "Agency share of the forfeited deposit (%)", type: "number", default: "50", showIf: { key: "forfeit_split_agency", equals: "true" }, hint: "Capped at the total service fee." },
+      { key: "commission_clause", label: "State the commission the landlord pays", type: "checkbox" },
+      { key: "commission_amount", label: "Commission", type: "money", showIf: { key: "commission_clause", equals: "true" } },
+      { key: "commission_gst", label: "Commission stated is GST inclusive", type: "checkbox", default: "true", showIf: { key: "commission_clause", equals: "true" } },
     ],
   },
   {
@@ -195,8 +195,13 @@ export function loiContent(f: DocFields): ContentBlock[] {
     ],
   });
 
+  // "Subject to contract" cannot be blanket: the deposit and agency paragraphs
+  // below are meant to bite. Saying the whole letter is subject to contract
+  // would hand both sides an argument that none of it does, including the
+  // forfeit and refund mechanics the deposit depends on. So the legend is
+  // scoped to the lease terms and the intention is stated explicitly.
   if (truthy(f.subject_to_contract)) {
-    blocks.push({ kind: "para", text: "SUBJECT TO CONTRACT", gap: 4 });
+    blocks.push({ kind: "para", text: "SUBJECT TO CONTRACT (as to the terms of the lease)", gap: 4 });
   }
 
   blocks.push({
@@ -211,7 +216,15 @@ export function loiContent(f: DocFields): ContentBlock[] {
   });
   blocks.push({
     kind: "para",
-    text: `We write to confirm that our prospective tenant has expressed the intention to lease the above premises on the following terms and conditions, subject to a tenancy agreement to be signed by the parties.`,
+    // Who the salesperson acts for changes whose prospect this is. Calling the
+    // tenant "our prospective tenant" in a letter written for the landlord
+    // reads as acting for both sides, which is not what the agent selected.
+    text:
+      f.agent_represents === "Tenant"
+        ? "We act for the prospective tenant named below, who has expressed the intention to lease the above premises on the following terms and conditions, subject to a tenancy agreement to be signed by the parties."
+        : f.agent_represents === "Both parties"
+          ? "We act for both parties in this transaction. The prospective tenant named below has expressed the intention to lease the above premises on the following terms and conditions, subject to a tenancy agreement to be signed by the parties."
+          : "We write to confirm that a prospective tenant has expressed the intention to lease the above premises on the following terms and conditions, subject to a tenancy agreement to be signed by the parties.",
     gap: 8,
   });
 
@@ -262,7 +275,13 @@ export function loiContent(f: DocFields): ContentBlock[] {
     body: [
       `${monthsPossessive(depMonths)} security deposit of ${amountPhrase(f.security_deposit)}${
         advMonths ? `, together with ${monthsPossessive(advMonths)} advance rental` : ""
-      }, payable upon signing of the tenancy agreement. The security deposit is refundable at the end of the term, less any lawful deductions.`,
+      }, payable upon signing of the tenancy agreement${
+        // Say plainly that the deposit already handed over counts towards this,
+        // or the tenant reads it as owing the full amount twice.
+        f.deposit_converts_to === "Part of the first month's advance rental"
+          ? ", the advance rental being payable less the good-faith deposit already paid"
+          : ", the security deposit being payable less the good-faith deposit already paid"
+      }. The security deposit is refundable at the end of the term, less any lawful deductions.`,
     ],
   });
 
@@ -319,7 +338,10 @@ export function loiContent(f: DocFields): ContentBlock[] {
       n: ++n,
       heading: "Diplomatic clause",
       body: [
-        `After the first ${after} months of the term, if the Tenant ceases to be employed in Singapore and is required to leave Singapore permanently, the Tenant may terminate the tenancy by giving the Landlord not less than ${notice} month${notice === 1 ? "" : "s"}' written notice, together with reasonable supporting evidence.${
+        // Disjunctive, as the market standard is: a transfer out of Singapore
+        // is the paradigm case and a conjunctive trigger would quietly exclude
+        // it, making a template sold as standard narrower than standard.
+        `After the first ${after} months of the term, if the Tenant is transferred out of Singapore or otherwise ceases to be employed in Singapore, and is required to leave Singapore, the Tenant may terminate the tenancy by giving the Landlord not less than ${notice} month${notice === 1 ? "" : "s"}' written notice, together with reasonable supporting evidence.${
           truthy(f.diplomatic_reimburse)
             ? ` If the tenancy is terminated in this way before the expiry of the term, the Tenant shall reimburse the Landlord the pro-rated commission paid by the Landlord${agency ? ` to ${agency}` : ""}.`
             : ""
@@ -373,9 +395,11 @@ export function loiContent(f: DocFields): ContentBlock[] {
 
   blocks.push({
     kind: "para",
+    // A clause directing money to "the Agency" names no payee: it is only
+    // rendered when the letter actually carries the agency's name.
     text: `If the Landlord declines to sign the tenancy agreement after the terms have been agreed, the Landlord shall refund the good-faith deposit to the Tenant immediately${
-      truthy(f.landlord_fail_pays_commission)
-        ? `, and shall pay ${agency || "the Agency"} the commission payable for services rendered`
+      truthy(f.landlord_fail_pays_commission) && agency
+        ? `, and shall pay ${agency} the commission payable for services rendered`
         : ""
     }. This letter shall then lapse and neither party shall have any claim against the other.`,
     gap: 6,
@@ -385,8 +409,8 @@ export function loiContent(f: DocFields): ContentBlock[] {
   blocks.push({
     kind: "para",
     text: `If the Tenant declines to sign the tenancy agreement after the terms have been agreed, the Landlord shall be at liberty to lease the premises to another tenant and the good-faith deposit shall be forfeited to the Landlord.${
-      truthy(f.forfeit_split_agency)
-        ? ` In that event, ${pct}% of the forfeited good-faith deposit shall be paid to ${agency || "the Agency"}, provided that amount does not exceed the total service fee.`
+      truthy(f.forfeit_split_agency) && agency
+        ? ` In that event, ${pct}% of the forfeited good-faith deposit shall be paid to ${agency}, provided that amount does not exceed the total service fee.`
         : ""
     }`,
     gap: 6,
@@ -400,12 +424,20 @@ export function loiContent(f: DocFields): ContentBlock[] {
     });
   }
 
-  if (truthy(f.commission_clause) && moneyNumber(f.commission_amount) > 0) {
+  if (truthy(f.commission_clause) && moneyNumber(f.commission_amount) > 0 && agency) {
     blocks.push({
       kind: "para",
-      text: `The Landlord shall pay ${agency || "the Agency"} a commission of ${money(f.commission_amount)}${
+      text: `The Landlord shall pay ${agency} a commission of ${money(f.commission_amount)}${
         truthy(f.commission_gst) ? " (inclusive of GST)" : " plus GST"
       } for securing the Tenant.`,
+      gap: 6,
+    });
+  }
+
+  if (truthy(f.subject_to_contract)) {
+    blocks.push({
+      kind: "para",
+      text: "The terms of the lease set out above are subject to and will be superseded by the tenancy agreement, and neither party is bound to the lease until that agreement is signed. The parties do, however, intend the paragraphs dealing with the good-faith deposit and its refund or forfeiture to take effect from the date of this letter.",
       gap: 6,
     });
   }
@@ -469,6 +501,12 @@ export const LOI_TO_TENANCY: Record<string, string> = {
   minor_repair_cap: "minor_repair_cap",
   diplomatic_clause: "diplomatic_clause",
   diplomatic_after_months: "diplomatic_after_months",
+  // Carried so the tenancy agreement cannot contradict the letter it came from:
+  // an LOI putting stamp duty or utilities on the landlord, or giving three
+  // months' notice, must not become a TA that silently says otherwise.
+  diplomatic_notice_months: "diplomatic_notice_months",
+  stamp_duty_by: "stamp_duty_by",
+  utilities_by: "utilities_by",
   option_to_renew: "option_to_renew",
   agent_name: "agent_name",
   agent_cea: "agent_cea",

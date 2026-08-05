@@ -111,8 +111,8 @@ export default function LoiDemo() {
 
           <p className="muted small" style={{ marginTop: 12, maxWidth: "58ch" }}>
             The sample is stamped and uses placeholder parties and figures. To draw one up for a live deal, with your
-            own parties, terms and stored copies, claim your profile: the tool then fills the tenancy agreement from
-            the letter of intent without you retyping anything.
+            own parties, terms and stored copies, claim your profile: the tenancy agreement then starts from the
+            letter of intent, carrying the property, the parties and the commercial terms across.
           </p>
         </div>
       )}
