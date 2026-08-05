@@ -6,16 +6,25 @@ import { describeAudience, type BroadcastAudience } from "../../../lib/broadcast
 // Operator broadcast admin: list recent broadcasts, preview a cohort's recipient
 // count, create a broadcast, or deactivate one. Admin-session gated.
 
-// Count agents matching an audience. Null tier counts as "free". Inlined (not a
-// generic helper) because Supabase's builder types are too deep to thread through.
+// Count agents who can actually RECEIVE an in-app announcement: claimed (only a
+// claimed agent can sign in) and not the sandbox account. Counting the rest
+// reported "reaches 38,297 agents" for an audience of five, which then made
+// every coverage percentage look like a catastrophe. Null tier counts as
+// "free". Inlined (not a generic helper) because Supabase's builder types are
+// too deep to thread through.
 function recipientQuery(sb: ReturnType<typeof supabaseAdmin>, aud: BroadcastAudience) {
-  let q = sb.from("sg_agents").select("id", { count: "exact", head: true });
+  let q = sb
+    .from("sg_agents")
+    .select("id", { count: "exact", head: true })
+    .eq("claimed", true)
+    .eq("is_sandbox", false);
   if (aud.tier?.length) {
     q = aud.tier.includes("free")
       ? q.or(`subscription_tier.is.null,subscription_tier.in.(${aud.tier.join(",")})`)
       : q.in("subscription_tier", aud.tier);
   }
-  if (aud.claimed != null) q = q.eq("claimed", aud.claimed);
+  // aud.claimed is deliberately not applied: the cohort is claimed-only by
+  // construction above, so an "unclaimed" audience reaches nobody in-app.
   if (aud.area?.length) q = q.in("primary_area", aud.area);
   return q;
 }
@@ -24,11 +33,21 @@ export async function GET() {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const sb = supabaseAdmin();
-  const [{ data: rows }, { count: totalAgents }] = await Promise.all([
+  const [{ data: rows }, { count: totalAgents }, { data: coverage }] = await Promise.all([
     sb.from("sg_broadcasts").select("id, title, body, severity, audience, active, starts_at, ends_at, created_at, created_by").order("created_at", { ascending: false }).limit(50),
-    sb.from("sg_agents").select("id", { count: "exact", head: true }),
+    sb.from("sg_agents").select("id", { count: "exact", head: true }).eq("claimed", true).eq("is_sandbox", false),
+    // Delivery reality per announcement: seen / read / clicked out of the
+    // eligible cohort, plus the agents still missing. Without this the only
+    // honest answer to "have they all seen it?" is "no idea".
+    sb.rpc("sg_broadcast_coverage"),
   ]);
-  const list = (rows ?? []).map((b) => ({ ...b, audience_label: describeAudience((b.audience ?? {}) as BroadcastAudience) }));
+  type Coverage = { id: number; eligible: number; seen: number; acked: number; clicked: number; unseen_count: number; unseen: { name: string | null; email: string | null }[] };
+  const byId = new Map<number, Coverage>(((coverage ?? []) as Coverage[]).map((c) => [Number(c.id), c]));
+  const list = (rows ?? []).map((b) => ({
+    ...b,
+    audience_label: describeAudience((b.audience ?? {}) as BroadcastAudience),
+    coverage: byId.get(Number(b.id)) ?? null,
+  }));
   return NextResponse.json({ broadcasts: list, totalAgents: totalAgents ?? 0 });
 }
 
@@ -44,6 +63,8 @@ export async function POST(req: Request) {
     text?: string;
     cta_label?: string;
     cta_href?: string;
+    link_label?: string;
+    link_href?: string;
     severity?: string;
     ends_at?: string | null;
   };
@@ -78,6 +99,8 @@ export async function POST(req: Request) {
         body: text,
         cta_label: body.cta_label?.trim() || null,
         cta_href: body.cta_href?.trim() || null,
+        link_label: body.link_label?.trim() || null,
+        link_href: body.link_href?.trim() || null,
         severity,
         audience: body.audience ?? {},
         ends_at: body.ends_at || null,

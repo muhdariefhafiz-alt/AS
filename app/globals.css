@@ -583,3 +583,80 @@ a.dev--link:hover .dev__name{color:var(--blue-deep);}
   .fc-float{ animation:fcFloat 7s ease-in-out infinite alternate; animation-delay:var(--float-delay, 0s); }
 }
 @keyframes fcFloat{ from{ transform:translateY(0); } to{ transform:translateY(-7px); } }
+
+/* ---------------------------------------------------------------------------
+   ANNOUNCEMENTS
+   One announcement is delivered at a time, as a focused card over a dimmed
+   dashboard, and then lives forever in a quiet archive. The dashboard itself
+   carries no permanent announcement furniture: a workspace with a noticeboard
+   nailed to the top of it is a workspace people learn to scroll past.
+--------------------------------------------------------------------------- */
+.fc-anno-scrim{ position:fixed; inset:0; z-index:120; background:rgba(10,23,51,0.42);
+  backdrop-filter:blur(2px); display:flex; align-items:center; justify-content:center;
+  padding:20px; }
+.fc-anno-card{ background:var(--paper); border:1px solid var(--line); border-radius:var(--r-lg);
+  box-shadow:0 24px 60px rgba(10,23,51,0.22); width:100%; max-width:452px; padding:26px 26px 22px;
+  position:relative;
+  /* A long announcement scrolls inside the card. Without this the card grows
+     past the viewport and takes its own close button off screen. */
+  max-height:calc(100dvh - 40px); overflow-y:auto; }
+.fc-anno-kicker{ font-family:var(--font-mono); font-size:11.5px; font-weight:600;
+  letter-spacing:0.09em; text-transform:uppercase; color:var(--blue); }
+.fc-anno-title{ font-family:var(--font-serif); font-size:26px; line-height:1.16; font-weight:600;
+  letter-spacing:-0.02em; color:var(--ink); margin:9px 0 0; text-wrap:balance; }
+.fc-anno-body{ font-size:15px; line-height:1.55; color:var(--ink-3); margin:11px 0 0; }
+.fc-anno-actions{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:20px; }
+/* 40px: the smallest target a thumb hits reliably. Sticky so it stays
+   reachable while a long announcement scrolls under it. */
+.fc-anno-close{ position:absolute; top:10px; right:10px; width:40px; height:40px; border-radius:999px;
+  border:none; background:transparent; color:var(--slate); font-size:20px; line-height:1; cursor:pointer; }
+.fc-anno-close:hover{ background:var(--cloud); color:var(--ink); }
+
+/* The permanent entry point: quiet until there is something unread. */
+.fc-anno-trigger{ display:inline-flex; align-items:center; gap:7px; background:none; border:none;
+  cursor:pointer; padding:2px 0; font-family:var(--font-sans); font-size:13.5px; font-weight:600;
+  color:var(--slate); white-space:nowrap; }
+.fc-anno-trigger:hover{ color:var(--ink); }
+.fc-anno-trigger[data-unread="1"]{ color:var(--blue); }
+.fc-anno-dot{ width:7px; height:7px; border-radius:999px; background:var(--blue); flex:0 0 auto; }
+
+/* Archive: a side sheet on desktop, a bottom sheet where the thumb is. */
+.fc-anno-drawer{ position:fixed; z-index:120; background:var(--paper); display:flex;
+  flex-direction:column; box-shadow:0 24px 60px rgba(10,23,51,0.22); }
+@media(min-width:721px){
+  .fc-anno-drawer{ top:0; right:0; bottom:0; width:min(420px, 92vw); border-left:1px solid var(--line); }
+}
+@media(max-width:720px){
+  .fc-anno-drawer{ left:0; right:0; bottom:0; max-height:82vh; border-top:1px solid var(--line);
+    border-radius:var(--r-lg) var(--r-lg) 0 0; }
+  .fc-anno-card{ padding:22px 20px 18px; }
+  .fc-anno-title{ font-size:23px; }
+}
+.fc-anno-drawer-head{ display:flex; align-items:center; justify-content:space-between;
+  padding:18px 20px; border-bottom:1px solid var(--line); }
+.fc-anno-list{ overflow-y:auto; padding:6px 20px 22px; }
+.fc-anno-item{ padding:18px 0; border-bottom:1px solid var(--line); }
+.fc-anno-item:last-child{ border-bottom:none; }
+.fc-anno-item-title{ font-family:var(--font-serif); font-size:18px; font-weight:600;
+  letter-spacing:-0.015em; color:var(--ink); display:flex; align-items:baseline; gap:9px; }
+
+@media(prefers-reduced-motion: no-preference){
+  .fc-anno-scrim{ animation:fcAnnoFade .18s ease-out both; }
+  .fc-anno-card{ animation:fcAnnoRise .34s cubic-bezier(.16,1,.3,1) both; }
+  .fc-anno-drawer{ animation:fcAnnoSlide .3s cubic-bezier(.16,1,.3,1) both; }
+}
+@keyframes fcAnnoFade{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes fcAnnoRise{ from{ opacity:0; transform:translateY(14px) scale(.985); } to{ opacity:1; transform:none; } }
+@keyframes fcAnnoSlide{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:none; } }
+
+/* Tone. The composer offers info / success / warning, so the card has to carry
+   the difference: an amber notice that renders identically to product news is
+   a control that lies to the operator. */
+.fc-anno-card[data-tone="success"] .fc-anno-kicker{ color:var(--ok); }
+.fc-anno-card[data-tone="warn"] .fc-anno-kicker{ color:var(--warn); }
+.fc-anno-card[data-tone="success"]{ border-top:3px solid var(--ok); }
+.fc-anno-card[data-tone="warn"]{ border-top:3px solid var(--warn); }
+
+/* Visually hidden, still read aloud. */
+.fc-sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+  clip:rect(0 0 0 0); white-space:nowrap; border:0; }

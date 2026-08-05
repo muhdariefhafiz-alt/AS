@@ -15,7 +15,7 @@ import BuildingPagesPanel from "./BuildingPagesPanel";
 import PerformancePanel from "./PerformancePanel";
 import ShareCard from "./ShareCard";
 import PerfUploadCard from "./PerfUploadCard";
-import DashboardBanner from "./DashboardBanner";
+import Announcements from "./Announcements";
 import UnlockMoment from "./UnlockMoment";
 import PlanBillingPanel from "./PlanBillingPanel";
 import { titleName, cleanAgency } from "../lib/names";
@@ -98,11 +98,17 @@ export default function DashboardPage() {
     // that just happened) are moments, and a moment should not end on a form.
     const nd = params.get("newDoc");
     if (nd) {
-      queueMicrotask(() => setNewDoc({ type: nd }));
+      // ?newDocFrom= names the surface that sent them, so a document started
+      // from an announcement is distinguishable from one started in the tab.
+      // Without it every external link reports as a generic deep_link and the
+      // announcement can never be judged.
+      const from = params.get("newDocFrom") || undefined;
+      queueMicrotask(() => setNewDoc({ type: nd, entry: from }));
       // Strip it immediately: a link that survives a reload would create a new
       // blank document on every visit to the URL.
       const clean = new URL(window.location.href);
       clean.searchParams.delete("newDoc");
+      clean.searchParams.delete("newDocFrom");
       window.history.replaceState(null, "", clean.toString());
     }
   }, []);
@@ -499,8 +505,6 @@ export default function DashboardPage() {
       {/* Step 2: Dashboard */}
       {lookupStatus === "found" && agent && (
         <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 22 }}>
-          {/* Operator announcements targeted at this agent's cohort */}
-          <DashboardBanner />
           {/* Agent header with tier badge */}
           <div className="fc-card fc-hero-in fc-hero-in--1" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px" }}>
             <div className="fc-row" style={{ gap: 12 }}>
@@ -514,9 +518,14 @@ export default function DashboardPage() {
               <span className="fc-badge" style={{ background: "var(--cloud)", color: "var(--ink)" }}>
                 {TIER_LABELS[agent.subscription_tier]} plan
               </span>
-              <Link href={`/property-agents/agent/${agent.slug}`} className="small" style={{ color: "var(--blue)", fontWeight: 600 }}>
-                View public profile ›
-              </Link>
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", alignItems: "center", gap: "4px 14px" }}>
+                {/* Product news lives behind one quiet control, never as a
+                    banner stacked on top of the agent's actual work. */}
+                <Announcements />
+                <Link href={`/property-agents/agent/${agent.slug}`} className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                  View public profile ›
+                </Link>
+              </div>
             </div>
           </div>
 

@@ -91,7 +91,7 @@ export async function POST(req: Request) {
     // entry point starts the habit, so the answer has to be in the event.
     source?: string;
   };
-  const ENTRY = ["picker", "empty_state", "first_run_card", "viewing_row", "deep_link", "chain"];
+  const ENTRY = ["picker", "empty_state", "first_run_card", "viewing_row", "deep_link", "chain", "broadcast"];
   const entry = ENTRY.includes(String(body.source)) ? String(body.source) : "unknown";
   const dt = body.docType ? docTypeByKey(body.docType) : undefined;
   if (!dt || !dt.available) {
