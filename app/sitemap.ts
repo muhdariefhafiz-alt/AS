@@ -2,6 +2,7 @@ import { supabase } from "./lib/supabase";
 import { HDB_TOWNS, getQualifyingHdbSegments } from "./lib/hdbData";
 import { getQualifyingHirePages } from "./lib/hireData";
 import { agentDirectoryPageCount, countIndexableAgents } from "./lib/indexable";
+import { ROADMAP } from "./lib/roadmap";
 import type { MetadataRoute } from "next";
 
 const BEST_AGENT_AREAS = [
@@ -64,6 +65,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/tools/stamp-duty-calculator`, lastModified: today(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/tools/cea-advertising-checker`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/tools/loi`, lastModified: today(), changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE}/roadmap`, lastModified: today(), changeFrequency: "weekly", priority: 0.7 },
+    ...ROADMAP.map((e) => ({
+      url: `${BASE}/roadmap/${e.slug}`,
+      lastModified: today(),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
     { url: `${BASE}/tools/net-proceeds-calculator`, lastModified: today(), changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/property-agents`, lastModified: today(), changeFrequency: "daily", priority: 0.95 },
     { url: `${BASE}/property-agents/agencies`, lastModified: today(), changeFrequency: "weekly", priority: 0.85 },

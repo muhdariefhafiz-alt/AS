@@ -352,7 +352,11 @@ export default async function AgentPage({ params }: Props) {
     }] : []),
     ...(reviewAgg ? [{
       q: `Does ${display} have verified client reviews?`,
-      a: `Yes. ${display} has ${reviewAgg.count} verified client review${reviewAgg.count === 1 ? "" : "s"} from completed transactions on FairComparisons, averaging ${reviewAgg.avg} out of 5. Reviews are only accepted after a verified completion.`,
+      // Two lanes publish here: sellers who ran their sale through us (tied to a
+      // logged completion) and clients who confirm their email and pass
+      // moderation. Saying every review follows a verified completion would be
+      // untrue of the second lane.
+      a: `Yes. ${display} has ${reviewAgg.count} published client review${reviewAgg.count === 1 ? "" : "s"} on FairComparisons, averaging ${reviewAgg.avg} out of 5. Reviews come from sellers who completed a sale through us, and from clients who confirm their review by email before it is moderated and published. Reviews never affect AgentScore, which is computed from government transaction records.`,
     }] : []),
   ];
   const faqLd = {

@@ -136,7 +136,7 @@ export const AGENT_FEATURES: Record<string, AgentFeatureData> = {
       {
         kicker: "Exclusive spotlight",
         title: "One agent per development. Claim yours first.",
-        body: "While a Building Page is published, no other agent can present that development. Your headline, your local insight, your photo, your CEA registration and a direct booking link sit beside the neutral price data every buyer and seller checks. When someone researches that building, they meet you.",
+        body: "While a Building Page is published, no other agent can present that development. Your headline, your local insight, your name and agency, your CEA registration and a direct booking link sit beside the neutral price data every buyer and seller checks. When someone researches that building, they meet you.",
         points: ["Exclusive while published", "Your booking link on the page", "CEA registration shown automatically"],
       },
       {

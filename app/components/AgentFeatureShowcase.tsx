@@ -24,7 +24,7 @@ export default function AgentFeatureShowcase() {
             layout="hero"
             eyebrow="Deal Radar"
             title="Know who is about to sell, before your competitors."
-            body="Deal Radar reads your farm area for the homes most likely to list next, owners past their MOP, long tenures, blocks where a neighbour just sold, so you reach them first."
+            body="Deal Radar reads your farm areas from official records: HDB households approaching their five-year MOP, and the blocks where a neighbour just sold, so you know where to knock first."
             mockup={<DealRadarMock />}
             cta={{ label: "Claim your free profile", href: "/search", variant: "ink" }}
             secondary={{ label: "See Deal Radar", href: "/for-agents/deal-radar" }}

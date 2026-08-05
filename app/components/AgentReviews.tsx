@@ -54,6 +54,14 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(months / 12)} year${Math.floor(months / 12) > 1 ? "s" : ""} ago`;
 }
 
+// "Wei Ming Tan" becomes "W.M.T." Keeps the review attributable enough to feel
+// human without publishing a full name we promised to keep to initials.
+function toInitials(name: string): string {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "Anonymous";
+  return parts.slice(0, 3).map((p) => p.charAt(0).toUpperCase() + ".").join("");
+}
+
 export default function AgentReviews({ agentId, agentName }: Props) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -286,7 +294,11 @@ export default function AgentReviews({ agentId, agentName }: Props) {
                     {r.reviewer_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-900">{r.reviewer_name}</span>
+                    {/* The submission form promises "Published as initials only",
+                        so that is what we publish. Rendering the full name the
+                        reviewer typed would break the undertaking we made to
+                        them at the moment they gave us their name. */}
+                    <span className="text-sm font-medium text-gray-900">{toInitials(r.reviewer_name)}</span>
                     {r.transaction_type && (
                       <span className="ml-2 text-xs text-gray-400">{r.transaction_type}</span>
                     )}

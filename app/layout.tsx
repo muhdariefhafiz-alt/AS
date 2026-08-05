@@ -205,6 +205,7 @@ function Footer() {
               <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8, fontSize: 14 }}>
                 {[
                   ["/about", "About"],
+                  ["/roadmap", "What we're building"],
                   ["/how-we-score", "How we score"],
                   ["/trust", "Trust & data"],
                   ["/contact", "Contact"],

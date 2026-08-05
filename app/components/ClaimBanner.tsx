@@ -35,7 +35,7 @@ type Props = {
 const VALUE_PROPS: { icon: keyof typeof Icon; text: string }[] = [
   { icon: "Mail", text: "Seller enquiries land in your inbox with an AI-drafted reply" },
   { icon: "Calendar", text: "One booking link; confirmed viewings sync to Google Calendar" },
-  { icon: "Radar", text: "Deal Radar: owners reaching MOP in your farm area, daily" },
+  { icon: "Radar", text: "Deal Radar: households approaching their MOP in your farm areas" },
 ];
 
 export default function ClaimBanner({
