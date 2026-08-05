@@ -30,7 +30,7 @@ function fmt(iso: string): string {
   return new Intl.DateTimeFormat("en-SG", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true }).format(d);
 }
 
-export default function PlannerPanel() {
+export default function PlannerPanel({ onIssueLoi }: { onIssueLoi?: (propertyLabel: string) => void } = {}) {
   const [viewings, setViewings] = useState<Viewing[]>([]);
   const [bookUrl, setBookUrl] = useState<string | null>(null);
   const [agentId, setAgentId] = useState<number | null>(null);
@@ -212,6 +212,14 @@ export default function PlannerPanel() {
                   )}
                   {v.status === "confirmed" && (
                     <button type="button" disabled={busy} onClick={() => setStatus(v.id, "completed")} className="fc-btn fc-btn--ink fc-btn--sm">Mark done</button>
+                  )}
+                  {/* The moment the deal actually happens is right after a
+                      viewing, on a phone. That is where the LOI belongs, not in
+                      a tab the agent has to remember. */}
+                  {v.status === "confirmed" && onIssueLoi && (
+                    <button type="button" onClick={() => onIssueLoi(v.property_label)} className="fc-btn fc-btn--quiet fc-btn--sm">
+                      Issue a letter of intent
+                    </button>
                   )}
                   <button type="button" disabled={busy} onClick={() => setStatus(v.id, "cancelled")} className="fc-btn fc-btn--ghost fc-btn--sm">Cancel</button>
                 </div>

@@ -10,6 +10,7 @@ import AreaIntelPanel from "./AreaIntelPanel";
 import PlannerPanel from "./PlannerPanel";
 import DemandPanel from "./DemandPanel";
 import DocumentsPanel from "./DocumentsPanel";
+import PaperworkNudge from "./PaperworkNudge";
 import BuildingPagesPanel from "./BuildingPagesPanel";
 import PerformancePanel from "./PerformancePanel";
 import ShareCard from "./ShareCard";
@@ -83,14 +84,28 @@ export default function DashboardPage() {
   const [farmAreaCount, setFarmAreaCount] = useState<number | null>(null);
   const [today, setToday] = useState<{ openLeads: number; viewingRequests: number } | null>(null);
   const [activeTab, setActiveTabState] = useState<TabId>("home");
+  const [newDoc, setNewDoc] = useState<{ type: string; seed?: Record<string, string> } | undefined>(undefined);
 
   // Tab synced to the URL (?tab=) so it is linkable and back-button friendly.
   useEffect(() => {
-    const t = new URLSearchParams(window.location.search).get("tab");
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get("tab");
     // Mount-time URL -> state sync (deep-linkable tab). Deferred a tick so it is
     // not a synchronous setState in the effect body.
     if (t === "leads" || t === "grow" || t === "paperwork" || t === "profile") queueMicrotask(() => setActiveTabState(t));
+    // ?newDoc= lands the agent inside a started document rather than on an
+    // empty list: the entry points that matter (the first-run card, a viewing
+    // that just happened) are moments, and a moment should not end on a form.
+    const nd = params.get("newDoc");
+    if (nd) queueMicrotask(() => setNewDoc({ type: nd }));
   }, []);
+
+  // Start a document from anywhere in the dashboard, optionally carrying the
+  // context of the surface it was started from.
+  function startDocument(docType: string, seed?: Record<string, string>) {
+    setNewDoc({ type: docType, seed });
+    setTab("paperwork");
+  }
   function setTab(t: TabId) {
     setActiveTabState(t);
     const url = new URL(window.location.href);
@@ -611,6 +626,17 @@ export default function DashboardPage() {
             );
           })()}
 
+          {/* First-run Paperwork moment: the agent's own letterhead, before an
+              empty form. Hides itself once they have a document. */}
+          {agent.cea_registration && (
+            <PaperworkNudge
+              name={agent.name}
+              agencyName={agent.agency_name}
+              ceaRegistration={agent.cea_registration}
+              onStart={() => startDocument("loi")}
+            />
+          )}
+
           {/* Demand Dashboard: real seller demand for this agent (never affects rank) */}
           <DemandPanel />
 
@@ -647,7 +673,7 @@ export default function DashboardPage() {
                     ["grow", "Deal Radar", "Owners reaching MOP near you"],
                     ["grow", "Building pages", "Own a development's page"],
                     ["grow", "Share your record", "Rank card + website badge"],
-                    ["paperwork", "Paperwork", "Draw up a tenancy agreement"],
+                    ["paperwork", "Paperwork", "Letters of intent and tenancy agreements"],
                     ["profile", "Edit profile", "Photo, message, WhatsApp"],
                   ]) as [TabId, string, string][]).map(([tab, title, sub]) => (
                     <button key={title} onClick={() => setTab(tab)} className="fc-card" style={{ padding: 14, textAlign: "left", cursor: "pointer", border: "1px solid var(--line)" }}>
@@ -678,7 +704,9 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-          {activeTab === "leads" && agent.cea_registration && <PlannerPanel />}
+          {activeTab === "leads" && agent.cea_registration && (
+            <PlannerPanel onIssueLoi={(propertyLabel) => startDocument("loi", { premises_address: propertyLabel })} />
+          )}
 
           {/* ---------- GROW: prospecting + marketing toolkit ---------- */}
           {activeTab === "grow" && agent.cea_registration && (
@@ -699,7 +727,20 @@ export default function DashboardPage() {
 
           {/* ---------- PAPERWORK: document system-of-record ---------- */}
           {activeTab === "paperwork" && agent.cea_registration && (
-            <DocumentsPanel onUpgrade={() => handleUpgrade("verified")} />
+            <DocumentsPanel onUpgrade={() => handleUpgrade("verified")} autoStart={newDoc} />
+          )}
+          {activeTab === "paperwork" && !agent.cea_registration && (
+            <div className="fc-card" style={{ padding: 22 }}>
+              <p className="kicker" style={{ margin: 0 }}>Paperwork</p>
+              <h2 className="serif" style={{ fontSize: 20, margin: "6px 0 0" }}>We need your CEA registration first.</h2>
+              <p className="muted" style={{ marginTop: 8, fontSize: 14.5, maxWidth: "52ch" }}>
+                Every document goes out over your name and CEA registration number, so we cannot draw one up until your
+                profile carries it. Add it on your profile and this tab opens.
+              </p>
+              <button onClick={() => setTab("profile")} className="fc-btn fc-btn--primary fc-btn--sm" style={{ marginTop: 14 }}>
+                Go to your profile &rarr;
+              </button>
+            </div>
           )}
 
           {/* ---------- PROFILE: identity model + verified + edit form ---------- */}

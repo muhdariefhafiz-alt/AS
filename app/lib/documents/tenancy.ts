@@ -1,27 +1,23 @@
 import type { ContentBlock } from "./render";
+import {
+  addressTitle,
+  fieldKeysOf,
+  fmtDate,
+  leaseEndDate,
+  money,
+  normTermMonths,
+  truthy,
+  type DocFields,
+  type Section,
+} from "./schema";
 
 // Residential tenancy agreement, template tenancy_residential_v1.
 // Standard, neutral Singapore residential TA. This is a template for the
 // agent's review, NOT legal advice. Keep clauses standard; do not add
 // advisory or one-sided terms.
-
-export type FieldType = "text" | "textarea" | "number" | "money" | "date" | "select" | "checkbox";
-
-export type FieldDef = {
-  key: string;
-  label: string;
-  type: FieldType;
-  required?: boolean;
-  placeholder?: string;
-  hint?: string;
-  options?: string[];
-  default?: string;
-  colSpan?: 1 | 2;
-  group?: "agent"; // agent block is pre-filled and collapsed by default
-  showIf?: { key: string; equals: string };
-};
-
-export type Section = { title: string; note?: string; fields: FieldDef[] };
+//
+// Field/section types and the formatting helpers live in schema.ts, shared with
+// every other template so the client form renderer stays one implementation.
 
 export const TENANCY_SECTIONS: Section[] = [
   {
@@ -87,62 +83,13 @@ export const TENANCY_SECTIONS: Section[] = [
   },
 ];
 
-export const TENANCY_FIELD_KEYS = TENANCY_SECTIONS.flatMap((s) => s.fields.map((f) => f.key));
+export const TENANCY_FIELD_KEYS = fieldKeysOf(TENANCY_SECTIONS);
 
-export type DocFields = Record<string, string>;
-
-// --- formatting helpers (deterministic; no Date.now / argless new Date) ---
-const BLANK = "____________________";
-
-function money(v: string | undefined): string {
-  const raw = String(v ?? "");
-  // A leading minus is invalid on a rent/deposit; do not silently flip its sign.
-  if (/-/.test(raw)) return "S$0";
-  const n = Number(raw.replace(/[^0-9.]/g, ""));
-  if (!isFinite(n) || n <= 0) return "S$0";
-  return `S$${n.toLocaleString("en-SG", { maximumFractionDigits: n % 1 === 0 ? 0 : 2 })}`;
-}
-
-// Parse a YYYY-MM-DD into a real UTC date, rejecting out-of-range values like
-// 2026-13-45 (regex shape alone is not enough for a legal document).
-function parseIso(iso: string | undefined): { y: number; m: number; d: number } | null {
-  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
-  const [y, m, d] = iso.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
-  return { y, m, d };
-}
-
-export function normTermMonths(months: string | undefined): number {
-  return Math.max(1, Math.min(120, Math.round(Number(months) || 0) || 12));
-}
-
-function fmtDate(iso: string | undefined): string {
-  const p = parseIso(iso);
-  if (!p) return BLANK;
-  return new Date(Date.UTC(p.y, p.m - 1, p.d)).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-}
-
-function endDate(startIso: string | undefined, months: string | undefined): string {
-  const p = parseIso(startIso);
-  if (!p) return BLANK;
-  const n = normTermMonths(months);
-  // Add n months, CLAMPING the day to the target month's last day so a
-  // month-end start (e.g. 31 Jan) never overflows into the wrong month.
-  const monthIndex = p.m - 1 + n;
-  const ty = p.y + Math.floor(monthIndex / 12);
-  const tm = ((monthIndex % 12) + 12) % 12; // 0-based month
-  const lastDay = new Date(Date.UTC(ty, tm + 1, 0)).getUTCDate();
-  const dt = new Date(Date.UTC(ty, tm, Math.min(p.d, lastDay)));
-  dt.setUTCDate(dt.getUTCDate() - 1); // a term ending "the day before" the anniversary
-  return dt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-}
-const truthy = (v: string | undefined) => v === "true" || v === "1" || v === "on";
+// Unchanged Phase 1 behaviour, now expressed through the shared helper.
+const endDate = (startIso: string | undefined, months: string | undefined) => leaseEndDate(startIso, months);
 
 export function tenancyTitle(f: DocFields): string {
-  const addr = (f.premises_address || "").trim();
-  const short = addr ? addr.split(",")[0].slice(0, 48) : "New tenancy";
-  return `TA · ${short}`;
+  return addressTitle("TA", f.premises_address, "New tenancy");
 }
 
 export function tenancyContent(f: DocFields): ContentBlock[] {

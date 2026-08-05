@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../../lib/supabase";
 import { getAgentSession } from "../../../../../lib/agent-auth";
 import { renderPdf } from "../../../../../lib/documents/build";
-import type { DocFields } from "../../../../../lib/documents/tenancy";
+import type { DocFields } from "../../../../../lib/documents/schema";
 
 // Render a document to PDF, store it in the private agent-documents bucket, and
 // stream it back. A "draft" status renders the DRAFT watermark; a "finalised"
@@ -26,17 +26,25 @@ export async function GET(_req: Request, { params }: Props) {
   if (!UUID.test(id)) return NextResponse.json({ error: "Bad id" }, { status: 400 });
 
   const sb = supabaseAdmin();
-  const { data: doc } = await sb
-    .from("sg_documents")
-    .select("id, agent_id, template_key, title, status, fields")
-    .eq("id", id)
-    .eq("agent_id", session.agentId)
-    .maybeSingle();
+  const [{ data: doc }, { data: agent }] = await Promise.all([
+    sb
+      .from("sg_documents")
+      .select("id, agent_id, doc_type, template_key, title, status, fields")
+      .eq("id", id)
+      .eq("agent_id", session.agentId)
+      .maybeSingle(),
+    sb.from("sg_agents").select("is_sandbox, subscription_tier").eq("id", session.agentId).single(),
+  ]);
   if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   let bytes: Uint8Array;
   try {
-    bytes = await renderPdf(doc.template_key, doc.fields as DocFields, { draft: doc.status === "draft" });
+    bytes = await renderPdf(doc.template_key, doc.fields as DocFields, {
+      draft: doc.status === "draft",
+      // Free-tier documents carry the provenance line; paying agents get a
+      // clean footer on their client-facing document.
+      provenance: (agent?.subscription_tier ?? "free") === "free",
+    });
   } catch (err) {
     console.error("[documents/pdf] render failed", err);
     return NextResponse.json({ error: "Could not render document." }, { status: 500 });
@@ -49,9 +57,12 @@ export async function GET(_req: Request, { params }: Props) {
   await sb.storage.from("agent-documents").upload(path, buf, { upsert: true, contentType: "application/pdf" }).catch(() => {});
   await sb.from("sg_documents").update({ pdf_path: path }).eq("id", id);
 
-  const { data: agent } = await sb.from("sg_agents").select("is_sandbox").eq("id", session.agentId).single();
   if (agent?.is_sandbox !== true && !session.impersonatedBy) {
-    await sb.from("sg_funnel_events").insert({ event: "paperwork_generated", agent_id: session.agentId, metadata: { doc_type: doc.template_key } });
+    await sb.from("sg_funnel_events").insert({
+      event: "paperwork_generated",
+      agent_id: session.agentId,
+      metadata: { doc_type: doc.doc_type, template_key: doc.template_key, status: doc.status },
+    });
   }
 
   return new NextResponse(buf, {

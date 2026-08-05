@@ -69,7 +69,13 @@ function winAnsiSafe(input: string): string {
     .join("");
 }
 
-type RenderOpts = { draft: boolean; footerNote: string; templateKey: string };
+type RenderOpts = {
+  draft: boolean;
+  footerNote: string;
+  templateKey: string;
+  // Overrides the DRAFT stamp (the public sample uses its own wording).
+  watermarkText?: string;
+};
 
 class Layout {
   doc!: PDFDocument;
@@ -246,8 +252,10 @@ class Layout {
     const total = pages.length;
     pages.forEach((page, i) => {
       if (opts.draft) {
-        const wm = "DRAFT - NOT EXECUTED";
-        const size = 46;
+        const wm = winAnsiSafe(opts.watermarkText || "DRAFT - NOT EXECUTED");
+        // Scale to the diagonal so a longer stamp (e.g. the public sample)
+        // never runs off the page.
+        const size = Math.min(46, Math.max(18, (620 / this.bold.widthOfTextAtSize(wm, 46)) * 46));
         page.drawText(wm, {
           x: 96,
           y: 250,

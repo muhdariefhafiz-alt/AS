@@ -30,6 +30,7 @@ const TOOLS: Tool[] = [
   { href: "/tools/valuation", title: "Online valuation", desc: "An instant, data-backed estimate of what your HDB or condo is worth, from recent transactions.", tag: "Instant estimate", forWhom: "Sellers" },
   { href: "/tools/mop-tracker", title: "HDB MOP tracker", desc: "Check when your HDB flat reaches its 5-year Minimum Occupation Period and can be sold.", tag: "5-year MOP", forWhom: "Sellers" },
   { href: "/tools/cea-advertising-checker", title: "CEA advertising checker", desc: "Check your property listing ad against CEA's advertising requirements before you publish.", tag: "Compliance", forWhom: "Agents" },
+  { href: "/tools/loi", title: "Letter of intent", desc: "Draw up a rental letter of intent on your own letterhead, then let the tenancy agreement fill itself from it.", tag: "Paperwork", forWhom: "Agents" },
 ];
 
 export default function ToolsHubPage() {
