@@ -66,7 +66,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!d) return {};
   const shortName = d.name.split(",")[0];
   const stats = await privateAreaStats(districtNum(d.code));
-  const priceBit = stats.median ? ` Median ${fmtSgd(stats.median)}.` : "";
+  const priceBit = stats.median
+    ? ` Median ${fmtSgd(stats.median)} across ${stats.count12mo.toLocaleString("en-SG")} sales${
+        stats.window ? `, ${stats.window.from} to ${stats.window.thru}` : " in 12 months"
+      }.`
+    : "";
   return {
     title: seoTitle(`Sell Your Condo in ${shortName} (${d.code})`),
     description: `Selling a private property in ${shortName}, ${d.code}?${priceBit} Compare the top CEA-licensed agents ranked on real URA transaction records, then contact the ones you choose. Always free for sellers.`,
@@ -99,6 +103,9 @@ export default async function SellCondoDistrictPage({ params }: Props) {
 
   const narrative = buildNarrative(shortName, "private homes", stats);
   const topAgents = (agentsRes.data ?? []).slice(0, 3);
+  const windowStr = stats.window
+    ? `${stats.window.from} to ${stats.window.thru}`
+    : "the last 12 months";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -110,7 +117,7 @@ export default async function SellCondoDistrictPage({ params }: Props) {
         acceptedAnswer: {
           "@type": "Answer",
           text: stats.median
-            ? `Recent URA private transactions in ${d.code} (${shortName}) centre on a median around ${fmtSgd(stats.median)}, across ${stats.count12mo} sales.`
+            ? `From ${windowStr}, ${stats.count12mo.toLocaleString("en-SG")} private-home transactions were lodged in ${d.code} (${shortName}) at a median price of ${fmtSgd(stats.median)}, per URA caveat records.`
             : `Recent private transaction volume in ${shortName} is limited; compare the area's ranked agents for a current estimate.`,
         },
       },
@@ -148,7 +155,7 @@ export default async function SellCondoDistrictPage({ params }: Props) {
           stats.median
             ? [
                 `Median ${fmtSgd(stats.median)}`,
-                `${stats.count12mo} recent sales`,
+                `${stats.count12mo.toLocaleString("en-SG")} sales · ${windowStr}`,
                 ...(stats.topSegment
                   ? [`Most active: ${stats.topSegment}`]
                   : []),
@@ -167,6 +174,54 @@ export default async function SellCondoDistrictPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {stats.byType && stats.byType.length > 0 && (
+        <section className="border-t border-gray-100 bg-white pb-10">
+          <div className="fc-reveal mx-auto max-w-[860px] px-5 pt-10 md:px-8">
+            <div className="eyebrow eyebrow--muted">Market evidence</div>
+            <h2 className="mt-2 text-xl font-bold text-gray-900">
+              What sold in {shortName}, {windowStr}
+            </h2>
+            <div
+              className="fc-scene fc-scene--inbox mt-4"
+              style={{ padding: "clamp(16px,2.5vw,28px)" }}
+            >
+              <div className="fc-pop-in overflow-x-auto rounded-xl border border-gray-200 bg-white">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 text-left text-xs uppercase tracking-wider text-gray-400">
+                      <th className="px-4 py-2 font-semibold">Project</th>
+                      <th className="px-4 py-2 text-right font-semibold">Sales</th>
+                      <th className="px-4 py-2 text-right font-semibold">Median price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.byType.map((r) => (
+                      <tr key={r.label} className="border-b border-gray-100 last:border-0">
+                        <td className="px-4 py-2 font-medium text-gray-800">{r.label}</td>
+                        <td className="px-4 py-2 text-right text-gray-600">
+                          {r.txns.toLocaleString("en-SG")}
+                        </td>
+                        <td className="px-4 py-2 text-right font-semibold text-gray-900">
+                          {fmtSgd(r.median)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <p className="mt-3 text-[11px] leading-relaxed text-gray-400">
+              Most-traded projects out of {stats.count12mo.toLocaleString("en-SG")} private-home
+              transactions lodged in {d.code}, {windowStr}.
+              {stats.priorCount && stats.priorCount >= 30
+                ? ` Prior 12 months: ${stats.priorCount.toLocaleString("en-SG")} transactions.`
+                : ""}{" "}
+              Source: URA private residential caveat data.
+            </p>
+          </div>
+        </section>
+      )}
 
       {topAgents.length > 0 && (
         <section className="border-t border-gray-100 bg-gray-50 py-10">
@@ -212,7 +267,8 @@ export default async function SellCondoDistrictPage({ params }: Props) {
       {stats.recent.length > 0 && (
         <section className="border-t border-gray-100 bg-white py-10">
           <div className="fc-reveal mx-auto max-w-[860px] px-5 md:px-8">
-            <h2 className="text-xl font-bold text-gray-900">
+            <div className="eyebrow eyebrow--muted">Recent transactions</div>
+            <h2 className="mt-2 text-xl font-bold text-gray-900">
               Recent private sales in {label}
             </h2>
             <div
@@ -228,6 +284,11 @@ export default async function SellCondoDistrictPage({ params }: Props) {
                       <td className="px-4 py-2 text-xs text-gray-500">
                         {r.detail}
                       </td>
+                      {r.when && (
+                        <td className="px-4 py-2 text-right text-xs text-gray-500">
+                          {r.when}
+                        </td>
+                      )}
                       <td className="px-4 py-2 text-right font-semibold text-gray-900">
                         {fmtSgd(r.price)}
                       </td>
@@ -237,6 +298,11 @@ export default async function SellCondoDistrictPage({ params }: Props) {
               </table>
             </div>
             </div>
+            <p className="mt-3 text-[11px] leading-relaxed text-gray-400">
+              The {stats.recent.length} most recent of {stats.count12mo.toLocaleString("en-SG")} private-home
+              transactions lodged in {d.code}, {windowStr}. Source: URA private
+              residential caveat data.
+            </p>
           </div>
         </section>
       )}

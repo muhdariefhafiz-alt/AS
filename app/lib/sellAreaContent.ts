@@ -7,7 +7,7 @@
 // frames by a stable hash of the area name so phrasing varies area to area.
 
 import { cache } from "react";
-import { supabase, supabaseAdmin } from "./supabase";
+import { supabaseAdmin } from "./supabase";
 
 export type AreaTypeRow = { label: string; txns: number; median: number };
 
@@ -38,14 +38,7 @@ function hash(s: string): number {
   return Math.abs(h);
 }
 
-function median(nums: number[]): number | null {
-  if (nums.length === 0) return null;
-  const s = [...nums].sort((a, b) => a - b);
-  const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-}
-
-const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTH_NAMES =["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /** "2026-07" -> "Jul 2026". Falls back to the input on anything unexpected. */
 export function monthLabel(ym: string | null | undefined): string {
@@ -132,42 +125,89 @@ export const hdbAreaStats = cache(async (town: string): Promise<AreaStats> => {
   };
 });
 
-export async function privateAreaStats(districtNum: string): Promise<AreaStats> {
-  const { data: txns } = await supabase
-    .from("sg_private_transactions")
-    .select("price, project, contract_date, area_sqm, floor_range")
-    .eq("district", districtNum)
-    .order("contract_date", { ascending: false })
-    .limit(3000);
-  const rows = txns ?? [];
-  const prices = rows.map((r) => Number(r.price)).filter((n) => n > 0);
-  const med = median(prices);
+/** "PERFECT TEN" -> "Perfect Ten"; URA's landed catch-all gets a plain label. */
+export function fmtProjectName(p: string): string {
+  if (p.toUpperCase() === "LANDED HOUSING DEVELOPMENT") return "Landed housing";
+  const small = new Set(["at", "on", "of", "the", "by", "de"]);
+  return p
+    .toLowerCase()
+    .split(" ")
+    .map((w, i) =>
+      i > 0 && small.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)
+    )
+    .join(" ");
+}
 
-  const projCounts = new Map<string, number>();
-  for (const r of rows) {
-    const p = r.project ?? "";
-    if (p) projCounts.set(p, (projCounts.get(p) ?? 0) + 1);
+type PrivateRecentStatsRow = {
+  from_month: string;
+  thru_month: string | null;
+  count_12mo: number;
+  median_12mo: number | null;
+  prior_count: number;
+  prior_median: number | null;
+  top_projects: { project: string; txns: number; median_price: number }[];
+  recent: {
+    month: string;
+    project: string | null;
+    property_type: string | null;
+    area_sqm: number | null;
+    floor_range: string | null;
+    price: number;
+  }[];
+};
+
+// Same fix as hdbAreaStats: one SQL aggregate per district (service-role RPC).
+// The previous implementation selected raw rows through PostgREST, whose
+// 1000-row cap silently truncated counts and medians for high-volume
+// districts. It also passed unpadded district codes ("9" never matched the
+// stored "09", so D01-D09 rendered zero transactions), applied no month
+// window, and ordered raw MMYY text, which is not chronological.
+// cache() dedupes the generateMetadata + page render calls per request.
+export const privateAreaStats = cache(async (districtNum: string): Promise<AreaStats> => {
+  const { data } = await supabaseAdmin().rpc("get_private_district_recent_stats", {
+    d_code: districtNum,
+  });
+  const s = (data ?? null) as PrivateRecentStatsRow | null;
+  if (!s || !s.count_12mo) {
+    return { median: null, count12mo: 0, topSegment: null, yoyPct: null, recent: [], byType: [], window: null };
   }
-  const topSegment =
-    [...projCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+  const med = s.median_12mo ? Number(s.median_12mo) : null;
+  const priorMed = s.prior_median ? Number(s.prior_median) : null;
+  // Only claim a trend when both windows have a meaningful sample.
+  const yoy =
+    med && priorMed && s.count_12mo >= 30 && s.prior_count >= 30
+      ? ((med - priorMed) / priorMed) * 100
+      : null;
+
+  const byType: AreaTypeRow[] = (s.top_projects ?? []).map((r) => ({
+    label: fmtProjectName(r.project),
+    txns: r.txns,
+    median: Number(r.median_price),
+  }));
 
   return {
     median: med,
-    count12mo: prices.length,
-    topSegment,
-    yoyPct: null,
-    recent: rows.slice(0, 6).map((r) => ({
-      label: r.project ?? "",
+    count12mo: s.count_12mo,
+    topSegment: byType[0]?.label ?? null,
+    yoyPct: yoy,
+    priorCount: s.prior_count,
+    window: { from: monthLabel(s.from_month), thru: monthLabel(s.thru_month ?? s.from_month) },
+    byType,
+    recent: (s.recent ?? []).map((r) => ({
+      label: r.project ? fmtProjectName(r.project) : monthLabel(r.month),
+      when: monthLabel(r.month),
       price: Number(r.price),
       detail: [
+        r.property_type,
         r.area_sqm ? `${Math.round(Number(r.area_sqm))} sqm` : null,
-        r.floor_range ? `${r.floor_range} floor` : null,
+        r.floor_range && r.floor_range !== "-" ? `${r.floor_range} floor` : null,
       ]
         .filter(Boolean)
         .join(" · "),
     })),
   };
-}
+});
 
 // Produces 2-3 unique paragraphs. Frame selection is seeded by area name so
 // two areas with similar stats still read differently.
