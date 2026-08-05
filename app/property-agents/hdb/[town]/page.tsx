@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HDB_TOWNS, townFromSlug, townDisplayName, getHdbTownData, getQualifyingHdbSegments } from "../../../lib/hdbData";
+import { HIRE_INTENTS, getQualifyingHirePages } from "../../../lib/hireData";
 import { formatPrice, formatPriceFull } from "../../../lib/narrativeHelpers";
 import PriceTrendChart from "../../../components/PriceTrendChart";
 import FlatTypeBars from "../../../components/FlatTypeBars";
@@ -53,9 +54,23 @@ export default async function HdbTownPage({ params }: Props) {
   if (!town) notFound();
 
   const display = townDisplayName(town.name);
-  const [data, allSegments] = await Promise.all([getHdbTownData(town.name), getQualifyingHdbSegments()]);
+  const [data, allSegments, hireCombos] = await Promise.all([
+    getHdbTownData(town.name),
+    getQualifyingHdbSegments(),
+    getQualifyingHirePages(), // cheap snapshot read (sg_hire_page_combos)
+  ]);
   // Flat types in this town that have their own density-gated segment page.
   const segmentByFlatType = new Map(allSegments.filter((s) => s.townSlug === slug).map((s) => [s.flatType, s.flatSlug]));
+
+  // Hire-page links for THIS town. hireCombos.area is the HDB_TOWNS slug, the
+  // exact same value as this page's [town] param, so p.area === slug is an exact
+  // match and every link below points at a generated (density-gated) hire page.
+  const hireLinks = HIRE_INTENTS
+    .filter((i) => i.areaType === "town" && hireCombos.some((p) => p.area === slug && p.intent === i.slug))
+    .map((i) => ({
+      href: `/property-agents/hire/${i.slug}/${slug}`,
+      label: `Best agents to ${i.action} ${i.typeLabel.startsWith("HDB") ? "an" : "a"} ${i.typeLabel} in ${display}`,
+    }));
 
   const trend = data.priceTrend;
   const recentPrice = trend[0]?.median_price ?? 0;
@@ -596,6 +611,19 @@ export default async function HdbTownPage({ params }: Props) {
               heading="HDB price alerts"
               description={`Get notified when new resale data is available for ${display}.`}
             />
+
+            {hireLinks.length > 0 && (
+              <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Hire for a Job</h3>
+                <div className="mt-3 space-y-2">
+                  {hireLinks.map((l) => (
+                    <Link key={l.href} href={l.href} className="block text-sm font-medium text-[var(--blue)] hover:underline">
+                      {l.label} &rsaquo;
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="fc-reveal rounded-xl border border-gray-200 bg-white p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Compare Other Towns</h3>

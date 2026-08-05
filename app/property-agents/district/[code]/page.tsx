@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { getDistrictMarketData } from "../../../lib/districtData";
+import { HIRE_INTENTS, getQualifyingHirePages } from "../../../lib/hireData";
 import { formatPrice, formatPriceFull, formatPsf } from "../../../lib/narrativeHelpers";
 import EmailCapture from "../../../components/EmailCapture";
 import StickyMobileCta from "../../../components/StickyMobileCta";
@@ -77,12 +78,23 @@ export default async function DistrictPage({ params }: Props) {
   if (!district) notFound();
 
   const area = district.name.split(",")[0].trim();
-  const [data, wiki, allDistrictsRes] = await Promise.all([
+  const [data, wiki, allDistrictsRes, hireCombos] = await Promise.all([
     getDistrictMarketData(district.code),
     getWikipediaContext(district.name),
     supabase.from("sg_districts").select("code, name, slug").not("slug", "is", null).order("code"),
+    getQualifyingHirePages(), // cheap snapshot read (sg_hire_page_combos)
   ]);
   const allDistricts = allDistrictsRes.data ?? [];
+
+  // Hire-page links for THIS district. hireCombos.area is the sg_districts slug,
+  // the exact same value as this page's [code] param, so p.area === code is an
+  // exact match and every link below points at a generated (density-gated) page.
+  const hireLinks = HIRE_INTENTS
+    .filter((i) => i.areaType === "district" && hireCombos.some((p) => p.area === code && p.intent === i.slug))
+    .map((i) => ({
+      href: `/property-agents/hire/${i.slug}/${code}`,
+      label: `Best agents to ${i.action} a ${i.typeLabel} in ${district.code}`,
+    }));
 
   const vsSg = pct(data.medianPrice, data.sgMedianPrice);
   const condoTypes = data.propertyTypes.filter((t) => t.property_type === "Apartment" || t.property_type === "Condominium");
@@ -365,6 +377,17 @@ export default async function DistrictPage({ params }: Props) {
                   <Link href="/sell" className="small" style={{ fontWeight: 600 }}>Compare agents ›</Link>
                 </div>
               </div>
+
+              {hireLinks.length > 0 && (
+                <div className="fc-card fc-card--pad">
+                  <div className="kicker">Hire for a job</div>
+                  <div className="fc-col" style={{ gap: 6, marginTop: 10 }}>
+                    {hireLinks.map((l) => (
+                      <Link key={l.href} href={l.href} className="small" style={{ fontWeight: 600 }}>{l.label} ›</Link>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {allDistricts.length > 0 && (
                 <div className="fc-card fc-card--pad">
