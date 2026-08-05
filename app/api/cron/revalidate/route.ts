@@ -44,15 +44,19 @@ export async function GET(req: Request) {
     }
   }
 
-  // Revalidate all agent profile pages. Scores and the transaction record change
-  // daily, and without this they only refresh on-request every 12h, so a stale or
-  // transiently-empty render (e.g. a heavy agent whose track RPC blipped during a
-  // build) can persist. This is a cache purge; pages regenerate on next request.
-  try {
-    revalidatePath("/property-agents/agent/[slug]", "page");
-    revalidated.push("/property-agents/agent/[slug] (all)");
-  } catch (err) {
-    errors.push(`agent/[slug]: ${err instanceof Error ? err.message : String(err)}`);
+  // Blanket purge of all ~38k agent profile pages: WEEKLY (Sundays), not daily.
+  // The pages already self-refresh every 12h via ISR (revalidate = 43200), so a
+  // daily sitewide purge added no freshness; it just turned the next day's crawl
+  // of the whole surface into cache-miss re-renders (~1M observability events/day
+  // and matching Supabase load). Weekly still clears any transiently-bad render
+  // (e.g. an agent whose track RPC blipped) without daily cache carnage.
+  if (new Date().getUTCDay() === 0) {
+    try {
+      revalidatePath("/property-agents/agent/[slug]", "page");
+      revalidated.push("/property-agents/agent/[slug] (all, weekly)");
+    } catch (err) {
+      errors.push(`agent/[slug]: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
   // Revalidate all area "best agent" pages (28 areas)
@@ -102,6 +106,21 @@ export async function GET(req: Request) {
     revalidated.push("/property-agents/best-by-type/[type] (all)");
   } catch (err) {
     errors.push(`best-by-type/[type]: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  // Seller landing pages: now data-driven (12mo medians/volumes from RPCs), so
+  // they must refresh daily like the other evidence pages, not sit on a stale
+  // build for up to 24h.
+  for (const [path, label] of [
+    ["/sell/hdb/[town]", "sell/hdb/[town]"],
+    ["/sell/condo/[district]", "sell/condo/[district]"],
+  ] as const) {
+    try {
+      revalidatePath(path, "page");
+      revalidated.push(`${path} (all)`);
+    } catch (err) {
+      errors.push(`${label}: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
   const duration = Date.now() - started;
