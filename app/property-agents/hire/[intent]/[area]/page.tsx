@@ -199,6 +199,13 @@ export default async function HireAgentPage({ params }: Props) {
             <Link href={matcherHref} className="mt-4 inline-flex items-center rounded-lg bg-[var(--blue)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--blue-deep)]">
               Get my free shortlist
             </Link>
+            {intent.slug === "sell-hdb" && (
+              <p className="mt-3 text-xs text-gray-500">
+                <Link href={`/sell/hdb/${area}`} className="font-medium text-[var(--blue)] hover:underline">
+                  Selling in {areaShort}? Get your free shortlist &rsaquo;
+                </Link>
+              </p>
+            )}
           </div>
         </div>
 

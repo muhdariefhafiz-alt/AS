@@ -6,14 +6,22 @@
 // achieve that by (1) pulling real stats per area, and (2) selecting sentence
 // frames by a stable hash of the area name so phrasing varies area to area.
 
-import { supabase } from "./supabase";
+import { cache } from "react";
+import { supabase, supabaseAdmin } from "./supabase";
+
+export type AreaTypeRow = { label: string; txns: number; median: number };
 
 export type AreaStats = {
   median: number | null;
   count12mo: number;
-  topSegment: string | null; // e.g. "4 ROOM" or "The Sail @ Marina Bay"
+  topSegment: string | null; // e.g. "4-room" or "The Sail @ Marina Bay"
   yoyPct: number | null; // year-over-year median change
-  recent: { label: string; price: number; detail: string }[];
+  recent: { label: string; price: number; detail: string; when?: string }[];
+  /** Per-segment split for the same 12mo window (HDB: flat types). */
+  byType?: AreaTypeRow[];
+  /** Month window the 12mo figures cover, e.g. { from: "Sep 2025", thru: "Jul 2026" }. */
+  window?: { from: string; thru: string } | null;
+  priorCount?: number;
 };
 
 function fmtSgd(n: number): string {
@@ -37,64 +45,84 @@ function median(nums: number[]): number | null {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-function pad2(n: number): string {
-  return String(n).padStart(2, "0");
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** "2026-07" -> "Jul 2026". Falls back to the input on anything unexpected. */
+export function monthLabel(ym: string | null | undefined): string {
+  if (!ym) return "";
+  const m = /^(\d{4})-(\d{2})$/.exec(ym);
+  if (!m) return ym;
+  const idx = Number(m[2]) - 1;
+  return idx >= 0 && idx < 12 ? `${MONTH_NAMES[idx]} ${m[1]}` : ym;
 }
 
-function monthsBack(n: number, offset = 0): string[] {
-  const out: string[] = [];
-  const now = new Date();
-  for (let i = offset; i < offset + n; i++) {
-    const dt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
-    out.push(`${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth() + 1)}`);
-  }
-  return out;
+/** "4 ROOM" -> "4-room", "EXECUTIVE" -> "Executive". */
+export function fmtFlatType(t: string): string {
+  const room = /^(\d) ROOM$/.exec(t.toUpperCase());
+  if (room) return `${room[1]}-room`;
+  return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
 }
 
-export async function hdbAreaStats(town: string): Promise<AreaStats> {
-  const last12 = monthsBack(12);
-  const prev12 = monthsBack(12, 12);
-  const [{ data: recent }, { data: prior }] = await Promise.all([
-    supabase
-      .from("sg_hdb_transactions")
-      .select("resale_price, flat_type, block, street_name, storey_range, floor_area_sqm, month")
-      .eq("town", town.toUpperCase())
-      .in("month", last12)
-      .order("month", { ascending: false })
-      .limit(3000),
-    supabase
-      .from("sg_hdb_transactions")
-      .select("resale_price")
-      .eq("town", town.toUpperCase())
-      .in("month", prev12)
-      .limit(3000),
-  ]);
+type HdbRecentStatsRow = {
+  from_month: string;
+  thru_month: string | null;
+  count_12mo: number;
+  median_12mo: number | null;
+  prior_count: number;
+  prior_median: number | null;
+  by_type: { flat_type: string; txns: number; median_price: number }[];
+  recent: {
+    month: string;
+    block: string | null;
+    street_name: string | null;
+    flat_type: string | null;
+    storey_range: string | null;
+    floor_area_sqm: number | null;
+    resale_price: number;
+  }[];
+};
 
-  const rows = recent ?? [];
-  const prices = rows.map((r) => Number(r.resale_price)).filter((n) => n > 0);
-  const med = median(prices);
-  const priorMed = median((prior ?? []).map((r) => Number(r.resale_price)).filter((n) => n > 0));
-  const yoy = med && priorMed ? ((med - priorMed) / priorMed) * 100 : null;
-
-  // Top flat type by count
-  const typeCounts = new Map<string, number>();
-  for (const r of rows) {
-    const t = r.flat_type ?? "";
-    if (t) typeCounts.set(t, (typeCounts.get(t) ?? 0) + 1);
+// One indexed SQL aggregate per town (service-role RPC). The previous
+// implementation selected raw rows through PostgREST, whose 1000-row cap
+// silently truncated counts and medians for high-volume towns.
+// cache() dedupes the generateMetadata + page render calls per request.
+export const hdbAreaStats = cache(async (town: string): Promise<AreaStats> => {
+  const { data } = await supabaseAdmin().rpc("get_hdb_town_recent_stats", {
+    t_name: town.toUpperCase(),
+  });
+  const s = (data ?? null) as HdbRecentStatsRow | null;
+  if (!s || !s.count_12mo) {
+    return { median: null, count12mo: 0, topSegment: null, yoyPct: null, recent: [], byType: [], window: null };
   }
-  const topSegment =
-    [...typeCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+  const med = s.median_12mo ? Number(s.median_12mo) : null;
+  const priorMed = s.prior_median ? Number(s.prior_median) : null;
+  // Only claim a trend when both windows have a meaningful sample.
+  const yoy =
+    med && priorMed && s.count_12mo >= 30 && s.prior_count >= 30
+      ? ((med - priorMed) / priorMed) * 100
+      : null;
+
+  const byType: AreaTypeRow[] = (s.by_type ?? []).map((r) => ({
+    label: fmtFlatType(r.flat_type),
+    txns: r.txns,
+    median: Number(r.median_price),
+  }));
 
   return {
     median: med,
-    count12mo: prices.length,
-    topSegment,
+    count12mo: s.count_12mo,
+    topSegment: byType[0]?.label ?? null,
     yoyPct: yoy,
-    recent: rows.slice(0, 6).map((r) => ({
-      label: r.block ? `Blk ${r.block} ${r.street_name ?? ""}`.trim() : (r.month ?? ""),
+    priorCount: s.prior_count,
+    window: { from: monthLabel(s.from_month), thru: monthLabel(s.thru_month ?? s.from_month) },
+    byType,
+    recent: (s.recent ?? []).map((r) => ({
+      label: r.block ? `Blk ${r.block} ${r.street_name ?? ""}`.trim() : monthLabel(r.month),
+      when: monthLabel(r.month),
       price: Number(r.resale_price),
       detail: [
-        r.flat_type,
+        r.flat_type ? fmtFlatType(r.flat_type) : null,
         r.floor_area_sqm ? `${Math.round(Number(r.floor_area_sqm))} sqm` : null,
         r.storey_range ? `${r.storey_range} floor` : null,
       ]
@@ -102,7 +130,7 @@ export async function hdbAreaStats(town: string): Promise<AreaStats> {
         .join(" · "),
     })),
   };
-}
+});
 
 export async function privateAreaStats(districtNum: string): Promise<AreaStats> {
   const { data: txns } = await supabase
@@ -183,7 +211,7 @@ export function buildNarrative(
 
   if (stats.topSegment) {
     const segFrames = [
-      `The most-traded segment lately is ${stats.topSegment} — agents who specialise in it tend to price and market it best.`,
+      `The most-traded segment lately is ${stats.topSegment}; agents who specialise in it tend to price and market it best.`,
       `${stats.topSegment} is the busiest segment here right now, so an agent with a deep ${areaLabel} ${stats.topSegment} record is worth shortlisting.`,
       `Most recent activity sits in the ${stats.topSegment} segment; look for agents whose track record concentrates there.`,
     ];
