@@ -107,8 +107,13 @@ export default async function HireAgentPage({ params }: Props) {
     },
   ];
 
+  // Cross-link ONLY sibling combos that actually qualify (density gate). The
+  // unfiltered list linked non-existent combos, spraying internal 404s across
+  // the family (caught by a site audit: 30 broken links / 9 dead URLs).
+  const qualifying = await getQualifyingHirePages();
+  const validIntentsHere = new Set(qualifying.filter((p) => p.area === area).map((p) => p.intent));
   const otherIntentsSameArea = HIRE_INTENTS.filter(
-    (i) => i.slug !== intent.slug && i.areaType === intent.areaType
+    (i) => i.slug !== intent.slug && i.areaType === intent.areaType && validIntentsHere.has(i.slug)
   ).slice(0, 4);
 
   return (
