@@ -40,6 +40,20 @@ const guides = [
     tagColor: "bg-amber-50 text-amber-700 border-amber-200",
   },
   {
+    slug: "who-pays-agent-commission",
+    title: "Who Pays Agent Commission in Singapore?",
+    description: "Each side pays their own agent. When buyers pay nothing, how co-broking splits work, and the HDB vs private differences, with worked examples.",
+    tag: "Costs",
+    tagColor: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  {
+    slug: "hdb-resale-agent-fee",
+    title: "HDB Resale Agent Fee: The 1% Norm Explained",
+    description: "What about 1% per side comes to at real 2026 HDB prices, GST on top, when the fee is paid, and what it includes. Norms, not regulation.",
+    tag: "Costs",
+    tagColor: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  {
     slug: "condo-vs-hdb-investment",
     title: "Condo vs HDB as an Investment in Singapore",
     description: "Key differences for investment: ABSD rules, rental yield, capital appreciation, MOP restrictions, and ownership limits.",

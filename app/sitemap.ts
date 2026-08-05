@@ -80,6 +80,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/guides/how-to-check-property-agent-record`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/guides/hdb-resale-process`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/guides/property-agent-commission`, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE}/guides/who-pays-agent-commission`, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE}/guides/hdb-resale-agent-fee`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/guides/condo-vs-hdb-investment`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${BASE}/guides/property-agent-vs-diy`, changeFrequency: "monthly", priority: 0.85 },
 

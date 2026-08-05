@@ -335,6 +335,8 @@ export default function PropertyAgentCommissionPage() {
               <h3 className="text-sm font-bold text-gray-900">Related Guides</h3>
               <ul className="mt-3 space-y-2">
                 <li><Link href="/tools/commission-calculator" className="text-sm font-semibold text-[var(--blue)] hover:underline">Commission calculator (free tool)</Link></li>
+                <li><Link href="/guides/who-pays-agent-commission" className="text-sm text-[var(--blue)] hover:underline">Who pays the commission?</Link></li>
+                <li><Link href="/guides/hdb-resale-agent-fee" className="text-sm text-[var(--blue)] hover:underline">HDB resale agent fee</Link></li>
                 <li><Link href="/insights/property-agent-statistics-singapore" className="text-sm text-[var(--blue)] hover:underline">Singapore agent statistics study</Link></li>
                 <li><Link href="/guides/how-to-choose-property-agent" className="text-sm text-[var(--blue)] hover:underline">How to choose an agent</Link></li>
                 <li><Link href="/guides/property-agent-vs-diy" className="text-sm text-[var(--blue)] hover:underline">Selling without an agent</Link></li>
