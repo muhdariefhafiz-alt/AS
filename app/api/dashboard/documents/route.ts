@@ -7,6 +7,7 @@ import { LOI_TO_TENANCY } from "../../../lib/documents/loi";
 import { logPaperwork, logPaperworkChained, logPaperworkSetup } from "../../../lib/documents/activation";
 import type { DocFields } from "../../../lib/documents/schema";
 import type { Tier } from "../../../lib/tiers";
+import { attachOrCreateDeal } from "../../../lib/deals";
 
 // Paperwork documents CRUD for the agent dashboard. Service-role writes after
 // the fc_agent session check (the dashboard is claimed-agents only, so the
@@ -136,10 +137,11 @@ export async function POST(req: Request) {
   // deliberately do not.
   let chainedFrom: { docType: string; carried: number } | null = null;
   let linkedId: string | null = null;
+  let chainedDealId: string | null = null;
   if (body.fromDocumentId) {
     const { data: src } = await sb
       .from("sg_documents")
-      .select("id, doc_type, fields")
+      .select("id, doc_type, fields, deal_id")
       .eq("id", body.fromDocumentId)
       .eq("agent_id", session.agentId)
       .maybeSingle();
@@ -158,6 +160,10 @@ export async function POST(req: Request) {
     }
     chainedFrom = { docType: src.doc_type, carried };
     linkedId = src.id;
+    // A chained document is the same deal as the one it chained from, by
+    // definition: the tenancy agreement papers the offer the letter of intent
+    // opened. Carry the deal across rather than matching on address again.
+    chainedDealId = (src.deal_id as string | null) ?? null;
   }
 
   // Pin the letterhead LAST so neither a seed nor a chained document can put
@@ -165,6 +171,28 @@ export async function POST(req: Request) {
   Object.assign(fields, pinnedLetterhead(agent));
 
   const title = dt.title(fields);
+
+  // Every document belongs to a deal. The agent is never asked to pick one:
+  // a chained document inherits its parent's, and anything else attaches to the
+  // open deal for that address or starts one. A document with no address yet
+  // simply has no deal until it has one.
+  // Chaining does NOT advance the stage: starting a blank tenancy agreement is
+  // not the same as having one signed. The deal moves when the document does.
+  const dealId =
+    chainedDealId ??
+    (await attachOrCreateDeal(sb, {
+      agentId: session.agentId,
+      propertyLabel: String(fields.premises_address ?? ""),
+      // A new deal starts at enquiry whatever document opened it. Opening a
+      // form is not evidence of an offer.
+      createStage: "enquiry",
+      source: entry,
+      trigger: "document_started",
+      postalCode: String(fields.premises_postal ?? "") || null,
+      propertyType: String(fields.premises_type ?? "") || null,
+      counterpartyName: String(fields.tenant_name ?? fields.landlord_name ?? "") || null,
+      rentOrPrice: String(fields.rent_amount ?? "") || null,
+    }));
 
   const { data: doc, error } = await sb
     .from("sg_documents")
@@ -176,6 +204,7 @@ export async function POST(req: Request) {
       status: "draft",
       fields,
       linked_document_id: linkedId,
+      deal_id: dealId,
     })
     .select("id, doc_type, template_key, title, status, fields, linked_document_id, updated_at, created_at")
     .single();

@@ -9,7 +9,7 @@ import {
 // exchange the code for tokens, store them, and return the agent to the Planner.
 export async function GET(req: Request) {
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
-  const dash = `${site}/dashboard?tab=leads`;
+  const dash = `${site}/dashboard?tab=pipeline`;
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");

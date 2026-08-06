@@ -76,7 +76,7 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You have shown a condo unit on a Saturday afternoon and the tenant says yes. The landlord wants something in writing today. Instead of finding last month's file and editing over it, you open the viewing in your Planner, tap to issue a letter of intent, and the letter is already on your letterhead with your CEA registration and the standard clauses in place. You type the parties, the rent, the term and the deposits, download the PDF and send it. When the landlord accepts, the tenancy agreement starts from that letter.",
     },
     walkthrough: [
-      { step: "Open Paperwork", detail: "In your dashboard, the Paperwork tab. You can also start straight from a confirmed viewing in your Planner, which carries the property across." },
+      { step: "Open Pipeline", detail: "In your dashboard, the Pipeline tab. Every deal opens with the paperwork it needs, and a confirmed viewing carries the property across." },
       { step: "Choose the document", detail: "Pick Letter of Intent or Tenancy agreement. Each card says roughly how long it takes." },
       { step: "Check your letterhead", detail: "Your name, CEA registration and agency are already filled in from your profile and collapsed out of the way. They are fixed to you and cannot be edited into someone else's name." },
       { step: "Fill in the deal", detail: "Property, landlord, tenant and occupiers, term, rent, deposits, and the standard terms. Conventions such as the security deposit months, the minor repair cap and the diplomatic clause come with the market range as a hint, and every one of them is editable." },
@@ -332,7 +332,7 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You paste the badge into your signature. Every quote, every follow-up and every cold introduction now carries a live score that updates itself as you close deals, and anyone who is curious can click it and see the record behind it rather than taking your word for it.",
     },
     walkthrough: [
-      { step: "Open the Grow tab", detail: "Find the Share your record card." },
+      { step: "Open the Find tab", detail: "Look for the Share your record card." },
       { step: "Pick what you need", detail: "Rank card, website badge, lead widget, or the ask-for-a-review link." },
       { step: "Copy the snippet", detail: "The embed code already has your profile in it." },
       { step: "Paste it", detail: "Into your site, your signature or a message. The badge redraws from your record, so it never goes stale." },
@@ -530,7 +530,7 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You farm two HDB towns. On Friday evening you open Deal Radar and see the blocks where flats changed hands around five years ago, so those households are coming up on their MOP, alongside every sale recorded nearby in the last six months. You plan the route around the blocks with both signals, and you knock with the recent prices already in your head.",
     },
     walkthrough: [
-      { step: "Open the Grow tab", detail: "Deal Radar sits at the top of the Grow tab in your dashboard." },
+      { step: "Open the Find tab", detail: "Deal Radar sits at the top of the Find tab in your dashboard." },
       { step: "Add your farm areas", detail: "Choose HDB town or District, pick the area, press Add. Up to five, the same on every plan." },
       { step: "Read the MOP list", detail: "Block and street, flat type, storey range, and the note telling you which month the flat was bought and that it is approaching the five-year MOP." },
       { step: "Read recent sales", detail: "The most recent sales in those areas over the last 180 days, HDB and private, with price and month." },
@@ -575,7 +575,7 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You are meeting an owner in a town you work. Before you go, you open Area Intelligence, pick the town and the flat type, and see the range from the last twelve months of resales along with how many sales sit behind it. At the table you are not arguing about a feeling, you are showing the record, with the sample size next to it.",
     },
     walkthrough: [
-      { step: "Open the Grow tab", detail: "Area Intelligence sits below Deal Radar and the Pitch Kit." },
+      { step: "Open the Find tab", detail: "Area Intelligence sits below Deal Radar and the Pitch Kit." },
       { step: "Pick one of your areas", detail: "The chips are built from your own transaction record, up to eight, ordered by how many deals you have done there." },
       { step: "Choose a flat type for a town", detail: "HDB towns get a flat-type selector. Private districts are priced as a whole." },
       { step: "Read the pricing evidence", detail: "The range, the number of comparables behind it, a plain confidence label, and the most recent comparable sale." },
@@ -617,7 +617,7 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "A seller in a town you work has agreed to meet you on Thursday. On Tuesday you send them your Pitch Kit link for that town. They open it and see how many deals you have actually closed there, when the most recent one was, how you rank among agents active in that area, and what has sold nearby. By Thursday the conversation has moved past whether you know the area.",
     },
     walkthrough: [
-      { step: "Open the Grow tab", detail: "The Pitch Kit card sits under Deal Radar." },
+      { step: "Open the Find tab", detail: "The Pitch Kit card sits under Deal Radar." },
       { step: "Pick an area", detail: "The chips come from your own record, labelled with how many deals you have done there." },
       { step: "Open or copy", detail: "Open your pitch shows you the page. Copy share link puts the URL on your clipboard." },
       { step: "Send it", detail: "WhatsApp, email, wherever you already talk to the seller." },
@@ -641,7 +641,7 @@ export const ROADMAP: RoadmapEntry[] = [
     summary:
       "Every seller who shortlists you lands in one inbox, ordered by what is at risk, with a first reply you can draft from official records and edit before you send it.",
     whatItIs: [
-      "Sellers who compare agents here and shortlist you arrive in a Leads tab, ordered so the enquiries that could cost you a listing sit at the top, each with a chip showing how long it has been waiting.",
+      "Sellers who compare agents here and shortlist you arrive in your Pipeline, ordered so the enquiries that could cost you a listing sit at the top, each with a chip showing how long it has been waiting.",
       "On an enquiry you have been invited to quote, one button drafts a first reply. The draft uses only things on record: what the seller told us about their property, area, timeline and price expectation, your own name, agency and AgentScore, and recent transactions in their town or district.",
       "Nothing is sent for you. Before a seller picks you, you do not have their number: the draft goes into the quote you send them through us. Once you win the lead, their contact details unlock and the same button drafts the follow-up you send directly.",
       "The inbox has been there since June 2026. Drafting from the record arrived in July.",
@@ -657,10 +657,10 @@ export const ROADMAP: RoadmapEntry[] = [
     ],
     useCase: {
       title: "Three enquiries you have not answered since Tuesday",
-      body: "You open the Leads tab and the banner tells you two need a reply, one of them overdue. You open the oldest and press to draft a reply. Back comes a message that names the seller's flat type, their area and two recent sales nearby, under your name. You edit a line, put it into your quote and send it, then mark it replied.",
+      body: "You open the Pipeline tab and the banner tells you two need a reply, one of them overdue. You open the oldest and press to draft a reply. Back comes a message that names the seller's flat type, their area and two recent sales nearby, under your name. You edit a line, put it into your quote and send it, then mark it replied.",
     },
     walkthrough: [
-      { step: "Open the Leads tab", detail: "Enquiries are ordered so the ones needing you come first, with New, Aging or Overdue chips." },
+      { step: "Open the Pipeline tab", detail: "Enquiries are ordered so the ones needing you come first, with New, Aging or Overdue chips." },
       { step: "Expand an enquiry", detail: "Press Submit quote on an enquiry that is awaiting your quote." },
       { step: "Draft a reply", detail: "Press Draft a reply with AI. The result is labelled as grounded in the record." },
       { step: "Edit and copy", detail: "It is a plain editable box. Change what you want, press Copy, or redraft." },
@@ -703,7 +703,7 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You put your booking link in the listing and in your bio. Ten people ask to view. Instead of ten separate threads, ten requests land in your Planner with the property, the time and the contact. You confirm the ones that work and cancel the ones that clash, then message those ten people yourself, because we do not write to them for you. When one of the viewings turns into a deal you issue the letter of intent straight from that row.",
     },
     walkthrough: [
-      { step: "Copy your link", detail: "In the Leads tab, the Planner panel shows your booking link with a copy button." },
+      { step: "Copy your link", detail: "In the Pipeline tab, the Viewings panel shows your booking link with a copy button." },
       { step: "Share it", detail: "Listings, bio, messages. The page shows your photo, agency, CEA number and AgentScore." },
       { step: "Requests arrive", detail: "You get an email and the request appears in your Planner marked as a new request." },
       { step: "Confirm or cancel", detail: "Confirm, mark done, or cancel. If a calendar is connected, a confirmed viewing is written to it." },
@@ -745,7 +745,7 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You know one development better than anyone, down to which stacks face the afternoon sun. You claim its page, write four paragraphs of the things the price table cannot say, and publish. From then on, the owners and buyers reading that development's transaction history read your commentary underneath, with a button to book you.",
     },
     walkthrough: [
-      { step: "Open the Grow tab", detail: "Find the Building pages card. It shows how many pages your plan allows." },
+      { step: "Open the Find tab", detail: "Look for the Building pages card. It shows how many pages your plan allows." },
       { step: "Find your development", detail: "Search by name. Results show the street, district and how many transactions we hold." },
       { step: "Write it", detail: "A headline up to 90 characters and your commentary, at least 350 characters to publish." },
       { step: "Publish", detail: "It goes live immediately. If another agent already presents that development, you are told and can save a draft instead." },

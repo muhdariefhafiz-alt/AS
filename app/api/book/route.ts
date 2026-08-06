@@ -58,6 +58,11 @@ export async function POST(req: Request) {
     );
   }
 
+  // No deal is created here. This endpoint is public: anyone with the agent's
+  // booking link can post a request, so creating a deal would let a stranger
+  // write rows into an agent's pipeline and fill in a counterparty name on a
+  // deal that already exists. The deal is created when the AGENT confirms the
+  // viewing, which is an authenticated act by the person whose pipeline it is.
   const { data: created, error } = await sb.from("sg_viewings").insert({
     agent_cea_no: agent.cea_registration,
     property_label: propertyLabel,
@@ -112,7 +117,7 @@ export async function POST(req: Request) {
               ...(message ? [`Note: ${message}`] : []),
             ]) +
             muted(`Confirming from your Planner also adds it to your connected calendar.`),
-          cta: { label: "Open your Planner", href: "https://fair-comparisons.com/dashboard?tab=leads" },
+          cta: { label: "Open your viewings", href: "https://fair-comparisons.com/dashboard?tab=pipeline" },
           footerNote: "You received this because a viewing was requested through your FairComparisons booking link.",
         }),
         metric: "Viewing Request",

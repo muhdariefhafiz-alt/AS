@@ -9,10 +9,10 @@ export async function GET() {
   const session = await getAgentSession();
   if (!session) return NextResponse.redirect(`${site}/dashboard`);
   if (session.impersonatedBy) {
-    return NextResponse.redirect(`${site}/dashboard?tab=leads&calendar=impersonation`);
+    return NextResponse.redirect(`${site}/dashboard?tab=pipeline&calendar=impersonation`);
   }
   if (!isGoogleCalendarConfigured()) {
-    return NextResponse.redirect(`${site}/dashboard?tab=leads&calendar=unconfigured`);
+    return NextResponse.redirect(`${site}/dashboard?tab=pipeline&calendar=unconfigured`);
   }
   return NextResponse.redirect(googleAuthUrl(session.agentId));
 }

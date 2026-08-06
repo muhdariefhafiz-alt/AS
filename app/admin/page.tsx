@@ -9,6 +9,7 @@ import { LiquidityTab } from "./tabs/LiquidityTab";
 import { FunnelTab } from "./tabs/FunnelTab";
 import { LeadsTab } from "./tabs/LeadsTab";
 import { PlannerTab } from "./tabs/PlannerTab";
+import { PipelineTab } from "./tabs/PipelineTab";
 import { SupplyTab } from "./tabs/SupplyTab";
 import { SeoTab } from "./tabs/SeoTab";
 import { AiSearchTab } from "./tabs/AiSearchTab";
@@ -128,6 +129,7 @@ export default async function AdminPage({ searchParams }: Props) {
             {active === "funnel" && <FunnelTab />}
             {active === "leads" && <LeadsTab />}
             {active === "planner" && <PlannerTab />}
+            {active === "pipeline" && <PipelineTab />}
             {active === "loops" && <LoopsTab />}
             {active === "supply" && <SupplyTab />}
             {active === "seo" && <SeoTab />}

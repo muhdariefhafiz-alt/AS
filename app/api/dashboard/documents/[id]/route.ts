@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { getAgentSession } from "../../../../lib/agent-auth";
+import { advanceStage, attachOrCreateDeal, touchDeal } from "../../../../lib/deals";
 import { DOCUMENT_QUOTA, docTypeByKey, isEditable } from "../../../../lib/documents";
 import { logPaperwork, logPaperworkFinalised, logPaperworkStatus } from "../../../../lib/documents/activation";
 import { LETTERHEAD_KEYS } from "../../../../lib/documents/prefill";
@@ -34,7 +35,7 @@ async function ownDoc(agentId: number, id: string) {
   if (!UUID.test(id)) return null;
   const { data } = await supabaseAdmin()
     .from("sg_documents")
-    .select("id, agent_id, doc_type, template_key, title, status, fields, pdf_path, linked_document_id, updated_at, created_at")
+    .select("id, agent_id, doc_type, template_key, title, status, fields, pdf_path, linked_document_id, deal_id, updated_at, created_at")
     .eq("id", id)
     .eq("agent_id", agentId)
     .maybeSingle();
@@ -135,7 +136,7 @@ export async function PATCH(req: Request, { params }: Props) {
     .update(update)
     .eq("id", id)
     .eq("agent_id", session.agentId)
-    .select("id, doc_type, template_key, title, status, fields, linked_document_id, updated_at, created_at")
+    .select("id, doc_type, template_key, title, status, fields, linked_document_id, deal_id, updated_at, created_at")
     .single();
   if (error || !data) {
     console.error("[documents] save failed", error);
@@ -144,6 +145,33 @@ export async function PATCH(req: Request, { params }: Props) {
 
   const sb = supabaseAdmin();
   const nextStatus = typeof update.status === "string" ? update.status : null;
+
+  // Attach a deal as soon as the document knows its address. A letter of intent
+  // is normally started before the agent types the unit, so create-time is the
+  // WRONG and only moment to try this: without a save-time attach, most
+  // documents would never join a deal at all.
+  let dealId = (data.deal_id as string | null) ?? null;
+  if (!dealId) {
+    const f = (data.fields ?? {}) as DocFields;
+    const attached = await attachOrCreateDeal(sb, {
+      agentId: session.agentId,
+      propertyLabel: String(f.premises_address ?? ""),
+      createStage: "enquiry",
+      source: "document_save",
+      trigger: "document_addressed",
+      postalCode: String(f.premises_postal ?? "") || null,
+      propertyType: String(f.premises_type ?? "") || null,
+      counterpartyName: String(f.tenant_name ?? f.landlord_name ?? "") || null,
+      rentOrPrice: String(f.rent_amount ?? "") || null,
+    });
+    if (attached) {
+      await sb.from("sg_documents").update({ deal_id: attached }).eq("id", id).eq("agent_id", session.agentId);
+      dealId = attached;
+    }
+  }
+  // Working a document is working its deal. Without this the deal looks
+  // untouched and the operator's stuck counter reports the busiest work.
+  if (dealId) await touchDeal(sb, dealId);
   // The document's own audit trail always records what happened. The FUNNEL is
   // the operator's read of real agent behaviour, so sandbox accounts stay out
   // of it: a test document must never move an activation metric.
@@ -157,6 +185,18 @@ export async function PATCH(req: Request, { params }: Props) {
       actor: session.email,
       metadata: { from: doc.status },
     });
+
+    // The deal's stage follows the document, because the document IS the
+    // evidence the stage happened. A finalised letter of intent means there is
+    // an offer out; a signed tenancy agreement means the lease is agreed. The
+    // agent never updates a stage by hand unless they want to.
+    if (dealId) {
+      if (nextStatus === "finalised" && doc.doc_type === "loi") {
+        await advanceStage(sb, dealId, "offer", "document_finalised");
+      } else if (nextStatus === "signed") {
+        await advanceStage(sb, dealId, doc.doc_type === "tenancy_agreement" ? "agreement" : "offer", "document_signed");
+      }
+    }
     if (countable) {
       await logPaperworkStatus(sb, {
         agentId: session.agentId,

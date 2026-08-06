@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { getAgentSession } from "../../../lib/agent-auth";
+import { attachOrCreateDeal, advanceStage } from "../../../lib/deals";
 import { syncViewingToCalendar } from "../../../lib/calendar-sync";
 
 // Planner: an agent's viewing appointments. Session-gated; the agent is derived
@@ -68,6 +69,36 @@ export async function POST(req: Request) {
     .eq("id", id)
     .eq("agent_cea_no", agent.cea_registration);
   if (error) return NextResponse.json({ error: "Could not update." }, { status: 500 });
+
+  // Confirming a viewing is the moment a property becomes a deal, and it is an
+  // authenticated act by the agent whose pipeline it is. The public /book route
+  // deliberately creates nothing: a stranger with the booking link must not be
+  // able to write rows into an agent's pipeline.
+  if (status === "confirmed") {
+    const { data: v } = await supabaseAdmin()
+      .from("sg_viewings")
+      .select("id, deal_id, property_label, attendee_name, attendee_contact")
+      .eq("id", id)
+      .eq("agent_cea_no", agent.cea_registration)
+      .maybeSingle();
+    if (v && !v.deal_id) {
+      const dealId = await attachOrCreateDeal(supabaseAdmin(), {
+        agentId: session.agentId,
+        propertyLabel: String(v.property_label ?? ""),
+        createStage: "viewing",
+        source: "viewing_confirmed",
+        trigger: "viewing_booked",
+        counterpartyName: String(v.attendee_name ?? "") || null,
+        counterpartyContact: String(v.attendee_contact ?? "") || null,
+      });
+      if (dealId) {
+        await supabaseAdmin().from("sg_viewings").update({ deal_id: dealId }).eq("id", id);
+        // A confirmed viewing IS evidence the viewing stage happened, so this
+        // one advances an existing deal as well as creating a new one.
+        await advanceStage(supabaseAdmin(), dealId, "viewing", "viewing_booked");
+      }
+    }
+  }
 
   // Planner tracker: record the agent's response as a funnel event. The
   // event timestamp minus the viewing's created_at is the time-to-respond

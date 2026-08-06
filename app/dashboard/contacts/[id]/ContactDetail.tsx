@@ -129,7 +129,7 @@ export default function ContactDetail({ shortlist, lead, proof, timeline: initia
         }}
       >
         <div style={{ maxWidth: 920, margin: "0 auto", padding: "14px 20px" }}>
-          <Link href="/dashboard?tab=leads" className="fc-btn fc-btn--quiet fc-btn--sm">
+          <Link href="/dashboard?tab=pipeline" className="fc-btn fc-btn--quiet fc-btn--sm">
             ← Back to inbox
           </Link>
         </div>

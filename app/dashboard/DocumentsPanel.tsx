@@ -45,9 +45,18 @@ const NEXT_ACTION: Record<string, { status: DocRow["status"]; label: string } | 
   void: null,
 };
 
-export type AutoStart = { type: string; seed?: Record<string, string>; entry?: string };
+// What the dashboard asked this panel to do on mount. `type` starts a new
+// document; `openId` opens one that already exists (the Pipeline hands over a
+// deal's letter of intent this way); `fromDocumentId` chains from another.
+export type AutoStart = {
+  type?: string;
+  seed?: Record<string, string>;
+  entry?: string;
+  openId?: string;
+  fromDocumentId?: string;
+};
 
-export default function DocumentsPanel({ onUpgrade, autoStart, onAutoStartConsumed }: { onUpgrade?: () => void; autoStart?: AutoStart; onAutoStartConsumed?: () => void }) {
+export default function DocumentsPanel({ onUpgrade, autoStart, onAutoStartConsumed, onClose }: { onUpgrade?: () => void; autoStart?: AutoStart; onAutoStartConsumed?: () => void; onClose?: () => void }) {
   const [state, setState] = useState<"loading" | "list" | "picker" | "edit" | "error">("loading");
   const [docs, setDocs] = useState<DocRow[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
@@ -138,14 +147,26 @@ export default function DocumentsPanel({ onUpgrade, autoStart, onAutoStartConsum
   // land the agent inside a started document, not on an empty list.
   useEffect(() => {
     if (!autoStart || autoStarted.current || state === "loading") return;
-    if (!docTypeByKey(autoStart.type)?.available) return;
+    const wantsNew = autoStart.type && docTypeByKey(autoStart.type)?.available;
+    if (!autoStart.openId && !wantsNew) return;
     autoStarted.current = true;
     // Tell the parent immediately: this panel unmounts on every tab switch, so
     // a trigger left set would create a fresh blank document (and burn a quota
     // slot) each time the agent comes back to the tab.
     onAutoStartConsumed?.();
-    queueMicrotask(() => { createDoc(autoStart.type, undefined, autoStart.seed, autoStart.entry ?? "deep_link"); });
-  }, [autoStart, state, createDoc, onAutoStartConsumed]);
+    queueMicrotask(() => {
+      if (autoStart.openId) {
+        // Opening an existing document is not a create, so it must never spend
+        // a quota slot or log a start.
+        fetch(`/api/dashboard/documents/${autoStart.openId}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => { if (d?.document) openDoc(d.document); })
+          .catch(() => {});
+        return;
+      }
+      createDoc(autoStart.type as string, autoStart.fromDocumentId, autoStart.seed, autoStart.entry ?? "deep_link");
+    });
+  }, [autoStart, state, createDoc, openDoc, onAutoStartConsumed]);
 
   // Editing a field marks the doc dirty; while the agent has not manually
   // renamed it, the title follows the property address.
@@ -389,6 +410,18 @@ export default function DocumentsPanel({ onUpgrade, autoStart, onAutoStartConsum
   const lead = types[0];
   return (
     <div className="fc-card fc-hero-in" style={{ padding: 22 }}>
+      {/* Documents live inside the Pipeline tab now, so the way out of the
+          document list is back to the deals, not to a tab that no longer
+          exists. */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="small"
+          style={{ border: "none", background: "none", cursor: "pointer", color: "var(--blue)", fontWeight: 600, padding: 0, marginBottom: 12, display: "block" }}
+        >
+          &larr; Back to your deals
+        </button>
+      )}
       <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
         <p className="kicker" style={{ margin: 0 }}>Paperwork</p>
         {meta && (

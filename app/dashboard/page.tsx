@@ -9,7 +9,8 @@ import PitchKitPanel from "./PitchKitPanel";
 import AreaIntelPanel from "./AreaIntelPanel";
 import PlannerPanel from "./PlannerPanel";
 import DemandPanel from "./DemandPanel";
-import DocumentsPanel from "./DocumentsPanel";
+import DocumentsPanel, { type AutoStart } from "./DocumentsPanel";
+import PipelinePanel from "./PipelinePanel";
 import PaperworkNudge from "./PaperworkNudge";
 import BuildingPagesPanel from "./BuildingPagesPanel";
 import PerformancePanel from "./PerformancePanel";
@@ -26,17 +27,36 @@ const TIER_LABELS = TIER_LABEL;
 // Profile-completeness engine. Weights reflect conversion impact, not equal
 // thirds: a photo and a message do the most to convert the sellers who already
 // view the profile. Drives the adaptive "Today" hero and its single next action.
-type TabId = "home" | "leads" | "grow" | "paperwork" | "profile";
+// The tabs are the agent's value chain, not our toolbox. "today" is the single
+// next action, "pipeline" is the deal spine that absorbed enquiries, viewings
+// and paperwork, "find" is prospecting, "you" is identity and money.
+type TabId = "today" | "pipeline" | "find" | "you";
+
+// Old names kept working: the launch announcement links to ?tab=paperwork, and
+// emails and the roadmap carry ?tab=leads and ?tab=grow. A renamed tab must
+// never turn a live link into a dead one.
+const TAB_ALIASES: Record<string, TabId> = {
+  home: "today",
+  today: "today",
+  leads: "pipeline",
+  pipeline: "pipeline",
+  paperwork: "pipeline",
+  documents: "pipeline",
+  grow: "find",
+  find: "find",
+  profile: "you",
+  you: "you",
+};
 type SetupStep = { key: string; label: string; cta: string; weight: number; done: boolean; anchor: string; tab: TabId };
 function computeCompleteness(p: {
   photo: boolean; message: boolean; whatsapp: boolean; bio: boolean; areas: number | null;
 }): { pct: number; done: number; steps: SetupStep[]; next: SetupStep | null } {
   const steps: SetupStep[] = [
-    { key: "photo", label: "Add a profile photo", cta: "Add your photo", weight: 30, done: p.photo, anchor: "edit-photo", tab: "profile" },
-    { key: "message", label: "Write your message to sellers", cta: "Write your message", weight: 25, done: p.message, anchor: "edit-message", tab: "profile" },
-    { key: "whatsapp", label: "Add WhatsApp for instant lead alerts", cta: "Add your WhatsApp", weight: 20, done: p.whatsapp, anchor: "edit-whatsapp", tab: "profile" },
-    { key: "bio", label: "Write a short bio", cta: "Write your bio", weight: 15, done: p.bio, anchor: "edit-bio", tab: "profile" },
-    { key: "areas", label: "Add the areas you farm", cta: "Add a farm area", weight: 10, done: (p.areas ?? 0) > 0, anchor: "deal-radar", tab: "grow" },
+    { key: "photo", label: "Add a profile photo", cta: "Add your photo", weight: 30, done: p.photo, anchor: "edit-photo", tab: "you" },
+    { key: "message", label: "Write your message to sellers", cta: "Write your message", weight: 25, done: p.message, anchor: "edit-message", tab: "you" },
+    { key: "whatsapp", label: "Add WhatsApp for instant lead alerts", cta: "Add your WhatsApp", weight: 20, done: p.whatsapp, anchor: "edit-whatsapp", tab: "you" },
+    { key: "bio", label: "Write a short bio", cta: "Write your bio", weight: 15, done: p.bio, anchor: "edit-bio", tab: "you" },
+    { key: "areas", label: "Add the areas you farm", cta: "Add a farm area", weight: 10, done: (p.areas ?? 0) > 0, anchor: "deal-radar", tab: "find" },
   ];
   const pct = steps.filter((s) => s.done).reduce((a, s) => a + s.weight, 0);
   return { pct, done: steps.filter((s) => s.done).length, steps, next: steps.find((s) => !s.done) ?? null };
@@ -83,8 +103,12 @@ export default function DashboardPage() {
   const [standing, setStanding] = useState<Standing>(null);
   const [farmAreaCount, setFarmAreaCount] = useState<number | null>(null);
   const [today, setToday] = useState<{ openLeads: number; viewingRequests: number } | null>(null);
-  const [activeTab, setActiveTabState] = useState<TabId>("home");
-  const [newDoc, setNewDoc] = useState<{ type: string; seed?: Record<string, string>; entry?: string } | undefined>(undefined);
+  const [activeTab, setActiveTabState] = useState<TabId>("today");
+  const [newDoc, setNewDoc] = useState<AutoStart | undefined>(undefined);
+  // The document editor takes over the Pipeline tab when it is open. Kept in
+  // the page rather than inside the panel so a deep link can open straight into
+  // a document and the back control returns to the deal list.
+  const [docOpen, setDocOpen] = useState(false);
 
   // Tab synced to the URL (?tab=) so it is linkable and back-button friendly.
   useEffect(() => {
@@ -92,7 +116,8 @@ export default function DashboardPage() {
     const t = params.get("tab");
     // Mount-time URL -> state sync (deep-linkable tab). Deferred a tick so it is
     // not a synchronous setState in the effect body.
-    if (t === "leads" || t === "grow" || t === "paperwork" || t === "profile") queueMicrotask(() => setActiveTabState(t));
+    const mapped = t ? TAB_ALIASES[t] : undefined;
+    if (mapped) queueMicrotask(() => setActiveTabState(mapped));
     // ?newDoc= lands the agent inside a started document rather than on an
     // empty list: the entry points that matter (the first-run card, a viewing
     // that just happened) are moments, and a moment should not end on a form.
@@ -103,7 +128,7 @@ export default function DashboardPage() {
       // Without it every external link reports as a generic deep_link and the
       // announcement can never be judged.
       const from = params.get("newDocFrom") || undefined;
-      queueMicrotask(() => setNewDoc({ type: nd, entry: from }));
+      queueMicrotask(() => { setNewDoc({ type: nd, entry: from }); setDocOpen(true); });
       // Strip it immediately: a link that survives a reload would create a new
       // blank document on every visit to the URL.
       const clean = new URL(window.location.href);
@@ -117,12 +142,17 @@ export default function DashboardPage() {
   // context of the surface it was started from.
   function startDocument(docType: string, seed?: Record<string, string>, entry?: string) {
     setNewDoc({ type: docType, seed, entry });
-    setTab("paperwork");
+    setDocOpen(true);
+    setTab("pipeline");
   }
   function setTab(t: TabId) {
+    // Leaving Pipeline closes the document editor. Without this, coming back
+    // later reopens the last document instead of the deal list, and Today's
+    // worklist rows would land the agent in a form they did not ask for.
+    if (t !== "pipeline") setDocOpen(false);
     setActiveTabState(t);
     const url = new URL(window.location.href);
-    if (t === "home") url.searchParams.delete("tab"); else url.searchParams.set("tab", t);
+    if (t === "today") url.searchParams.delete("tab"); else url.searchParams.set("tab", t);
     window.history.replaceState(null, "", url.toString());
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -131,7 +161,7 @@ export default function DashboardPage() {
   function goToField(tab: TabId, anchor: string) {
     setActiveTabState(tab);
     const url = new URL(window.location.href);
-    if (tab === "home") url.searchParams.delete("tab"); else url.searchParams.set("tab", tab);
+    if (tab === "today") url.searchParams.delete("tab"); else url.searchParams.set("tab", tab);
     window.history.replaceState(null, "", url.toString());
     setTimeout(() => focusField(anchor), 220);
   }
@@ -216,7 +246,7 @@ export default function DashboardPage() {
 
     if (billing) {
       // Deferred so it is not a synchronous setState in the effect body.
-      setTimeout(() => { setActiveTabState("profile"); focusField("billing-card"); }, 300);
+      setTimeout(() => { setActiveTabState("you"); focusField("billing-card"); }, 300);
     }
     if (!up) return;
 
@@ -410,7 +440,7 @@ export default function DashboardPage() {
         <UnlockMoment
           tier={unlock}
           onClose={() => setUnlock(null)}
-          onOpenTools={() => { setUnlock(null); setTab("grow"); }}
+          onOpenTools={() => { setUnlock(null); setTab("find"); }}
         />
       )}
 
@@ -533,7 +563,7 @@ export default function DashboardPage() {
               job-based tabs so a new agent is not buried in a 12-section wall,
               while the Home launcher keeps every tool discoverable. */}
           <div className="fc-hero-in fc-hero-in--2" style={{ display: "flex", gap: 4, overflowX: "auto", borderBottom: "1px solid var(--line)" }}>
-            {(([["home", "Home"], ["leads", "Leads"], ["grow", "Grow"], ["paperwork", "Paperwork"], ["profile", "Profile"]]) as [TabId, string][]).map(([id, label]) => (
+            {(([["today", "Today"], ["pipeline", "Pipeline"], ["find", "Find"], ["you", "You"]]) as [TabId, string][]).map(([id, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
@@ -553,27 +583,28 @@ export default function DashboardPage() {
           {/* Keyed by tab: remounts on switch so content fades up (fc-tab-in). */}
           <div key={activeTab} className="fc-tab-in" style={{ display: "flex", flexDirection: "column", gap: 22 }}>
 
-          {/* ---------- HOME: standing + activation + demand snapshot + launcher ---------- */}
-          {activeTab === "home" && (
+          {/* ---------- TODAY: the one question "what needs me now" ----------
+              Deliberately thin. Standing, performance and demand are mirrors,
+              not actions, so they moved to You: a dashboard that opens with how
+              well you are doing is a dashboard that answers a question nobody
+              asked at 9am. */}
+          {activeTab === "today" && (
             <>
-              {/* Your standing (hero). AgentScore is absorbed into this panel. */}
-              <StandingPanel standing={standing} primaryArea={agent.primary_area} score={agent.score} />
-
-              {/* "What needs you today": the habit worklist. A live enquiry or
-                  viewing request is more urgent than finishing setup, so it
-                  leads when present. Each row jumps to the Leads tab. */}
+              {/* The habit worklist. A live enquiry or viewing request outranks
+                  finishing setup, so it leads when present. Each row jumps into
+                  the pipeline. */}
               {today && (today.openLeads > 0 || today.viewingRequests > 0) && (
                 <div className="fc-card fc-card--pad" style={{ borderLeft: "3px solid var(--ok)" }}>
                   <p className="kicker" style={{ color: "var(--ok)", margin: 0 }}>What needs you today</p>
                   <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
                     {today.openLeads > 0 && (
-                      <button onClick={() => setTab("leads")} className="fc-card fc-card--fill" style={{ padding: "11px 14px", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}>
+                      <button onClick={() => setTab("pipeline")} className="fc-card fc-card--fill" style={{ padding: "11px 14px", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}>
                         <span className="small"><strong>{today.openLeads}</strong> seller enquir{today.openLeads === 1 ? "y is" : "ies are"} awaiting your quote</span>
                         <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>Reply &rarr;</span>
                       </button>
                     )}
                     {today.viewingRequests > 0 && (
-                      <button onClick={() => setTab("leads")} className="fc-card fc-card--fill" style={{ padding: "11px 14px", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}>
+                      <button onClick={() => setTab("pipeline")} className="fc-card fc-card--fill" style={{ padding: "11px 14px", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}>
                         <span className="small"><strong>{today.viewingRequests}</strong> viewing request{today.viewingRequests === 1 ? "" : "s"} to confirm</span>
                         <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>Confirm &rarr;</span>
                       </button>
@@ -600,7 +631,7 @@ export default function DashboardPage() {
                   <span className="muted small">
                     {agent.views_this_week > 0
                       ? `${agent.views_this_week} seller${agent.views_this_week === 1 ? "" : "s"} viewed you this week. Share your record below to bring in more.`
-                      : "You're set up and ranked. Share your record below and add farm areas to surface fresh owners."}
+                      : "You're set up and ranked. Nothing needs you right now, so Find is where the next deal comes from."}
                   </span>
                 </div>
               );
@@ -653,114 +684,131 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* Demand Dashboard: real seller demand for this agent (never affects rank) */}
-          <DemandPanel />
-
-          {/* Verified upsell as a single contextual chip right under the numbers
-              it unlocks (was a full locked card + a duplicate stat tile). */}
-          {agent.subscription_tier === "free" && (
-            <button
-              onClick={() => handleUpgrade("verified")}
-              disabled={checkoutLoading !== null}
-              className="fc-card fc-card--fill"
-              style={{ padding: "10px 14px", textAlign: "left", cursor: "pointer", border: "1px dashed var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}
-            >
-              <span className="muted small">Contact-click detail unlocks with <strong style={{ color: "var(--ink)" }}>Verified</strong>.</span>
-              <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>{checkoutLoading === "verified" ? "…" : "Unlock →"}</span>
-            </button>
-          )}
-
-              {/* Contact-click detail for paid tiers (views live in Demand above). */}
-              {isPaid(agent.subscription_tier) && (
-                <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
-                  <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week ?? 0}</p>
-                  <p className="kicker" style={{ marginTop: 4 }}>Contact-button clicks this week</p>
-                </div>
-              )}
-
-              {/* Tools launcher — every tool stays discoverable from Home even
-                  though its full UI lives in a tab (protects feature discovery). */}
-              <div>
-                <p className="kicker" style={{ margin: "0 0 10px" }}>Your tools</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>
-                  {(([
-                    ["leads", "Seller enquiries", "Reply and win listings"],
-                    ["leads", "Viewings", "Confirm booking requests"],
-                    ["grow", "Deal Radar", "Owners reaching MOP near you"],
-                    ["grow", "Building pages", "Own a development's page"],
-                    ["grow", "Share your record", "Rank card + website badge"],
-                    ["paperwork", "Paperwork", "Letters of intent and tenancy agreements"],
-                    ["profile", "Edit profile", "Photo, message, WhatsApp"],
-                  ]) as [TabId, string, string][]).map(([tab, title, sub]) => (
-                    <button key={title} onClick={() => setTab(tab)} className="fc-card" style={{ padding: 14, textAlign: "left", cursor: "pointer", border: "1px solid var(--line)" }}>
-                      <div style={{ fontWeight: 600, fontSize: 14 }}>{title}</div>
-                      <div className="muted small" style={{ marginTop: 3 }}>{sub}</div>
-                      <div className="small" style={{ marginTop: 8, color: "var(--blue)", fontWeight: 600 }}>Open &rarr;</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
             </>
           )}
 
-          {/* ---------- LEADS: the money surface (enquiries + viewings) ---------- */}
-          {activeTab === "leads" && agent.cea_registration && (
-            <div>
-              <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
-                <h2 style={{ fontSize: 18, margin: 0 }}>Seller enquiries</h2>
-                <Link href="/sell" className="small" style={{ color: "var(--blue)", fontWeight: 600 }}>
-                  How sellers compare you →
-                </Link>
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <LeadsInbox
-                  agentEmail={email.toLowerCase().trim()}
-                  ceaRegistration={agent.cea_registration}
+          {/* ---------- PIPELINE: the deal spine ----------
+              Absorbs the old Leads, Planner and Paperwork tabs. A deal is one
+              property; its enquiry, viewings and documents hang off it. The
+              document editor takes over the whole tab when one is open, because
+              filling in a tenancy agreement is not a glance-at-the-list task. */}
+          {activeTab === "pipeline" && agent.cea_registration && (
+            <>
+              {docOpen ? (
+                <DocumentsPanel
+                  onUpgrade={() => handleUpgrade("verified")}
+                  autoStart={newDoc}
+                  onAutoStartConsumed={() => setNewDoc(undefined)}
+                  onClose={() => setDocOpen(false)}
                 />
-              </div>
-            </div>
-          )}
-          {activeTab === "leads" && agent.cea_registration && (
-            <PlannerPanel onIssueLoi={(propertyLabel) => startDocument("loi", { premises_address: propertyLabel }, "viewing_row")} />
-          )}
+              ) : (
+                <>
+                  <PipelinePanel
+                    onIssueDocument={(docType, seed, entry, fromDocumentId) => {
+                      setNewDoc({ type: docType, seed, entry, fromDocumentId });
+                      setDocOpen(true);
+                    }}
+                    onOpenDocument={(documentId) => {
+                      setNewDoc({ openId: documentId });
+                      setDocOpen(true);
+                    }}
+                  />
 
-          {/* ---------- GROW: prospecting + marketing toolkit ---------- */}
-          {activeTab === "grow" && agent.cea_registration && (
-            <div id="deal-radar">
-              <DealRadar />
-            </div>
-          )}
-          {activeTab === "grow" && agent.cea_registration && <PitchKitPanel />}
-          {activeTab === "grow" && agent.cea_registration && (
-            <PerformancePanel onUpgrade={() => handleUpgrade("professional")} />
-          )}
-          {activeTab === "grow" && agent.cea_registration && <AreaIntelPanel />}
-          {activeTab === "grow" && agent.cea_registration && <BuildingPagesPanel />}
-          {activeTab === "grow" && agent.cea_registration && <PerfUploadCard />}
+                  <div>
+                    <div className="fc-row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
+                      <h2 style={{ fontSize: 18, margin: 0 }}>Seller enquiries</h2>
+                      <Link href="/sell" className="small" style={{ color: "var(--blue)", fontWeight: 600 }}>
+                        How sellers compare you →
+                      </Link>
+                    </div>
+                    <div style={{ marginTop: 12 }}>
+                      <LeadsInbox
+                        agentEmail={email.toLowerCase().trim()}
+                        ceaRegistration={agent.cea_registration}
+                      />
+                    </div>
+                  </div>
 
-          {/* Consolidated share surface (Grow tab). */}
-          {activeTab === "grow" && <ShareCard slug={agent.slug} score={agent.score} />}
+                  <PlannerPanel onIssueLoi={(propertyLabel) => startDocument("loi", { premises_address: propertyLabel }, "viewing_row")} />
 
-          {/* ---------- PAPERWORK: document system-of-record ---------- */}
-          {activeTab === "paperwork" && agent.cea_registration && (
-            <DocumentsPanel onUpgrade={() => handleUpgrade("verified")} autoStart={newDoc} onAutoStartConsumed={() => setNewDoc(undefined)} />
+                  <button
+                    type="button"
+                    onClick={() => { setNewDoc(undefined); setDocOpen(true); }}
+                    className="small"
+                    style={{ alignSelf: "flex-start", background: "none", border: "none", padding: 0, cursor: "pointer", color: "var(--slate)", fontWeight: 600, textDecoration: "underline" }}
+                  >
+                    All documents
+                  </button>
+                </>
+              )}
+            </>
           )}
-          {activeTab === "paperwork" && !agent.cea_registration && (
+          {activeTab === "pipeline" && !agent.cea_registration && (
             <div className="fc-card" style={{ padding: 22 }}>
-              <p className="kicker" style={{ margin: 0 }}>Paperwork</p>
+              <p className="kicker" style={{ margin: 0 }}>Pipeline</p>
               <h2 className="serif" style={{ fontSize: 20, margin: "6px 0 0" }}>We need your CEA registration first.</h2>
               <p className="muted" style={{ marginTop: 8, fontSize: 14.5, maxWidth: "52ch" }}>
                 Every document goes out over your name and CEA registration number, so we cannot draw one up until your
                 profile carries it. Add it on your profile and this tab opens.
               </p>
-              <button onClick={() => setTab("profile")} className="fc-btn fc-btn--primary fc-btn--sm" style={{ marginTop: 14 }}>
+              <button onClick={() => setTab("you")} className="fc-btn fc-btn--primary fc-btn--sm" style={{ marginTop: 14 }}>
                 Go to your profile &rarr;
               </button>
             </div>
           )}
 
+          {/* ---------- GROW: prospecting + marketing toolkit ---------- */}
+          {activeTab === "find" && agent.cea_registration && (
+            <div id="deal-radar">
+              <DealRadar />
+            </div>
+          )}
+          {activeTab === "find" && agent.cea_registration && <PitchKitPanel />}
+          {activeTab === "find" && agent.cea_registration && <AreaIntelPanel />}
+          {activeTab === "find" && agent.cea_registration && <BuildingPagesPanel />}
+          {activeTab === "find" && agent.cea_registration && <PerfUploadCard />}
+
+          {/* Consolidated share surface (Find tab). */}
+          {activeTab === "find" && <ShareCard slug={agent.slug} score={agent.score} />}
+
+          {/* ---------- YOU: the mirror ----------
+              Standing, demand and performance are how the agent is doing, not
+              what they should do next. They belong together, one tab away from
+              the work, rather than interrupting it. */}
+          {activeTab === "you" && (
+            <>
+              <StandingPanel standing={standing} primaryArea={agent.primary_area} score={agent.score} />
+              {agent.cea_registration && <PerformancePanel onUpgrade={() => handleUpgrade("professional")} />}
+          {/* Demand Dashboard: real seller demand for this agent (never affects rank) */}
+              <DemandPanel />
+
+              {/* Verified upsell as a single contextual chip right under the numbers
+                  it unlocks (was a full locked card + a duplicate stat tile). */}
+              {agent.subscription_tier === "free" && (
+                <button
+                  onClick={() => handleUpgrade("verified")}
+                  disabled={checkoutLoading !== null}
+                  className="fc-card fc-card--fill"
+                  style={{ padding: "10px 14px", textAlign: "left", cursor: "pointer", border: "1px dashed var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}
+                >
+                  <span className="muted small">Contact-click detail unlocks with <strong style={{ color: "var(--ink)" }}>Verified</strong>.</span>
+                  <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>{checkoutLoading === "verified" ? "…" : "Unlock →"}</span>
+                </button>
+              )}
+
+                  {/* Contact-click detail for paid tiers (views live in Demand above). */}
+                  {isPaid(agent.subscription_tier) && (
+                    <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
+                      <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week ?? 0}</p>
+                      <p className="kicker" style={{ marginTop: 4 }}>Contact-button clicks this week</p>
+                    </div>
+                  )}
+
+            </>
+          )}
+
           {/* ---------- PROFILE: identity model + verified + edit form ---------- */}
-          {activeTab === "profile" && (
+          {activeTab === "you" && (
             <div className="fc-card" style={{ background: "var(--blue-wash)", borderColor: "transparent", padding: "20px 22px" }}>
               <h2 style={{ fontSize: 16, margin: 0, color: "var(--ink)" }}>How FairComparisons works for you</h2>
               <ul style={{ marginTop: 10, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 14.5, color: "var(--ink-2)" }}>
@@ -775,7 +823,7 @@ export default function DashboardPage() {
           )}
 
           {/* Plan & billing — account settings for every tier (ST: sandbox-aware) */}
-          {activeTab === "profile" && (
+          {activeTab === "you" && (
             <PlanBillingPanel
               tier={agent.subscription_tier}
               subscriptionEndsAt={agent.subscription_ends_at}
@@ -790,7 +838,7 @@ export default function DashboardPage() {
           )}
 
           {/* Profile edit form */}
-          {activeTab === "profile" && (
+          {activeTab === "you" && (
           <div style={{ borderTop: "1px solid var(--line)", paddingTop: 24 }}>
             <h2 style={{ fontSize: 18, margin: 0 }}>Edit your profile</h2>
             <form onSubmit={handleSave} style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 20 }}>

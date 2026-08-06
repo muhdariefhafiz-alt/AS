@@ -58,7 +58,7 @@ export default function DraftReply({ shortlistId }: { shortlistId: number }) {
         <div className="fc-alert fc-alert--info" style={{ marginTop: 8 }}>
           <span>
             {error}{" "}
-            <a href="/dashboard?tab=grow" style={{ fontWeight: 700, textDecoration: "underline" }}>
+            <a href="/dashboard?tab=find" style={{ fontWeight: 700, textDecoration: "underline" }}>
               See plans
             </a>
           </span>
