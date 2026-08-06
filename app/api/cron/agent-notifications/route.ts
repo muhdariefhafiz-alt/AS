@@ -19,11 +19,21 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Get claimed agents with email
+  // Get claimed agents with email.
+  //
+  // email_opt_out_at is not optional here. This send carries an unsubscribe
+  // link, and app/unsubscribe/route.ts writes email_opt_out_at keyed on this
+  // exact claimed_email column, promising "you will no longer receive standing
+  // updates or activity emails". Without the filter that promise was false and
+  // the link was decorative: the agent unsubscribed and got this digest again
+  // the following Monday. Every sibling marketing cron already filters it
+  // (standing-digest, avm-updates, review-requests, mop-alerts, outreach);
+  // this one was the only omission.
   const { data: claimedAgents } = await supabase
     .from("sg_agents")
     .select("id, name, slug, claimed_email, score, agency_name, cea_registration")
     .eq("claimed", true)
+    .is("email_opt_out_at", null)
     .not("claimed_email", "is", null);
 
   if (!claimedAgents || claimedAgents.length === 0) {

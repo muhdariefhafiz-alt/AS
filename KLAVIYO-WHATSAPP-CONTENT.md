@@ -1,5 +1,9 @@
 # Klaviyo flows + WhatsApp templates — build deck
 
+> **Superseded for email, 2026-08-06.** Klaviyo was removed; Resend is the only
+> sender and needs no flows and no `KLAVIYO_API_KEY`. Skip every Klaviyo step
+> below. The WhatsApp half of this document is still current.
+
 Everything you need to wire up notifications this weekend: the tracked events,
 the personalization properties each carries, and full copy (subject, preheader,
 headline, sub-headline, body, CTA, footer) for every flow.
@@ -219,3 +223,4 @@ PDPA: marketing sends (MOP Alert, AVM Update, Seller Reactivation) only go to
 profiles with `marketing_consent = true`. Transactional sends (shortlist, quotes,
 invoices, review confirmation) are allowed without marketing consent. The app
 already enforces this gate before firing the event.
+

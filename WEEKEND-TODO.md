@@ -42,7 +42,8 @@ Production. Set every one of these:
 
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` — from Supabase → Project Settings → API →
       service_role key. **Without this, the entire seller funnel is dead.**
-- [ ] `KLAVIYO_API_KEY` — from Klaviyo → Settings → API Keys (private key)
+- [x] ~~`KLAVIYO_API_KEY`~~ not needed. Klaviyo removed 2026-08-06; set
+      `RESEND_API_KEY` and `RESEND_FROM` instead (Resend is the only sender).
 - [ ] `WHATSAPP_PHONE_NUMBER_ID` — from step 1
 - [ ] `WHATSAPP_ACCESS_TOKEN` — from step 1
 - [ ] `WHATSAPP_APP_SECRET` — Meta app → Settings → Basic → App Secret
@@ -63,7 +64,11 @@ After saving: trigger a redeploy (env changes only apply on next deploy).
 
 ---
 
-## 3. Create Klaviyo flows · 60 min
+## 3. ~~Create Klaviyo flows~~ DONE BY DELETION · 0 min
+
+> Klaviyo was removed 2026-08-06. Resend sends each email directly, so there
+> are no flows to create. Skip this whole section. Kept for context only.
+
 
 Each transactional email fires a Klaviyo *event* (metric); a Flow listening on
 that metric sends the actual email using `{{ event.subject }}` / `{{ event.html }}`.

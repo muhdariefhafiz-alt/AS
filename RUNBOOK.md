@@ -10,8 +10,9 @@ The directory side (30,740 CEA agents, 730K transactions, district/HDB/agency
 pages) is read-mostly. The seller funnel writes to RLS-protected tables
 (`sg_leads`, `sg_lead_shortlist`, `sg_lead_quotes`, `sg_lead_completions`,
 `sg_lead_events`) and is reachable ONLY through `supabaseAdmin()` (service-role
-key). Notifications go out via Klaviyo (email) + Meta WhatsApp Cloud API, both
-with dry-run fallbacks when keys are missing.
+key). Notifications go out via Resend (email) + Meta WhatsApp Cloud API. Email has
+NO fallback provider: without RESEND_API_KEY nothing is sent and every attempt
+logs `[email] NOT SENT`. WhatsApp still dry-runs when its keys are missing.
 
 ## Required production env vars
 
@@ -20,7 +21,8 @@ Set ALL of these in Vercel → Production before launch:
 | Var | Used by | Without it |
 |---|---|---|
 | `SUPABASE_SERVICE_ROLE_KEY` | every seller-funnel write | all `/sell/*`, `/api/sell/*`, `/api/mop/*` throw |
-| `KLAVIYO_API_KEY` | all email | emails dry-run (logged, not sent) |
+| `RESEND_API_KEY` | all email | NOTHING is sent: claim verification, admin magic-link login, seller invites, every cron. Each attempt logs `[email] NOT SENT`. |
+| `RESEND_FROM` | sender identity on all email | falls back to the default from-address |
 | `WHATSAPP_PHONE_NUMBER_ID` | WhatsApp sends | WhatsApp dry-runs |
 | `WHATSAPP_ACCESS_TOKEN` | WhatsApp sends | WhatsApp dry-runs |
 | `WHATSAPP_APP_SECRET` | inbound webhook verify | webhook accepts unverified (dev only) |
@@ -42,11 +44,11 @@ Set ALL of these in Vercel → Production before launch:
 
 ## Operator setup (one-time, NOT code)
 
-1. **Klaviyo flows** — create one flow per metric, each using the existing
-   `event.subject` / `event.html` template pattern:
-   `Seller Shortlist Ready`, `Agent Notification`, `Seller Quote Ready`,
-   `Seller Completion`, `Agent Invoice`, `MOP Alert`, `Seller Review Request`,
-   `Seller Reactivation`, `Seller Completion Verified`, `Admin Login`.
+1. **Email**: nothing to set up. Resend sends each message directly, so the
+   per-metric flow configuration this step used to describe no longer exists.
+   (Klaviyo was removed 2026-08-06. Its 5 Live flows had delivered 0 emails in
+   30 days while Resend carried the same mail, which is what a silently dead
+   provider looks like.) Set `RESEND_API_KEY` and `RESEND_FROM` and you are done.
 2. **Meta WhatsApp templates** — submit all 6 from `WHATSAPP_TEMPLATES.md`.
    Approval takes 24–48h. Code dry-runs until they're live.
 3. **Cron schedules** — already in `vercel.json`; verify they appear in
@@ -106,8 +108,10 @@ The sprint-3 definition of done. Walk a real SG seller through:
 
 - **`supabaseAdmin requires ... SERVICE_ROLE_KEY`** in logs → env var missing
   in that environment. Expected locally; must be set in Vercel prod.
-- **Emails not arriving** → check `KLAVIYO_API_KEY` set AND the matching
-  Klaviyo flow exists for that metric. Dry-run logs show what would've sent.
+- **Emails not arriving** → check `RESEND_API_KEY` is set in that environment,
+  then grep the function logs. `[email] NOT SENT` means the key is missing;
+  `[email/resend] send failed` means Resend rejected it and the response body
+  is logged next to it. There is no second provider to fall back to.
 - **WhatsApp not arriving** → templates not yet Meta-approved, or env missing.
   Look for `🟡 [whatsapp/dry-run]` log lines.
 - **Admin can't log in** → email not in `ADMIN_EMAILS`, or `ADMIN_SECRET`

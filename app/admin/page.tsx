@@ -111,7 +111,16 @@ export default async function AdminPage({ searchParams }: Props) {
 
         <div className="min-w-0 flex-1">
           {(() => {
-            const claimsTotal = (pendingClaims.count ?? 0) + (manualReviewClaims ?? 0);
+            // manual_review ONLY. A claim with status 'pending' is waiting on the
+            // AGENT to click their verification link, not on the operator: the
+            // claims queue filters .eq(status,'manual_review') so a pending row can
+            // never appear there, and /api/admin/claims 409s anything that is not
+            // manual_review. Counting it here put a permanent "1 item awaiting your
+            // review" banner above a Review-claims button that opens an empty page,
+            // with no action able to clear it. That is the exact alarm fatigue this
+            // banner exists to end. Pending claims are already reported, correctly
+            // labelled "awaiting email click", in the Overzicht tab.
+            const claimsTotal = manualReviewClaims ?? 0;
             const total = modTotal + claimsTotal;
             if (total === 0) return null;
             const parts: string[] = [];
