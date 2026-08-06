@@ -7,7 +7,7 @@ import { resolveContactId } from "../../../lib/contacts";
 // delivery/bounce webhook, so it has its own Svix secret. Inert until the owner
 // provisions the reply.fair-comparisons.com MX (pointed at Resend inbound) and
 // sets RESEND_INBOUND_WEBHOOK_SECRET in Vercel, the same latent-until-provisioned
-// pattern as WhatsApp, Klaviyo and the outbound bounce webhook.
+// pattern as WhatsApp and the outbound bounce webhook.
 //
 // Routing: FC relays an agent's reply with From/Reply-To
 //   reply+{reply_token}@reply.fair-comparisons.com

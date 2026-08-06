@@ -5,7 +5,7 @@
 // compile error, not a Meta 400 at runtime.
 //
 // Dry-run fallback when WHATSAPP_ACCESS_TOKEN is missing — same pattern as
-// Klaviyo's sendEmail. We log a Tier-1 message (problem + cause + fix +
+// the email sender. We log a Tier-1 message (problem + cause + fix +
 // docs link) so the next engineer reading dev logs knows exactly why
 // nothing arrived.
 //

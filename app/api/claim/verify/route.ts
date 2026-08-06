@@ -98,7 +98,7 @@ export async function GET(req: Request) {
     dashboardUrl,
   );
   // Await before the redirect: a fire-and-forget promise is dropped when the
-  // Vercel lambda freezes after responding, so the Klaviyo event never lands.
+  // Vercel lambda freezes after responding, so the email never sends.
   try {
     await sendEmail({
       to: claim.email,
@@ -117,7 +117,7 @@ export async function GET(req: Request) {
       },
     });
   } catch (err) {
-    console.error("[claim/verify] Klaviyo welcome event failed:", err);
+    console.error("[claim/verify] welcome email failed:", err);
   }
 
   // Log the freshly-claimed agent straight in: their email is now verified.

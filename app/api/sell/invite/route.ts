@@ -275,14 +275,13 @@ export async function POST(req: Request) {
             },
           })) as { id: string; error?: string };
           const failed =
-            res.id === "resend-error" || res.id === "dry-run" ||
-            res.id === "klaviyo-event-queued";
+            res.id === "resend-error" || res.id === "not-configured";
           notifications.push({
             lead_id: lead.id,
             agent_id: agentId,
             channel: "email",
             provider_message_id: failed ? null : res.id,
-            // Klaviyo events and dry-runs are not proof anyone was emailed.
+            // Unconfigured sends are not proof anyone was emailed.
             outcome:
               res.id === "resend-error"
                 ? "error"

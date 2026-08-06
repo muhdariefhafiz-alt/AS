@@ -19,7 +19,7 @@ import { lookupMop, isValidHdbFlatType, type HdbFlatType } from "../../../lib/mo
 
 export async function GET(req: Request) {
   // Vercel cron sends a header `Authorization: Bearer <CRON_SECRET>`. Allow
-  // unauthenticated calls in dev when CRON_SECRET is unset (Klaviyo pattern).
+  // unauthenticated calls in dev when CRON_SECRET is unset (same pattern as the other crons).
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret) {
     const auth = req.headers.get("authorization");

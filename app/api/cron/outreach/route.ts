@@ -34,7 +34,7 @@ export async function GET(req: Request) {
 
   // HARD GATE. This drip was built with OUTREACH_RECIPIENT hardcoded to
   // hello@fair-comparisons.com as a placeholder, and for months its sends
-  // died silently in Klaviyo while sg_outreach recorded agents as touched
+  // died silently at the provider while sg_outreach recorded agents as touched
   // (1,042 phantom rows / 340 agents by 2026-07-12). When Resend went live
   // the placeholder became a real daily 50-email flood into the owner inbox.
   // Enabling real outreach is a deliberate owner decision (recipients,
@@ -228,7 +228,7 @@ export async function GET(req: Request) {
     };
   });
 
-  // --- 4. Send via Klaviyo in batches ---
+  // --- 4. Send in batches ---
   let sent = 0;
   const BATCH_SIZE = 10;
 

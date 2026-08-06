@@ -7,7 +7,7 @@
 // Fail-closed rules baked into the prompt: use ONLY the facts provided; never
 // invent transactions, prices or credentials; no CEA-risky claims (guarantees,
 // "cheapest", "No. 1"), mirroring app/lib/cea-advert.ts. Gated on
-// ANTHROPIC_API_KEY (inert until configured, like WhatsApp/Klaviyo).
+// ANTHROPIC_API_KEY (inert until configured, like WhatsApp).
 
 export const DRAFT_MODEL = process.env.CLAUDE_DRAFT_MODEL || "claude-sonnet-5";
 

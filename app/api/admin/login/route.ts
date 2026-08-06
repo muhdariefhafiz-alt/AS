@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const base =
       process.env.NEXT_PUBLIC_SITE_URL ?? "https://fair-comparisons.com";
     const link = `${base}/api/admin/verify?token=${token}`;
-    // Log the link so an operator can paste it manually when Klaviyo or the
+    // Log the link so an operator can paste it manually when the mail provider or the
     // mail provider does not deliver. The login endpoint is already
     // allowlist-gated, so this leaks nothing beyond the admin's own ability.
     console.log(`[admin/login] magic link issued for ${normalized}: ${link}`);

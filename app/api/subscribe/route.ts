@@ -79,12 +79,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Fire Klaviyo welcome event with full HTML.
+    // Send the welcome email with full HTML.
     // PDPA: consent=true verified above.
     const normalizedEmail = email.toLowerCase().trim();
     const welcomeHtml = buildWelcomeEmail(normalizedEmail);
     // Await: a fire-and-forget promise is dropped when the Vercel lambda freezes
-    // after responding, so the Klaviyo event never lands.
+    // after responding, so the email never sends.
     try {
       await sendEmail({
         to: normalizedEmail,
@@ -99,7 +99,7 @@ export async function POST(req: Request) {
         },
       });
     } catch (err) {
-      console.error("[subscribe] Klaviyo welcome event failed:", err);
+      console.error("[subscribe] welcome email failed:", err);
     }
 
     return NextResponse.json({

@@ -117,7 +117,7 @@ export async function POST(req: Request) {
     const verifyUrl = `https://fair-comparisons.com/api/claim/verify?token=${token}`;
     const verifyHtml = buildVerifyEmail(agent.name, verifyUrl);
     // Await the send: on Vercel a fire-and-forget promise is dropped once the
-    // response returns (the lambda freezes), so the Klaviyo event never lands.
+    // response returns (the lambda freezes), so the email never sends.
     try {
       await sendEmail({
         to: agent.email!,
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
         },
       });
     } catch (err) {
-      console.error("[claim] Klaviyo verification event failed:", err);
+      console.error("[claim] verification email failed:", err);
     }
 
     return NextResponse.json({

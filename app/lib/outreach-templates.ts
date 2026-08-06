@@ -1,7 +1,7 @@
 /**
  * Outreach email templates for the FairComparisons agent acquisition campaign.
  *
- * Each function returns { subject, html } ready for Klaviyo.
+ * Each function returns { subject, html } ready to send.
  * Agent data comes from sg_agents (all real, CEA-sourced).
  *
  * Every template here is a marketing send (doc A1, Agent cold outreach):

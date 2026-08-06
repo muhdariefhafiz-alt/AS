@@ -100,7 +100,7 @@ export async function POST(request: Request) {
         email = TEMPLATES[template](agent, recipientEmail);
     }
 
-    // ---- Send via Klaviyo ----
+    // ---- Send the email ----
 
     let sendResult: { id: string } = { id: "no-email-on-file" };
 
