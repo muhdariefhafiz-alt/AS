@@ -3,6 +3,7 @@ import { supabaseAdmin } from "../../../lib/supabase";
 import { getAgentSession } from "../../../lib/agent-auth";
 import { titleName, cleanAgency } from "../../../lib/names";
 import { buildDraftPrompt, callClaude, type Comp } from "../../../lib/draft-reply";
+import { getAgentOpenSlots } from "../../../lib/agent-slots";
 import { isPaid } from "../../../lib/tiers";
 import { FREE_DRAFTS_PER_MONTH, DRAFT_EVENT, countDraftsThisMonth } from "../../../lib/inbox-quota";
 
@@ -70,15 +71,19 @@ export async function POST(req: Request) {
     .maybeSingle();
   if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
 
-  // Grounding comps from the same open records the area pages show.
+  // Grounding comps from the same open records the area pages show, plus real
+  // open viewing windows when the agent has a connected calendar ([] otherwise).
   const isHdb = String(lead.property_type).toUpperCase() === "HDB";
   const areaType = isHdb ? "town" : "district";
   const areaKey = isHdb ? lead.town : lead.district_code;
   let comps: Comp[] = [];
-  if (areaKey) {
-    const { data } = await sb.rpc("area_recent_sales", { p_type: areaType, p_key: String(areaKey), p_limit: 5 });
-    comps = (data as Comp[] | null) ?? [];
-  }
+  const [compsRes, openSlots] = await Promise.all([
+    areaKey
+      ? sb.rpc("area_recent_sales", { p_type: areaType, p_key: String(areaKey), p_limit: 5 })
+      : Promise.resolve({ data: null }),
+    getAgentOpenSlots(sb, Number(agent.id)),
+  ]);
+  comps = (compsRes.data as Comp[] | null) ?? [];
 
   const area = lead.town
     ? titleName(String(lead.town))
@@ -102,7 +107,8 @@ export async function POST(req: Request) {
       score: agent.score != null ? Math.round(Number(agent.score)) : null,
       primaryArea: (agent.primary_area as string | null) ?? null,
     },
-    comps
+    comps,
+    openSlots
   );
 
   try {

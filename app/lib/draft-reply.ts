@@ -36,7 +36,11 @@ function sgd(n: number): string {
 }
 
 // Pure and deterministic: everything the model may use is in this string.
-export function buildDraftPrompt(lead: LeadFacts, agent: AgentFacts, comps: Comp[]): string {
+// `openSlots`: viewing windows read from the agent's REAL connected calendar
+// (app/lib/agent-slots.ts). Empty = no calendar grounding; the draft may then
+// propose tentative windows, explicitly framed as suggestions to confirm (the
+// agent reviews and edits every draft before sending).
+export function buildDraftPrompt(lead: LeadFacts, agent: AgentFacts, comps: Comp[], openSlots: string[] = []): string {
   const facts: string[] = [];
   facts.push(`Seller enquiry: ${lead.propertyType}${lead.bedrooms ? `, ${lead.bedrooms}-bedroom` : ""}${lead.area ? ` in ${lead.area}` : ""}.`);
   if (lead.estValueLow && lead.estValueHigh) facts.push(`Seller's indicated value range: ${sgd(lead.estValueLow)} to ${sgd(lead.estValueHigh)}.`);
@@ -55,11 +59,17 @@ export function buildDraftPrompt(lead: LeadFacts, agent: AgentFacts, comps: Comp
     ...facts.map((f) => `- ${f}`),
     compLines.length ? `\nRecent nearby transactions (official records; cite at most two):\n${compLines.join("\n")}` : `\nNo recent comparable transactions were provided; do not mention any.`,
     ``,
+    openSlots.length
+      ? `\nAgent's calendar shows these OPEN viewing windows (from their connected calendar):\n${openSlots.map((s) => `- ${s}`).join("\n")}`
+      : ``,
+    ``,
     `RULES:`,
     `- 90 to 140 words, warm and professional, first person, no subject line.`,
     `- Open by thanking them for the invite; reference their property and area specifically.`,
     `- If comparables are provided, ground the reply in one or two of them (address + month + price).`,
-    `- Close by proposing a short call or viewing to give a precise valuation.`,
+    openSlots.length
+      ? `- Close by proposing a viewing using one or two of the open windows listed above, phrased as options for the seller to confirm ("Would ${openSlots[0]} work?").`
+      : `- Close by proposing a short call or viewing. You may suggest one or two tentative windows (e.g. a weekend afternoon or weekday evening), but phrase them strictly as suggestions to confirm, never as stated availability; the agent will adjust the times before sending.`,
     `- NEVER: guarantee a price or sale, use "cheapest"/"No. 1"/"top 1%"/"100%", invent transactions, credentials or statistics, or promise a commission rate.`,
     `- If a fact you would need is not listed above, write around it rather than inventing it.`,
     `- Output ONLY the reply text, no preamble or notes.`,
@@ -78,7 +88,12 @@ export async function callClaude(prompt: string): Promise<string> {
     },
     body: JSON.stringify({
       model: DRAFT_MODEL,
-      max_tokens: 400,
+      // Sonnet 5 runs adaptive thinking when `thinking` is omitted, and max_tokens
+      // caps thinking + text TOGETHER, so 400 could truncate or return an empty
+      // draft. A 90-140 word grounded draft needs no reasoning depth: disable
+      // thinking explicitly and keep headroom for the text itself.
+      max_tokens: 600,
+      thinking: { type: "disabled" },
       messages: [{ role: "user", content: prompt }],
     }),
   });
