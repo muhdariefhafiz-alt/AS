@@ -21,9 +21,10 @@ create table if not exists public.sg_deals (
   id             uuid primary key default gen_random_uuid(),
   agent_id       bigint not null references public.sg_agents(id) on delete cascade,
 
-  -- Stage is driven by real events (a finalised LOI, a signed tenancy
-  -- agreement), never by a dropdown an agent has to remember to maintain. The
-  -- one exception is a deliberate manual override, recorded below.
+  -- Stage is driven by real events (a FINALISED letter of intent, a SIGNED
+  -- tenancy agreement), never by a dropdown an agent has to maintain and never
+  -- by opening a blank form. The one exception is a deliberate manual override,
+  -- recorded below.
   stage          text not null default 'enquiry'
                  check (stage in ('enquiry','viewing','offer','agreement','completed','lost')),
 
@@ -48,9 +49,10 @@ create table if not exists public.sg_deals (
   -- the habit. Mirrors the paperwork entry vocabulary.
   source         text not null default 'manual',
 
-  -- Set when an agent moves the stage by hand. An automatic transition never
-  -- overwrites a manual one, so the software cannot argue with the agent about
-  -- the state of their own deal.
+  -- Set when an agent moves the stage by hand. A manual stage is a correction,
+  -- not a lock: it is never re-applied by evidence that already happened, but a
+  -- LATER real event (a signed tenancy agreement) still moves the deal on.
+  -- Blocking everything after one correction froze deals permanently.
   stage_set_manually_at timestamptz,
   lost_reason    text,
 
@@ -92,3 +94,8 @@ alter table public.sg_deals enable row level security;
 alter table public.sg_deal_events enable row level security;
 
 notify pgrst, 'reload schema';
+
+-- A deal that came from a seller lead keeps the link, so the enquiry and the
+-- deal are not two unrelated records of the same instruction.
+alter table public.sg_deals add column if not exists linked_lead_id bigint;
+create index if not exists sg_deals_lead_idx on public.sg_deals (linked_lead_id);

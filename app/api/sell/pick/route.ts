@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
+import { attachOrCreateDeal } from "../../../lib/deals";
 import { sendEmail } from "../../../lib/email";
 import { emailShell, p, muted, rows } from "../../../lib/email-layout";
 import { greetName, titleName, cleanAgency } from "../../../lib/names";
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
     const { data: lead } = await sb
       .from("sg_leads")
       .select(
-        "id, token, status, full_name, email, phone, whatsapp, timeline, property_type, town, district_code"
+        "id, token, status, full_name, email, phone, whatsapp, timeline, property_type, town, district_code, address_line, postal_code"
       )
       .eq("token", token)
       .single();
@@ -94,6 +95,34 @@ export async function POST(req: Request) {
         },
         { onConflict: "lead_id" }
       );
+
+    // Winning the listing is the moment this lead becomes the agent's work, so
+    // it becomes a deal in their pipeline. Deliberately NOT at invite: several
+    // agents are invited to every lead and only one wins, so creating deals
+    // then would fill a pipeline with work that is not theirs.
+    //
+    // The address is what names a deal. A seller lead may only carry a town, so
+    // fall back through what the lead actually has rather than inventing one.
+    const dealLabel = String(lead.address_line ?? "").trim()
+      || [lead.property_type, lead.town].filter(Boolean).join(" in ")
+      || String(lead.town ?? "").trim();
+    if (dealLabel) {
+      const dealId = await attachOrCreateDeal(sb, {
+        agentId: Number(quote.agent_id),
+        propertyLabel: dealLabel,
+        createStage: "enquiry",
+        source: "seller_lead",
+        trigger: "lead_won",
+        postalCode: String(lead.postal_code ?? "") || null,
+        propertyType: String(lead.property_type ?? "") || null,
+        counterpartyName: String(lead.full_name ?? "") || null,
+        counterpartyContact: String(lead.email ?? lead.phone ?? "") || null,
+        side: "seller",
+      });
+      if (dealId) {
+        await sb.from("sg_deals").update({ linked_lead_id: lead.id }).eq("id", dealId);
+      }
+    }
 
     await sb.from("sg_leads").update({ status: "instructed" }).eq("id", lead.id);
     await sb.from("sg_lead_events").insert({
