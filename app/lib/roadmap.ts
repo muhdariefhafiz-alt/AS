@@ -40,6 +40,54 @@ export type RoadmapEntry = {
 export const ROADMAP: RoadmapEntry[] = [
   // ---------------------------------------------------------------- LIVE ---
   {
+    slug: "deal-pipeline",
+    title: "Your dashboard follows the deal now, not our toolbox",
+    status: "live",
+    audience: "agents",
+    shipped: "2026-08",
+    summary:
+      "One property is one deal. The enquiry, the viewings and the paperwork for the same flat sit together, and the stage moves itself when you finalise a letter of intent or sign a tenancy agreement.",
+    whatItIs: [
+      "Four tabs, named after your work rather than our tools: Today, Pipeline, Find and You. Today is what needs you now. Pipeline is every deal you are working. Find is where the next one comes from. You is your profile, plan and standing.",
+      "Pipeline is the spine. Each row is one property, showing who is on the other side, what it is waiting on, and how long it has been sitting. Open it and the viewings and documents for that property are there together.",
+      "You are never asked to create a deal. Confirming a viewing, winning a seller enquiry, or typing an address into a letter of intent creates one for you. Starting one by hand exists for the deal that began on WhatsApp, and that is the only place you name one.",
+      "The stage keeps itself current. A confirmed viewing moves a deal to Viewing, a finalised letter of intent to Offer, a signed tenancy agreement to Agreement. You can override any stage by hand, and a later real event still moves it on.",
+    ],
+    whyWeBuiltIt: [
+      "The dashboard had one surface for each part of your job and no thread running through them. A viewing lived in one place with the address typed as free text, and the letter of intent you wrote after that viewing lived in another with the address buried in a different shape. Two records about the same flat on the same afternoon, and the software did not know they were related.",
+      "That is why it read as a drawer of tools. No arrangement of tabs fixes it, because the missing piece was not a tab. It was the deal.",
+      "Rentals are 63% of recorded CEA activity and roughly three rental contracts happen for every resale, so the sequence we tuned for is the one most agents actually run: viewing, letter of intent, tenancy agreement.",
+    ],
+    whoItHelps: [
+      { who: "Rental salespeople", how: "The pivot from a viewing to an offer is two taps on a phone, with the property already filled in. That moment is where the deal is won, and it is the one we made shortest." },
+      { who: "Anyone taking seller enquiries", how: "An enquiry and the deal it becomes are in one tab instead of two, so replying and working the property are the same place." },
+      { who: "Agents juggling several properties", how: "A row tells you what each deal is waiting on and how long it has been waiting, so the one going cold is visible without opening anything." },
+    ],
+    useCase: {
+      title: "A Saturday viewing that turns into an offer",
+      body:
+        "You confirm a viewing for Saturday and the deal appears on its own. On Saturday the tenant wants it. Standing in the flat you open Pipeline, tap the deal, and tap Issue a letter of intent. The property and the prospect are already in it, on your letterhead with your CEA registration. You fill in the term, the rent and the deposits and send it before you leave. When the landlord accepts, the deal is at Offer and the row tells you the next thing: create the tenancy agreement, which starts from that letter with the deal carried across.",
+    },
+    walkthrough: [
+      { step: "Open Pipeline", detail: "Your deals are grouped by the stage they are actually at: Enquiry, Viewing, Offer, Agreement. Closed ones collapse out of the way." },
+      { step: "Let a deal appear", detail: "Confirm a viewing, or start a letter of intent and type the address. Either creates the deal. You will rarely start one by hand." },
+      { step: "Tap the deal", detail: "The viewings and documents for that property are inside it, with one primary action for whatever the stage needs next." },
+      { step: "Work it", detail: "Issue the letter of intent, then create the tenancy agreement from it. The stage follows the documents, so there is nothing to keep updated." },
+      { step: "Close it", detail: "Mark it completed when the lease starts, or lost with a reason. Closed deals stay in your history." },
+    ],
+    limits: [
+      "It is not a CRM. There is no contact database, no email sync and no lead scoring, and we are not planning any.",
+      "The stage only moves on evidence: a confirmed viewing, a finalised letter of intent, a signed tenancy agreement. Opening a blank form moves nothing, which is deliberate.",
+      "Nothing books a viewing for you. Your booking link is the mechanism, and a request from it does not become a deal until you confirm it.",
+      "Sale-side deals are tracked, but the paperwork chain is rental only. There is no Option to Purchase and there will not be one for HDB resale.",
+      "There is no invoicing. In Singapore the commission invoice comes from the agency, not from you.",
+      "A deal belongs to one agent. Nothing is shared across a team, and co-broke is not modelled.",
+      "Deals are matched to a property by its address, so two genuinely different units need two different addresses typed.",
+    ],
+    tryIt: { href: "/dashboard", label: "Open your pipeline" },
+  },
+
+  {
     slug: "letter-of-intent",
     title: "Paperwork: the letter of intent, and the tenancy agreement that fills itself",
     status: "live",
@@ -48,7 +96,7 @@ export const ROADMAP: RoadmapEntry[] = [
     summary:
       "Draw up a rental letter of intent on your own letterhead in about two minutes, then start the tenancy agreement from it with the deal already carried across.",
     whatItIs: [
-      "Paperwork is a document tool inside the agent dashboard. It now covers the two documents that open and close a rental deal: the letter of intent, and the residential tenancy agreement.",
+      "The documents live inside the deal they belong to, in your Pipeline. They cover the two that open and close a rental: the letter of intent, and the residential tenancy agreement.",
       "Both come out on your letterhead, with your name and CEA registration already on them, because we hold your profile. You fill in the property, the parties and the commercial terms, and download a clean PDF.",
       "The part that saves the most time is the chain. Once the landlord accepts, one tap starts the tenancy agreement from the letter of intent and carries the property, the parties, the term, the rent, the deposit and the clause choices across.",
     ],
@@ -73,7 +121,7 @@ export const ROADMAP: RoadmapEntry[] = [
     ],
     useCase: {
       title: "A viewing that just turned into a deal",
-      body: "You have shown a condo unit on a Saturday afternoon and the tenant says yes. The landlord wants something in writing today. Instead of finding last month's file and editing over it, you open the viewing in your Planner, tap to issue a letter of intent, and the letter is already on your letterhead with your CEA registration and the standard clauses in place. You type the parties, the rent, the term and the deposits, download the PDF and send it. When the landlord accepts, the tenancy agreement starts from that letter.",
+      body: "You have shown a condo unit on a Saturday afternoon and the tenant says yes. The landlord wants something in writing today. Instead of finding last month's file and editing over it, you open the deal in your Pipeline, tap to issue a letter of intent, and the letter is already on your letterhead with your CEA registration and the standard clauses in place. You type the parties, the rent, the term and the deposits, download the PDF and send it. When the landlord accepts, the tenancy agreement starts from that letter.",
     },
     walkthrough: [
       { step: "Open Pipeline", detail: "In your dashboard, the Pipeline tab. Every deal opens with the paperwork it needs, and a confirmed viewing carries the property across." },
@@ -488,7 +536,7 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You claimed your profile six weeks ago, added your photo and your farm areas. You open the dashboard and see you are in the top quarter of agents in your town, up four places since last month, with eleven profile views this week and two shortlist appearances. That is enough to know it is worth another month.",
     },
     walkthrough: [
-      { step: "Claim and sign in", detail: "Both cards sit at the top of the Home tab." },
+      { step: "Claim and sign in", detail: "Both cards sit at the top of the Today tab." },
       { step: "Read your band", detail: "Top ten percent, top quarter, top half or building, for the area your record centres on." },
       { step: "Read the movement", detail: "Up, down or held since last month, when we have a snapshot from the previous month for the same area." },
       { step: "Read your demand", detail: "Profile views, shortlist appearances, invitations to quote and sellers won, each with its window." },
@@ -700,12 +748,12 @@ export const ROADMAP: RoadmapEntry[] = [
     ],
     useCase: {
       title: "A listing that draws ten enquiries in a day",
-      body: "You put your booking link in the listing and in your bio. Ten people ask to view. Instead of ten separate threads, ten requests land in your Planner with the property, the time and the contact. You confirm the ones that work and cancel the ones that clash, then message those ten people yourself, because we do not write to them for you. When one of the viewings turns into a deal you issue the letter of intent straight from that row.",
+      body: "You put your booking link in the listing and in your bio. Ten people ask to view. Instead of ten separate threads, ten requests land in your Pipeline with the property, the time and the contact. You confirm the ones that work and cancel the ones that clash, then message those ten people yourself, because we do not write to them for you. When one of the viewings turns into a deal you issue the letter of intent straight from that row.",
     },
     walkthrough: [
       { step: "Copy your link", detail: "In the Pipeline tab, the Viewings panel shows your booking link with a copy button." },
       { step: "Share it", detail: "Listings, bio, messages. The page shows your photo, agency, CEA number and AgentScore." },
-      { step: "Requests arrive", detail: "You get an email and the request appears in your Planner marked as a new request." },
+      { step: "Requests arrive", detail: "You get an email and the request appears in your Pipeline marked as a new request." },
       { step: "Confirm or cancel", detail: "Confirm, mark done, or cancel. If a calendar is connected, a confirmed viewing is written to it." },
       { step: "Turn it into a deal", detail: "On a confirmed viewing, Issue a letter of intent jumps to Paperwork with the property already filled in." },
     ],
