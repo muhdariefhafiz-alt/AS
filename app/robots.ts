@@ -40,6 +40,17 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       { userAgent: "CCBot", allow: "/" },
       { userAgent: "Applebot", allow: "/" },
       { userAgent: "Applebot-Extended", allow: "/" },
+      // SEO-tool and bulk crawlers: zero search/citation value, real crawl cost
+      // across the ~42k-URL surface (and they feed competitor intelligence).
+      // Search engines + AI answer bots above stay fully allowed.
+      { userAgent: "AhrefsBot", disallow: "/" },
+      { userAgent: "SemrushBot", disallow: "/" },
+      { userAgent: "MJ12bot", disallow: "/" },
+      { userAgent: "DotBot", disallow: "/" },
+      { userAgent: "PetalBot", disallow: "/" },
+      { userAgent: "Bytespider", disallow: "/" },
+      { userAgent: "BLEXBot", disallow: "/" },
+      { userAgent: "DataForSeoBot", disallow: "/" },
     ],
     sitemap: [`${BASE}/sitemap.xml`, ...agentSitemaps],
   };

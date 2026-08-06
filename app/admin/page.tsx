@@ -40,7 +40,7 @@ export default async function AdminPage({ searchParams }: Props) {
   const active = TABS.find((t) => t.id === tab)?.id || "overzicht";
 
   // Sidebar badge counts (cheap queries)
-  const [pendingClaims, emailBad, outreachFailed, pendingMessages, pendingPhotos, pendingBios] = await Promise.all([
+  const [pendingClaims, emailBad, outreachFailed, pendingMessages, pendingPhotos, pendingBios, pendingNames, pendingReviews] = await Promise.all([
     supabase.from("sg_claim_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
     // SG signals (the NL dashboard_feedback / email_queue tables were wrong-tenant).
     supabase.from("sg_agents").select("id", { count: "exact", head: true }).in("email_status", ["bounced", "complained"]),
@@ -60,9 +60,22 @@ export default async function AdminPage({ searchParams }: Props) {
       .select("id", { count: "exact", head: true })
       .eq("bio_status", "pending")
       .not("bio", "is", null),
+    // The moderation page also handles marketing names + community reviews; the
+    // badge and banner must count everything that queue shows, or items sit unseen.
+    supabase
+      .from("sg_agents")
+      .select("id", { count: "exact", head: true })
+      .eq("marketing_name_status", "pending")
+      .not("marketing_name", "is", null),
+    supabase.from("sg_agent_reviews").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
-  const modTotal = (pendingMessages.count ?? 0) + (pendingPhotos.count ?? 0) + (pendingBios.count ?? 0);
+  const modTotal =
+    (pendingMessages.count ?? 0) +
+    (pendingPhotos.count ?? 0) +
+    (pendingBios.count ?? 0) +
+    (pendingNames.count ?? 0) +
+    (pendingReviews.count ?? 0);
 
   const { count: manualReviewClaims } = await supabase
     .from("sg_claim_requests")
@@ -97,6 +110,43 @@ export default async function AdminPage({ searchParams }: Props) {
         <AdminSidebar active={active} badges={badges} email={session.email} />
 
         <div className="min-w-0 flex-1">
+          {(() => {
+            const claimsTotal = (pendingClaims.count ?? 0) + (manualReviewClaims ?? 0);
+            const total = modTotal + claimsTotal;
+            if (total === 0) return null;
+            const parts: string[] = [];
+            const content =
+              (pendingMessages.count ?? 0) + (pendingPhotos.count ?? 0) + (pendingBios.count ?? 0) + (pendingNames.count ?? 0);
+            if (content > 0) parts.push(`${content} profile edit${content === 1 ? "" : "s"}`);
+            if ((pendingReviews.count ?? 0) > 0) parts.push(`${pendingReviews.count} review${pendingReviews.count === 1 ? "" : "s"}`);
+            if (claimsTotal > 0) parts.push(`${claimsTotal} claim${claimsTotal === 1 ? "" : "s"}`);
+            return (
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
+                  </span>
+                  <p className="text-sm text-amber-900">
+                    <span className="font-semibold">{total} item{total === 1 ? "" : "s"} awaiting your review:</span>{" "}
+                    {parts.join(", ")}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  {modTotal > 0 && (
+                    <a href="/admin/moderation" className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-700">
+                      Open moderation
+                    </a>
+                  )}
+                  {claimsTotal > 0 && (
+                    <a href="/admin/claims" className="rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 transition hover:bg-amber-100">
+                      Review claims
+                    </a>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
           <header className="mb-6 border-b border-gray-200 pb-4">
             <div className="flex items-baseline justify-between gap-3">
               <div>
