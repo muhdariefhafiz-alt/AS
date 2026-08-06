@@ -71,12 +71,18 @@ export function DealRadarMock() {
       <MockChrome />
       <div style={{ padding: "14px 15px 16px" }}>
         <div style={{ fontSize: 10, letterSpacing: 1.4, fontWeight: 700, color: MOCK.label }}>DEAL RADAR · TAMPINES</div>
-        <div style={{ fontSize: 15, fontWeight: 700, marginTop: 4 }}>3 owners likely to sell soon</div>
+        <div style={{ fontSize: 15, fontWeight: 700, marginTop: 4 }}>3 owners approaching MOP</div>
         <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+          {/* These rows must describe what Deal Radar actually produces, or the
+              picture undoes the honesty work done on the words. It reads flats
+              that changed hands about five years ago (owners APPROACHING their
+              MOP, never past it) and recorded sales from the last 180 days. It
+              has no tenure, no holding period, and no listings: we do not
+              ingest portals, so "just listed" is a thing we cannot know. */}
           {[
-            ["Blk 821 Tampines St 81", "MOP reached · held 6 yrs"],
-            ["Blk 476 Tampines Ave 9", "Bought 2013 · long tenure"],
-            ["Blk 138 Tampines St 11", "Nearby unit just listed"],
+            ["Blk 821 Tampines St 81", "Resale Jul 2021 · approaching MOP"],
+            ["Blk 476 Tampines Ave 9", "Resale Sep 2021 · approaching MOP"],
+            ["Blk 138 Tampines St 11", "Recent sale nearby · Jun 2026"],
           ].map(([a, b]) => (
             <div key={a} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, background: MOCK.panel, borderRadius: 9, padding: "9px 11px" }}>
               <div>

@@ -10,7 +10,11 @@ const EMPTY = { spotlight: null, whatsNew: [], unreadCount: 0 };
 
 export async function GET() {
   const session = await getAgentSession();
-  if (!session) return NextResponse.json(EMPTY);
+  // 401, matching every sibling dashboard route. This used to answer 200 with
+  // an empty feed, which leaked nothing but made the route LOOK gated when it
+  // was not, and that is how a real gap survives a future review. The panel
+  // only mounts for a signed-in agent, so nothing in the app sees this.
+  if (!session) return NextResponse.json({ error: "Not signed in", ...EMPTY }, { status: 401 });
 
   const sb = supabaseAdmin();
   const { data: agent } = await sb
