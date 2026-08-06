@@ -32,10 +32,19 @@ path"). Pure success-fee, rankings cannot be bought, performance-data moat.
 - Confirm the self-serve conversion bet (P0-B) with real drop-off numbers from `/admin?tab=funnel`
 
 ### M2 — Notifications live
-**Trigger:** Klaviyo flows + Meta WhatsApp templates approved and firing.
+**Trigger:** Resend transactional email live (**met**) + Meta WhatsApp templates
+approved and firing (**pending**).
 **Then:**
 - Turn on the retention loops (MOP alerts, AVM updates, review requests, reactivation)
 - The funnel stops being "records only" and starts nudging
+
+*Restated 2026-08-06.* The old trigger said "Klaviyo flows firing", which can no
+longer happen: Klaviyo was removed and Resend is the only sender. The email half
+of this milestone is therefore already met, and has been for a while. Resend
+delivers every transactional message (claim verification, agent invites, quote
+and completion mail) with no per-metric Flow to configure and nothing to silently
+drop. **WhatsApp is the only remaining blocker.** Its code is shipped and inert,
+gated on Meta template approval plus the env vars, so M2 fires when WhatsApp does.
 
 ### M3 — ~100 claimed agents with contact details
 **Trigger:** 100+ agents have claimed their profile.
@@ -122,17 +131,23 @@ unlock are unproven. M1's trigger is "a real seller completes and the fee is
 collected", and we do not yet know that money can actually land.
 **Close it:** one live-mode purchase on a hidden sandbox agent, then refund.
 
-### M2's trigger is stale: Klaviyo flows will never fire
-M2 above is gated on "Klaviyo flows firing". They cannot. `app/lib/email.ts`
-short-circuits to Resend whenever `RESEND_API_KEY` is set, which it is in
-production, so Klaviyo is never called. Its 5 Live flows show 0 deliveries over
-30 days while claim-verification mail was in fact being delivered by Resend.
-**Two hazards:** (1) the Klaviyo fallback is still reachable, so if the Resend key
-is ever rotated or removed, mail silently reverts to a provider whose per-metric
-flows drop anything without a matching Flow (this previously broke admin login,
-claim verification and agent invites); (2) `KLAVIYO_API_KEY` is still in prod env.
-**Close it:** make `sendEmail` fail loudly instead of falling back, drop the key,
-pause the flows, and restate M2's trigger in terms of Resend + WhatsApp.
+### ~~Klaviyo fallback~~ RESOLVED 2026-08-06 (code shipped, 2 dashboard steps left)
+Klaviyo never sent anything from this app: `sendEmail` short-circuited to Resend
+whenever `RESEND_API_KEY` was set, which it always is in production, so its 5 Live
+flows showed 0 deliveries over 30 days while Resend delivered the same mail.
+
+The hazard was the fallback, not the cost. Klaviyo only fires an EVENT and needs a
+per-metric Flow to actually send, so any email whose metric had no live Flow was
+silently dropped (that is how admin login, claim verification and agent invites
+broke once before). A rotated or expired Resend key would have silently reverted
+every send to that behaviour.
+
+**Done:** Klaviyo removed entirely; Resend is the only sender; an unconfigured key
+now fails loudly with `id='not-configured'` instead of looking like a success; the
+one consumer that branched on the old return id was fixed; M2's trigger restated.
+**Left, dashboard only:** delete `KLAVIYO_API_KEY` from Vercel env (nothing reads
+it now), and pause or archive the 5 flows. Check billing before cancelling; under
+250 profiles the plan is free, so there may be no saving to claim.
 
 ### AI reply drafter: live 3 weeks, never once used
 Zero `inbox_draft_generated` events since `ANTHROPIC_API_KEY` was set. The key
