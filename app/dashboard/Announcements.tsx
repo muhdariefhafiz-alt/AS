@@ -200,6 +200,10 @@ export default function Announcements() {
           ref={triggerRef}
           type="button"
           className="fc-anno-trigger"
+          // A thumb needs 44px. Set here rather than only in CSS: the padding
+          // buys the target and the negative margin pulls the box back to the
+          // visual edge, so the row still reads as one line of quiet links.
+          style={{ minHeight: 44, padding: "12px 8px", margin: "-12px -8px" }}
           data-unread={feed.unreadCount > 0 ? "1" : "0"}
           aria-label={feed.unreadCount > 0 ? `What's new, ${feed.unreadCount} unread` : "What's new"}
           onClick={openArchive}

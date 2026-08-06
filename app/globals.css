@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* =====================================================================
-   FairComparisons — Design System "The Record"
+   FairComparisons: Design System "The Record"
    Tokens + element defaults + .fc-* component library.
    Fonts loaded + bound via next/font in layout.tsx:
      --font-newsreader, --font-hanken, --font-spline
@@ -375,7 +375,7 @@ a.dev--link:hover .dev__name{color:var(--blue-deep);}
 .kicker{font-family:var(--font-mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--slate); font-weight:600;}
 /* minmax(0,…) not 1fr: a bare 1fr is minmax(auto,1fr), whose min-content floor
    lets a wide child (KPI rows, the txn table) blow the column out past the
-   viewport — caused ~410px horizontal overflow on mobile agent profiles. The
+   viewport, caused ~410px horizontal overflow on mobile agent profiles. The
    0 minimum lets the column shrink so the overflow-x:auto table scrolls inside. */
 .ap-layout{display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:40px; align-items:start;}
 @media(max-width:960px){ .ap-layout{grid-template-columns:minmax(0,1fr);} }
@@ -614,8 +614,11 @@ a.dev--link:hover .dev__name{color:var(--blue-deep);}
 
 /* The permanent entry point: quiet until there is something unread. */
 .fc-anno-trigger{ display:inline-flex; align-items:center; gap:7px; background:none; border:none;
-  cursor:pointer; padding:2px 0; font-family:var(--font-sans); font-size:13.5px; font-weight:600;
-  color:var(--slate); white-space:nowrap; }
+  cursor:pointer; font-family:var(--font-sans); font-size:13.5px; font-weight:600;
+  color:var(--slate); white-space:nowrap;
+  /* The 44px thumb target is set on the element (see Announcements.tsx) rather
+     than here, so a stale CSS build can never silently shrink it. */
+  padding:12px 8px; margin:-12px -8px; min-height:44px; }
 .fc-anno-trigger:hover{ color:var(--ink); }
 .fc-anno-trigger[data-unread="1"]{ color:var(--blue); }
 .fc-anno-dot{ width:7px; height:7px; border-radius:999px; background:var(--blue); flex:0 0 auto; }
@@ -660,3 +663,18 @@ a.dev--link:hover .dev__name{color:var(--blue-deep);}
 /* Visually hidden, still read aloud. */
 .fc-sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
   clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+
+/* ---------------------------------------------------------------------------
+   WALKTHROUGH SCREENSHOTS
+   A step that shows the real screen is worth more than a step that describes
+   it. The frame is deliberately quiet: a hairline and a soft shadow so the
+   shot reads as a window onto the product rather than a decorated graphic.
+--------------------------------------------------------------------------- */
+.fc-shot{ margin:14px 0 0; }
+.fc-shot img{ display:block; width:100%; height:auto; border:1px solid var(--line);
+  border-radius:var(--r-sm); box-shadow:0 6px 18px rgba(10,23,51,0.07); background:var(--paper); }
+.fc-shot figcaption{ margin-top:8px; font-size:13.5px; line-height:1.55; color:var(--slate); }
+@media(prefers-reduced-motion: no-preference){
+  .fc-shot img{ transition:box-shadow .2s ease; }
+  .fc-shot img:hover{ box-shadow:0 10px 26px rgba(10,23,51,0.11); }
+}

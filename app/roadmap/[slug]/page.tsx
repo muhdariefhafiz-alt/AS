@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ROADMAP, roadmapBySlug, relatedEntries } from "../../lib/roadmap";
 import { AUDIENCE_LABEL, EntryCard, StatusPill, shippedLabel } from "../RoadmapUI";
@@ -118,9 +119,25 @@ export default async function RoadmapPost({ params }: { params: Promise<{ slug: 
                     <span className="mono" style={{ fontSize: 12, color: "var(--blue)", fontWeight: 700, paddingTop: 2, flexShrink: 0 }}>
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <div style={{ minWidth: 0 }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
                       <p style={{ margin: 0, fontWeight: 600, fontSize: 15 }}>{s.step}</p>
                       <p className="muted" style={{ margin: "4px 0 0", fontSize: 14.5, lineHeight: 1.6 }}>{s.detail}</p>
+                      {s.shot && (
+                        <figure className="fc-shot">
+                          {/* width and height are the real pixel size, so the
+                              browser reserves the space and the text below does
+                              not jump when the image arrives. */}
+                          <Image
+                            src={s.shot.src}
+                            alt={s.shot.alt}
+                            width={s.shot.width}
+                            height={s.shot.height}
+                            sizes="(max-width: 760px) 100vw, 680px"
+                            loading="lazy"
+                          />
+                          <figcaption>{s.shot.caption}</figcaption>
+                        </figure>
+                      )}
                     </div>
                   </div>
                 </li>

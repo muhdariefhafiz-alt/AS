@@ -30,7 +30,17 @@ export type RoadmapEntry = {
   whyWeBuiltIt: string[];
   whoItHelps: { who: string; how: string }[];
   useCase: { title: string; body: string };
-  walkthrough: { step: string; detail: string }[];
+  /**
+   * Walkthrough steps. A shot is a REAL screenshot of the shipped interface,
+   * never a mockup: this page's whole claim is that it describes software that
+   * exists. `alt` describes what is in the image for anyone who cannot see it
+   * and must stand alone; `caption` adds what the picture cannot say by itself.
+   */
+  walkthrough: {
+    step: string;
+    detail: string;
+    shot?: { src: string; alt: string; caption: string; width: number; height: number };
+  }[];
   /** For live entries: what it does not do. For planned ones: what must be true first. */
   limits: string[];
   tryIt?: { href: string; label: string; cta?: string };
@@ -69,10 +79,40 @@ export const ROADMAP: RoadmapEntry[] = [
         "You confirm a viewing for Saturday and the deal appears on its own. On Saturday the tenant wants it. Standing in the flat you open Pipeline, tap the deal, and tap Issue a letter of intent. The property and the prospect are already in it, on your letterhead with your CEA registration. You fill in the term, the rent and the deposits and send it before you leave. When the landlord accepts, the deal is at Offer and the row tells you the next thing: create the tenancy agreement, which starts from that letter with the deal carried across.",
     },
     walkthrough: [
-      { step: "Open Pipeline", detail: "Your deals are grouped by the stage they are actually at: Enquiry, Viewing, Offer, Agreement. Closed ones collapse out of the way." },
+      {
+        step: "Open Pipeline",
+        detail: "Your deals are grouped by the stage they are actually at: Enquiry, Viewing, Offer, Agreement. Closed ones collapse out of the way.",
+        shot: {
+          src: "/roadmap/shots/pipeline-stages.png",
+          alt: "The Pipeline tab. A heading reads Your deals, with a Start a deal button. Below it two stage groups: Enquiry with one deal at 12 Sample Gardens #08-08 reading Share your booking link, or start the paperwork, and Offer with one deal at 7 Sample Rise #12-04 reading Create the tenancy agreement. Each row shows how long it has been sitting, here today.",
+          caption: "Stage groups in workflow order. The line under each property is its next action, so a row tells you what it is waiting on without opening it.",
+          width: 616,
+          height: 408,
+        },
+      },
       { step: "Let a deal appear", detail: "Confirm a viewing, or start a letter of intent and type the address. Either creates the deal. You will rarely start one by hand." },
-      { step: "Tap the deal", detail: "The viewings and documents for that property are inside it, with one primary action for whatever the stage needs next." },
-      { step: "Work it", detail: "Issue the letter of intent, then create the tenancy agreement from it. The stage follows the documents, so there is nothing to keep updated." },
+      {
+        step: "Tap the deal",
+        detail: "The viewings and documents for that property are inside it, with one primary action for whatever the stage needs next.",
+        shot: {
+          src: "/roadmap/shots/deal-open.png",
+          alt: "An opened deal for 7 Sample Rise #12-04. Under the property it reads Sample Tenant, then Create the tenancy agreement. A Documents section lists Letter of intent, Ready to sign. At the bottom a blue Create the tenancy agreement button sits beside a quieter Mark lost link.",
+          caption: "The deal at Offer stage. Its letter of intent is already signed off, so the primary button is the tenancy agreement that follows, not a menu of everything the tool can do.",
+          width: 596,
+          height: 207,
+        },
+      },
+      {
+        step: "Work it",
+        detail: "Issue the letter of intent, then create the tenancy agreement from it. The stage follows the documents, so there is nothing to keep updated.",
+        shot: {
+          src: "/roadmap/shots/letter-of-intent.png",
+          alt: "The letter of intent editor. A back link reads All documents, the kicker reads Letter of intent, residential lease, and a status chip reads Ready to sign. A notice says the document is ready to sign so its contents are locked. Below, a This letter section holds the date and a toggle for subject to contract, and a The property section holds the address 7 Sample Rise #12-04 with postal code and property type.",
+          caption: "The property carried across from the deal, so the letter opens with the address already in it. Once you mark it ready to sign the fields lock, which is what moves the deal to Offer.",
+          width: 616,
+          height: 621,
+        },
+      },
       { step: "Close it", detail: "Mark it completed when the lease starts, or lost with a reason. Closed deals stay in your history." },
     ],
     limits: [

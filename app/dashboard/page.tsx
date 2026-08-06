@@ -552,7 +552,14 @@ export default function DashboardPage() {
                 {/* Product news lives behind one quiet control, never as a
                     banner stacked on top of the agent's actual work. */}
                 <Announcements />
-                <Link href={`/property-agents/agent/${agent.slug}`} className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                <Link
+                  href={`/property-agents/agent/${agent.slug}`}
+                  className="small"
+                  // Same 44px thumb target as the control beside it, bought with
+                  // padding and pulled back by the negative margin so the row
+                  // still reads as one line of quiet links.
+                  style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", padding: "12px 8px", margin: "-12px -8px", minHeight: 44 }}
+                >
                   View public profile ›
                 </Link>
               </div>
