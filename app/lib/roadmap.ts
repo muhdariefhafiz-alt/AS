@@ -81,10 +81,50 @@ export const ROADMAP: RoadmapEntry[] = [
         "You open the dashboard. Instead of a blank picker asking which areas you farm, Deal Radar already lists them: the towns and districts from your own CEA record, with how many deals you have closed in each and when the last one was. You untick one that is not really yours, tap Confirm, and the feed fills with owners in those areas reaching their MOP and recent sales to price from. Nothing on that screen asks you to subscribe.",
     },
     walkthrough: [
-      { step: "Open the dashboard", detail: "Today shows what needs you: your open deals, stalest first, each with its next action. If a deal has been quiet a week, the row says so." },
-      { step: "Go to Find", detail: "Deal Radar shows the areas you already work, pre-ticked, with your own deal counts. Confirm or edit them in one tap." },
-      { step: "Work a deal", detail: "Pipeline groups deals by stage. Open one and there is a single primary action for whatever the stage needs next, or start a letter of intent directly." },
-      { step: "Everything else is in Settings", detail: "Profile, plan and billing moved out of the way, so the tabs you work in stay about the work." },
+      {
+        step: "Open the dashboard",
+        detail: "Today shows what needs you: your open deals, stalest first, each with its next action. If a deal has been quiet a week, the row says so.",
+        shot: {
+          src: "/roadmap/shots/today-worklist.png",
+          alt: "The What needs you today card on the Today tab. Two rows: 12 Sample Gardens #08-08, reading Issue a letter of intent, quiet for 9 days; and 7 Sample Rise #12-04, reading Add the paperwork for this deal. Each row has an Open arrow on the right.",
+          caption: "Deals you typed in yourself, stalest first. Before this the worklist read only seller enquiries and viewing requests, so it stayed empty and told you nothing needed you.",
+          width: 616,
+          height: 221,
+        },
+      },
+      {
+        step: "Go to Find",
+        detail: "Deal Radar shows the areas you already work, pre-ticked, with your own deal counts. Confirm or edit them in one tap.",
+        shot: {
+          src: "/roadmap/shots/farm-area-suggestions.png",
+          alt: "The Deal Radar card headed Your next listing is already in the data. A line reads: these are the areas you already work, from your CEA record. Four area chips follow: Tampines with 7 deals last Mar 2026, Bedok with 4 deals, D15 Katong with 3 deals, each ticked, and Pasir Ris with 2 deals unticked. A blue button reads Confirm 3 areas.",
+          caption: "The counts are your own transaction record, not an estimate. The top three come pre-ticked, so confirming is one tap and correcting is the exception.",
+          width: 616,
+          height: 428,
+        },
+      },
+      {
+        step: "Work a deal",
+        detail: "Pipeline groups deals by stage, each row showing what it is waiting on. A letter of intent is one tap from the bottom of the tab, with no list and no type picker in between.",
+        shot: {
+          src: "/roadmap/shots/pipeline-one-tap.png",
+          alt: "The Pipeline tab. Under Your deals, a Viewing group holds 12 Sample Gardens #08-08 with Sample Tenant, Issue a letter of intent, 9 days; an Offer group holds 7 Sample Rise #12-04 with Sample Landlord, Add the paperwork for this deal, 2 days. Below are Seller enquiries and a Viewings planner with a booking link. At the bottom sit two controls: New letter of intent, and a quieter All documents link.",
+          caption: "One deal action per screen, and the direct route to a letter of intent at the bottom. It used to take three taps through a document list and a type picker.",
+          width: 648,
+          height: 981,
+        },
+      },
+      {
+        step: "Everything else is in Settings",
+        detail: "Profile, plan and billing moved out of the way, so the tabs you work in stay about the work and stop asking you to pay.",
+        shot: {
+          src: "/roadmap/shots/settings-tab.png",
+          alt: "The dashboard tab bar showing five tabs: Today, Pipeline, Find, You and Settings, with Settings selected and underlined. Below it a card headed How FairComparisons works for you, listing that you are listed free and ranked on your CEA transaction record, that sellers compare agents and invite the ones they choose, and that we never take a cut of your sales. A closing line reads that your ranking is always earned, never bought.",
+          caption: "The fifth tab. Your profile, plan and billing live here now, which is why Today, Pipeline, Find and You no longer carry a single prompt to subscribe.",
+          width: 644,
+          height: 349,
+        },
+      },
     ],
     limits: [
       "Area suggestions come from your CEA transaction record, so an agent with no recorded transactions still gets the manual picker. Around a fifth of the register is in that position.",
