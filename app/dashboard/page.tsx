@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import PanelSkeleton from "./PanelSkeleton";
+import { track, trackFirstUse } from "./track";
 import Announcements from "./Announcements";
 import UnlockMoment from "./UnlockMoment";
 // Types only: erased at compile time, so they cost nothing in the bundle and
@@ -172,6 +173,13 @@ export default function DashboardPage() {
   // scrolled into view. Without this an agent deep-linked to ?tab=settings
   // lands on a bar that looks like it only has four tabs, with the one they
   // are actually on hidden off the right edge.
+  // Which tab an agent actually uses was unanswerable: the dashboard emitted
+  // nothing at all. Gated on `agent` so it fires for a signed-in agent only,
+  // and on activeTab so a switch is one event, not one per render.
+  useEffect(() => {
+    if (agent) track("dashboard_tab_viewed", { tab: activeTab });
+  }, [activeTab, agent]);
+
   useEffect(() => {
     const bar = tabBarRef.current;
     if (!bar) return;
@@ -233,6 +241,8 @@ export default function DashboardPage() {
   // Start a document from anywhere in the dashboard, optionally carrying the
   // context of the surface it was started from.
   function startDocument(docType: string, seed?: Record<string, string>, entry?: string) {
+    track("document_started", { doc_type: docType, entry: entry ?? "unknown" });
+    trackFirstUse(`document:${docType}`, entry ?? "unknown");
     setNewDoc({ type: docType, seed, entry });
     setDocOpen(true);
     setTab("pipeline");
