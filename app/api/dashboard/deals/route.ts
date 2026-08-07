@@ -17,12 +17,23 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   const sb = supabaseAdmin();
 
-  const { data: dealRows } = await sb
+  const { data: dealRows, error: dealsError } = await sb
     .from("sg_deals")
     .select("id, stage, property_label, postal_code, counterparty_name, counterparty_contact, side, rent_or_price, source, lost_reason, created_at, updated_at, closed_at")
     .eq("agent_id", session.agentId)
     .order("updated_at", { ascending: false })
     .limit(200);
+  // Fail loudly. supabase-js returns {data: null, error} for a PostgREST error
+  // AND for a network failure, so swallowing it turned "we could not reach your
+  // pipeline" into a 200 with an empty list, and the panel then told an agent
+  // with live deals "No deals yet" and offered to teach them what a deal is.
+  // PipelinePanel already renders a proper error card with a Reload button on a
+  // non-2xx, but it could never fire. Same reasoning as the insert guard in
+  // lib/deals.ts: an unchecked call makes a broken spine look like an unused one.
+  if (dealsError) {
+    console.error("[dashboard/deals] load failed", dealsError);
+    return NextResponse.json({ error: "Could not load deals" }, { status: 500 });
+  }
   const deals = dealRows ?? [];
   if (!deals.length) return NextResponse.json({ deals: [] });
 

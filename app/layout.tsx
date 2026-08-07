@@ -7,6 +7,7 @@ import PageTracker from "./components/PageTracker";
 import EmailCapture from "./components/EmailCapture";
 import ChromeGate from "./components/ChromeGate";
 import { Lockup } from "./components/Brand";
+import AgentNavLink from "./components/AgentNavLink";
 
 const newsreader = Newsreader({
   variable: "--font-newsreader",
@@ -99,17 +100,14 @@ function Header() {
           {/* Agents had no way back into the product: the sign-in form only
               renders inside /dashboard, and nothing linked there except the
               post-claim screen. Secondary styling on purpose so the seller
-              funnel keeps the primary CTA. Points at /dashboard rather than a
-              session-aware label because reading the fc_agent cookie here would
-              make the root layout dynamic and drop static rendering across
-              every agent page. */}
-          <Link
-            href="/dashboard"
+              funnel keeps the primary CTA. The label is session-aware via a
+              client component reading a non-sensitive hint cookie: reading the
+              real fc_agent cookie HERE would make the root layout dynamic and
+              drop static rendering across every agent page. */}
+          <AgentNavLink
             className="hidden font-semibold min-[840px]:inline"
             style={{ color: "var(--ink-3)", fontSize: 14 }}
-          >
-            Sign in
-          </Link>
+          />
           <Link href="/sell" className="fc-btn fc-btn--primary fc-btn--sm">
             {/* Short label until 960px so "Sign in" fits alongside without
                 overflowing the nav at the 840px expand point. */}
@@ -141,13 +139,10 @@ function Header() {
                   {label}
                 </Link>
               ))}
-              <Link
-                href="/dashboard"
+              <AgentNavLink
                 className="mt-1 block rounded-[8px] border-t px-3 pb-2 pt-3 text-sm font-semibold"
                 style={{ color: "var(--blue)", borderColor: "var(--line)" }}
-              >
-                Sign in
-              </Link>
+              />
             </div>
           </details>
         </div>
@@ -190,12 +185,14 @@ function Footer() {
                   ["/tools", "Free tools"],
                   ["/guides", "Property guides"],
                   ["/for-agents", "For agents"],
-                  ["/dashboard", "Agent sign in"],
                 ].map(([href, label]) => (
                   <Link key={href} href={href} style={{ color: "rgba(255,255,255,0.78)" }}>
                     {label}
                   </Link>
                 ))}
+                {/* Same session-aware swap as the header: this said "Agent sign
+                    in" to agents who were already signed in. */}
+                <AgentNavLink style={{ color: "rgba(255,255,255,0.78)" }} />
               </div>
             </div>
             <div>

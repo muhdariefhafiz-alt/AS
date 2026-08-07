@@ -52,7 +52,12 @@ function splitLongWord(word: string, font: PDFFont, size: number, maxWidth: numb
   return pieces;
 }
 
-function winAnsiSafe(input: string): string {
+// Typographic normalisation: the characters we CAN faithfully map into
+// Latin-1. Split out of winAnsiSafe so unencodableChars() below measures
+// exactly what the renderer will do. If the two ever drift apart, the
+// pre-flight check starts passing text the renderer then mangles, which is
+// precisely the failure it exists to prevent.
+function normaliseTypography(input: string): string {
   return String(input)
     .normalize("NFC")
     .replace(/[‘’‚′]/g, "'")
@@ -60,12 +65,40 @@ function winAnsiSafe(input: string): string {
     .replace(/[–—−]/g, "-")
     .replace(/…/g, "...")
     .replace(/[   ]/g, " ")
+    ;
+}
+
+function encodableInWinAnsi(ch: string): boolean {
+  const c = ch.charCodeAt(0);
+  // Printable Latin-1 (skip the C1 control block 0x80-0x9F).
+  return c === 9 || c === 10 || (c >= 0x20 && c <= 0x7e) || (c >= 0xa0 && c <= 0xff);
+}
+
+/**
+ * The characters in `input` that the standard-14 fonts CANNOT encode, and that
+ * winAnsiSafe would therefore replace with "?". Deduplicated, order preserved.
+ *
+ * pdf-lib's built-in Times and Helvetica are WinAnsi only, so a Chinese, Tamil
+ * or Arabic name cannot be drawn at all. Substituting "?" silently turned a
+ * FINALISED, watermark-free letter of intent into one addressed "To ???", with
+ * a deposit "made payable to ???" and a signature block reading "Signed by the
+ * Tenant / ???". Callers use this to refuse finalisation and name the offending
+ * fields, so the agent enters the romanised NRIC name (which is the name a
+ * Singapore tenancy instrument should carry anyway) rather than discovering the
+ * damage after sending it to a landlord.
+ */
+export function unencodableChars(input: string): string[] {
+  const out: string[] = [];
+  for (const ch of normaliseTypography(input)) {
+    if (!encodableInWinAnsi(ch) && !out.includes(ch)) out.push(ch);
+  }
+  return out;
+}
+
+function winAnsiSafe(input: string): string {
+  return normaliseTypography(input)
     .split("")
-    .map((ch) => {
-      const c = ch.charCodeAt(0);
-      // Printable Latin-1 (skip the C1 control block 0x80-0x9F).
-      return c === 9 || c === 10 || (c >= 0x20 && c <= 0x7e) || (c >= 0xa0 && c <= 0xff) ? ch : "?";
-    })
+    .map((ch) => (encodableInWinAnsi(ch) ? ch : "?"))
     .join("");
 }
 

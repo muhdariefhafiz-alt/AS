@@ -48,7 +48,14 @@ export default function DraftReply({ shortlistId }: { shortlistId: number }) {
 
   return (
     <div style={{ marginTop: 10 }}>
-      {!draft && (
+      {/* `=== null`, not falsiness. `draft` doubles as the textarea value and
+          the mount gate, so selecting all and deleting set it to "", which
+          unmounted the editor along with Copy and Redraft and threw away every
+          edit the agent had made, with no undo. Getting it back costs a
+          generation, and generations are metered (2 a month on free). null is
+          already an exact "nothing generated yet" signal: it is the initial
+          value and only ever replaced by a non-empty string on success. */}
+      {draft === null && (
         <button type="button" onClick={generate} disabled={busy} className="fc-btn fc-btn--ghost fc-btn--sm">
           {busy ? "Drafting..." : "Draft a reply with AI"}
         </button>
@@ -64,7 +71,7 @@ export default function DraftReply({ shortlistId }: { shortlistId: number }) {
           </span>
         </div>
       )}
-      {draft && (
+      {draft !== null && (
         <div>
           <div className="kicker" style={{ marginBottom: 6 }}>Suggested reply (grounded in the record)</div>
           <textarea

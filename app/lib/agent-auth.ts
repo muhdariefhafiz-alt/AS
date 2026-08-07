@@ -1,4 +1,5 @@
 import { b64url, resolveSecret, sign as hmacSign, verifyTimingSafe } from "./hmac";
+import { randomUUID } from "crypto";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "./supabase";
 import { isAdminEmail } from "./admin-auth";
@@ -39,8 +40,59 @@ function issueToken(email: string, ttlMs: number): string {
   return `${payloadB64}.${sign(payloadB64)}`;
 }
 
+/**
+ * A magic link carries a `jti` so its redemption can be recorded and a replay
+ * rejected. Deliberately NOT routed through issueToken(): a 30-day session
+ * token must never be usable as a magic link, and vice versa.
+ */
 export function issueAgentMagicLink(email: string): string {
-  return issueToken(email, MAGIC_LINK_TTL_MS);
+  const payload = JSON.stringify({
+    email: email.toLowerCase().trim(),
+    kind: "agent",
+    jti: randomUUID(),
+    exp: Date.now() + MAGIC_LINK_TTL_MS,
+  });
+  const payloadB64 = b64url(payload);
+  return `${payloadB64}.${sign(payloadB64)}`;
+}
+
+/**
+ * Verify a magic link AND spend it. Returns the email on the first redemption
+ * and null on every later one.
+ *
+ * The login email promises the link "can be used once". Before this it was good
+ * for its full 24 hours and each use minted a fresh 30-day session, so a
+ * forwarded mail, a shared agency inbox, a mail backup or synced history handed
+ * over the agent's entire dashboard. The insert is the lock: jti is the primary
+ * key, so a concurrent second redemption loses on the unique violation rather
+ * than racing a read-then-write check.
+ */
+export async function redeemAgentMagicLink(
+  token: string | undefined | null
+): Promise<{ email: string } | null> {
+  const session = verifyAgentToken(token);
+  // Impersonation tokens must never be upgraded into a clean agent session.
+  if (!session || session.impersonatedBy) return null;
+
+  const jti = session.jti;
+  // Links minted before this shipped carry no jti. Accept them (rejecting would
+  // strand an agent mid-login through no fault of theirs) but say so in the
+  // log. They age out on their own within 24 hours of the deploy.
+  if (!jti) {
+    console.warn("[agent-auth] redeeming a legacy magic link with no jti; replay not enforced");
+    return { email: session.email };
+  }
+
+  const { error } = await supabaseAdmin()
+    .from("sg_magic_link_redemptions")
+    .insert({ jti, email: session.email });
+  if (error) {
+    // 23505 = unique_violation: already spent. Anything else is a real failure,
+    // and failing closed is right for an auth path.
+    console.warn("[agent-auth] magic link rejected", error.code === "23505" ? "already used" : error);
+    return null;
+  }
+  return { email: session.email };
 }
 
 export function issueAgentSession(email: string): string {
@@ -65,7 +117,7 @@ export function issueImpersonationSession(email: string, adminEmail: string): st
 
 export function verifyAgentToken(
   token: string | undefined | null
-): { email: string; impersonatedBy?: string } | null {
+): { email: string; impersonatedBy?: string; jti?: string } | null {
   if (!token) return null;
   try {
     const parts = token.split(".");
@@ -80,6 +132,7 @@ export function verifyAgentToken(
     return {
       email: payload.email,
       ...(typeof payload.imp === "string" && payload.imp ? { impersonatedBy: payload.imp } : {}),
+      ...(typeof payload.jti === "string" && payload.jti ? { jti: payload.jti } : {}),
     };
   } catch {
     return null;

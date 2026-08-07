@@ -40,7 +40,14 @@ export async function GET(_req: Request, { params }: Props) {
   let bytes: Uint8Array;
   try {
     bytes = await renderPdf(doc.template_key, doc.fields as DocFields, {
-      draft: doc.status === "draft",
+      // A void document must never render clean. Voiding frees the quota slot
+      // (meta() counts only non-void rows), so without this an agent could
+      // create, void, repeat, and keep every document: an unlimited free tier,
+      // and worse, a cancelled letter of intent came out byte-identical to a
+      // live one with no mark of any kind. Watermarking it keeps the slot
+      // refund honest while making the cancelled instrument self-evident.
+      draft: doc.status === "draft" || doc.status === "void",
+      watermarkText: doc.status === "void" ? "VOID" : undefined,
       // Free-tier documents carry the provenance line; paying agents get a
       // clean footer on their client-facing document.
       provenance: (agent?.subscription_tier ?? "free") === "free",

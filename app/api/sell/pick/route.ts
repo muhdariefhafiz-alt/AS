@@ -103,11 +103,20 @@ export async function POST(req: Request) {
     //
     // The address is what names a deal. A seller lead may only carry a town, so
     // fall back through what the lead actually has rather than inventing one.
-    const dealLabel = String(lead.address_line ?? "").trim()
-      || [lead.property_type, lead.town].filter(Boolean).join(" in ")
-      || String(lead.town ?? "").trim();
+    // Only a real street address names a deal. Everything else is a CATEGORY,
+    // and two categories collide: the form makes the address optional and only
+    // offers the town select for HDB, so an address-less condo fell through to
+    // the bare label "CONDO" island-wide. Two such wins by one agent merged
+    // into one pipeline row showing only the first seller. linkLeadId keys the
+    // deal on the instruction instead, so a won lead always gets its own row,
+    // while a real address still attaches to the existing deal for that flat.
+    const address = String(lead.address_line ?? "").trim();
+    const dealLabel =
+      address ||
+      [lead.property_type, lead.town ?? lead.district_code].filter(Boolean).join(" in ") ||
+      String(lead.town ?? lead.district_code ?? "").trim();
     if (dealLabel) {
-      const dealId = await attachOrCreateDeal(sb, {
+      await attachOrCreateDeal(sb, {
         agentId: Number(quote.agent_id),
         propertyLabel: dealLabel,
         createStage: "enquiry",
@@ -118,10 +127,9 @@ export async function POST(req: Request) {
         counterpartyName: String(lead.full_name ?? "") || null,
         counterpartyContact: String(lead.email ?? lead.phone ?? "") || null,
         side: "seller",
+        linkLeadId: Number(lead.id),
+        labelIsAddress: Boolean(address),
       });
-      if (dealId) {
-        await sb.from("sg_deals").update({ linked_lead_id: lead.id }).eq("id", dealId);
-      }
     }
 
     await sb.from("sg_leads").update({ status: "instructed" }).eq("id", lead.id);

@@ -116,7 +116,14 @@ export default function DashboardPage() {
     const t = params.get("tab");
     // Mount-time URL -> state sync (deep-linkable tab). Deferred a tick so it is
     // not a synchronous setState in the effect body.
-    const mapped = t ? TAB_ALIASES[t] : undefined;
+    // hasOwnProperty, not a bare index. A plain object literal inherits from
+    // Object.prototype, so ?tab=valueOf returned a FUNCTION here, and React
+    // treats a function passed to a state setter as an updater and calls it:
+    // ?tab=valueOf and ?tab=hasOwnProperty crashed the whole dashboard to the
+    // error boundary, and its Reload button reloaded the same URL and crashed
+    // again, so the agent was stuck unless they hand-edited the query string.
+    // ?tab=constructor and ?tab=toString rendered a dashboard with no content.
+    const mapped = t && Object.prototype.hasOwnProperty.call(TAB_ALIASES, t) ? TAB_ALIASES[t] : undefined;
     if (mapped) queueMicrotask(() => setActiveTabState(mapped));
     // ?newDoc= lands the agent inside a started document rather than on an
     // empty list: the entry points that matter (the first-run card, a viewing
@@ -128,10 +135,26 @@ export default function DashboardPage() {
       // Without it every external link reports as a generic deep_link and the
       // announcement can never be judged.
       const from = params.get("newDocFrom") || undefined;
-      queueMicrotask(() => { setNewDoc({ type: nd, entry: from }); setDocOpen(true); });
-      // Strip it immediately: a link that survives a reload would create a new
-      // blank document on every visit to the URL.
+      // Force Pipeline. Documents exist ONLY inside that tab, so arming docOpen
+      // while ?tab= pointed somewhere else left the flag set but inert: the link
+      // looked like it did nothing (the params are stripped just below, so a
+      // reload could not recover it), and then the agent's next Pipeline click
+      // replaced their deal list with a brand-new blank LOI and spent one of the
+      // free tier's documents. A deep link that cannot be honoured here must
+      // never leave armed state behind.
+      queueMicrotask(() => {
+        setNewDoc({ type: nd, entry: from });
+        setDocOpen(true);
+        setActiveTabState("pipeline");
+      });
+      // Rewrite the URL to match, in one pass:
+      //   tab=pipeline  so the address bar agrees with what is on screen. Just
+      //     setting the state left it saying ?tab=you while Pipeline showed, and
+      //     a reload dropped the agent back on You with the document gone.
+      //   newDoc gone   because a link that survived a reload would start a new
+      //     blank document on every visit to the URL.
       const clean = new URL(window.location.href);
+      clean.searchParams.set("tab", "pipeline");
       clean.searchParams.delete("newDoc");
       clean.searchParams.delete("newDocFrom");
       window.history.replaceState(null, "", clean.toString());

@@ -95,6 +95,18 @@ type AttachInput = {
   counterpartyContact?: string | null;
   side?: string | null;
   rentOrPrice?: string | null;
+  // A won seller lead is a distinct INSTRUCTION, not just a property. Set this
+  // and the deal is keyed on the lead and stamped with it.
+  linkLeadId?: number | null;
+  // False when propertyLabel is a category fallback rather than an address
+  // ("CONDO", "HDB flat in Tampines"). The seller form makes the street address
+  // optional, and it only offers the town select for HDB, so an address-less
+  // condo produced the bare label "CONDO" for every district on the island.
+  // Two such wins by one agent normalised to the same property_key and merged
+  // into ONE pipeline row carrying only the first seller's name and contact,
+  // with no signal that a second listing had arrived. A category is not a
+  // property and must never merge two counterparties.
+  labelIsAddress?: boolean;
 };
 
 /**
@@ -109,15 +121,38 @@ export async function attachOrCreateDeal(sb: SupabaseClient, input: AttachInput)
   // before typing the unit. The deal appears when the property does.
   if (!key) return null;
 
-  const { data: existing } = await sb
-    .from("sg_deals")
-    .select("id, stage, counterparty_name, counterparty_contact, postal_code, property_type, rent_or_price, side")
-    .eq("agent_id", input.agentId)
-    .eq("property_key", key)
-    .in("stage", OPEN_STAGES)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const SELECT = "id, stage, counterparty_name, counterparty_contact, postal_code, property_type, rent_or_price, side";
+
+  // A lead-keyed deal wins over a label match: the same instruction must always
+  // resolve to the same deal, whatever the label says.
+  let existing = null as Record<string, unknown> | null;
+  if (input.linkLeadId) {
+    const { data: byLead } = await sb
+      .from("sg_deals")
+      .select(SELECT)
+      .eq("agent_id", input.agentId)
+      .eq("linked_lead_id", input.linkLeadId)
+      .limit(1)
+      .maybeSingle();
+    if (byLead) existing = byLead;
+  }
+
+  // Only match by property when the label IS a property. For a lead carrying a
+  // category label, skipping this is the whole fix: it forces a new deal rather
+  // than folding a second seller into the first seller's row.
+  const labelCanMatch = !(input.linkLeadId && input.labelIsAddress === false);
+  if (!existing && labelCanMatch) {
+    const { data: byKey } = await sb
+      .from("sg_deals")
+      .select(SELECT)
+      .eq("agent_id", input.agentId)
+      .eq("property_key", key)
+      .in("stage", OPEN_STAGES)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (byKey) existing = byKey;
+  }
 
   if (existing) {
     // Fill in blanks the new context knows about, never overwrite what the
@@ -147,6 +182,7 @@ export async function attachOrCreateDeal(sb: SupabaseClient, input: AttachInput)
       side: input.side ?? null,
       rent_or_price: input.rentOrPrice ?? null,
       source: input.source,
+      linked_lead_id: input.linkLeadId ?? null,
     })
     .select("id")
     .maybeSingle();

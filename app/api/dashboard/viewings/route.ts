@@ -63,12 +63,24 @@ export async function POST(req: Request) {
   }
 
   // Scope the update to this agent's own viewing (defence in depth alongside RLS).
-  const { error } = await supabaseAdmin()
+  //
+  // .select("id") so we can tell "updated" from "matched nothing". Without it a
+  // PATCH naming another agent's viewing, or a uuid that does not exist,
+  // matched 0 rows, reported no error, and then still ran everything below:
+  // it wrote a viewing_confirmed row into sg_funnel_events pointing at a
+  // viewing that does not exist, inflating the Planner adoption metric on
+  // demand. Because the no-change path returns here, the deal attach, the
+  // funnel event and the calendar sync all become conditional on a real change.
+  const { data: updated, error } = await supabaseAdmin()
     .from("sg_viewings")
     .update({ status })
     .eq("id", id)
-    .eq("agent_cea_no", agent.cea_registration);
+    .eq("agent_cea_no", agent.cea_registration)
+    .select("id");
   if (error) return NextResponse.json({ error: "Could not update." }, { status: 500 });
+  if (!updated || updated.length === 0) {
+    return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
 
   // Confirming a viewing is the moment a property becomes a deal, and it is an
   // authenticated act by the agent whose pipeline it is. The public /book route

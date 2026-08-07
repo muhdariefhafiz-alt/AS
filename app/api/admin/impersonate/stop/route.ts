@@ -17,6 +17,8 @@ export async function POST() {
     path: "/",
     maxAge: 0,
   });
+  // The header hint goes with it: ending impersonation ends the agent session.
+  store.set("fc_signed_in", "", { httpOnly: false, path: "/", maxAge: 0 });
 
   if (session?.impersonatedBy) {
     const h = await headers();

@@ -130,6 +130,18 @@ export async function GET(req: Request) {
       path: "/",
       maxAge: Math.floor(AGENT_SESSION_TTL_MS / 1000),
     });
+    // Non-sensitive UI hint so the site header can say "Dashboard" instead of
+    // "Sign in" to someone already signed in. Readable by JS ON PURPOSE and
+    // carries no identity: the real session stays httpOnly. The header lives
+    // in the root layout, so reading the real cookie there would make every
+    // page dynamic and cost static rendering on ~38k agent pages.
+    store.set("fc_signed_in", "1", {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: Math.floor(AGENT_SESSION_TTL_MS / 1000),
+    });
   } catch (err) {
     console.error("[claim/verify] session cookie set failed", err);
   }

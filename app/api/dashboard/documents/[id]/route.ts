@@ -6,6 +6,7 @@ import { DOCUMENT_QUOTA, docTypeByKey, isEditable } from "../../../../lib/docume
 import { logPaperwork, logPaperworkFinalised, logPaperworkStatus } from "../../../../lib/documents/activation";
 import { LETTERHEAD_KEYS } from "../../../../lib/documents/prefill";
 import { missingRequired, type DocFields } from "../../../../lib/documents/schema";
+import { unencodableChars } from "../../../../lib/documents/render";
 import type { Tier } from "../../../../lib/tiers";
 
 // Single-document read / update / delete. Every call re-checks row ownership
@@ -108,6 +109,30 @@ export async function PATCH(req: Request, { params }: Props) {
       if (missing.length) {
         return NextResponse.json(
           { error: `Fill these in before marking it ready to sign: ${missing.join(", ")}.`, missing },
+          { status: 400 }
+        );
+      }
+      // The PDF fonts are WinAnsi only, so anything outside Latin-1 was drawn
+      // as "?". A landlord called in Chinese became "To ???", the deposit was
+      // "made payable to ???", and the signature block read "Signed by the
+      // Tenant / ???" on a finalised document that carries NO draft watermark:
+      // a clean, signable, wrong legal instrument. Catch it here rather than
+      // let the agent find out after sending. Singapore instruments should
+      // carry the romanised NRIC name anyway, so naming the fields tells the
+      // agent exactly what to change.
+      const garbled = Object.entries(nextFields)
+        .filter(([, v]) => typeof v === "string" && v)
+        .map(([k, v]) => ({ field: k, chars: unencodableChars(String(v)) }))
+        .filter((f) => f.chars.length > 0);
+      if (garbled.length) {
+        return NextResponse.json(
+          {
+            error:
+              `These cannot be printed in the document and would come out as "?": ` +
+              garbled.map((f) => `${f.field} (${f.chars.join(" ")})`).join(", ") +
+              `. Use the name as it appears on the NRIC or passport.`,
+            unencodable: garbled,
+          },
           { status: 400 }
         );
       }
