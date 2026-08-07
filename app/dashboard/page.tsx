@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import PanelSkeleton from "./PanelSkeleton";
@@ -56,7 +56,7 @@ const TIER_LABELS = TIER_LABEL;
 // The tabs are the agent's value chain, not our toolbox. "today" is the single
 // next action, "pipeline" is the deal spine that absorbed enquiries, viewings
 // and paperwork, "find" is prospecting, "you" is identity and money.
-type TabId = "today" | "pipeline" | "find" | "you";
+type TabId = "today" | "pipeline" | "find" | "you" | "settings";
 
 // Old names kept working: the launch announcement links to ?tab=paperwork, and
 // emails and the roadmap carry ?tab=leads and ?tab=grow. A renamed tab must
@@ -72,16 +72,24 @@ const TAB_ALIASES: Record<string, TabId> = {
   find: "find",
   profile: "you",
   you: "you",
+  // "you" is the agent's standing and demand: how they are doing. Account
+  // administration (profile fields, plan, billing, booking link) is not that,
+  // and mixing them put a S$69 paywall above the fold on the screen where a
+  // free agent has the least evidence the product works.
+  settings: "settings",
+  account: "settings",
+  billing: "settings",
+  plan: "settings",
 };
 type SetupStep = { key: string; label: string; cta: string; weight: number; done: boolean; anchor: string; tab: TabId };
 function computeCompleteness(p: {
   photo: boolean; message: boolean; whatsapp: boolean; bio: boolean; areas: number | null;
 }): { pct: number; done: number; steps: SetupStep[]; next: SetupStep | null } {
   const steps: SetupStep[] = [
-    { key: "photo", label: "Add a profile photo", cta: "Add your photo", weight: 30, done: p.photo, anchor: "edit-photo", tab: "you" },
-    { key: "message", label: "Write your message to sellers", cta: "Write your message", weight: 25, done: p.message, anchor: "edit-message", tab: "you" },
-    { key: "whatsapp", label: "Add WhatsApp for instant lead alerts", cta: "Add your WhatsApp", weight: 20, done: p.whatsapp, anchor: "edit-whatsapp", tab: "you" },
-    { key: "bio", label: "Write a short bio", cta: "Write your bio", weight: 15, done: p.bio, anchor: "edit-bio", tab: "you" },
+    { key: "photo", label: "Add a profile photo", cta: "Add your photo", weight: 30, done: p.photo, anchor: "edit-photo", tab: "settings" },
+    { key: "message", label: "Write your message to sellers", cta: "Write your message", weight: 25, done: p.message, anchor: "edit-message", tab: "settings" },
+    { key: "whatsapp", label: "Add WhatsApp for instant lead alerts", cta: "Add your WhatsApp", weight: 20, done: p.whatsapp, anchor: "edit-whatsapp", tab: "settings" },
+    { key: "bio", label: "Write a short bio", cta: "Write your bio", weight: 15, done: p.bio, anchor: "edit-bio", tab: "settings" },
     { key: "areas", label: "Add the areas you farm", cta: "Add a farm area", weight: 10, done: (p.areas ?? 0) > 0, anchor: "deal-radar", tab: "find" },
   ];
   const pct = steps.filter((s) => s.done).reduce((a, s) => a + s.weight, 0);
@@ -94,12 +102,30 @@ function computeCompleteness(p: {
 function focusField(anchor: string, tries = 0) {
   const el = document.getElementById(anchor);
   if (!el) {
-    if (tries < 20) setTimeout(() => focusField(anchor, tries + 1), 50);
+    if (tries < 30) setTimeout(() => focusField(anchor, tries + 1), 50);
     return;
   }
-  el.scrollIntoView({ block: "center" });
-  const input = el.querySelector("input, textarea, select") as HTMLElement | null;
-  if (input) setTimeout(() => input.focus(), 120);
+  const input = (el.querySelector("input, textarea, select") as HTMLElement | null) ?? el;
+
+  // Focus WITHOUT scrolling, then scroll last and keep checking.
+  //
+  // The old order scrolled first and focused 120ms later, which broke once the
+  // profile form moved to Settings: PlanBillingPanel above it is a lazily
+  // loaded chunk, so it mounts as a short skeleton, the scroll lands, and then
+  // the real panel arrives and pushes the field far down the page. Measured
+  // after the move: the field ended at y=2512 in an 812px viewport, so tapping
+  // "Add your photo" put the agent on the right tab looking at the wrong thing.
+  //
+  // Re-checking over ~1s covers any panel that settles late without hard-coding
+  // a guess about which one.
+  input.focus({ preventScroll: true });
+  const settle = (n: number) => {
+    const r = input.getBoundingClientRect();
+    const centred = r.top > 40 && r.bottom < window.innerHeight - 40;
+    if (!centred) input.scrollIntoView({ block: "center", behavior: n === 0 ? "auto" : "smooth" });
+    if (n < 4) setTimeout(() => settle(n + 1), 220);
+  };
+  requestAnimationFrame(() => settle(0));
 }
 
 export default function DashboardPage() {
@@ -135,11 +161,23 @@ export default function DashboardPage() {
     openDeals?: number;
   } | null>(null);
   const [activeTab, setActiveTabState] = useState<TabId>("today");
+  const tabBarRef = useRef<HTMLDivElement | null>(null);
   const [newDoc, setNewDoc] = useState<AutoStart | undefined>(undefined);
   // The document editor takes over the Pipeline tab when it is open. Kept in
   // the page rather than inside the panel so a deep link can open straight into
   // a document and the back control returns to the deal list.
   const [docOpen, setDocOpen] = useState(false);
+
+  // With five tabs the row overflows a 375px phone, so the active one is
+  // scrolled into view. Without this an agent deep-linked to ?tab=settings
+  // lands on a bar that looks like it only has four tabs, with the one they
+  // are actually on hidden off the right edge.
+  useEffect(() => {
+    const bar = tabBarRef.current;
+    if (!bar) return;
+    const el = bar.querySelector<HTMLElement>('[data-active="1"]');
+    el?.scrollIntoView({ inline: "nearest", block: "nearest" });
+  }, [activeTab]);
 
   // Tab synced to the URL (?tab=) so it is linkable and back-button friendly.
   useEffect(() => {
@@ -623,14 +661,28 @@ export default function DashboardPage() {
           {/* Tabs: Home = activation + daily pulse; the tools live behind
               job-based tabs so a new agent is not buried in a 12-section wall,
               while the Home launcher keeps every tool discoverable. */}
-          <div className="fc-hero-in fc-hero-in--2" style={{ display: "flex", gap: 4, overflowX: "auto", borderBottom: "1px solid var(--line)" }}>
-            {(([["today", "Today"], ["pipeline", "Pipeline"], ["find", "Find"], ["you", "You"]]) as [TabId, string][]).map(([id, label]) => (
+          {/* Five tabs need 354px of a 331px row at 375px, so the bar scrolls. Two
+              things make that acceptable rather than broken-looking: the padding
+              tightens on narrow screens so the overflow is a hint rather than a
+              clipped word, and the active tab is scrolled into view on mount and
+              on every switch (below), so an agent deep-linked to Settings never
+              lands on a bar that appears to have four tabs. */}
+          <div
+            ref={tabBarRef}
+            className="fc-hero-in fc-hero-in--2 fc-tabbar"
+            role="tablist"
+            style={{ display: "flex", gap: 4, overflowX: "auto", borderBottom: "1px solid var(--line)" }}
+          >
+            {(([["today", "Today"], ["pipeline", "Pipeline"], ["find", "Find"], ["you", "You"], ["settings", "Settings"]]) as [TabId, string][]).map(([id, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
-                className="small"
+                className="small fc-tabbar__tab"
+                role="tab"
+                aria-selected={activeTab === id}
+                data-active={activeTab === id ? "1" : "0"}
                 style={{
-                  border: "none", background: "none", cursor: "pointer", padding: "9px 15px", fontWeight: 600, whiteSpace: "nowrap", fontSize: 14,
+                  border: "none", background: "none", cursor: "pointer", fontWeight: 600, whiteSpace: "nowrap", fontSize: 14,
                   color: activeTab === id ? "var(--ink)" : "var(--slate)",
                   borderBottom: activeTab === id ? "2px solid var(--blue)" : "2px solid transparent",
                   marginBottom: -1,
@@ -854,7 +906,7 @@ export default function DashboardPage() {
                 Every document goes out over your name and CEA registration number, so we cannot draw one up until your
                 profile carries it. Add it on your profile and this tab opens.
               </p>
-              <button onClick={() => setTab("you")} className="fc-btn fc-btn--primary fc-btn--sm" style={{ marginTop: 14 }}>
+              <button onClick={() => setTab("settings")} className="fc-btn fc-btn--primary fc-btn--sm" style={{ marginTop: 14 }}>
                 Go to your profile &rarr;
               </button>
             </div>
@@ -881,37 +933,40 @@ export default function DashboardPage() {
           {activeTab === "you" && (
             <>
               <StandingPanel standing={standing} primaryArea={agent.primary_area} score={agent.score} />
-              {agent.cea_registration && <PerformancePanel onUpgrade={() => handleUpgrade("professional")} />}
+              {/* Paid tiers only. For a free agent this rendered as a locked
+                  card whose S$69 paywall header landed at y=714, i.e. inside
+                  the first 812px of the screen where they have the least
+                  evidence the product works. A paying agent sees the real
+                  report; everyone else sees their standing and demand, and the
+                  plan comparison waits for them in Settings. */}
+              {agent.cea_registration && isPaid(agent.subscription_tier) && (
+                <PerformancePanel onUpgrade={() => handleUpgrade("professional")} />
+              )}
           {/* Demand Dashboard: real seller demand for this agent (never affects rank) */}
               <DemandPanel />
 
-              {/* Verified upsell as a single contextual chip right under the numbers
-                  it unlocks (was a full locked card + a duplicate stat tile). */}
-              {agent.subscription_tier === "free" && (
-                <button
-                  onClick={() => handleUpgrade("verified")}
-                  disabled={checkoutLoading !== null}
-                  className="fc-card fc-card--fill"
-                  style={{ padding: "10px 14px", textAlign: "left", cursor: "pointer", border: "1px dashed var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}
-                >
-                  <span className="muted small">Contact-click detail unlocks with <strong style={{ color: "var(--ink)" }}>Verified</strong>.</span>
-                  <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>{checkoutLoading === "verified" ? "…" : "Unlock →"}</span>
-                </button>
-              )}
+              {/* The Verified upsell that used to sit here has been removed, on
+                  two counts. It sold "contact-click detail", a metric whose
+                  only writer is an orphaned component mounted nowhere, so it
+                  has never recorded a single row in four months: we were
+                  charging for a number that cannot exist. And per the owner's
+                  decision, no upsell appears on a pre-win surface. Plan
+                  comparison lives in Settings, where an agent goes when they
+                  have decided to look. */}
 
-                  {/* Contact-click detail for paid tiers (views live in Demand above). */}
-                  {isPaid(agent.subscription_tier) && (
-                    <div className="fc-card" style={{ padding: 18, textAlign: "center" }}>
-                      <p className="serif tnum" style={{ fontSize: 30, fontWeight: 600, color: "var(--blue)" }}>{agent.whatsapp_clicks_this_week ?? 0}</p>
-                      <p className="kicker" style={{ marginTop: 4 }}>Contact-button clicks this week</p>
-                    </div>
-                  )}
+                  {/* Contact-click detail is NOT rendered for paid tiers either.
+                      whatsapp_click has never been written, so this tile showed
+                      a paying agent a confident "0" and a month-over-month
+                      delta on a metric nothing measures. It returns when the
+                      contact CTA is actually instrumented, not before. */}
 
             </>
           )}
 
-          {/* ---------- PROFILE: identity model + verified + edit form ---------- */}
-          {activeTab === "you" && (
+          {/* ---------- SETTINGS: how it works, plan & billing, profile form ----------
+              Moved off You so the work surfaces carry no account administration
+              and no paywall. */}
+          {activeTab === "settings" && (
             <div className="fc-card" style={{ background: "var(--blue-wash)", borderColor: "transparent", padding: "20px 22px" }}>
               <h2 style={{ fontSize: 16, margin: 0, color: "var(--ink)" }}>How FairComparisons works for you</h2>
               <ul style={{ marginTop: 10, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6, fontSize: 14.5, color: "var(--ink-2)" }}>
@@ -926,7 +981,7 @@ export default function DashboardPage() {
           )}
 
           {/* Plan & billing — account settings for every tier (ST: sandbox-aware) */}
-          {activeTab === "you" && (
+          {activeTab === "settings" && (
             <PlanBillingPanel
               tier={agent.subscription_tier}
               subscriptionEndsAt={agent.subscription_ends_at}
@@ -941,7 +996,7 @@ export default function DashboardPage() {
           )}
 
           {/* Profile edit form */}
-          {activeTab === "you" && (
+          {activeTab === "settings" && (
           <div style={{ borderTop: "1px solid var(--line)", paddingTop: 24 }}>
             <h2 style={{ fontSize: 18, margin: 0 }}>Edit your profile</h2>
             <form onSubmit={handleSave} style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 20 }}>

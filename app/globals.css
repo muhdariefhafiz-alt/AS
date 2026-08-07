@@ -696,3 +696,28 @@ a.dev--link:hover .dev__name{color:var(--blue-deep);}
 @media (prefers-reduced-motion: reduce) {
   .fc-skel { animation: none; background: var(--line); }
 }
+
+/* Dashboard tab bar.
+   A fifth tab (Settings) pushes the row to 354px inside 331px on a 375px
+   phone, so it scrolls. Tighten the horizontal padding below 420px so the
+   overflow is a hint of a next tab rather than a clipped word, and hide the
+   scrollbar chrome, which on a 5-item row reads as damage rather than as an
+   affordance. The active tab is scrolled into view from JS. */
+.fc-tabbar { scrollbar-width: none; -ms-overflow-style: none; scroll-behavior: smooth; }
+.fc-tabbar::-webkit-scrollbar { display: none; }
+/* 10px vertical, not 9: the row measured 42px, and a tab bar is the most
+   tapped control on the surface, so it holds the 44px minimum. */
+.fc-tabbar__tab { padding: 10px 15px; min-height: 44px; }
+@media (max-width: 420px) {
+  /* Only a little tighter. Squeezing five tabs to fit ran the labels together
+     into one line of text; letting the row overflow and scroll (with the active
+     tab scrolled into view from JS) keeps them legible as separate targets. */
+  /* 12px: five tabs then measure 324px inside a 331px row at 375px, so the
+     bar fits outright rather than depending on a scroll to reveal the last
+     one. The scroll-into-view effect stays as a safety net for narrower
+     devices and longer translations. */
+  .fc-tabbar__tab { padding: 10px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fc-tabbar { scroll-behavior: auto; }
+}
