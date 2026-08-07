@@ -254,7 +254,17 @@ export const ROADMAP: RoadmapEntry[] = [
       { step: "Open Pipeline", detail: "In your dashboard, the Pipeline tab. Every deal opens with the paperwork it needs, and a confirmed viewing carries the property across." },
       { step: "Choose the document", detail: "Pick Letter of Intent or Tenancy agreement. Each card says roughly how long it takes." },
       { step: "Check your letterhead", detail: "Your name, CEA registration and agency are already filled in from your profile and collapsed out of the way. They are fixed to you and cannot be edited into someone else's name." },
-      { step: "Fill in the deal", detail: "Property, landlord, tenant and occupiers, term, rent, deposits, and the standard terms. Conventions such as the security deposit months, the minor repair cap and the diplomatic clause come with the market range as a hint, and every one of them is editable." },
+      {
+        step: "Fill in the deal",
+        detail: "Property, landlord, tenant and occupiers, term, rent, deposits, and the standard terms. Conventions such as the security deposit months, the minor repair cap and the diplomatic clause come with the market range as a hint, and every one of them is editable.",
+        shot: {
+          src: "/roadmap/shots/letter-of-intent.png",
+          alt: "The letter of intent editor. A back link reads All documents, a kicker reads Letter of intent, residential lease, and a status chip reads Ready to sign. A notice says the document is ready to sign so its contents are locked. Below, a This letter section holds the date and a toggle for subject to contract, and a The property section holds the address 7 Sample Rise #12-04 with its postal code and property type.",
+          caption: "The property arrives already filled from the deal, so the letter opens part-written. Marking it ready to sign locks the fields, and that lock is the event that moves the deal to Offer.",
+          width: 616,
+          height: 621,
+        },
+      },
       { step: "Preview the PDF", detail: "While it is a draft the PDF carries a DRAFT watermark, so an unsigned letter can never be mistaken for an executed one." },
       { step: "Mark it ready to sign", detail: "The watermark drops. We check the required fields first: a letter with no rent or no parties cannot leave draft." },
       { step: "Track what happened", detail: "Mark it sent out, then signed, as the deal moves. A signed document locks: it cannot be edited or deleted, and voiding it is the only way to correct a mistake, which keeps the record of the deal intact." },
@@ -302,7 +312,17 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "A client mentions they looked you up and found a page with your deal history on it. You search your own name, find your profile, and see your score, your areas and your recorded transactions. You claim it with your CEA number, confirm by email, add a photo and your WhatsApp, and the enquiries from sellers comparing your area start arriving in a dashboard that was already filled in before you got there.",
     },
     walkthrough: [
-      { step: "Find yourself", detail: "Search your name or CEA registration number on the claim page." },
+      {
+        step: "Find yourself",
+        detail: "Search your name or CEA registration number on the claim page.",
+        shot: {
+          src: "/roadmap/shots/claim-your-profile-1.png",
+          alt: "The claim page hero on a dark navy background. A kicker reads FOR CEA-REGISTERED AGENTS, then a heading: Your profile is already live. Take control of it. Under it a line reads that sellers are comparing 29,702 ranked agents on real CEA records right now, that claiming yours is free, takes 30 seconds, and never changes your rank. A wide search field reads Your name or CEA number, for example R012345A. Below it: Free forever, no credit card, rankings cannot be bought.",
+          caption: "The offer is stated before the search box, including the part most platforms leave out: claiming does not move you up. Your profile exists whether or not you ever arrive, which is why the page opens by telling you so rather than by selling you a listing.",
+          width: 900,
+          height: 472,
+        },
+      },
       { step: "Claim it", detail: "Confirm the profile is yours, with your CEA registration." },
       { step: "Verify by email", detail: "We send a link. Clicking it proves the profile is yours and signs you in. There is no password to remember." },
       { step: "Fill in what only you know", detail: "Photo, a short message to sellers, your WhatsApp number and the areas you farm." },
@@ -344,7 +364,17 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You have been using the free tools for a month and you are running into the document limit in a busy rental season. You upgrade in the dashboard, it takes effect immediately, and the limit lifts. Your position on the board does not move, which is exactly what you would want to be true of the agent ranked above you.",
     },
     walkthrough: [
-      { step: "Open Plan and billing", detail: "In your dashboard settings, with your current plan and what it includes." },
+      {
+        step: "Open Plan and billing",
+        detail: "In your dashboard settings, with your current plan and what it includes.",
+        shot: {
+          src: "/roadmap/shots/plans-and-billing-1.png",
+          alt: "A card headed by the kicker PLAN & BILLING with a grey chip on the right reading Free plan. The paragraph beneath reads: You're on the free plan: listed, ranked and receiving seller enquiries at no cost. Optional paid tiers add reputation and analytics tools and never change your ranking. Three small cards sit in a row: Verified S$29, Professional S$69 and Elite S$149, each with its own outlined Upgrade button. A blue link at the foot reads Compare all plans.",
+          caption: "The prices sit on the same card as the sentence saying they change nothing about ranking, which is the only place that claim is worth making. Upgrading is these buttons, not a conversation with us.",
+          width: 616,
+          height: 529,
+        },
+      },
       { step: "Pick a tier", detail: "The differences are stated as limits and features, not as visibility." },
       { step: "It unlocks immediately", detail: "No waiting for a webhook to catch up." },
       { step: "Change or stop it yourself", detail: "Manage billing opens the payment portal in your own account: change plan, update the card, or cancel." },
@@ -386,9 +416,29 @@ export const ROADMAP: RoadmapEntry[] = [
       { step: "Search the agent", detail: "By name, or by CEA registration number if you have it from their card or advertisement." },
       { step: "Read the score and the band", detail: "AgentScore out of 100 with a plain band, from Top performer through to Limited record." },
       { step: "Check the flags", detail: "Mostly rentals, mostly buyer-side, mostly new launches and team-attributed volume each appear when the record warrants it, and each explains itself when tapped." },
-      { step: "Look at the split", detail: "Recorded sales against rental transactions, and which side of the deal they usually represent. These are never added together." },
+      {
+        step: "Look at the split",
+        detail: "Recorded sales against rental transactions, and which side of the deal they usually represent. These are never added together.",
+        shot: {
+          src: "/roadmap/shots/agent-comparison-2.png",
+          alt: "A card with three figures side by side: 1 under Recorded sales, 26 under Rental transactions, and 0 under Sales logged on FairComparisons. Underneath, a line reads that sales and rentals are counted from official CEA salesperson records, and that no sales have been logged on FairComparisons yet, so this fills in as the record grows.",
+          caption: "Sales and rentals sit in separate columns and are never added into one headline number, which is exactly how a rental practice reads as a sales record elsewhere. The third figure is an honest zero rather than a panel that is hidden until it has something flattering to say.",
+          width: 820,
+          height: 178,
+        },
+      },
       { step: "Check the areas and the timeline", detail: "Where they are most active, and a year-by-year chart of how busy they have been." },
-      { step: "See how the score is built", detail: "The score breakdown card and the published methodology set out every input and its weight." },
+      {
+        step: "See how the score is built",
+        detail: "The score breakdown card and the published methodology set out every input and its weight.",
+        shot: {
+          src: "/roadmap/shots/agent-comparison-3.png",
+          alt: "A sidebar card headed SCORE BREAKDOWN with the line What feeds the AgentScore of 64. Five labelled bars follow: Transaction volume 37, Recent activity 100, Market diversity 80, Years of experience 33, and Verified reviews showing n/a with a greyed-out bar. Small type reads: No input can be purchased. Thin data is shown as thin, not inflated. A link below reads How is AgentScore calculated?",
+          caption: "Every input and its weight, on the page beside the score rather than in a separate methodology document. The greyed n/a on verified reviews is the part that matters: an empty input is shown empty instead of being filled with a flattering default.",
+          width: 820,
+          height: 484,
+        },
+      },
     ],
     limits: [
       "The record is what is officially recorded. Deals logged under a team leader's name appear under that person, which is why the team-attributed flag exists.",
@@ -426,7 +476,17 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You have no idea what commission is normal and no wish to be called by ten agents. You describe the flat, see which agents actually have deals in your town, and invite three whose records look right. Their quotes come back on one page and you can see that two want the same fee and one wants more but expects a faster sale. You instruct one, and only then do they get your number.",
     },
     walkthrough: [
-      { step: "Describe the property", detail: "Type and area first. We tell you how many ranked agents we hold for that area before you go further, and stop you if we do not cover it." },
+      {
+        step: "Describe the property",
+        detail: "Type and area first. We tell you how many ranked agents we hold for that area before you go further, and stop you if we do not cover it.",
+        shot: {
+          src: "/roadmap/shots/seller-shortlist-1.png",
+          alt: "A section headed How it works with three numbered cards. 01 Tell us about your home, covering property type, area and rough value. 02 See the ranked agents, the top agents for your area and property type. 03 Invite up to 3 to quote, where we send your property details to the agents you choose.",
+          caption: "Three steps, and the third is the only one that contacts anybody. You see the ranking before you are asked to pick, and nothing reaches an agent until you choose them.",
+          width: 900,
+          height: 461,
+        },
+      },
       { step: "See your shortlist", detail: "Ranked agents with score, deals in your area, area focus, last recorded sale and any warning flags. Agents we cannot reach are labelled and cannot be picked." },
       { step: "Pick up to three", detail: "Or press to see more agents from the same area if none fit." },
       { step: "They get the brief", detail: "Property type, bedrooms, area, value range and timeline. Not your contact details." },
@@ -469,7 +529,17 @@ export const ROADMAP: RoadmapEntry[] = [
     },
     walkthrough: [
       { step: "Sell through the platform", detail: "The agent logs the milestones as the deal moves, including the signed option." },
-      { step: "You get an invitation", detail: "About a week after the option is signed, a private link to review the agent." },
+      {
+        step: "You get an invitation",
+        detail: "About a week after the option is signed, a private link to review the agent.",
+        shot: {
+          src: "/roadmap/shots/verified-reviews-1.png",
+          alt: "The Share your record card with four tabs: Rank card, Website badge, Lead widget, and Ask for a review, which is selected. The panel reads: send past clients to the review form on your public profile. Reviews are screened before they publish, and verified reviews strengthen how sellers see your record. Two buttons read Ask via WhatsApp and Copy review link. A closing line reads: only ask clients you actually served; reviews claiming a transaction are checked against the record.",
+          caption: "The request surface, which is the honest thing to show while no review has been published yet. The last line is the mechanism: a review that claims a deal is checked against the CEA record, so the review system cannot be used to invent a track record.",
+          width: 616,
+          height: 277,
+        },
+      },
       { step: "Write it", detail: "A rating, what stood out, and how you want to be shown. Reviews publish with initials, not your full name." },
       { step: "It appears with the record", detail: "In a verified seller block on the agent's profile, with a completion chip once the agent has logged the completion date." },
     ],
@@ -508,7 +578,17 @@ export const ROADMAP: RoadmapEntry[] = [
     },
     walkthrough: [
       { step: "Open the Find tab", detail: "Look for the Share your record card." },
-      { step: "Pick what you need", detail: "Rank card, website badge, lead widget, or the ask-for-a-review link." },
+      {
+        step: "Pick what you need",
+        detail: "Rank card, website badge, lead widget, or the ask-for-a-review link.",
+        shot: {
+          src: "/roadmap/shots/share-your-record-1.png",
+          alt: "The Share your record card. A four way segmented control offers Rank card, Website badge, Lead widget and Ask for a review, with Ask for a review selected. The body reads that you send past clients to the review form on your public profile, that reviews are screened before they publish, and that verified reviews strengthen how sellers see your record. Two buttons follow, a blue Ask via WhatsApp and a quieter Copy review link, above a closing line saying to only ask clients you actually served because reviews claiming a transaction are checked against the record.",
+          caption: "Four things to copy out, one preview at a time, replacing what used to be two separate badge blocks plus a locked teaser. This is the only one of the four panels that renders nothing identifying about the agent, which is why it is the one shown.",
+          width: 616,
+          height: 332,
+        },
+      },
       { step: "Copy the snippet", detail: "The embed code already has your profile in it." },
       { step: "Paste it", detail: "Into your site, your signature or a message. The badge redraws from your record, so it never goes stale." },
     ],
@@ -546,7 +626,17 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You value your flat out of curiosity and save it. Over the next eight months you open the link now and then and see the estimate move with the market, and the comparable sales that moved it. When one of your neighbours sells well, the estimate reflects it, and you decide to start looking at agents. Nobody called you once in those eight months.",
     },
     walkthrough: [
-      { step: "Value your home", detail: "In the valuation tool, with the details you know." },
+      {
+        step: "Value your home",
+        detail: "In the valuation tool, with the details you know.",
+        shot: {
+          src: "/roadmap/shots/my-home-1.png",
+          alt: "A result card headed ESTIMATED VALUE RANGE reading $620,000 to $758,000, with Most likely around $663,000 beneath it and a horizontal range bar marked with the same two figures. A line reads: High confidence, 30+ recent comparable sales. Based on 793 transactions over the last 12 months. Under a heading RECENT COMPARABLE SALES, five HDB resales are listed with block, flat type, floor area and storey band, priced from $575,000 to $730,000. A dark button reads Compare agents who sell at the top of this range, free. At the foot, a note says we will email you when this estimate moves more than 2%, above an email field, an optional WhatsApp field, a consent tick box, and a button reading Track this value.",
+          caption: "The estimate, the transactions it rests on and the keep-it prompt in one card, so saving is a decision made after seeing the evidence rather than the price of seeing it. The confidence label is derived from how many comparables actually exist, so a thin area does not get told High confidence.",
+          width: 620,
+          height: 379,
+        },
+      },
       { step: "Save it", detail: "You get a private link. That link is the only way in, so keep it." },
       { step: "Come back whenever", detail: "The estimate is recomputed on every visit, with the change since you saved it and the comparable sales behind it." },
       { step: "Get told when it moves", detail: "An email when the estimate changes materially, and a monthly update otherwise." },
@@ -586,7 +676,17 @@ export const ROADMAP: RoadmapEntry[] = [
     walkthrough: [
       { step: "Claim your profile", detail: "Both emails go to your claimed address." },
       { step: "Add your farm areas", detail: "That is what fills the prospect half of the weekly email." },
-      { step: "Read it, or do not", detail: "Every email links straight back to the thing it is about. Unsubscribe is one click and we honour it." },
+      {
+        step: "Read it, or do not",
+        detail: "Every email links straight back to the thing it is about. Unsubscribe is one click and we honour it.",
+        shot: {
+          src: "/roadmap/shots/agent-emails-1.png",
+          alt: "A weekly email from FairComparisons. The heading reads 3 buyers viewed your profile this week, followed by a line saying 3 buyers looked at your profile in the last 7 days. A section headed Fresh prospects in your farm area lists three HDB blocks, each reading Bought Jan 2022, reaching 5-year MOP, with a link reading Open Deal Radar. A closing paragraph says these are real buyers researching agents in your area and that complete profiles get contacted while incomplete ones get skipped. A blue button reads Open your dashboard. The footer reads: ranked on real CEA transaction data, not advertising, rankings cannot be bought, and carries an Unsubscribe link.",
+          caption: "This feature has no screen, so the screenshot is the email itself, rendered from the same builder the cron uses. Every line is a count or a record, there is no marketing in it, and the unsubscribe link is honoured by the sender rather than decorative.",
+          width: 580,
+          height: 570,
+        },
+      },
     ],
     limits: [
       "A quiet week means no email. That is deliberate.",
@@ -622,10 +722,30 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You are in a four-room flat and wondering about a condo. Before speaking to anyone, you check what your flat is likely worth, what you would clear after the loan and the CPF refund, what stamp duty the next place attracts, and what you could borrow. Twenty minutes later you know whether the conversation is worth having, and no one has called you.",
     },
     walkthrough: [
-      { step: "Take the net proceeds calculator as the example", detail: "It answers the question most sellers actually have: what is left." },
+      {
+        step: "Take the net proceeds calculator as the example",
+        detail: "It answers the question most sellers actually have: what is left.",
+        shot: {
+          src: "/roadmap/shots/free-tools-1.png",
+          alt: "A grid of eight tool cards. Each card carries a small tag on the left and an audience label on the right, then a title and one line of description. Affordability calculator, tagged TDSR / MSR, for Buyers. Stamp duty calculator, tagged BSD / ABSD / SSD, for Everyone. Net proceeds calculator, tagged Cash in hand, for Sellers. Commission calculator, tagged With GST, for Sellers. Online valuation, tagged Instant estimate, for Sellers. HDB MOP tracker, tagged 5-year MOP, for Sellers. CEA advertising checker, tagged Compliance, for Agents. Letter of intent, tagged Paperwork, for Agents. Every card ends with Open tool.",
+          caption: "The whole set on one page, each card stating who it is for. Six are public arithmetic and two are the agent-side tools, and none of the eight opens with a sign-up.",
+          width: 820,
+          height: 779,
+        },
+      },
       { step: "Tell it what you are selling for", detail: "The expected sale price, and the property type." },
       { step: "Tell it what comes off", detail: "Outstanding loan, the CPF you used plus the accrued interest you have to refund, the agent commission you agreed, and legal fees." },
-      { step: "Read the cash in hand", detail: "Each deduction is itemised, with the CPF refund separated out, because that is the number people forget and the one that decides whether the next purchase is possible." },
+      {
+        step: "Read the cash in hand",
+        detail: "Each deduction is itemised, with the CPF refund separated out, because that is the number people forget and the one that decides whether the next purchase is possible.",
+        shot: {
+          src: "/roadmap/shots/free-tools-2.png",
+          alt: "A card headed ESTIMATED CASH IN HAND showing $211,500 in large type, with a line beneath reading $600,000 sale price minus $388,500 in costs and redemptions. Four itemised rows follow, each with a note and a negative amount: Agent commission, 1% of sale price, minus $6,000; Outstanding home loan, redeemed on completion, minus $200,000; CPF refund, principal plus accrued interest, back to your CPF OA, minus $180,000; and Legal / conveyancing fees, minus $2,500.",
+          caption: "The CPF refund gets its own line because it is the deduction people forget. It is not lost, it returns to your CPF Ordinary Account, but it is not cash you can put towards the next place, and here it is almost as large as the outstanding loan.",
+          width: 602,
+          height: 444,
+        },
+      },
       { step: "Check the working", detail: "Every rate and rule used is shown. Nothing is stored, and no calculator asks who you are." },
     ],
     limits: [
@@ -664,9 +784,29 @@ export const ROADMAP: RoadmapEntry[] = [
     },
     walkthrough: [
       { step: "Claim and sign in", detail: "Both cards sit at the top of the Today tab." },
-      { step: "Read your band", detail: "Top ten percent, top quarter, top half or building, for the area your record centres on." },
+      {
+        step: "Read your band",
+        detail: "Top ten percent, top quarter, top half or building, for the area your record centres on.",
+        shot: {
+          src: "/roadmap/shots/your-standing-2.png",
+          alt: "The Your standing card on a pale blue background. A kicker reads Your standing. The headline reads You are on the board in your area. Below it, smaller text reads that a recorded seller-side deal in your area puts you on the ranked board, and that your standing is computed only from official CEA transaction records. A link at the bottom reads How scoring works.",
+          caption: "What an agent with no recorded seller-side deals actually sees in this slot. The band, the rank line and the movement line replace this text once there is a transaction record to rank, which is why the entry warns that a newly claimed profile shows no movement at first.",
+          width: 616,
+          height: 194,
+        },
+      },
       { step: "Read the movement", detail: "Up, down or held since last month, when we have a snapshot from the previous month for the same area." },
-      { step: "Read your demand", detail: "Profile views, shortlist appearances, invitations to quote and sellers won, each with its window." },
+      {
+        step: "Read your demand",
+        detail: "Profile views, shortlist appearances, invitations to quote and sellers won, each with its window.",
+        shot: {
+          src: "/roadmap/shots/your-standing-1.png",
+          alt: "The Your demand card. A kicker reads Your demand, the heading reads Sellers looking at you, and a note beside it reads Real activity from sellers comparing agents. Four tiles each show the number 0: Profile views last 7 days, Shortlist appearances last 30 days, Invites to quote last 30 days, and Sellers won all time. A closing line reads 0 profile views and 0 quotes sent in the last 30 days, and adds that demand is never for sale because these numbers never change your rank or who receives leads.",
+          caption: "This is a claimed profile that nothing has happened to yet, and the card says so in four places rather than hiding the counters or rounding them up. The line under the tiles is the promise the entry makes, printed where the agent reads the numbers.",
+          width: 616,
+          height: 494,
+        },
+      },
     ],
     limits: [
       "It ranks you in one area, the one your record centres on. Multi-area standing is not built yet.",
@@ -707,7 +847,17 @@ export const ROADMAP: RoadmapEntry[] = [
     walkthrough: [
       { step: "Open the Find tab", detail: "Deal Radar sits at the top of the Find tab in your dashboard." },
       { step: "Add your farm areas", detail: "Choose HDB town or District, pick the area, press Add. Up to five, the same on every plan." },
-      { step: "Read the MOP list", detail: "Block and street, flat type, storey range, and the note telling you which month the flat was bought and that it is approaching the five-year MOP." },
+      {
+        step: "Read the MOP list",
+        detail: "Block and street, flat type, storey range, and the note telling you which month the flat was bought and that it is approaching the five-year MOP.",
+        shot: {
+          src: "/roadmap/shots/deal-radar-1.png",
+          alt: "A list headed Owners reaching MOP. Four rows, each an HDB block: 10f Bedok Sth Ave 2 at S$980K, 716 Bedok Reservoir Rd at S$950K, 151 Tampines St 12 at S$950K and 149 Tampines St 12 at S$945K. Each row shows the flat type and floor range, for example EXECUTIVE, 16 to 18, and a blue line reading Bought Jan 2022, reaching 5-year MOP, Jan 2022. Every row has a Seller report button.",
+          caption: "Every row is a real recorded HDB transaction, not a prediction. The signal is simply arithmetic on the purchase date: these owners reach their five-year minimum occupation period soon, which is when a resale becomes possible.",
+          width: 640,
+          height: 470,
+        },
+      },
       { step: "Read recent sales", detail: "The most recent sales in those areas over the last 180 days, HDB and private, with price and month." },
       { step: "Turn a row into a conversation", detail: "Press Seller report on any row to open a co-branded report of recent comparable sales, with your photo, name and record on it, ready to send." },
     ],
@@ -753,7 +903,17 @@ export const ROADMAP: RoadmapEntry[] = [
       { step: "Open the Find tab", detail: "Area Intelligence sits below Deal Radar and the Pitch Kit." },
       { step: "Pick one of your areas", detail: "The chips are built from your own transaction record, up to eight, ordered by how many deals you have done there." },
       { step: "Choose a flat type for a town", detail: "HDB towns get a flat-type selector. Private districts are priced as a whole." },
-      { step: "Read the pricing evidence", detail: "The range, the number of comparables behind it, a plain confidence label, and the most recent comparable sale." },
+      {
+        step: "Read the pricing evidence",
+        detail: "The range, the number of comparables behind it, a plain confidence label, and the most recent comparable sale.",
+        shot: {
+          src: "/roadmap/shots/area-intelligence-1.png",
+          alt: "The Area Intelligence card headed Price it and size up the competition, before you commit. A Tampines chip is selected next to a flat type dropdown reading 4 Room. Under Pricing evidence, 4 room, last 12 months sit three tiles: Estimate range S$620K to S$758K, most likely S$663K; Evidence 793 sales, high confidence; and Latest comparable S$575K, Blk 132 Simei St 1. Under The competition, last 12 months sit four more: Active agents 2,501 with a deal here; Deals closed 3,883, of which 2,103 sales and the rest rentals; Deals per agent 1.6 average across actives; and Top 5 agents' share 2% of all deals here. A panel below reads Your position: no recorded deals here in the last 12 months, every deal you close moves you onto this board, and a blue button reads Open your pitch for Tampines.",
+          caption: "Every number arrives with the window and the sample size that produced it, which is the part most area reports leave out. The 2% top five share is the kind of finding the panel exists for: Tampines is not a town three agents own, it is 2,501 agents averaging 1.6 deals each.",
+          width: 616,
+          height: 283,
+        },
+      },
       { step: "Read the competition", detail: "Active agents, deals closed with the sales split called out, deals per agent, the top five share, and your own position." },
       { step: "Open your pitch", detail: "One button takes you to your Pitch Kit page for the same area." },
     ],
@@ -793,7 +953,17 @@ export const ROADMAP: RoadmapEntry[] = [
     },
     walkthrough: [
       { step: "Open the Find tab", detail: "The Pitch Kit card sits under Deal Radar." },
-      { step: "Pick an area", detail: "The chips come from your own record, labelled with how many deals you have done there." },
+      {
+        step: "Pick an area",
+        detail: "The chips come from your own record, labelled with how many deals you have done there.",
+        shot: {
+          src: "/roadmap/shots/pitch-kit-1.png",
+          alt: "The Pitch Kit card headed Walk into the listing appointment with your record. Under it, a line explains it is a shareable one-page pitch built live from your verified CEA record: your deals in the area, your standing and the market context. Four area chips follow, Tampines with 8 deals selected, then Bedok with 4 deals, D15 Katong with 3 deals and Pasir Ris with 2 deals. Two buttons read Open your pitch and Copy share link, above a line saying the kit recomputes from the record every time it is opened and shows your context flags too.",
+          caption: "The areas and their counts are read from the agent's own CEA record, so there is nothing to assemble and nothing to keep up to date. The line about context flags is the point: the pitch carries the unflattering parts of a record as well as the flattering ones, which is what makes a seller believe the rest of it.",
+          width: 616,
+          height: 370,
+        },
+      },
       { step: "Open or copy", detail: "Open your pitch shows you the page. Copy share link puts the URL on your clipboard." },
       { step: "Send it", detail: "WhatsApp, email, wherever you already talk to the seller." },
       { step: "It stays current", detail: "The page recomputes on every open, so a deal you close next week is on it without you touching anything." },
@@ -835,7 +1005,17 @@ export const ROADMAP: RoadmapEntry[] = [
       body: "You open the Pipeline tab and the banner tells you two need a reply, one of them overdue. You open the oldest and press to draft a reply. Back comes a message that names the seller's flat type, their area and two recent sales nearby, under your name. You edit a line, put it into your quote and send it, then mark it replied.",
     },
     walkthrough: [
-      { step: "Open the Pipeline tab", detail: "Enquiries are ordered so the ones needing you come first, with New, Aging or Overdue chips." },
+      {
+        step: "Open the Pipeline tab",
+        detail: "Enquiries are ordered so the ones needing you come first, with New, Aging or Overdue chips.",
+        shot: {
+          src: "/roadmap/shots/seller-enquiry-inbox-1.png",
+          alt: "The Seller enquiries section of the Pipeline tab. Beside the heading a link reads How sellers compare you. A blue banner reads 2 leads need a reply, with oldest waiting 2d, and on the right Reply first to win the instruction. Below it two enquiry cards. The first reads HDB in Tampines with an amber pill reading Awaiting your quote and a red chip reading Overdue 2d, then a line reading 4-bed, Timeline: 1 to 3 months, Est. S$600,000 to S$680,000, with Mark as replied and View contact underneath and a blue Submit quote button on the right. The second reads Condo in D15 with the same amber pill and a green chip reading New.",
+          caption: "No seller name, no phone number, nothing that looks like a CRM record. What the row carries is the brief the seller filled in and how long it has been sitting, which is the whole basis of the ordering the entry describes.",
+          width: 616,
+          height: 149,
+        },
+      },
       { step: "Expand an enquiry", detail: "Press Submit quote on an enquiry that is awaiting your quote." },
       { step: "Draft a reply", detail: "Press Draft a reply with AI. The result is labelled as grounded in the record." },
       { step: "Edit and copy", detail: "It is a plain editable box. Change what you want, press Copy, or redraft." },
@@ -879,7 +1059,17 @@ export const ROADMAP: RoadmapEntry[] = [
     },
     walkthrough: [
       { step: "Copy your link", detail: "In the Pipeline tab, the Viewings panel shows your booking link with a copy button." },
-      { step: "Share it", detail: "Listings, bio, messages. The page shows your photo, agency, CEA number and AgentScore." },
+      {
+        step: "Share it",
+        detail: "Listings, bio, messages. The page shows your photo, agency, CEA number and AgentScore.",
+        shot: {
+          src: "/roadmap/shots/planner-1.png",
+          alt: "The viewing request form. Labelled fields read Property or address, then Preferred date and Preferred time side by side with a dropdown reading Pick a time, then Your name and Phone or email side by side, then Message (optional). A full-width blue button at the bottom reads Request viewing.",
+          caption: "Six fields, no password, no account step. This is the entirety of what the person who opens your link has to do, which is what replaces the dozen-message thread the entry describes.",
+          width: 592,
+          height: 576,
+        },
+      },
       { step: "Requests arrive", detail: "You get an email and the request appears in your Pipeline marked as a new request." },
       { step: "Confirm or cancel", detail: "Confirm, mark done, or cancel. If a calendar is connected, a confirmed viewing is written to it." },
       { step: "Turn it into a deal", detail: "On a confirmed viewing, Issue a letter of intent jumps to Paperwork with the property already filled in." },
@@ -921,7 +1111,17 @@ export const ROADMAP: RoadmapEntry[] = [
     },
     walkthrough: [
       { step: "Open the Find tab", detail: "Look for the Building pages card. It shows how many pages your plan allows." },
-      { step: "Find your development", detail: "Search by name. Results show the street, district and how many transactions we hold." },
+      {
+        step: "Find your development",
+        detail: "Search by name. Results show the street, district and how many transactions we hold.",
+        shot: {
+          src: "/roadmap/shots/building-pages-1.png",
+          alt: "The Building pages card on the Find tab. The header reads Own the page buyers read before they sell, with 0 of 1 pages on your free plan on the right, and a blue line reads 575 developments still have no agent presenting them, claim one before a competitor does. Below a search box labelled Which development do you know best? holding the word Treasure, four results are listed: TREASURE AT TAMPINES, Tampines Lane, D18, 1059 URA transactions; A TREASURE TROVE, Punggol Walk, D19, 220 URA transactions; URBAN TREASURES, Jalan Eunos, D14, 182 URA transactions; and TREASURE CREST, Anchorvale Crescent, D19, 176 URA transactions.",
+          caption: "Every result carries the transaction count behind that development's page, so you can see how much data your commentary would sit beside before spending your one free slot. The 575 is computed live from developments with real transaction depth that no agent has claimed yet.",
+          width: 616,
+          height: 299,
+        },
+      },
       { step: "Write it", detail: "A headline up to 90 characters and your commentary, at least 350 characters to publish." },
       { step: "Publish", detail: "It goes live immediately. If another agent already presents that development, you are told and can save a draft instead." },
       { step: "It appears with the data", detail: "Your spotlight renders on the development page with your name, agency, CEA number and a booking link, plus a note that it is agent commentary." },
