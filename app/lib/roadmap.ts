@@ -66,7 +66,7 @@ export const ROADMAP: RoadmapEntry[] = [
     whyWeBuiltIt: [
       "The dashboard had one surface for each part of your job and no thread running through them. A viewing lived in one place with the address typed as free text, and the letter of intent you wrote after that viewing lived in another with the address buried in a different shape. Two records about the same flat on the same afternoon, and the software did not know they were related.",
       "That is why it read as a drawer of tools. No arrangement of tabs fixes it, because the missing piece was not a tab. It was the deal.",
-      "Rentals are 63% of recorded CEA activity and roughly three rental contracts happen for every resale, so the sequence we tuned for is the one most agents actually run: viewing, letter of intent, tenancy agreement.",
+      "Rentals are 58% of recorded CEA activity and roughly three rental contracts happen for every resale, so the sequence we tuned for is the one most agents actually run: viewing, letter of intent, tenancy agreement.",
     ],
     whoItHelps: [
       { who: "Rental salespeople", how: "The pivot from a viewing to an offer is two taps on a phone, with the property already filled in. That moment is where the deal is won, and it is the one we made shortest." },

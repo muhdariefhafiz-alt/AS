@@ -44,7 +44,7 @@ export default async function IndependentPage() {
   ]);
   const scored = scoredRes.count ?? 10686;
   const total = totalRes.count ?? 30740;
-  const txns = txnRes.count ?? 730000;
+  const txns = txnRes.count ?? 1341539;
 
   const faqLd = {
     "@context": "https://schema.org",

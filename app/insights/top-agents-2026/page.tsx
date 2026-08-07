@@ -11,12 +11,12 @@ export const revalidate = 43200; // 12h; daily cron also force-revalidates
 export const metadata: Metadata = {
   title: "Top Singapore Property Agents 2026",
   description:
-    "Who actually sells the most homes in Singapore? The top property agents of 2026, ranked on 730,000+ real CEA transactions across all 28 districts. No paid placements, no self-reported awards.",
+    "Who actually sells the most homes in Singapore? The top property agents of 2026, ranked on 1.34 million real CEA transactions across all 28 districts. No paid placements, no self-reported awards.",
   alternates: { canonical: "https://fair-comparisons.com/insights/top-agents-2026" },
   openGraph: {
     title: "Top Property Agents in Singapore 2026 - Who Closes the Most Deals?",
     description:
-      "Data-driven rankings of Singapore's top property agents across all 28 districts. Based on 730,000+ CEA transaction records. No paid placements, no advertising bias.",
+      "Data-driven rankings of Singapore's top property agents across all 28 districts. Based on 1.34 million CEA transaction records. No paid placements, no advertising bias.",
     url: "https://fair-comparisons.com/insights/top-agents-2026",
     siteName: "FairComparisons",
     locale: "en_SG",

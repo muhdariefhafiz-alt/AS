@@ -45,7 +45,7 @@ export default async function TrustPage() {
 
   const scored = scoredRes.count ?? 10686;
   const agencies = agencyRes.count ?? 930;
-  const txns = txnRes.count ?? 730000;
+  const txns = txnRes.count ?? 1341539;
   const updated = freshRes.data?.score_updated_at
     ? new Date(freshRes.data.score_updated_at).toLocaleDateString("en-SG", { day: "numeric", month: "long", year: "numeric" })
     : null;

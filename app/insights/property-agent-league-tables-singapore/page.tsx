@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Singapore's top property agents are teams, not people",
     description:
-      "Top 20% of agents do 70% of home sales. The busiest HDB agents are credited across 23 of 26 towns at once. A study of 730,000 CEA transaction records.",
+      "Top 20% of agents do 70% of home sales. The busiest HDB agents are credited across 23 of 26 towns at once. A study of 1.34 million CEA transaction records.",
     url: URL,
     type: "article",
     images: ["https://fair-comparisons.com/og-image.png"],
@@ -174,7 +174,7 @@ export default async function LeagueTablesStudy() {
             of them. That much matches the intuition behind every &ldquo;top producer&rdquo; flyer. The interesting part is
             what happens when you ask <em>which</em> sales, and <em>who</em> the top names actually are. The answer
             undercuts the flyer. This is a companion to our{" "}
-            <Link href="/insights/property-agent-statistics-singapore" className="font-medium text-[var(--blue)] underline">study of all 730,000 CEA transactions</Link>.
+            <Link href="/insights/property-agent-statistics-singapore" className="font-medium text-[var(--blue)] underline">study of 1.34 million CEA transactions</Link>.
           </p>
         </div>
       </div>
@@ -368,7 +368,7 @@ export default async function LeagueTablesStudy() {
             <div className="fc-reveal rounded-xl border border-[var(--line-2)] bg-[var(--blue-wash)] p-5">
               <h3 className="text-sm font-bold text-gray-900">Read the full agent study</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-gray-600">
-                Why 66% of registered agents have no sale on file, and 63% of activity is rentals.
+                Why 64% of registered agents recorded no sale in the last 12 months, and 58% of activity is rentals.
               </p>
               <Link href="/insights/property-agent-statistics-singapore" className="mt-3 inline-block text-sm font-semibold text-[var(--blue)]">Singapore property agent statistics &rarr;</Link>
             </div>

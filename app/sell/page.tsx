@@ -185,7 +185,7 @@ export default async function SellPage({
             Tell us about your home and compare every CEA-licensed agent for your area on real transaction records. Invite up to 3 to send you a fee quote. Always free for sellers.
           </p>
           <div className="lp-hero__tags fc-hero-in fc-hero-in--4">
-            <span className="lp-hero__tag">Based on 730,000+ CEA transactions</span>
+            <span className="lp-hero__tag">Based on 1.34 million CEA transactions</span>
             <span className="lp-hero__tag">Always free for sellers</span>
             <span className="lp-hero__tag">PDPA-compliant</span>
           </div>

@@ -17,7 +17,7 @@ const steps = [
   },
   {
     title: "Count recent SALES, not total transactions",
-    body: "A big transaction count means little by itself: across the whole CEA record, 63% of recorded activity is rentals, and a rental record does not prove someone can negotiate a home sale. Filter the record to sale transactions (resale, new sale, sub-sale) in the last 12 to 24 months. An agent whose last recorded home sale is years old is out of practice in the market you are entering, whatever their lifetime total says.",
+    body: "A big transaction count means little by itself: across the whole CEA record, 58% of recorded activity is rentals, and a rental record does not prove someone can negotiate a home sale. Filter the record to sale transactions (resale, new sale, sub-sale) in the last 12 to 24 months. An agent whose last recorded home sale is years old is out of practice in the market you are entering, whatever their lifetime total says.",
   },
   {
     title: "Check the sales are in YOUR area and property type",
@@ -43,7 +43,7 @@ const hides = [
 const faqItems = [
   {
     q: "How do I check if a property agent is good in Singapore?",
-    a: "Run five checks against the public CEA record: verify the registration number is current; count recent home sales rather than total transactions (63% of all recorded activity is rentals); confirm those sales are in your area and property type; check the agent was on the seller's side; and apply the team test, because deals are often logged under a team leader's name. You can run all five in minutes with a free record lookup on FairComparisons.",
+    a: "Run five checks against the public CEA record: verify the registration number is current; count recent home sales rather than total transactions (58% of all recorded activity is rentals); confirm those sales are in your area and property type; check the agent was on the seller's side; and apply the team test, because deals are often logged under a team leader's name. You can run all five in minutes with a free record lookup on FairComparisons.",
   },
   {
     q: "Is a 'top producer' award proof an agent is good?",
@@ -51,7 +51,7 @@ const faqItems = [
   },
   {
     q: "How many transactions should a good agent have?",
-    a: "There is no magic number, but context helps: 66% of registered agents have no sale on record at all, so any agent with repeated recent seller-side sales in your area is already in the market's active minority. For a typical HDB or condo sale, a specialist with several recent sales in your town or district beats a generalist with a bigger island-wide total.",
+    a: "There is no magic number, but context helps: 64% of registered agents recorded no sale in the last 12 months, so any agent with repeated recent seller-side sales in your area is already in the market's active minority. For a typical HDB or condo sale, a specialist with several recent sales in your town or district beats a generalist with a bigger island-wide total.",
   },
   {
     q: "Where can I see a property agent's track record for free?",

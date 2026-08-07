@@ -158,7 +158,7 @@ export default async function AgenciesHubPage() {
               <p className="mt-2 text-[15px] leading-[1.75] text-gray-600">
                 {biggest ? `${cleanAgency(biggest.name)} alone has ${biggest.agent_count.toLocaleString()} registered agents. ` : ""}
                 Agency size tells you about headcount and brand, not about whether the specific agent you hire is any good. Performance varies enormously within every agency. Our{" "}
-                <Link href="/insights/property-agent-statistics-singapore" className="font-medium text-[var(--blue)] underline">study of 730,000 CEA transactions</Link>{" "}
+                <Link href="/insights/property-agent-statistics-singapore" className="font-medium text-[var(--blue)] underline">study of 1.34 million CEA transactions</Link>{" "}
                 found the median agent who sells closes about one home a year, so the agency logo matters far less than the individual agent&apos;s recent, area-specific sales record.
               </p>
             </div>

@@ -20,7 +20,7 @@ async function getStats() {
   return {
     scoredAgents: agentRes.count ?? 10594,
     agencies: agencyRes.count ?? 930,
-    transactions: txnRes.count ?? 730000,
+    transactions: txnRes.count ?? 1341539,
   };
 }
 

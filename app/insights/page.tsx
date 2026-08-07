@@ -14,7 +14,7 @@ const articles = [
   {
     slug: "property-agent-statistics-singapore",
     title: "Singapore Property Agent Statistics",
-    description: "What 730,000 CEA transactions reveal: most registered agents have no record on file, 63% of activity is rentals, and the top 20% handle 70% of home sales.",
+    description: "What 1.34 million CEA transactions reveal: most registered agents recorded no sale in the last 12 months, 58% of activity is rentals, and the top 20% handle about 70% of home sales.",
     tag: "Agent Market Study",
     tagColor: "bg-[var(--blue-wash)] text-[var(--blue-deep)] border-[var(--line-2)]",
   },

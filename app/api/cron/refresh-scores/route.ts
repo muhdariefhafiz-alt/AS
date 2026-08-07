@@ -11,7 +11,7 @@ const supabase = createClient(
  *
  * The heavy refresh (calculate_agent_scores -> refresh_area_top_agents ->
  * refresh_agent_market_stats) now runs INSIDE Postgres via the pg_cron job
- * "daily-score-refresh" at 18:00 UTC. Those functions scan the full 730k-row
+ * "daily-score-refresh" at 18:00 UTC. Those functions scan the full 1.34M-row
  * transaction table and were timing out under the PostgREST statement limit when
  * called over HTTP, so scores silently went stale. They were moved in-DB, where
  * there is no such timeout. This endpoint no longer triggers them; it records how

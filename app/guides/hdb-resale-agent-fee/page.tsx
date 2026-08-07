@@ -233,7 +233,7 @@ export default function HdbResaleAgentFeePage() {
               <div className="mt-4 space-y-4 text-[15px] leading-[1.75] text-gray-600">
                 <p>
                   Because no rate is prescribed, everything is negotiable. Two honest observations from the data: commission percentage is a weak predictor of outcome, and who you hire is a strong one. Our{" "}
-                  <Link href="/insights/property-agent-statistics-singapore" className="font-medium text-[var(--blue)] underline">study of 730,000 CEA transactions</Link>{" "}
+                  <Link href="/insights/property-agent-statistics-singapore" className="font-medium text-[var(--blue)] underline">study of 1.34 million CEA transactions</Link>{" "}
                   found the median active selling agent closes about one home a year, so an agent with a deep record in your town is worth more than a 0.25% discount from one without.
                 </p>
                 <p>

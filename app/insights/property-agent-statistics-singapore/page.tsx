@@ -12,12 +12,12 @@ export const revalidate = 86400; // 24h; study refreshes as the dataset grows
 export const metadata: Metadata = {
   title: "Singapore Property Agent Statistics",
   description:
-    "A study of Singapore's property agents from CEA transaction records. 66% of registered agents have no transaction on file, 63% of activity is rentals not sales, and the top 20% handle 70% of home sales.",
+    "A study of Singapore's property agents from CEA transaction records. 64% of registered agents recorded no sale in the last 12 months, 58% of activity is rentals not sales, and the top 20% handle about 70% of home sales.",
   alternates: { canonical: "https://fair-comparisons.com/insights/property-agent-statistics-singapore" },
   openGraph: {
     title: "Most Singapore property agents barely sell. The data proves it.",
     description:
-      "66% of registered agents have no transaction on file. 63% of all activity is rentals, not sales. The top 20% handle 70% of home sales. A study of 730,000 CEA transaction records.",
+      "64% of registered agents recorded no sale in the last 12 months. 58% of all activity is rentals, not sales. The top 20% handle about 70% of home sales. A study of 1.34 million CEA transaction records.",
     url: "https://fair-comparisons.com/insights/property-agent-statistics-singapore",
     type: "article",
     images: ["https://fair-comparisons.com/og-image.png"],
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Most Singapore property agents barely sell. The data proves it.",
     description:
-      "66% of registered agents have no transaction on file. 63% of activity is rentals. The top 20% handle 70% of home sales.",
+      "64% of registered agents recorded no sale in the last 12 months. 58% of activity is rentals. The top 20% handle about 70% of home sales.",
     images: ["https://fair-comparisons.com/og-image.png"],
   },
 };
@@ -68,7 +68,7 @@ const nf = (n: number) => (n ?? 0).toLocaleString("en-SG");
 
 export default async function PropertyAgentStatisticsPage() {
   // Read the precomputed snapshot (refreshed by the daily cron). The underlying
-  // aggregate scans 730k rows, which exceeds the anon API statement timeout, so
+  // aggregate scans 1.34M rows, which exceeds the anon API statement timeout, so
   // we serve it from a cached single-row table.
   const { data: row } = await supabase
     .from("agent_market_stats")
@@ -125,7 +125,7 @@ export default async function PropertyAgentStatisticsPage() {
     {
       "@context": "https://schema.org",
       "@type": "Article",
-      headline: "Singapore Property Agent Statistics: What 730,000 Transactions Reveal",
+      headline: "Singapore Property Agent Statistics: What 1.34 Million Transactions Reveal",
       description: metadata.description,
       datePublished: "2026-06-09",
       dateModified: "2026-06-09",

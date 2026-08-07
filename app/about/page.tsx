@@ -39,7 +39,7 @@ export default function AboutPage() {
           <h2 className="text-xl font-bold text-gray-900">What data do we use?</h2>
           <div className="mt-4 space-y-3">
             {[
-              { name: "CEA Transaction Records", desc: "730,000+ property transactions from the Council for Estate Agencies, linked to individual salesperson registration numbers." },
+              { name: "CEA Transaction Records", desc: "1.34 million property transactions from the Council for Estate Agencies, linked to individual salesperson registration numbers." },
               { name: "Google Reviews", desc: "Client ratings from Google Maps for each agency. Bayesian-corrected to account for agencies with few reviews." },
               { name: "CEA Public Register", desc: "Registration numbers and agency membership for all 30,000+ agents. Each agent's current registration status can be confirmed directly on the CEA public register." },
               { name: "URA Transaction Data", desc: "Private residential property prices from URA, used for district-level market analysis and development profiles." },

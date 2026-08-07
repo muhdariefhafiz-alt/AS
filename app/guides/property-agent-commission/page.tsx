@@ -152,7 +152,7 @@ export default function PropertyAgentCommissionPage() {
               </p>
               <p className="mt-3 text-[15px] leading-[1.75] text-gray-600">
                 One thing worth knowing before you pick on price alone: most agents rarely sell. Our{" "}
-                <Link href="/insights/property-agent-statistics-singapore" className="font-medium text-[var(--blue)] underline">study of 730,000 CEA transactions</Link>{" "}
+                <Link href="/insights/property-agent-statistics-singapore" className="font-medium text-[var(--blue)] underline">study of 1.34 million CEA transactions</Link>{" "}
                 found the median agent who does sell closes about one home a year, so who you hire matters far more than shaving 0.25% off the rate.
               </p>
             </div>
