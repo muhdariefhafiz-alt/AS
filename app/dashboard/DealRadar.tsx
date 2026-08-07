@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 
 // Deal Radar: the agent's daily farm-area prospecting feed. Every row is a
@@ -18,6 +18,9 @@ type RadarItem = {
   note: string;
 };
 type Area = { area_type: "district" | "town"; area_key: string };
+// A suggestion is an area the agent has ALREADY worked, straight from their CEA
+// record, so the chip can show their own numbers rather than a guess.
+type Suggestion = Area & { deals: number; last_deal: string };
 
 // SG postal districts (code -> short area name), for the add-area picker.
 const DISTRICTS: [string, string][] = [
@@ -46,9 +49,15 @@ const fmtMonth = (iso: string) => {
   const m = iso.match(/^(\d{4})-(\d{2})/);
   return m ? `${MONTHS[Number(m[2])]} ${m[1]}` : "";
 };
+const sKey = (a: Area) => `${a.area_type}:${a.area_key}`;
+// Districts are STORED zero-padded ('09'), matching every transaction table,
+// but this picker's list is authored unpadded ('9'). Compare on the number so a
+// saved district still finds its name instead of rendering a bare "D09 ".
+const districtName = (key: string) =>
+  (DISTRICTS.find((d) => Number(d[0]) === Number(key))?.[1] ?? "").split(",")[0];
 const areaLabel = (a: Area) =>
   a.area_type === "district"
-    ? `D${a.area_key} ${(DISTRICTS.find((d) => d[0] === a.area_key)?.[1] ?? "").split(",")[0]}`
+    ? `D${String(a.area_key).replace(/^0+(?=\d)/, "")} ${districtName(a.area_key)}`.trim()
     : a.area_key.split("/")[0].toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function DealRadar() {
@@ -59,6 +68,11 @@ export default function DealRadar() {
   const [busy, setBusy] = useState(false);
   const [addType, setAddType] = useState<"district" | "town">("town");
   const [addKey, setAddKey] = useState("");
+  const [suggested, setSuggested] = useState<Suggestion[]>([]);
+  // Pre-checked: the whole point is that accepting is one tap and editing is
+  // the exception. Seeded from the first render of suggestions.
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const seededRef = useRef(false);
 
   const load = useCallback(async () => {
     try {
@@ -68,6 +82,15 @@ export default function DealRadar() {
       setAreas(j.areas ?? []);
       setItems(j.items ?? []);
       setAgentSlug(j.agentSlug ?? null);
+      const sug: Suggestion[] = j.suggested ?? [];
+      setSuggested(sug);
+      // Top 3 pre-checked, not all 6: the cap is 5 and three areas is a
+      // realistic farm. Seeded once so a reload after saving does not re-tick
+      // boxes the agent deliberately cleared.
+      if (!seededRef.current && sug.length) {
+        seededRef.current = true;
+        setPicked(new Set(sug.slice(0, 3).map(sKey)));
+      }
     } finally {
       setLoading(false);
     }
@@ -76,6 +99,29 @@ export default function DealRadar() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function confirmSuggested() {
+    if (busy || !picked.size) return;
+    setBusy(true);
+    try {
+      const areasToAdd = suggested.filter((s) => picked.has(sKey(s)))
+        .map((s) => ({ area_type: s.area_type, area_key: s.area_key }));
+      const res = await fetch("/api/dashboard/deal-radar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "confirm", areas: areasToAdd }),
+      });
+      if (res.ok) {
+        const j = await res.json();
+        setAreas(j.areas ?? []);
+        setItems(j.items ?? []);
+        setSuggested(j.suggested ?? []);
+        setPicked(new Set());
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function mutate(action: "add" | "remove", area_type: string, area_key: string) {
     if (busy) return;
@@ -133,8 +179,12 @@ export default function DealRadar() {
             </button>
           </span>
         ))}
-        {areas.length < 5 && (
-          <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+        {/* The manual picker steps aside while suggestions are on screen: a
+            dropdown above a one-tap confirm makes composition look like the
+            main path, which is the behaviour this slice exists to reverse. It
+            returns as a quiet "add another" once the agent has areas. */}
+        {areas.length < 5 && !(areas.length === 0 && suggested.length > 0) && (
+          <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
             <select
               className="fc-select"
               value={addType}
@@ -167,7 +217,69 @@ export default function DealRadar() {
         )}
       </div>
 
-      {areas.length === 0 && (
+      {/* Setup is confirmation, not composition. These are the areas the agent
+          has actually transacted in, read from their own CEA record, so the
+          first interaction is ticking a box rather than filling a form. Before
+          this, sg_agent_farm_areas held zero rows platform-wide and the feed
+          below was therefore empty for every agent on the platform. */}
+      {areas.length === 0 && suggested.length > 0 && (
+        <div style={{ marginTop: 14 }}>
+          <p className="small" style={{ margin: "0 0 10px", color: "var(--ink-3)" }}>
+            These are the areas you already work, from your CEA record. Confirm the ones you farm and
+            your call list starts below.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {suggested.map((s) => {
+              const on = picked.has(sKey(s));
+              return (
+                <button
+                  key={sKey(s)}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() =>
+                    setPicked((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(sKey(s))) next.delete(sKey(s));
+                      else if (next.size < 5) next.add(sKey(s));
+                      return next;
+                    })
+                  }
+                  className="fc-card"
+                  style={{
+                    padding: "9px 13px", cursor: "pointer", textAlign: "left", minHeight: 44,
+                    borderColor: on ? "var(--blue)" : "var(--line)",
+                    background: on ? "var(--blue-wash, rgba(31,68,255,.06))" : "transparent",
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <span aria-hidden="true" style={{ color: on ? "var(--blue)" : "var(--line-2)", fontWeight: 700 }}>
+                      {on ? "✓" : "+"}
+                    </span>
+                    <span>
+                      <span style={{ fontWeight: 600, fontSize: 14 }}>{areaLabel(s)}</span>
+                      <span className="muted small" style={{ display: "block", marginTop: 1 }}>
+                        {s.deals} deal{s.deals === 1 ? "" : "s"} · last {s.last_deal}
+                      </span>
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            className="fc-btn fc-btn--primary fc-btn--sm"
+            style={{ marginTop: 12 }}
+            disabled={!picked.size || busy}
+            onClick={confirmSuggested}
+          >
+            {busy ? "Saving..." : `Confirm ${picked.size} area${picked.size === 1 ? "" : "s"}`}
+          </button>
+        </div>
+      )}
+
+      {/* Only agents with no transaction record of their own see the old ask. */}
+      {areas.length === 0 && suggested.length === 0 && (
         <p className="muted small" style={{ marginTop: 12 }}>
           Tell us the towns and districts you farm, and every morning you&apos;ll have a fresh call list:
           owners hitting their 5-year MOP (the sellers no one else has spotted yet) and every recent sale
