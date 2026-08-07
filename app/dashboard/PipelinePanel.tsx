@@ -139,9 +139,16 @@ export default function PipelinePanel({
             Each one is a property you are working. The stage moves itself when you issue a letter of intent or mark an agreement signed.
           </p>
         </div>
-        <button type="button" className="fc-btn fc-btn--quiet fc-btn--sm" onClick={() => setAdding((v) => !v)}>
-          {adding ? "Cancel" : "Start a deal"}
-        </button>
+        {/* Only rendered when there is already a pipeline. With an empty list
+            this button and EmptyPipeline's own CTA were two identical "Start a
+            deal" controls 546px apart, and the lower one opened this form
+            441px ABOVE the click with no scroll and no focus, so the agent
+            tapped and nothing appeared to happen. One deal action per screen. */}
+        {deals.length > 0 && (
+          <button type="button" className="fc-btn fc-btn--quiet fc-btn--sm" onClick={() => setAdding((v) => !v)}>
+            {adding ? "Cancel" : "Start a deal"}
+          </button>
+        )}
       </div>
 
       {adding && (

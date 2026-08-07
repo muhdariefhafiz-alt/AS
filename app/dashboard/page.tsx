@@ -817,14 +817,31 @@ export default function DashboardPage() {
 
                   <PlannerPanel onIssueLoi={(propertyLabel) => startDocument("loi", { premises_address: propertyLabel }, "viewing_row")} />
 
-                  <button
-                    type="button"
-                    onClick={() => { setNewDoc(undefined); setDocOpen(true); }}
-                    className="small"
-                    style={{ alignSelf: "flex-start", background: "none", border: "none", padding: 0, cursor: "pointer", color: "var(--slate)", fontWeight: 600, textDecoration: "underline" }}
-                  >
-                    All documents
-                  </button>
+                  {/* Two routes, not one-then-a-list. "All documents" alone
+                      cost three taps to reach a letter of intent: it opened a
+                      list, which offered "New document", which offered a type
+                      picker. It was the longest of three paths to the same
+                      editor. The direct action now sits first and skips both
+                      interstitials by naming the document type up front; the
+                      archive stays as the quieter second link. */}
+                  <div className="fc-row" style={{ gap: 16, alignSelf: "flex-start", flexWrap: "wrap", alignItems: "center" }}>
+                    <button
+                      type="button"
+                      onClick={() => startDocument("loi", undefined, "pipeline_direct")}
+                      className="fc-btn fc-btn--quiet fc-btn--sm"
+                      style={{ minHeight: 44 }}
+                    >
+                      New letter of intent
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setNewDoc(undefined); setDocOpen(true); }}
+                      className="small"
+                      style={{ background: "none", border: "none", padding: "12px 4px", margin: "-12px -4px", minHeight: 44, cursor: "pointer", color: "var(--slate)", fontWeight: 600, textDecoration: "underline" }}
+                    >
+                      All documents
+                    </button>
+                  </div>
                 </>
               )}
             </>
