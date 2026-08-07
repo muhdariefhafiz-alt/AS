@@ -128,7 +128,12 @@ export default function DashboardPage() {
   } | null>(null);
   const [standing, setStanding] = useState<Standing>(null);
   const [farmAreaCount, setFarmAreaCount] = useState<number | null>(null);
-  const [today, setToday] = useState<{ openLeads: number; viewingRequests: number } | null>(null);
+  const [today, setToday] = useState<{
+    openLeads: number;
+    viewingRequests: number;
+    deals?: { id: string; property_label: string; stage: string; action: string; idle_days: number }[];
+    openDeals?: number;
+  } | null>(null);
   const [activeTab, setActiveTabState] = useState<TabId>("today");
   const [newDoc, setNewDoc] = useState<AutoStart | undefined>(undefined);
   // The document editor takes over the Pipeline tab when it is open. Kept in
@@ -649,10 +654,35 @@ export default function DashboardPage() {
               {/* The habit worklist. A live enquiry or viewing request outranks
                   finishing setup, so it leads when present. Each row jumps into
                   the pipeline. */}
-              {today && (today.openLeads > 0 || today.viewingRequests > 0) && (
+              {today && (today.openLeads > 0 || today.viewingRequests > 0 || (today.deals?.length ?? 0) > 0) && (
                 <div className="fc-card fc-card--pad" style={{ borderLeft: "3px solid var(--ok)" }}>
                   <p className="kicker" style={{ color: "var(--ok)", margin: 0 }}>What needs you today</p>
                   <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+                    {/* Open deals, stalest first. This is the fix for the
+                        worklist's founding bug: it read only lead-flow and
+                        viewings, both structurally empty, so an agent with four
+                        hand-entered deals was told nothing needed them. The
+                        action copy comes from nextAction() server-side, so the
+                        instruction here always matches the Pipeline detail. */}
+                    {(today.deals ?? []).map((d) => (
+                      // minWidth:0 on BOTH the grid item (the button) and the
+                      // flex item (the span): grid and flex children default to
+                      // min-width:auto, so without it a long property label
+                      // refuses to shrink, overflows the card, and pushes the
+                      // "Open" affordance off a 375px screen.
+                      <button key={d.id} onClick={() => setTab("pipeline")} className="fc-card fc-card--fill" style={{ padding: "11px 14px", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%", minWidth: 0 }}>
+                        <span className="small" style={{ minWidth: 0, flex: 1 }}>
+                          <strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.property_label}</strong>
+                          <span style={{ color: "var(--ink-3)" }}>
+                            {d.action}
+                            {d.idle_days >= 7 && (
+                              <span style={{ color: "var(--slate)" }}> · quiet for {d.idle_days} days</span>
+                            )}
+                          </span>
+                        </span>
+                        <span className="small" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>Open &rarr;</span>
+                      </button>
+                    ))}
                     {today.openLeads > 0 && (
                       <button onClick={() => setTab("pipeline")} className="fc-card fc-card--fill" style={{ padding: "11px 14px", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, width: "100%" }}>
                         <span className="small"><strong>{today.openLeads}</strong> seller enquir{today.openLeads === 1 ? "y is" : "ies are"} awaiting your quote</span>

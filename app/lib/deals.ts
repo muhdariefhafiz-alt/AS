@@ -77,7 +77,8 @@ export function propertyKey(label: string): string {
     .trim();
 }
 
-const OPEN_STAGES: DealStage[] = ["enquiry", "viewing", "offer", "agreement"];
+// Exported: the Today worklist reads the same definition of "still work".
+export const OPEN_STAGES: DealStage[] = ["enquiry", "viewing", "offer", "agreement"];
 
 type AttachInput = {
   agentId: number;
