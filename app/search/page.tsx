@@ -11,6 +11,15 @@ import AgentFlags from "../components/AgentFlags";
 import { Shophouse, SkylineStrip } from "../components/LineArt";
 import { Icon } from "../components/Icons";
 
+// CEA registration numbers run R + six digits + a check letter (R012345A).
+// Partial entries are common (someone copies "R01234" off a business card), so
+// the trailing letter and the full six digits are both optional. Postal codes
+// are all-digit and are matched earlier by looksLikePostal, so there is no
+// overlap with this pattern.
+function looksLikeCeaReg(s: string): boolean {
+  return /^r\s*\d{1,6}[a-z]?$/i.test(s.trim());
+}
+
 // Small icon roundel used in group eyebrows so every result section carries
 // the house icon language.
 function Roundel({ children }: { children: React.ReactNode }) {
@@ -153,12 +162,27 @@ export default function SearchPage() {
         .ilike("name", `%${q}%`)
         .order("agent_count", { ascending: false })
         .limit(5),
-      supabase
-        .from("sg_agents")
-        .select("name, slug, agency_name, cea_registration")
-        .eq("is_hidden", false)
-        .ilike("name", `%${q}%`)
-        .limit(8),
+      // CEA registration numbers (R012345A) are searched against the
+      // registration column, names against the name column. We branch instead
+      // of using .or(): agent names legitimately contain commas and brackets
+      // ("KUAH KAI PIN, KAVIN (KAVIN KUAH)") and those are PostgREST filter
+      // separators, so an .or() string would break on exactly the names we
+      // hold. /property-agents/check promises "search by name or CEA
+      // registration number" in four places; before this, only name worked and
+      // every R-number lookup silently returned nothing.
+      looksLikeCeaReg(q)
+        ? supabase
+            .from("sg_agents")
+            .select("name, slug, agency_name, cea_registration")
+            .eq("is_hidden", false)
+            .ilike("cea_registration", `%${q}%`)
+            .limit(8)
+        : supabase
+            .from("sg_agents")
+            .select("name, slug, agency_name, cea_registration")
+            .eq("is_hidden", false)
+            .ilike("name", `%${q}%`)
+            .limit(8),
     ]).then(([agencyRes, agentRes]) => {
       const agencyMatches: SearchResult[] = (agencyRes.data ?? []).map((a) => ({
         type: "agency" as const,
