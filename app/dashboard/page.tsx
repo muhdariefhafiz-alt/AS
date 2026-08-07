@@ -2,23 +2,49 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import LeadsInbox from "./LeadsInbox";
-import StandingPanel, { type Standing } from "./StandingPanel";
-import DealRadar from "./DealRadar";
-import PitchKitPanel from "./PitchKitPanel";
-import AreaIntelPanel from "./AreaIntelPanel";
-import PlannerPanel from "./PlannerPanel";
-import DemandPanel from "./DemandPanel";
-import DocumentsPanel, { type AutoStart } from "./DocumentsPanel";
-import PipelinePanel from "./PipelinePanel";
-import PaperworkNudge from "./PaperworkNudge";
-import BuildingPagesPanel from "./BuildingPagesPanel";
-import PerformancePanel from "./PerformancePanel";
-import ShareCard from "./ShareCard";
-import PerfUploadCard from "./PerfUploadCard";
+import dynamic from "next/dynamic";
+import PanelSkeleton from "./PanelSkeleton";
 import Announcements from "./Announcements";
 import UnlockMoment from "./UnlockMoment";
-import PlanBillingPanel from "./PlanBillingPanel";
+// Types only: erased at compile time, so they cost nothing in the bundle and
+// must NOT be pulled in through the dynamic() imports below.
+import type { Standing } from "./StandingPanel";
+import type { AutoStart } from "./DocumentsPanel";
+
+// Panels load with the tab that shows them, not with the page.
+//
+// All fifteen used to be static imports on a "use client" page, so every agent
+// downloaded, parsed and hydrated ~5,700 lines of dashboard on every visit no
+// matter which tab they were on. Today, the default tab, needs exactly ONE of
+// them. A free-tier agent was paying for the Performance panel, Building Pages,
+// Area Intel and the 1,006-line Leads Inbox they cannot even open.
+//
+// Announcements stays static: it renders on every tab, so deferring it would
+// only add a request. UnlockMoment likewise (it fires on return from checkout,
+// where a spinner would be exactly wrong).
+// The options object must be an INLINE LITERAL at every call site. Next's
+// compiler statically analyses it, so hoisting it into a shared const fails the
+// build with "next/dynamic options must be an object literal" (tsc and eslint
+// both pass, so only a real build catches this).
+// Today
+const PaperworkNudge = dynamic(() => import("./PaperworkNudge"), { loading: () => <PanelSkeleton /> });
+// Pipeline
+const DocumentsPanel = dynamic(() => import("./DocumentsPanel"), { loading: () => <PanelSkeleton /> });
+const PipelinePanel = dynamic(() => import("./PipelinePanel"), { loading: () => <PanelSkeleton /> });
+const LeadsInbox = dynamic(() => import("./LeadsInbox"), { loading: () => <PanelSkeleton /> });
+const PlannerPanel = dynamic(() => import("./PlannerPanel"), { loading: () => <PanelSkeleton /> });
+// Find
+const DealRadar = dynamic(() => import("./DealRadar"), { loading: () => <PanelSkeleton /> });
+const PitchKitPanel = dynamic(() => import("./PitchKitPanel"), { loading: () => <PanelSkeleton /> });
+const AreaIntelPanel = dynamic(() => import("./AreaIntelPanel"), { loading: () => <PanelSkeleton /> });
+const BuildingPagesPanel = dynamic(() => import("./BuildingPagesPanel"), { loading: () => <PanelSkeleton /> });
+const ShareCard = dynamic(() => import("./ShareCard"), { loading: () => <PanelSkeleton /> });
+const PerfUploadCard = dynamic(() => import("./PerfUploadCard"), { loading: () => <PanelSkeleton /> });
+// You
+const StandingPanel = dynamic(() => import("./StandingPanel"), { loading: () => <PanelSkeleton /> });
+const PerformancePanel = dynamic(() => import("./PerformancePanel"), { loading: () => <PanelSkeleton /> });
+const DemandPanel = dynamic(() => import("./DemandPanel"), { loading: () => <PanelSkeleton /> });
+const PlanBillingPanel = dynamic(() => import("./PlanBillingPanel"), { loading: () => <PanelSkeleton /> });
 import { titleName, cleanAgency } from "../lib/names";
 import { isPaid, TIER_LABEL, type Tier } from "../lib/tiers";
 

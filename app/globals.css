@@ -678,3 +678,21 @@ a.dev--link:hover .dev__name{color:var(--blue-deep);}
   .fc-shot img{ transition:box-shadow .2s ease; }
   .fc-shot img:hover{ box-shadow:0 10px 26px rgba(10,23,51,0.11); }
 }
+
+/* Panel loading placeholder.
+   Panels are code-split per tab, so there is a short beat between tapping a tab
+   and its chunk arriving. A shimmer that stays put reads as "loading" where an
+   empty box reads as "broken" and invites a second tap.
+   Honours prefers-reduced-motion: the block stays, the movement stops. */
+.fc-skel {
+  background: linear-gradient(90deg, var(--line) 25%, var(--line-2) 37%, var(--line) 63%);
+  background-size: 400% 100%;
+  animation: fc-skel-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes fc-skel-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fc-skel { animation: none; background: var(--line); }
+}
